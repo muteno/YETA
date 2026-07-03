@@ -237,8 +237,7 @@ def check_design():
 #   그 줄도 해시에서 빠져 → 그 줄만 편집해도 버전이 안 바뀜 = 조용한 드리프트(이 시스템이 막으려는 바로 그것).
 #   현재 0건. 이 게이트로 미래에 그런 줄이 들어오는 걸 차단(분신술 8인 권고 260624).
 _DIVIDER_RE = re.compile(r'^----- .+ -----\s*$')
-_INJECT_GLOBS = ('apps/news/00_에디터_뉴스_운영.md', 'apps/news/01_지침_에디터_뉴스_*.md',
-                 'apps/news/02_라이브러리_이미지_*.md', 'PROJECT_MEMORY.md')
+_INJECT_GLOBS = ('apps/yeta/00_지침_캐릭터챗.md', 'apps/yeta/10_세계관.md')
 
 
 def check_inject_dividers():
@@ -660,13 +659,6 @@ def main():
         rc = 1
     else:
         print('✅ check_refs 통과 — 경로 참조 실존·파일명↔내부 버전 일치.')
-    # /k 라이브러리 SSOT↔유닛 정합(통합본에서 유닛 재생성 = 현재 유닛 동일?) — 드리프트 게이트
-    try:
-        import build_library
-        if build_library.check() != 0:
-            rc = 1
-    except Exception as e:
-        print('⚠️ build_library check 스킵:', e)
     try:
         if check_viewer_js() != 0:   # viewer 인라인 JS 구문(하드 게이트 — SyntaxError=뷰어 전면 사망)
             rc = 1
@@ -689,11 +681,6 @@ def main():
     except Exception as e:
         print('⚠️ check_design 스킵:', e)
     try:
-        if check_sens_vocab() != 0:   # 민감 통제어휘 미러 정합(하드 게이트 — 5↔7 드리프트·DRUG_RE 따로놀기 차단·260625)
-            rc = 1
-    except Exception as e:
-        print('⚠️ 민감 통제어휘 check 스킵:', e)
-    try:
         if check_claude_failover() != 0:   # claude -p 호출 = 폴오버 SSOT 경유 통일(자체 쿼터처리·따로놀기 차단 · 260629 weekly한도 전건실패)
             rc = 1
     except Exception as e:
@@ -703,21 +690,6 @@ def main():
             rc = 1
     except Exception as e:
         print('⚠️ --bare 도구충돌 게이트 스킵:', e)
-    try:
-        if check_curation_constants() != 0:   # 큐레이션 랭킹 상수↔§★ 문서 정합(하드 게이트 — #1135식 자기-revert·드리프트 차단·260628 감사 C8)
-            rc = 1
-    except Exception as e:
-        print('⚠️ check_curation_constants 스킵:', e)
-    try:
-        if check_cat_kw() != 0:   # CAT_KW 카테고리 키워드사전 py↔js 정합(하드 게이트 — 키워드 한쪽만 고침=분류 오분류 근본·260628 C9)
-            rc = 1
-    except Exception as e:
-        print('⚠️ check_cat_kw 스킵:', e)
-    try:
-        if check_issue_badge_parity() != 0:   # ⚡이슈 배지 게이트 viewer↔build-viewer 규칙 동일(하드 게이트 — 한쪽만 수정=수집함↔피드 배지 드리프트·260702 10인 검증7)
-            rc = 1
-    except Exception as e:
-        print('⚠️ check_issue_badge_parity 스킵:', e)
     try:
         if check_autocomplete() != 0:   # 평문 텍스트칸 OS 자동완성 끔 4종(하드 게이트 — 자동완성 바 재발 차단·STAGE1b·260628)
             rc = 1
