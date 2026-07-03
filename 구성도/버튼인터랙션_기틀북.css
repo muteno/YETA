@@ -1,0 +1,167 @@
+/* ============================================================================
+   노뮤트 · 버튼 인터랙션 기틀북 (CSS 레퍼런스)
+   ----------------------------------------------------------------------------
+   ⚠️ 이건 *레퍼런스/기틀*이다. 라이브 값·동작 SSOT = viewer/index.html.
+      - 값 토큰 SSOT = viewer/index.html :root → 구성도/base.css(AUTO-MIRROR).
+      - 규칙 SSOT = CLAUDE.md §🎨 · 게이트 = shared/check_refs.py.
+      이 파일은 새 버튼/이식 시 *복사·계승*용 패턴 모음(재설계 금지). 토큰은 var()로
+      참조하므로 viewer :root(또는 base.css)가 로드된 문맥에서 그대로 작동한다.
+   생성: 260621 버튼 인터랙션 통일(Stage 1·2) 산물. HTML/MD판 = 같은 폴더.
+   ============================================================================ */
+
+/* ── 0. 토큰 의존 (정의 아님·참조만) ────────────────────────────────────────
+   필요한 토큰: --bg --accent --accent-rgb --accent-bright --accent-dim --on-accent
+   --fg --fg-2 --mut --line --line2 --glass2 --danger --danger-rgb --arm --arm-rgb
+   --on-arm --thumb --r-s --r-m --r-l --r-pill --sp-1..4 --blur-m --btn --btn-sm
+   --btn-xs --ease --dur. (viewer :root / base.css에서 옴.) */
+
+/* ── 1. 아이콘 버튼 (.sbtn 계승) ─────────────────────────────────────────── */
+.k-iconbtn {
+  display:grid; place-items:center;               /* SVG 양축 중앙 */
+  width:var(--btn,34px); height:var(--btn,34px); padding:0;
+  color:rgba(255,255,255,.92); background:rgba(255,255,255,.06);
+  border:1px solid var(--line); border-radius:var(--r-s,9px); cursor:pointer;
+  position:relative; overflow:hidden;
+  transition:transform .1s, filter .1s, background .15s, box-shadow .15s, color .15s;
+}
+.k-iconbtn.sm { width:var(--btn-sm,30px); height:var(--btn-sm,30px); color:var(--mut); }
+.k-iconbtn.xs { width:var(--btn-xs,22px); height:var(--btn-xs,22px); }
+.k-iconbtn:hover:not(:disabled) { background:rgba(255,255,255,.13); }
+.k-iconbtn:active { transform:scale(.9); filter:brightness(.88); }   /* 눌림 */
+.k-iconbtn:disabled { opacity:.5; cursor:default; }
+.k-iconbtn svg { display:block; transition:transform .35s var(--ease); }
+/* 상태 한 벌(.sbtn .ok/.busy/.confirm 계승) */
+.k-iconbtn.is-ok      { background:var(--accent); color:var(--on-accent); border-color:var(--accent); }   /* 성공 플래시 */
+.k-iconbtn.is-busy    { opacity:.5; pointer-events:none; }                                                /* 진행 중 */
+.k-iconbtn.is-confirm { background:rgba(var(--arm-rgb),.2); color:var(--arm); border-color:rgba(var(--arm-rgb),.5); }  /* 1차 재확인(한 번 더=실행) */
+
+/* ── 2. 닫기(X) / 새로고침 — 라인 SVG (✕문자·이모지 금지) ──────────────────── */
+.k-closebtn { /* .tool-x/.dlg-x/.askx/.ed-x/.mx/.qh-x/.fb-x/.sc-rsn-x/.askimg-x */
+  display:grid; place-items:center; width:var(--btn-sm,30px); height:var(--btn-sm,30px);
+  background:rgba(255,255,255,.06); border:1px solid var(--line); border-radius:var(--r-s,9px);
+  color:var(--mut); cursor:pointer; transition:transform .1s, color .15s, background .15s;
+}
+.k-closebtn:hover { color:var(--accent); border-color:rgba(var(--accent-rgb),.4); }
+.k-closebtn:active { transform:scale(.9); }
+/* 닫기 X SVG: <svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor"
+   stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6 18 18M18 6 6 18"/></svg> */
+/* 새로고침 SVG path: M21 12a9 9 0 1 1-3-6.7M21 4v5h-5  (hover 시 rotate(180deg), 누름 시 rotate+scale) */
+
+/* ── 3. 알약 링크/버튼 (.dlg-h a · pill) — 단순 액션 ──────────────────────── */
+.k-pill {
+  height:34px; display:inline-flex; align-items:center; justify-content:center; gap:4px;
+  padding:0 14px; border-radius:var(--r-pill,999px); background:rgba(255,255,255,.06);
+  border:1px solid transparent; color:var(--mut); font:600 12px/1 inherit; text-decoration:none;
+  backdrop-filter:blur(var(--blur-m,14px)); -webkit-backdrop-filter:blur(var(--blur-m,14px));
+  cursor:pointer; transition:color .15s, background .15s, transform .1s;
+}
+.k-pill:hover { color:var(--fg); background:rgba(255,255,255,.13); }
+.k-pill:active { transform:scale(.94); }
+.k-pill:focus-visible { outline:none; box-shadow:0 0 0 2px rgba(var(--accent-rgb),.45); }
+
+/* ── 4. 시맨틱 모션 (누름 = 아이콘이 의미대로) ─────────────────────────────── */
+/* JS: document 위임 click(capture) → closest(아이콘버튼) → svg에 .ic-spin/.ic-bounce 부여
+   (e.defaultPrevented 가드 · remove→offsetWidth→add 재트리거). 다운로드/저장=bounce, 그 외=spin. */
+@keyframes ic-spin   { to { transform:rotate(360deg); } }
+@keyframes ic-bounce { 0% { transform:translateY(0); } 45% { transform:translateY(2.5px); } 100% { transform:translateY(0); } }
+.ic-spin   { animation:ic-spin .5s var(--ease); }
+.ic-bounce { animation:ic-bounce .42s ease; }
+
+/* 탭 피드백: 다운로드=초록 플래시 / 외부열림=흰빛 펄스 (의미별 색 분리) */
+.k-okflash    { color:var(--accent) !important; }
+.k-openflash  { color:var(--fg) !important; background:rgba(255,255,255,.13) !important; box-shadow:0 0 0 2px rgba(255,255,255,.14) !important; }
+
+/* ── 5. 전송(비용) 상태머신 (.sc-pick/.asksend 계승) ───────────────────────── */
+/* 라벨: 대기 → "재확인"(arm) → "전송 중…"(게이지) → "완료"+✓ → 원복. 실패=shake+빨강. */
+.k-send {
+  position:relative; overflow:hidden; display:inline-flex; align-items:center; justify-content:center; gap:7px;
+  min-width:120px; height:36px; padding:0 18px; border-radius:var(--r-pill,999px); cursor:pointer;
+  font:800 13px/1 inherit; color:var(--accent); background:var(--accent-dim);
+  border:1px solid rgba(var(--accent-rgb),.4);
+  transition:background .18s var(--ease), border-color .18s, color .18s, transform .1s;
+}
+.k-send:active { transform:scale(.97); }   /* viewer .asksend 정본 계승(260702) */
+.k-send > .lbl, .k-send > svg { position:relative; z-index:1; }
+.k-send.is-arm  { color:var(--arm); background:rgba(var(--arm-rgb),.18); border-color:rgba(var(--arm-rgb),.6); }      /* 재확인(앰버·3s 타임아웃) */
+.k-send.is-fire { color:var(--on-accent); border-color:var(--accent); pointer-events:none; }                          /* 전송 중(게이지) */
+.k-send.is-fire::before { content:''; position:absolute; inset:0; background:var(--accent); transform:scaleX(0);
+  transform-origin:left; animation:k-gauge .72s linear forwards; z-index:0; }
+@keyframes k-gauge { to { transform:scaleX(1); } }
+.k-send.is-done { color:var(--on-accent); background:var(--accent); border-color:var(--accent); pointer-events:none; } /* 완료(솔리드+✓) */
+.k-send.is-fail { color:var(--danger); background:rgba(var(--danger-rgb),.14); border-color:rgba(var(--danger-rgb),.6); animation:k-shake .4s ease; }
+@keyframes k-shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-5px)} 40%{transform:translateX(5px)} 60%{transform:translateX(-3px)} 80%{transform:translateX(3px)} }
+
+/* ── 6. 토글 (.toggle/.tk 계승) — 상태형 ──────────────────────────────────── */
+.k-toggle { display:inline-flex; align-items:center; gap:7px; cursor:pointer; font-size:12px; color:var(--mut); user-select:none; }
+.k-toggle input { display:none; }
+.k-toggle .tk { width:34px; height:20px; border-radius:var(--r-pill,999px); position:relative; flex:none;
+  background:rgba(var(--accent-rgb),.08); border:1px solid rgba(255,255,255,.12);
+  backdrop-filter:blur(var(--blur-s,8px)); box-shadow:inset 0 1px 2px rgba(0,0,0,.35);
+  transition:background .22s var(--ease), border-color .22s, box-shadow .22s; }
+.k-toggle .tk::after { content:''; position:absolute; top:50%; left:2px; width:15px; height:15px; border-radius:50%;
+  background:var(--mut); opacity:.65;            /* OFF = 반투명(흐릿)·대비 3:1 */
+  transform:translateY(-50%); box-shadow:0 1px 3px rgba(0,0,0,.5);
+  transition:transform .26s var(--ease), background .22s, opacity .22s; }
+.k-toggle input:checked + .tk { background:linear-gradient(90deg,var(--accent-bright),var(--accent));
+  border-color:rgba(var(--accent-rgb),.5); box-shadow:0 0 10px rgba(var(--accent-rgb),.4), inset 0 1px 1px rgba(255,255,255,.3); }
+.k-toggle input:checked + .tk::after { transform:translate(14px,-50%); background:var(--on-accent); opacity:1; }  /* ON = 불투명 복원 */
+
+/* ── 7. 커스텀 원형 체크 + 통합 알약 (.dlbox 계승 — 요약 헤더) ──────────────── */
+.k-chkpill { position:relative; display:inline-flex; align-items:center; height:34px; box-sizing:border-box;
+  padding:0 12px 0 5px; border-radius:var(--r-pill,999px); background:rgba(255,255,255,.06); border:1px solid transparent;
+  backdrop-filter:blur(var(--blur-m,14px)); -webkit-backdrop-filter:blur(var(--blur-m,14px)); touch-action:manipulation;
+  transition:color .15s, background .15s, border-color .15s, box-shadow .15s, transform .1s, filter .1s; }
+.k-chkpill:hover { background:rgba(255,255,255,.13); }
+.k-chkpill.press { transform:scale(.94); filter:brightness(.92); }
+.k-chkpill.on { color:var(--accent); border-color:rgba(var(--accent-rgb),.5); background:rgba(var(--accent-rgb),.10);
+  box-shadow:0 0 16px rgba(var(--accent-rgb),.30), 0 0 0 1px rgba(var(--accent-rgb),.25); }   /* E3 + 강한 글로우 링 */
+.k-chkpill.on.rip::after { content:''; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+  border:1.5px solid rgba(var(--accent-rgb),.6); animation:k-rip .55s ease-out forwards; }     /* 켤 때 펄스 1회 */
+@keyframes k-rip { from { transform:scale(1); opacity:.9; } to { transform:scale(1.18); opacity:0; } }
+.k-chkpill .cbox { width:16px; height:16px; flex:none; border-radius:50%; margin-right:9px;     /* 원형(알약 곡률 패밀리) */
+  border:1.5px solid rgba(255,255,255,.28); background:rgba(255,255,255,.04);
+  display:inline-flex; align-items:center; justify-content:center; transition:background .15s, border-color .15s, box-shadow .15s; }
+.k-chkpill .cbox svg { width:11px; height:11px; stroke:var(--on-accent); opacity:0; transform:scale(.5); transition:opacity .15s, transform .15s; }
+.k-chkpill input { position:absolute; left:0; width:16px; height:16px; margin:0; opacity:0; cursor:pointer; }  /* 숨김(포커스 유지) */
+.k-chkpill input:checked ~ .cbox, .k-chkpill.on .cbox { background:linear-gradient(135deg,var(--accent-bright),var(--accent)); border-color:transparent; }
+.k-chkpill input:checked ~ .cbox svg, .k-chkpill.on .cbox svg { opacity:1; transform:scale(1); }
+.k-chkpill input:focus-visible ~ .cbox { box-shadow:0 0 0 2px rgba(var(--accent-rgb),.45); }
+
+/* ── 9. 다운로드 시퀀스 버튼 (.cref-dlall[index]·.jsave[thumb] 계승 — ‘전체 다운로드’) ─
+   라벨: "전체" → "저장 중… i/N"(좌→우 강조색 채움·검정 글자 드러남) → "완료"+✓(커졌다 작아지는 팝) → 즉시 복귀(드레인 없음) → 원복.
+   진행률 = --p(0~1) scaleX. 베이스 = 프로스티드 글래스 = 형제 아이콘버튼(.sbtn) 톤(rgba(8,15,11,.3)·흰테 .14·blur-s) 그대로 = 앱 통일. 구현 상태클래스 = .dlseq-busy/.dlseq-done, 복귀=.dlseq-snap(transition none).
+   JS = dlAllSeq(index)/jSaveSeq(thumb). 적용처 = 썸네일 후보·카드뉴스·썸네일 생성기 대기열. §5 전송 게이지(.k-send.is-fire)의 사촌(완료 후엔 드레인 대신 즉시 스냅 복귀 — 글자 안 가려짐). 운영자 260622. */
+.k-dlseq {
+  position:relative; overflow:hidden; display:inline-flex; align-items:center; gap:5px;
+  height:var(--btn-sm,30px); padding:0 12px; border-radius:var(--r-s,9px); cursor:pointer;
+  font:700 11px/1 inherit; color:var(--accent);
+  background:rgba(8,15,11,.3); border:1px solid rgba(255,255,255,.14);
+  backdrop-filter:blur(var(--blur-s,8px)); -webkit-backdrop-filter:blur(var(--blur-s,8px));
+  transition:color .18s, background .18s var(--ease), border-color .18s, transform .1s;
+}
+.k-dlseq:active { transform:scale(.95); }
+.k-dlseq:hover { background:rgba(255,255,255,.16); border-color:rgba(255,255,255,.22); }
+.k-dlseq > .lbl, .k-dlseq > .dlseq-ic { position:relative; z-index:1; }
+.k-dlseq::before { content:''; position:absolute; inset:0; z-index:0; background:var(--accent);
+  transform:scaleX(0); transform-origin:left center; transition:transform .28s linear; pointer-events:none; }   /* 좌→우 채움 와이프 */
+.k-dlseq.is-busy::before    { transform:scaleX(var(--p,0)); }                                           /* 진행 i/N */
+.k-dlseq.is-done::before    { transform:scaleX(1); transition:transform .22s var(--ease); }              /* 꽉 채움 */
+.k-dlseq.is-snap, .k-dlseq.is-snap *, .k-dlseq.is-snap::before { transition:none; }                       /* 완료 후 즉시 복귀(드레인 없음·글자 안 가려짐) */
+.k-dlseq.is-busy, .k-dlseq.is-done { color:var(--on-accent); }                                            /* 채움 위 = 검정 글자(드러남) */
+.k-dlseq.is-done { border-color:rgba(var(--accent-rgb),.6); box-shadow:0 0 22px rgba(var(--accent-rgb),.42); }
+.k-dlseq .dlseq-ic { display:inline-grid; } .k-dlseq .dlseq-ic > * { grid-area:1/1; }                     /* 다운↔체크 스왑 */
+.k-dlseq .dlseq-ic .chk { opacity:0; }
+.k-dlseq.is-done .dlseq-ic .dn { opacity:0; }
+.k-dlseq.is-done .dlseq-ic .chk { opacity:1; animation:k-dlpop .42s var(--ease); }                       /* ✓ 팝 */
+@keyframes k-dlpop { 0%{transform:scale(.3);opacity:0} 58%{transform:scale(1.3);opacity:1} 100%{transform:scale(1);opacity:1} }   /* opacity 동반 = scale(.3) 오프닝서 축소된 ✓가 '점'으로 보이던 잔상 차단(분신술 260702) */
+
+/* ── 8. 접근성 · 모션 감소 ─────────────────────────────────────────────────
+   - 아이콘 버튼: aria-label 필수(SVG=장식) · 텍스트동반 장식 SVG: aria-hidden="true"
+   - 비텍스트 대비 3:1 · 색만으로 상태 전달 금지(체크마크 동반)
+   - touch-action:manipulation 권장(더블탭 줌·300ms 지연 차단) */
+@media (prefers-reduced-motion:reduce) {
+  .ic-spin, .ic-bounce,
+  .k-send.is-fire::before, .k-send.is-fail,
+  .k-chkpill.on.rip::after, .k-chkpill.press { animation:none; transform:none; }
+  .k-dlseq::before, .k-dlseq.is-done .dlseq-ic .chk { animation:none; transition:none; }   /* 채움 즉시 전환(transform:none은 풀필 오작동이라 금지) */
+}

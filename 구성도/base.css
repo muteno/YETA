@@ -1,0 +1,52 @@
+/* ── 노뮤트 구성도 공통 베이스 — 전 시트가 link. 전역 수정은 여기서 ── */
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css');
+/* Orbitron 폐지(운영자 260621) — 상태어도 Pretendard. */
+
+/* === AUTO-MIRROR:START — viewer/index.html :root 자동투영. 직접수정 금지(shared/build_design_mirror.py build) === */
+  :root {
+    /* 중립 표면·텍스트 */
+    --fg:#eef7f0; --fg-2:#cfd8d0; --mut:#8fa697;
+    --line:rgba(255,255,255,.08); --line2:rgba(255,255,255,.06);
+    /* 강조 — 공통 컴포넌트(.tool-x hover·focus ring) */
+    --accent:#0FFD02; --accent-rgb:15,253,2;
+    /* 의미색 */
+    --danger:#ff5b4a; --danger-rgb:255,91,74; --arm:#ffd93d;
+    /* yeta 정체성 — 네온보라 버블·근흑 창(운영자 260703) */
+    --bubble-me:#b45cff; --bubble-ai:#1e2023; --yeta-bg:#0d0b12;
+    /* 반지름 */
+    --r-s:9px; --r-m:11px; --r-l:16px; --r-modal:22px; --r-pill:999px;
+    /* 간격·버튼 */
+    --sp-2:12px; --sp-3:18px; --btn:34px;
+    /* 타이포 */
+    --fs-h2:15px; --fs-h3:14px; --fs-body:15px; --fs-label:13px; --fs-sm:12px; --fs-xs:11px;
+    --fw-x:800; --fw-b:700; --lh-base:1.6;
+    /* 모션 */
+    --ease:cubic-bezier(.2,.7,.3,1);
+    /* z (dialog=top-layer라 nm-toast만) */
+    --z-float:60;
+    /* 눌림 scale 사다리 */
+    --press-m:.9; --press-l:.95;
+  }
+/* === AUTO-MIRROR:END === */
+/* ↑ 토큰값은 전부 viewer :root에서 옴(--arm·--font-status 포함). base.css에 토큰 인라인 재정의 금지. */
+
+/* 폰트 = 뷰어와 동일 Pretendard */
+body {
+  font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif !important;
+  letter-spacing:-.2px; -webkit-font-smoothing:antialiased;
+}
+
+/* 중앙정렬 안전 — 칩·배지·숫자는 line-height 1 + inline-flex 중앙 (라인박스 아래쏠림 교정) */
+.pill,.fchip,.sc-got,.tier,.stag-chip,.pickbtn { display:inline-flex; align-items:center; justify-content:center; line-height:1; }
+.sc-got>span { line-height:1; }
+.num,.n,.ico .glyph,.menu .pic,.ring,.tag { line-height:1; }
+
+/* 버튼 볼드 = 역할별 고정 (1차 800 · 보조 700) — 들쭉날쭉 방지 */
+.go,.send,.pickbtn,.mkbtn { font-weight:800 !important; }
+.ctrl,.reset,.replay,.sbtn,.sc-fail { font-weight:700 !important; }
+
+/* 상태 타이포 = Pretendard로 통일(Orbitron 폐지·운영자 260621). var(--font-status)는 호환 위해 유지 = Pretendard로 렌더. (정의는 AUTO-MIRROR 블록 = viewer :root) */
+.stat, .statnum,
+.ind-bar span, .fail-chip, .picked-chip, .pickbtn,
+.sc-got, .sc-tg, .dict .real { font-family:var(--font-status) !important; letter-spacing:.04em; }   /* viewer 정합 = .sc-tg(PASS·PICK 텍스트 둘 다·아이콘 무관) — 옛 .sc-pass/.sc-down 오기 정정·260621 */
+.statnum { font-weight:700; letter-spacing:.02em; }

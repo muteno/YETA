@@ -1,0 +1,273 @@
+<!-- @dsCard group="구성도" viewport="980x1600" name="버튼 인터랙션 가이드북" subtitle="토큰·아키타입·모션·재확인·픽토그램·여백·조건 총정리" -->
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>구성도 · 버튼 인터랙션 가이드북</title>
+<link rel="stylesheet" href="base.css">
+<style>
+  /* 토큰 = base.css(AUTO-MIRROR = viewer/index.html :root 정본). 이 파일은 *가이드북*(레퍼런스) — 값 SSOT 아님. */
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:radial-gradient(125% 70% at 50% -8%,rgba(var(--accent-rgb),.06),transparent 55%) fixed,var(--bg);
+    color:var(--fg);font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans KR",sans-serif}
+  .wrap{max-width:980px;margin:0 auto;padding:42px 22px 120px}
+  .crumb{font-size:12px;color:var(--mut);letter-spacing:.4px;margin:0 0 10px}.crumb b{color:var(--accent)}
+  h1{font-size:28px;letter-spacing:-.5px;margin:0 0 10px}
+  .intro{color:var(--fg-2);font-size:14.5px;max-width:74ch;margin:0}.intro b{color:var(--fg)}
+  .ssot{margin:16px 0 0;padding:12px 16px;border:1px solid rgba(var(--accent-rgb),.3);border-radius:var(--r-m);background:rgba(var(--accent-rgb),.05);font-size:12.5px;color:var(--fg-2);line-height:1.7}
+  .ssot code{color:var(--accent);font-family:ui-monospace,Menlo,monospace;font-size:11.5px}
+  nav.toc{margin:22px 0 0;display:flex;flex-wrap:wrap;gap:8px}
+  nav.toc a{font-size:12px;font-weight:700;color:var(--fg-2);text-decoration:none;padding:6px 12px;border-radius:999px;background:rgba(255,255,255,.04);border:1px solid var(--line)}
+  nav.toc a:hover{color:var(--accent);border-color:rgba(var(--accent-rgb),.4)}
+  .sec{margin:52px 0 0;scroll-margin-top:20px}
+  .sec>h2{font-size:13px;letter-spacing:1.4px;text-transform:uppercase;color:var(--accent);font-weight:800;margin:0 0 4px;display:flex;align-items:center;gap:10px}
+  .sec>h2 .n{width:24px;height:24px;border-radius:7px;display:grid;place-items:center;font-size:12px;background:rgba(var(--accent-rgb),.12);border:1px solid rgba(var(--accent-rgb),.26)}
+  .sec>p.lead{color:var(--mut);font-size:13.5px;margin:8px 0 18px;max-width:74ch}
+  .card{background:var(--glass2);border:1px solid var(--line);border-radius:var(--r-l);padding:22px}
+  .grid{display:grid;gap:14px}.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}
+  @media(max-width:680px){.g2,.g3{grid-template-columns:1fr}}
+  .tile{border:1px solid var(--line2);border-radius:var(--r-m);background:rgba(255,255,255,.02);padding:16px}
+  .tile h4{margin:0 0 4px;font-size:13.5px;color:var(--fg)}
+  .tile .stg{min-height:54px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:10px 0}
+  .tile .spec{font-size:11.5px;color:var(--mut);line-height:1.65;margin:8px 0 0}
+  .tile .spec b{color:var(--fg-2);font-weight:600}.tile .spec code{color:var(--accent);font-family:ui-monospace,Menlo,monospace;font-size:10.5px}
+  table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:4px}
+  th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line2);vertical-align:top}
+  th{font-size:10.5px;letter-spacing:.4px;text-transform:uppercase;color:var(--mut);font-weight:700}
+  td b{color:var(--fg)} td code{color:var(--accent);font-family:ui-monospace,Menlo,monospace;font-size:11px}
+  .sw{display:inline-block;width:13px;height:13px;border-radius:4px;vertical-align:-2px;margin-right:6px;border:1px solid rgba(255,255,255,.15)}
+  .note{margin-top:14px;font-size:12.5px;color:var(--mut);line-height:1.65;padding-left:14px;border-left:2px solid rgba(var(--accent-rgb),.3)}
+  .note b{color:var(--fg-2)} .ok{color:var(--accent);font-weight:700} .no{color:var(--danger);font-weight:700}
+  .foot{margin-top:64px;padding-top:20px;border-top:1px solid var(--line);font-size:13px;color:var(--mut)}.foot a{color:var(--accent);text-decoration:none}
+
+  /* ════ 라이브 데모 컴포넌트 (viewer 계승) ════ */
+  .ib{position:relative;overflow:hidden;display:grid;place-items:center;width:34px;height:34px;color:rgba(255,255,255,.92);
+    background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:var(--r-s);cursor:pointer;
+    transition:transform .1s,filter .1s,background .15s}
+  .ib.sm{width:30px;height:30px;color:var(--mut)}
+  .ib:hover{background:rgba(255,255,255,.13)} .ib:active{transform:scale(.9);filter:brightness(.88)}
+  .ib svg{display:block;transition:transform .35s var(--ease)}
+  @keyframes ic-spin{to{transform:rotate(360deg)}} @keyframes ic-bounce{0%{transform:translateY(0)}45%{transform:translateY(2.5px)}100%{transform:translateY(0)}}
+  .ic-spin{animation:ic-spin .5s var(--ease)} .ic-bounce{animation:ic-bounce .42s ease}
+  .pill{height:34px;display:inline-flex;align-items:center;gap:5px;padding:0 14px;border-radius:999px;background:rgba(255,255,255,.06);
+    border:1px solid transparent;color:var(--mut);font:600 12px inherit;backdrop-filter:blur(var(--blur-m));cursor:pointer;transition:transform .1s,background .15s}
+  .pill:hover{color:var(--fg);background:rgba(255,255,255,.13)} .pill:active{transform:scale(.94)}
+  /* 전송(비용) 상태머신 */
+  .send{position:relative;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;gap:7px;min-width:120px;height:36px;padding:0 18px;border-radius:999px;cursor:pointer;font:800 13px inherit;color:var(--accent);background:var(--accent-dim);border:1px solid rgba(var(--accent-rgb),.4);transition:all .18s var(--ease),transform .1s}
+  .send:active{transform:scale(.97)}/* viewer .asksend 정본 계승(260702) */ .send .lbl,.send svg{position:relative;z-index:1}
+  .send.arm{color:var(--arm);background:rgba(var(--arm-rgb),.18);border-color:rgba(var(--arm-rgb),.6)}
+  .send.fire{color:var(--on-accent);border-color:var(--accent);pointer-events:none}
+  .send.fire::before{content:'';position:absolute;inset:0;background:var(--accent);transform:scaleX(0);transform-origin:left;animation:gauge .72s linear forwards;z-index:0}
+  @keyframes gauge{to{transform:scaleX(1)}}
+  .send.done{color:var(--on-accent);background:var(--accent);border-color:var(--accent);pointer-events:none}
+  .send.fail{color:var(--danger);background:rgba(var(--danger-rgb),.14);border-color:rgba(var(--danger-rgb),.6);animation:shake .4s ease}
+  @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-5px)}40%{transform:translateX(5px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}
+  /* 커스텀 체크(요약 헤더) */
+  .dlbox{position:relative;display:inline-flex;align-items:center;height:34px;padding:0 12px 0 5px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid transparent;backdrop-filter:blur(var(--blur-m));cursor:pointer;transition:all .15s}
+  .dlbox.full{color:var(--accent);border-color:rgba(var(--accent-rgb),.5);background:rgba(var(--accent-rgb),.10);box-shadow:0 0 16px rgba(var(--accent-rgb),.30),0 0 0 1px rgba(var(--accent-rgb),.25)}
+  .cbox{width:16px;height:16px;flex:none;border-radius:50%;border:1.5px solid rgba(255,255,255,.28);background:rgba(255,255,255,.04);display:inline-flex;align-items:center;justify-content:center;margin-right:9px;transition:all .15s}
+  .cbox svg{width:11px;height:11px;opacity:0;transform:scale(.5);transition:all .15s;stroke:var(--on-accent)}
+  .dlbox.full .cbox{background:linear-gradient(135deg,var(--accent-bright),var(--accent));border-color:transparent}
+  .dlbox.full .cbox svg{opacity:1;transform:scale(1)}
+  /* 토글 */
+  .tg{display:inline-flex;align-items:center;gap:7px;cursor:pointer;font-size:12px;color:var(--mut)}.tg input{display:none}
+  .tk{width:34px;height:20px;border-radius:999px;background:rgba(var(--accent-rgb),.08);position:relative;border:1px solid rgba(255,255,255,.12);box-shadow:inset 0 1px 2px rgba(0,0,0,.35);transition:all .22s var(--ease)}
+  .tk::after{content:'';position:absolute;top:50%;left:2px;width:15px;height:15px;border-radius:50%;background:var(--mut);opacity:.65;transform:translateY(-50%);transition:all .26s var(--ease);box-shadow:0 1px 3px rgba(0,0,0,.5)}
+  .tg input:checked+.tk{background:linear-gradient(90deg,var(--accent-bright),var(--accent));border-color:rgba(var(--accent-rgb),.5);box-shadow:0 0 10px rgba(var(--accent-rgb),.4)}
+  .tg input:checked+.tk::after{transform:translate(14px,-50%);background:var(--on-accent);opacity:1}
+  .ico-tray{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  /* 9 전체 다운로드 시퀀스 데모(=기틀북 §9 .k-dlseq) */
+  .dseq{position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:5px;height:var(--btn-sm,30px);padding:0 13px;border-radius:var(--r-s,9px);cursor:pointer;font:700 11.5px/1 inherit;color:var(--accent);background:rgba(8,15,11,.3);border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(var(--blur-s,8px));-webkit-backdrop-filter:blur(var(--blur-s,8px));transition:color .18s,background .18s var(--ease),border-color .18s,transform .1s}
+  .dseq:active{transform:scale(.95)} .dseq:hover{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.22)}
+  .dseq>.lbl,.dseq>.dlseq-ic{position:relative;z-index:1}
+  .dseq::before{content:'';position:absolute;inset:0;z-index:0;background:var(--accent);transform:scaleX(0);transform-origin:left center;transition:transform .28s linear;pointer-events:none}
+  .dseq.is-busy::before{transform:scaleX(var(--p,0))}
+  .dseq.is-done::before{transform:scaleX(1);transition:transform .22s var(--ease)}
+  .dseq.is-snap,.dseq.is-snap *,.dseq.is-snap::before{transition:none}
+  .dseq.is-busy,.dseq.is-done{color:var(--on-accent)}
+  .dseq.is-done{border-color:rgba(var(--accent-rgb),.6);box-shadow:0 0 22px rgba(var(--accent-rgb),.42)}
+  .dseq .dlseq-ic{display:inline-grid;width:14px;height:14px}.dseq .dlseq-ic>*{grid-area:1/1;width:14px;height:14px}
+  .dseq .dlseq-ic .chk{opacity:0}.dseq.is-done .dlseq-ic .dn{opacity:0}
+  .dseq.is-done .dlseq-ic .chk{opacity:1;animation:dseqpop .42s var(--ease)}
+  @keyframes dseqpop{0%{transform:scale(.3)}58%{transform:scale(1.3)}100%{transform:scale(1)}}
+  @media(prefers-reduced-motion:reduce){.ic-spin,.ic-bounce,.send.fire::before,.send.fail{animation:none}.dseq::before,.dseq.is-done .dlseq-ic .chk{animation:none;transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="crumb">노뮤트 UI 구성도 · <b>버튼 인터랙션 가이드북</b></p>
+  <h1>버튼 인터랙션 가이드북</h1>
+  <p class="intro">노뮤트 뷰어의 <b>모든 버튼</b>을 한 언어로 — 토큰·아키타입·크기·여백·<b>눌림/시맨틱 모션/탭 피드백/재확인</b>·픽토그램 규격·적용 조건을 총정리한 단일 레퍼런스. 새 버튼·이식은 여기 패턴을 <b>계승</b>한다(재설계 금지).</p>
+  <div class="ssot">📍 <b>값 SSOT = <code>viewer/index.html :root</code></b>(라이브 렌더값) → <code>구성도/base.css</code> AUTO-MIRROR로 투영 → 이 가이드북은 base.css 토큰 계승(자체 값 정의 0). <b>규칙 SSOT = <code>CLAUDE.md §🎨</code></b> · 게이트 = <code>shared/check_refs.py</code>. 충돌 시 viewer :root가 정본.</div>
+  <nav class="toc">
+    <a href="#t">1 토큰</a><a href="#a">2 버튼 아키타입</a><a href="#m">3 인터랙션(눌림·모션·피드백)</a>
+    <a href="#c">4 재확인 — 비용/파괴</a><a href="#p">5 픽토그램</a><a href="#s">6 여백·크기</a><a href="#x">7 케이스: 요약 헤더</a><a href="#d">9 전체 다운로드 시퀀스</a><a href="#r">8 접근성·reduced-motion</a>
+  </nav>
+
+  <!-- 1 토큰 -->
+  <div class="sec" id="t"><h2><span class="n">1</span> 토큰 (base.css 계승)</h2>
+    <p class="lead">색·반지름·간격·blur·버튼크기·타이포·모션. 신규/수정 CSS는 raw 값 금지 → <code>var()</code> 토큰 사용.</p>
+    <div class="card"><table>
+      <tr><th>그룹</th><th>토큰 → 값</th><th>용도</th></tr>
+      <tr><td><b>강조</b></td><td><span class="sw" style="background:#0FFD02"></span><code>--accent #0FFD02</code> · <code>--accent-bright #d8ff3d</code> · <code>--accent-dim</code> · <code>--on-accent #062108</code> · <code>--accent-rgb</code></td><td>주 액션·라임. on-accent=라임 위 글자(다크)</td></tr>
+      <tr><td><b>의미색</b></td><td><span class="sw" style="background:#ffd93d"></span><code>--arm #ffd93d</code>(재확인) · <span class="sw" style="background:#ff5b4a"></span><code>--danger</code> · <code>--warn</code> · <code>--amber</code>(스크랩) · <code>--info</code> · <span class="sw" style="background:#ffce54"></span><code>--thumb #ffce54</code>(썸네일)</td><td>arm=재확인 전용(앰버서 분리) · thumb=썸네일 메뉴(요약요청 초록과 구분)</td></tr>
+      <tr><td><b>글래스/선</b></td><td><code>--glass2</code> · <code>--line .08</code> · <code>--line2 .06</code> · 버튼 표면 <code>rgba(255,255,255,.06)</code> hover <code>.13</code></td><td>유리 표면·테두리</td></tr>
+      <tr><td><b>반지름</b></td><td><code>--r-s 9</code> · <code>--r-m 11</code> · <code>--r-l 16</code> · <code>--r-pill 999</code></td><td>아이콘버튼=r-s · 알약=pill</td></tr>
+      <tr><td><b>간격</b></td><td><code>--sp-1 6</code> · <code>--sp-2 12</code> · <code>--sp-3 18</code> · <code>--sp-4 24</code></td><td>4px 그리드. 임의 px 금지</td></tr>
+      <tr><td><b>blur</b></td><td><code>--blur-s 8</code> · <code>--blur-m 14</code> · <code>--blur-l 22</code> · <code>--blur-xl 30</code></td><td>글래스 backdrop(+`-webkit-`)</td></tr>
+      <tr><td><b>버튼크기</b></td><td><code>--btn 34</code> · <code>--btn-sm 30</code> · <code>--btn-xs 22</code></td><td>아이콘버튼 정사각</td></tr>
+      <tr><td><b>모션</b></td><td><code>--ease cubic-bezier(.2,.7,.3,1)</code> · <code>--dur .18s</code> · <code>--dur-fast .12s</code></td><td>전이·이징</td></tr>
+    </table></div>
+  </div>
+
+  <!-- 2 아키타입 -->
+  <div class="sec" id="a"><h2><span class="n">2</span> 버튼 아키타입 (계승 인벤토리)</h2>
+    <p class="lead">새 버튼은 아래 중 가장 가까운 걸 골라 그대로 쓴다. 직접 눌러봐(눌림·모션 라이브).</p>
+    <div class="grid g3">
+      <div class="tile"><h4>아이콘 버튼 <code>.sbtn</code></h4><div class="stg">
+        <span class="ib spin"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7M21 4v5h-5"/></svg></span>
+        <span class="ib bnc"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg></span>
+      </div><p class="spec"><b>34px</b> 정사각 · <code>--r-s</code> · 글래스 <code>.06</code> · 아이콘 라인SVG 2.0 · <b>누름=시맨틱 모션</b></p></div>
+      <div class="tile"><h4>닫기(X) <code>.tool-x/.dlg-x</code></h4><div class="stg">
+        <span class="ib sm spin"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></span>
+      </div><p class="spec"><b>30px</b> · 라인SVG X(이모지/✕문자 금지) · 우상단 고정 · 누름=회전</p></div>
+      <div class="tile"><h4>알약 링크 <code>원문 ↗</code></h4><div class="stg">
+        <span class="pill">원문 <span class="arr">↗</span></span>
+      </div><p class="spec"><b>34px</b> · pill · 글래스 · 단순 액션(즉시·재확인 X)</p></div>
+      <div class="tile"><h4>전송(비용) <code>.sc-pick/.asksend</code></h4><div class="stg">
+        <button class="send" data-send><span class="lbl">전송</span></button>
+      </div><p class="spec">재확인(arm)→게이지→완료 상태머신 · <b>비용/발사</b> 액션 전용</p></div>
+      <div class="tile"><h4>토글 <code>.toggle/.tk</code></h4><div class="stg">
+        <label class="tg"><input type="checkbox"><span class="tk"></span>카드만</label>
+      </div><p class="spec">상태형 · 노브 OFF 반투명(.65)·ON 불투명+글로우</p></div>
+      <div class="tile"><h4>커스텀 체크 <code>.dlbox</code></h4><div class="stg">
+        <span class="dlbox" data-chk><span class="cbox"><svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4 4 9-10"/></svg></span>요약</span>
+      </div><p class="spec">원형 인셋 체크 · ON=E3+강한 링+펄스(요약 헤더 §7)</p></div>
+    </div>
+    <p class="note">⚠️ <b>이모지를 조작 버튼에 쓰지 않는다</b>(OS·폰트 편차). 라인 SVG만. 콘텐츠 표식(💡📊🚨)에만 이모지 허용(§5).</p>
+  </div>
+
+  <!-- 3 인터랙션 -->
+  <div class="sec" id="m"><h2><span class="n">3</span> 인터랙션 — 눌림 · 시맨틱 모션 · 탭 피드백</h2>
+    <p class="lead">3겹 피드백. 모든 버튼 공통이라 손이 기억한다.</p>
+    <div class="grid g3">
+      <div class="tile"><h4>① 눌림 (press)</h4><div class="stg"><span class="ib spin"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4 4 9-10"/></svg></span></div><p class="spec"><code>:active{transform:scale(.9);filter:brightness(.88)}</code> — 누르는 동안. 알약=<code>.94</code>·아이콘=<code>.85~.9</code> · 이식 시 raw 금지 = viewer <code>--press-*</code> 5토큰 사다리 계승(260702)</p></div>
+      <div class="tile"><h4>② 시맨틱 모션</h4><div class="stg ico-tray">
+        <span class="ib spin"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7M21 4v5h-5"/></svg></span>
+        <span class="ib bnc"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg></span>
+      </div><p class="spec">누르면 아이콘이 의미대로: <b>회전</b>(기본·새로고침 360°·닫기) / <b>↓바운스</b>(다운로드·저장). 위임 1핸들러로 전역 적용</p></div>
+      <div class="tile"><h4>③ 탭 피드백</h4><div class="stg"><span class="pill" data-flash>요약 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 11l5 5 5-5M5 21h14"/></svg></span></div><p class="spec">완료=초록 플래시(다운로드 ✓) / 열림=흰빛 펄스(외부 링크). 의미별 색 분리</p></div>
+    </div>
+    <p class="note"><b>구현</b>: 시맨틱 모션 = <code>document</code> 위임 click 핸들러(capture) → <code>closest()</code> 아이콘버튼 → svg에 <code>ic-spin</code>/<code>ic-bounce</code> 부여(<code>e.defaultPrevented</code> 가드). 기존 svg 애니(nav·refresh hover·FAB) 버튼은 셀렉터서 제외.</p>
+  </div>
+
+  <!-- 4 재확인 -->
+  <div class="sec" id="c"><h2><span class="n">4</span> 재확인 — 비용/파괴 액션만</h2>
+    <p class="lead">돈/시간 나가거나 되돌리기 어려운 액션엔 게이트. 공짜·즉시·가역엔 <b>안 건다</b>(피로 방지).</p>
+    <div class="grid g2">
+      <div class="tile"><h4 class="ok">비용/파괴 = 재확인 O</h4><div class="stg"><button class="send" data-send><span class="lbl">발사</span></button></div>
+        <p class="spec">PICK·카드 슛·생성·재분석·삭제 — <b>arm(앰버 재확인)→게이지→완료</b> 또는 PIN/확인팝업/2탭. 라벨: 대기→"재확인"→"전송 중…"→"완료"</p></div>
+      <div class="tile"><h4 class="no">단순/가역 = 재확인 X</h4><div class="stg"><span class="pill" data-flash>복사 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></span></div>
+        <p class="spec">복사·다운로드·미리보기·토글·모달 내 send(이미 모달 게이트) — <b>탭→즉시 ✓</b></p></div>
+    </div>
+    <div class="card" style="margin-top:14px;padding:8px 22px"><table>
+      <tr><th>액션</th><th>등급</th><th>재확인 장치</th></tr>
+      <tr><td><b>PICK</b>(수집함)</td><td>비용·일회</td><td>2탭 arm→게이지→<b>소진 잠금</b>(원복 X·탭=피드)</td></tr>
+      <tr><td><b>카드 슛</b>(유료 이미지)</td><td>비용·비가역</td><td>PIN 입력 게이트 <span style="color:var(--amber)">(현재 즉발 — 운영자 정책)</span></td></tr>
+      <tr><td><b>슬롯 재생성·수정요청</b></td><td>비용</td><td>2탭(<code>.confirm</code> arm→발사)</td></tr>
+      <tr><td><b>카드 변경·내역 삭제</b></td><td>파괴</td><td>확인 팝업</td></tr>
+      <tr><td><b>요약/다운로드/원문/복사/토글</b></td><td>단순·가역</td><td>없음(즉시 ✓)</td></tr>
+    </table></div>
+  </div>
+
+  <!-- 5 픽토그램 -->
+  <div class="sec" id="p"><h2><span class="n">5</span> 픽토그램 규격</h2>
+    <p class="lead">조작 아이콘은 전부 한 규격. 이모지는 콘텐츠 표식에만.</p>
+    <div class="card"><table>
+      <tr><th>속성</th><th>값</th></tr>
+      <tr><td>스타일</td><td><code>line</code> (<code>fill:none</code>)</td></tr>
+      <tr><td>stroke-width</td><td><code>2.0</code> (체크마크만 2.4~2.6 허용)</td></tr>
+      <tr><td>cap / join</td><td><code>round / round</code></td></tr>
+      <tr><td>viewBox</td><td><code>0 0 24 24</code></td></tr>
+      <tr><td>색</td><td><code>currentColor</code> (버튼 색 상속)</td></tr>
+      <tr><td>크기</td><td>버튼 토큰 비례(34→15px·30→14px·xs→13px) 또는 <code>1em</code>(글자 대체)</td></tr>
+    </table>
+    <p class="note"><b>이모지 정책</b>: <span class="no">금지</span> = 조작 버튼·메뉴(✕·↻·✨·🖌️·📝 → 라인 SVG). <span class="ok">허용</span> = 콘텐츠 의미 표식(💡 시사점·📊 핵심·🚨 긴급 배지). 닫기 X 경로 = <code>M6 6 18 18M18 6 6 18</code>.</p></div>
+  </div>
+
+  <!-- 6 여백·크기 -->
+  <div class="sec" id="s"><h2><span class="n">6</span> 여백 · 크기 규칙</h2>
+    <div class="card"><table>
+      <tr><th>대상</th><th>규칙</th></tr>
+      <tr><td>아이콘 버튼</td><td>34/30/22px 정사각 · <code>display:grid;place-items:center</code>(SVG 양축 중앙)</td></tr>
+      <tr><td>알약(pill)</td><td>height 34 · padding <code>0 14px</code> · 아이콘+텍스트 gap 4~5px</td></tr>
+      <tr><td>탭 타깃</td><td>최소 높이 34px(터치) · 작은 체크는 라벨 패딩으로 히트영역 확장</td></tr>
+      <tr><td>버튼 간격</td><td><code>--sp-*</code>(6/12/18/24) 재사용 · 임의 px 금지</td></tr>
+      <tr><td>토글</td><td>트랙 34×20 · 노브 15px · 이동 14px</td></tr>
+    </table></div>
+  </div>
+
+  <!-- 7 케이스 -->
+  <div class="sec" id="x"><h2><span class="n">7</span> 케이스 — 요약 모달 헤더</h2>
+    <p class="lead">단순 액션 + 상태형 체크를 한 글래스 알약에 통합한 정본 예. 체크 탭→ON, 요약 탭→다운로드.</p>
+    <div class="card"><div class="stg" style="gap:10px;display:flex;align-items:center">
+      <span class="dlbox" data-chk><span class="cbox"><svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4 4 9-10"/></svg></span><span data-flash style="display:inline-flex;align-items:center;gap:4px">요약 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 11l5 5 5-5M5 21h14"/></svg></span></span>
+      <span class="pill">원문 <span class="arr">↗</span></span>
+    </div>
+    <p class="note"><b>체크 ON</b> = 알약 E3(테두리+은은한 채움) + 강한 글로우 링 + 켤 때 펄스 · <b>요약 탭</b> = 초록 플래시 + 다운로드 아이콘 ↓바운스 · <b>원문 탭</b> = 흰빛 펄스 + ↗ 너지 · 체크 = 원형(알약 곡률 패밀리) · <code>aria-label</code>·<code>:has</code> 포커스 링·reduced-motion 가드.</p></div>
+  </div>
+
+  <!-- 9 전체 다운로드 시퀀스 -->
+  <div class="sec" id="d"><h2><span class="n">9</span> 전체 다운로드 시퀀스 버튼</h2>
+    <p class="lead">‘전체 다운로드’ — 썸네일 후보·카드뉴스·썸네일 생성기 대기열 공용. 글래스(형제 .sbtn 톤) + 좌→우 강조색 채움(진행 i/N·검정 글자 드러남) + ✓ 팝 → 즉시 복귀(드레인 없음). 탭하면 재생.</p>
+    <div class="card"><div class="stg">
+      <button class="dseq" data-dseq><span class="dlseq-ic"><svg class="dn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 11l5 5 5-5M5 21h14"/></svg><svg class="chk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></span><span class="lbl">전체</span></button>
+    </div>
+    <p class="note"><b>대기</b> "전체" → <b>진행</b> "저장 중… i/N"·좌→우 채움(검정 글자 드러남) → <b>완료</b> ✓ 커졌다 작아지는 팝 + 글로우 → <b>즉시 복귀</b>(드레인 없음·글자 안 가려짐) → 원복. 베이스 글래스 = 형제 .sbtn 톤. 구현 = <code>.cref-dlall</code>(index)·<code>.jsave</code>(thumb) + 상태 <code>.dlseq-busy/done</code>·복귀 <code>.dlseq-snap</code> · 진행 <code>--p</code>(0~1) · JS <code>dlAllSeq</code>/<code>jSaveSeq</code> · 기틀북 §9(<code>.k-dlseq</code>). §5 전송 게이지의 사촌.</p></div>
+  </div>
+
+  <!-- 8 접근성 -->
+  <div class="sec" id="r"><h2><span class="n">8</span> 접근성 · reduced-motion</h2>
+    <div class="card"><table>
+      <tr><th>항목</th><th>규칙</th></tr>
+      <tr><td>접근명</td><td>아이콘 버튼은 <code>aria-label</code> 필수(SVG는 장식) · 텍스트동반 장식 SVG는 <code>aria-hidden="true"</code></td></tr>
+      <tr><td>포커스</td><td><code>:focus-visible</code> 링 유지(2px accent) · 커스텀 체크는 숨김 input + 형제 박스 링</td></tr>
+      <tr><td>모션 감소</td><td><code>@media (prefers-reduced-motion:reduce)</code>로 spin·bounce·펄스·게이지·shake <code>animation:none</code></td></tr>
+      <tr><td>대비</td><td>비텍스트 UI 3:1(토글 노브 OFF .65=3.45:1) · 색만으로 상태 전달 금지(체크마크 동반)</td></tr>
+      <tr><td>터치</td><td><code>touch-action:manipulation</code>(더블탭 줌·300ms 지연 차단)</td></tr>
+    </table></div>
+  </div>
+
+  <div class="foot">값 정본 = <a href="../viewer/index.html">viewer/index.html :root</a> · 규칙 = CLAUDE.md §🎨 · 게이트 = shared/check_refs.py · MD = <a href="00_가이드북_버튼인터랙션.md">버튼 인터랙션 가이드북.md</a> · CSS = <a href="버튼인터랙션_기틀북.css">버튼인터랙션_기틀북.css</a> — 구성도 허브 <a href="index.html">index</a></div>
+</div>
+<script>
+  // 시맨틱 모션
+  document.querySelectorAll('.spin').forEach(b=>b.addEventListener('click',()=>{const s=b.querySelector('svg');s.classList.remove('ic-spin');void s.offsetWidth;s.classList.add('ic-spin');}));
+  document.querySelectorAll('.bnc').forEach(b=>b.addEventListener('click',()=>{const s=b.querySelector('svg');s.classList.remove('ic-bounce');void s.offsetWidth;s.classList.add('ic-bounce');}));
+  // 탭 피드백(초록 플래시)
+  document.querySelectorAll('[data-flash]').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();b.style.color='var(--accent)';setTimeout(()=>b.style.color='',500);}));
+  // 커스텀 체크 토글
+  document.querySelectorAll('[data-chk]').forEach(b=>b.addEventListener('click',e=>{if(e.target.closest('[data-flash]'))return;b.classList.toggle('full');}));
+  // 전송 상태머신
+  document.querySelectorAll('[data-send]').forEach(b=>{let st='idle',t=null;const L=b.querySelector('.lbl'),base=L.textContent;
+    const reset=()=>{clearTimeout(t);st='idle';b.className='send';L.textContent=base;};
+    b.addEventListener('click',()=>{
+      if(st==='idle'){st='arm';b.className='send arm';L.textContent='재확인';t=setTimeout(reset,3000);}
+      else if(st==='arm'){clearTimeout(t);st='fire';b.className='send fire';L.textContent='전송 중…';
+        t=setTimeout(()=>{st='done';b.className='send done';L.textContent='완료';t=setTimeout(reset,1200);},740);}
+    });});
+  // 전체 다운로드 시퀀스 데모 — 진행 i/N(좌→우 채움) → ✓ 팝 → 즉시 복귀(드레인 없음)
+  document.querySelectorAll('[data-dseq]').forEach(b=>{const L=b.querySelector('.lbl');let busy=0;
+    b.addEventListener('click',()=>{if(busy)return;busy=1;const orig=L.textContent,N=4;let i=0;
+      b.classList.remove('is-done','is-snap');b.classList.add('is-busy');b.style.setProperty('--p',0);
+      (function step(){i++;L.textContent='저장 중… '+i+'/'+N;b.style.setProperty('--p',i/N);
+        if(i<N)setTimeout(step,300);
+        else setTimeout(()=>{L.textContent='완료';b.classList.remove('is-busy');b.classList.add('is-done');
+          setTimeout(()=>{b.classList.add('is-snap');b.classList.remove('is-done');L.textContent=orig;b.style.setProperty('--p',0);requestAnimationFrame(()=>b.classList.remove('is-snap'));busy=0;},1050);},300);
+      })();
+    });});
+</script>
+</body>
+</html>

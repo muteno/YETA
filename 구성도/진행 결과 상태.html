@@ -1,0 +1,227 @@
+<!-- @dsCard group="구성도" viewport="900x1600" name="진행·결과 상태" subtitle="진행바 · Picking/PICKED/Failed · 게이지" -->
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>구성도 · 진행·결과 상태</title>
+<link rel="stylesheet" href="base.css">
+<style>
+  /* 토큰 = base.css(AUTO-MIRROR = viewer :root 정본). 인라인 :root 제거 = 단일 거울만 봄(§🎨 ⓒ·260621). */
+  * { box-sizing:border-box; }
+  html { scrollbar-width:thin; scrollbar-color:rgba(var(--accent-rgb),.3) transparent; }
+  ::-webkit-scrollbar { width:10px; } ::-webkit-scrollbar-thumb { background:rgba(var(--accent-rgb),.26); border-radius:999px; border:2px solid var(--bg); background-clip:padding-box; }
+  body { margin:0; background:radial-gradient(125% 70% at 50% -8%, rgba(var(--accent-rgb),.06), transparent 55%) fixed, var(--bg);
+    color:var(--fg); font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; }
+  .wrap { max-width:900px; margin:0 auto; padding:42px 22px 110px; }
+  .crumb { font-size:12px; color:var(--mut); letter-spacing:.4px; margin:0 0 10px; } .crumb b { color:var(--accent); }
+  h1 { font-size:27px; letter-spacing:-.5px; margin:0 0 10px; }
+  .intro { color:var(--fg-2); font-size:14.5px; max-width:66ch; margin:0; } .intro b { color:var(--fg); }
+
+  .sec { margin:46px 0 0; }
+  .sec > h2 { font-size:12px; letter-spacing:1.6px; text-transform:uppercase; color:var(--accent); font-weight:800; margin:0 0 4px; display:flex; align-items:center; gap:10px; }
+  .sec > h2 .n { width:22px; height:22px; border-radius:7px; display:grid; place-items:center; font-size:12px; background:rgba(var(--accent-rgb),.12); border:1px solid rgba(var(--accent-rgb),.26); }
+  .sec > p.lead { color:var(--mut); font-size:13.5px; margin:8px 0 18px; max-width:64ch; }
+  .card { border:1px solid var(--line); border-radius:var(--r-l); background:var(--glass2); padding:24px; }
+
+  /* ── 멀티세그 진행바 (.prog 정본) ── */
+  .prog { display:flex; gap:7px; width:100%; }
+  .prog .seg { flex:1; display:flex; flex-direction:column; gap:8px; align-items:center; min-width:0; }
+  .prog .sl { font-size:11px; line-height:1; letter-spacing:-.3px; color:var(--mut); font-weight:700; opacity:.55; white-space:nowrap; }
+  .prog .bar { width:100%; height:7px; border-radius:999px; background:rgba(255,255,255,.06); position:relative; overflow:hidden; box-shadow:inset 0 1px 2px rgba(0,0,0,.3); }
+  .prog .seg.done .sl { color:var(--accent); opacity:1; }
+  .prog .seg.done .bar { background:linear-gradient(90deg,var(--accent-bright),var(--accent)); box-shadow:0 0 8px rgba(var(--accent-rgb),.4); }
+  .prog .seg.cur .sl { color:var(--accent); opacity:1; }
+  .prog .seg.cur .bar { background:rgba(var(--accent-rgb),.16); }
+  .prog .seg.cur .bar::after { content:''; position:absolute; top:0; bottom:0; left:0; width:45%; border-radius:999px;
+    background:linear-gradient(90deg,transparent,rgba(var(--accent-rgb),.85),transparent); transform:translateX(-120%); animation:shine 1.35s linear infinite; }
+  .prog .seg.fail .sl { color:rgba(255,74,62,.5); opacity:1; }
+  .prog .seg.fail .bar { background:repeating-linear-gradient(45deg,rgba(255,206,64,.26) 0 4px,rgba(255,206,64,.09) 4px 8px); box-shadow:none; }
+  .prog .seg.scar .sl { color:rgba(255,74,62,.5); }
+  .prog .seg.scar .bar::before { content:''; position:absolute; inset:0; border-radius:999px; pointer-events:none;
+    background:repeating-linear-gradient(45deg,rgba(255,206,64,.30) 0 4px,rgba(255,206,64,.10) 4px 8px); }
+  @keyframes shine { to { transform:translateX(360%); } }
+  @media (prefers-reduced-motion:reduce){ .prog .seg.cur .bar::after { animation:none; } }
+
+  .ctrls { display:flex; gap:8px; flex-wrap:wrap; margin-top:20px; }
+  .ctrl { font-size:12px; font-weight:700; color:var(--fg-2); background:rgba(255,255,255,.04); border:1px solid var(--line); border-radius:var(--r-s); padding:7px 13px; cursor:pointer; transition:border-color var(--ease) .2s, color var(--ease) .2s; }
+  .ctrl:hover { color:var(--accent); border-color:rgba(var(--accent-rgb),.4); }
+  .ctrl.warn:hover { color:var(--warn); border-color:rgba(255,206,64,.5); }
+
+  /* 세그 상태 범례 */
+  .legend { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:12px; margin-top:8px; }
+  .lg { border:1px solid var(--line2); border-radius:var(--r-m); padding:13px; background:rgba(255,255,255,.02); }
+  .lg .bar { height:7px; border-radius:999px; background:rgba(255,255,255,.06); position:relative; overflow:hidden; margin-bottom:9px; }
+  .lg .nm { font-size:12px; font-weight:800; } .lg .d { font-size:11px; color:var(--mut); margin-top:2px; line-height:1.45; }
+
+  /* ── 비동기 픽 라벨 ── */
+  .pickflow { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .sc-got { font-size:12px; font-weight:800; letter-spacing:.06em; border-radius:var(--r-s); padding:7px 16px; color:var(--accent);
+    border:1px solid rgba(var(--accent-rgb),.4); background:repeating-linear-gradient(45deg, rgba(var(--accent-rgb),.20) 0 5px, rgba(var(--accent-rgb),.05) 5px 10px);
+    position:relative; overflow:hidden; }
+  .sc-got > span { position:relative; z-index:1; }
+  .sc-got.picking { background:rgba(var(--accent-rgb),.10); }
+  .sc-got.picking::after { content:''; position:absolute; top:0; bottom:0; left:0; width:45%;
+    background:linear-gradient(90deg,transparent,rgba(var(--accent-rgb),.5),transparent); transform:translateX(-120%); animation:shine 1.2s linear infinite; }
+  .sc-fail { display:grid; place-items:center; min-width:96px; height:34px; border-radius:var(--r-s); font-size:12px; font-weight:800; letter-spacing:.06em;
+    color:rgba(255,74,62,.95); background:repeating-linear-gradient(45deg,rgba(255,206,64,.26) 0 4px,rgba(255,206,64,.09) 4px 8px); border:1px solid rgba(255,176,46,.55); cursor:pointer; padding:0 16px; }
+  .farrow { color:var(--mut); opacity:.5; }
+  /* 픽 카드(아이템) 테두리 점등 */
+  .scitem { border:1px solid var(--line); border-radius:var(--r-m); padding:13px 15px; background:rgba(255,255,255,.02); margin-top:14px; transition:border-color var(--ease) .3s, background var(--ease) .3s; }
+  .scitem.picked { border-color:var(--accent); background:rgba(var(--accent-rgb),.06); }
+  .scitem .t { font-size:13px; font-weight:700; color:var(--fg); } .scitem .b { font-size:11.5px; color:var(--mut); margin-top:4px; }
+  .pickbtn { font-size:12px; font-weight:800; color:var(--accent); background:var(--accent-dim); border:1px solid rgba(var(--accent-rgb),.4); border-radius:999px; padding:6px 15px; cursor:pointer; }
+
+  /* 단일 게이지 */
+  .gauge { height:9px; border-radius:999px; background:rgba(255,255,255,.08); overflow:hidden; }
+  .gauge i { display:block; height:100%; border-radius:999px; background:linear-gradient(90deg,#e8ff3d,var(--accent)); transition:width .5s var(--ease); }
+  .gauge.na { background:repeating-linear-gradient(135deg, rgba(var(--accent-rgb),.30) 0 4px, transparent 4px 9px); }
+  .grow { display:grid; grid-template-columns:90px 1fr; gap:14px; align-items:center; margin:14px 0; }
+  .grow .gl { font-size:12px; color:var(--mut); }
+
+  /* 결과 pill */
+  .pills { display:flex; gap:12px; flex-wrap:wrap; }
+  .pill { font-size:11px; font-weight:800; border-radius:999px; padding:6px 14px; }
+  .pill.ok { background:linear-gradient(90deg,var(--accent-bright),var(--accent)); color:var(--on-accent); }
+  .pill.gen { color:var(--accent); border:1px solid rgba(var(--accent-rgb),.4); animation:pulse 1.6s ease-in-out infinite; }
+  .pill.bad { color:#ff7b72; border:1px solid rgba(255,123,114,.4); }
+  @keyframes pulse { 50% { opacity:.45; } }
+
+  .note { margin-top:14px; font-size:12.5px; color:var(--mut); line-height:1.6; padding-left:14px; border-left:2px solid rgba(var(--accent-rgb),.3); }
+  .note b { color:var(--fg-2); }
+  .foot { margin-top:60px; padding-top:20px; border-top:1px solid var(--line); font-size:13px; color:var(--mut); } .foot a { color:var(--accent); text-decoration:none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="crumb">노뮤트 UI 구성도 · <b>진행·상태</b></p>
+  <h1>진행 · 결과 상태</h1>
+  <p class="intro">전송이 끝이 아니다. <b>여러 단계 진행바</b>, <b>실패·영속 흉터</b>, 발사 후 폴링하는 <b>Picking…→PICKED/Failed</b> — 비동기 결과를 한 벌로 시각화한다. 동기 전송(클릭→완료)은 <a href="전송 버튼 상태머신.html" style="color:var(--accent)">전송 버튼</a>, 여긴 그 이후·다단계.</p>
+
+  <!-- 1. 멀티세그 진행바 -->
+  <div class="sec">
+    <h2><span class="n">1</span> 멀티세그 진행바 — 파이프라인 추적</h2>
+    <p class="lead">큐레이션→분석→카드 같은 다단계는 세그먼트 캡슐로. 완료=채움+글로우, 현재=shine, 실패=빗금, 한 번이라도 깨졌으면 흉터가 영구 남음.</p>
+    <div class="card">
+      <div class="prog" id="prog">
+        <div class="seg done"><span class="sl">큐레이션</span><div class="bar"></div></div>
+        <div class="seg done"><span class="sl">분석</span><div class="bar"></div></div>
+        <div class="seg cur"><span class="sl">카드뉴스</span><div class="bar"></div></div>
+      </div>
+      <div class="ctrls">
+        <button class="ctrl" data-step="back">◀ 되감기</button>
+        <button class="ctrl" data-step="fwd">진행 ▶</button>
+        <button class="ctrl warn" data-step="fail">현재 단계 실패</button>
+        <button class="ctrl" data-step="reset">처음</button>
+      </div>
+    </div>
+    <div class="legend">
+      <div class="lg"><div class="bar" style="background:rgba(255,255,255,.06)"></div><div class="nm" style="color:var(--mut)">대기</div><div class="d">빈 막대 · 라벨 mut 55%</div></div>
+      <div class="lg"><div class="bar" style="background:rgba(15,253,2,.16);position:relative;overflow:hidden"><span style="content:'';position:absolute;inset:0 55% 0 0;background:linear-gradient(90deg,transparent,rgba(15,253,2,.85),transparent)"></span></div><div class="nm" style="color:var(--accent)">진행 (cur)</div><div class="d">.16 바탕 + 흐르는 shine</div></div>
+      <div class="lg"><div class="bar" style="background:linear-gradient(90deg,#d8ff3d,#0FFD02);box-shadow:0 0 8px rgba(15,253,2,.4)"></div><div class="nm" style="color:var(--accent)">완료 (done)</div><div class="d">그라데 채움 + 글로우</div></div>
+      <div class="lg"><div class="bar" style="background:repeating-linear-gradient(45deg,rgba(255,206,64,.26) 0 4px,rgba(255,206,64,.09) 4px 8px)"></div><div class="nm" style="color:rgba(255,74,62,.9)">실패 (fail)</div><div class="d">앰버 45° 빗금 · 라벨 빨강 50%</div></div>
+      <div class="lg"><div class="bar" style="background:linear-gradient(90deg,#d8ff3d,#0FFD02);position:relative;overflow:hidden"><span style="position:absolute;inset:0;background:repeating-linear-gradient(45deg,rgba(255,206,64,.30) 0 4px,rgba(255,206,64,.10) 4px 8px)"></span></div><div class="nm" style="color:rgba(255,74,62,.9)">흉터 (scar)</div><div class="d">완료 위에도 빗금 덧입힘 · 영구</div></div>
+    </div>
+    <p class="note"><b>흉터(scar):</b> error.log이 한 번이라도 남으면 재시도·성공해도 그 단계에 빗금이 영구 잔존 — "여기서 깨진 적 있음"을 잊지 않게.</p>
+  </div>
+
+  <!-- 2. 비동기 픽 -->
+  <div class="sec">
+    <h2><span class="n">2</span> 발사 후 폴링 — Picking… → PICKED / Failed</h2>
+    <p class="lead">픽처럼 발사 후 결과를 기다리는 액션. 발사 즉시 <b>Picking…</b>(분석 중·비활성·shine), 피드에 뜨면 <b>PICKED</b>(클릭→이동), 막히면 <b>Failed</b>(빗금·복구 메뉴).</p>
+    <div class="card">
+      <div class="pickflow">
+        <span class="pickbtn" id="pkbtn">PICK</span>
+        <span class="farrow">→</span>
+        <span class="sc-got picking" id="pkres"><span>Picking…</span></span>
+      </div>
+      <div class="scitem" id="pkitem"><div class="t">이재명 지지율 9.4%p 하락</div><div class="b">한겨레 · 2시간 전</div></div>
+      <div class="ctrls">
+        <button class="ctrl" data-pick="picked">결과: PICKED (피드 등장)</button>
+        <button class="ctrl warn" data-pick="failed">결과: Failed (매체 차단)</button>
+        <button class="ctrl" data-pick="reset">다시</button>
+      </div>
+    </div>
+    <p class="note"><b>3종 라벨 고정:</b> <b style="color:var(--accent)">Picking…</b>(진행·비활성) / <b style="color:var(--accent)">PICKED</b>(종결·클릭가능·카드 초록 테두리) / <b style="color:rgba(255,74,62,.9)">Failed</b>(실패·빗금·길게눌러 복구). 메뉴 무관 동일.</p>
+  </div>
+
+  <!-- 3. 단일 게이지 -->
+  <div class="sec">
+    <h2><span class="n">3</span> 단일 게이지 — 비율·측정불가</h2>
+    <p class="lead">편향 게이지·업로드처럼 0~100% 한 값. 측정 불가(N/A)는 빗금으로 "값 없음"을 명시(0%와 구분).</p>
+    <div class="card">
+      <div class="grow"><span class="gl">편향 5/10</span><div class="gauge"><i style="width:50%"></i></div></div>
+      <div class="grow"><span class="gl">업로드 80%</span><div class="gauge"><i style="width:80%"></i></div></div>
+      <div class="grow"><span class="gl">N/A 측정불가</span><div class="gauge na"></div></div>
+    </div>
+  </div>
+
+  <!-- 4. 결과 pill -->
+  <div class="sec">
+    <h2><span class="n">4</span> 결과 배지 (pill)</h2>
+    <p class="lead">카드·항목의 최종 결과 한 칩. 성공·진행·실패 3색 고정.</p>
+    <div class="card"><div class="pills">
+      <span class="pill ok">완료</span>
+      <span class="pill gen">생성 중</span>
+      <span class="pill bad">실패</span>
+    </div></div>
+    <p class="note"><b>색 의미 고정:</b> 초록 채움=완료 / 초록 테두리+pulse=진행 / 빨강 테두리=실패. 진행바·픽 라벨·pill 모두 이 색약속을 공유한다.</p>
+  </div>
+
+  <div class="foot">정본 = viewer/index.html .prog(seg done/cur/fail/scar) · .sc-got(.picking) · .sc-fail · .gauge — <a href="index.html">구성도 허브</a> · <a href="전송 버튼 상태머신.html">전송 버튼</a></div>
+</div>
+
+<script>
+// 진행바
+const prog=document.getElementById('prog'), segs=[...prog.children];
+const SL=['큐레이션','분석','카드뉴스'];
+let cur=2, scars=new Set();
+function paint(){
+  segs.forEach((s,i)=>{
+    s.className='seg'+(scars.has(i)?' scar':'');
+    if(s.classList.contains('scar')){ /* keep */ }
+    if(i<cur) s.classList.add('done');
+    else if(i===cur) s.classList.add(cur<0?'':'cur');
+  });
+  // cur<0 means all done
+  segs.forEach((s,i)=>{ if(cur>=segs.length && !scars.has(i)) { s.className='seg done'; } });
+}
+function render(failIdx){
+  segs.forEach((s,i)=>{
+    let c='seg';
+    if(failIdx===i) c+=' fail';
+    else if(i<cur) c+=' done';
+    else if(i===cur) c+=' cur';
+    if(scars.has(i)) c+=' scar';
+    s.className=c;
+  });
+}
+document.querySelectorAll('[data-step]').forEach(b=>b.onclick=()=>{
+  const a=b.dataset.step;
+  if(a==='fwd'){ if(cur<segs.length) cur++; }
+  else if(a==='back'){ if(cur>0) cur--; }
+  else if(a==='fail'){ if(cur<segs.length){ scars.add(cur); render(cur); return; } }
+  else if(a==='reset'){ cur=2; scars.clear(); }
+  render(-1);
+});
+render(-1);
+
+// 픽
+const pkres=document.getElementById('pkres'), pkitem=document.getElementById('pkitem'), pkbtn=document.getElementById('pkbtn');
+function pset(mode){
+  if(mode==='picking'){ pkres.className='sc-got picking'; pkres.innerHTML='<span>Picking…</span>'; pkitem.className='scitem'; pkres.style.cursor=''; }
+  if(mode==='picked'){ pkres.className='sc-got'; pkres.innerHTML='<span>PICKED</span>'; pkres.style.cursor='pointer'; pkitem.className='scitem picked'; }
+  if(mode==='failed'){ pkres.outerHTML=''; }
+}
+document.querySelectorAll('[data-pick]').forEach(b=>b.onclick=()=>{
+  const m=b.dataset.pick, host=document.querySelector('.pickflow');
+  // rebuild result node
+  let r=document.getElementById('pkres');
+  if(!r){ r=document.createElement('span'); r.id='pkres'; host.appendChild(r); }
+  if(m==='reset'){ r.className='sc-got picking'; r.innerHTML='<span>Picking…</span>'; r.style.cursor=''; pkitem.className='scitem'; return; }
+  if(m==='picked'){ r.className='sc-got'; r.innerHTML='<span>PICKED</span>'; r.style.cursor='pointer'; pkitem.className='scitem picked'; return; }
+  if(m==='failed'){ r.className='sc-fail'; r.style.minWidth='96px'; r.style.cursor='pointer'; r.innerHTML='Failed'; pkitem.className='scitem'; pkitem.style.borderColor='rgba(255,176,46,.5)'; return; }
+});
+</script>
+</body>
+</html>

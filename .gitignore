@@ -1,0 +1,24 @@
+# 파이썬 캐시
+__pycache__/
+*.pyc
+*.pyo
+
+# 런타임 유저 데이터 — 공개 레포 커밋 금지(앵글6 보안: 구독자 PII·세션 노출 차단)
+push/
+sessions/
+quota/
+
+# 시크릿·자격증명
+*.pem
+*.key
+.env
+.env.*
+.dev.vars
+
+# 로컬·에디터
+*.local
+.DS_Store
+node_modules/
+
+# 빌드 산출(정적 서빙이라 없지만 방어)
+.wrangler/

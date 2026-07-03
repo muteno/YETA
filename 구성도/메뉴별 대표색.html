@@ -1,0 +1,144 @@
+<!-- @dsCard group="구성도" viewport="900x1500" name="메뉴별 대표색" subtitle="대표색 = 상단 배너색 (탭색 전파)" -->
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>구성도 · 메뉴별 대표색</title>
+<link rel="stylesheet" href="base.css">
+<style>
+  /* 토큰 = base.css(AUTO-MIRROR = viewer :root 정본). 인라인 :root 제거 = 단일 거울만 봄(§🎨 ⓒ·260621). */
+  * { box-sizing:border-box; }
+  html { scrollbar-width:thin; scrollbar-color:rgba(var(--accent-rgb),.3) transparent; }
+  ::-webkit-scrollbar { width:10px; } ::-webkit-scrollbar-thumb { background:rgba(var(--accent-rgb),.26); border-radius:999px; border:2px solid var(--bg); background-clip:padding-box; }
+  body { margin:0; background:radial-gradient(125% 70% at 50% -8%, rgba(var(--accent-rgb),.06), transparent 55%) fixed, var(--bg);
+    color:var(--fg); font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; }
+  .wrap { max-width:900px; margin:0 auto; padding:42px 22px 110px; }
+  .crumb { font-size:12px; color:var(--mut); letter-spacing:.4px; margin:0 0 10px; } .crumb b { color:var(--accent); }
+  h1 { font-size:27px; letter-spacing:-.5px; margin:0 0 10px; }
+  .intro { color:var(--fg-2); font-size:14.5px; max-width:66ch; margin:0; } .intro b { color:var(--fg); }
+
+  .sec { margin:46px 0 0; }
+  .sec > h2 { font-size:12px; letter-spacing:1.6px; text-transform:uppercase; color:var(--accent); font-weight:800; margin:0 0 4px; display:flex; align-items:center; gap:10px; }
+  .sec > h2 .n { width:22px; height:22px; border-radius:7px; display:grid; place-items:center; font-size:12px; background:rgba(var(--accent-rgb),.12); border:1px solid rgba(var(--accent-rgb),.26); }
+  .sec > p.lead { color:var(--mut); font-size:13.5px; margin:8px 0 18px; max-width:64ch; }
+
+  /* 탭 배너 카드 3종 */
+  .tabs { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+  @media (max-width:760px){ .tabs { grid-template-columns:1fr; } }
+  .tab { border:1px solid var(--line); border-radius:var(--r-l); overflow:hidden; background:var(--glass2); }
+  .banner { height:74px; position:relative; display:grid; place-items:center; font-weight:800; font-size:14px; letter-spacing:.3px; color:#fff;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.1); }
+  .banner.feed  { background:linear-gradient(135deg,#0c3a18,#0a1f12); box-shadow:inset 0 0 40px rgba(15,253,2,.28), inset 0 1px 0 rgba(255,255,255,.1); }
+  .banner.scrap { background:linear-gradient(135deg,#3a2a0c,#1f1709); box-shadow:inset 0 0 40px rgba(255,150,20,.3), inset 0 1px 0 rgba(255,255,255,.1); }
+  .banner.sns   { background:linear-gradient(135deg,#0c333a,#091a1f); box-shadow:inset 0 0 40px rgba(12,208,247,.3), inset 0 1px 0 rgba(255,255,255,.1); }
+  .tab .body { padding:16px; }
+  .tab .nm { font-size:15px; font-weight:800; margin:0 0 3px; }
+  .tab .hex { font:600 11.5px ui-monospace,Menlo,monospace; margin:0 0 14px; }
+  .tab.feed .nm,.tab.feed .hex{color:var(--accent)} .tab.scrap .nm,.tab.scrap .hex{color:var(--amber)} .tab.sns .nm,.tab.sns .hex{color:var(--info)}
+  /* 전파 데모: 프로필 링 + 배지 + 칩 */
+  .prop { display:flex; align-items:center; gap:12px; }
+  .ring { width:38px; height:38px; border-radius:50%; flex:none; background:#16241b; position:relative; display:grid; place-items:center; font-size:10px; color:var(--mut); }
+  .ring::after { content:''; position:absolute; inset:-3px; border-radius:50%; padding:2px; }
+  .feed .ring::after{ box-shadow:0 0 0 2px var(--accent),0 0 10px rgba(15,253,2,.5);}
+  .scrap .ring::after{ box-shadow:0 0 0 2px var(--amber),0 0 10px rgba(255,150,20,.5);}
+  .sns .ring::after{ box-shadow:0 0 0 2px var(--info),0 0 10px rgba(12,208,247,.5);}
+  .chip { font-size:11px; font-weight:800; padding:4px 11px; border-radius:999px; }
+  .feed .chip{color:var(--accent);background:rgba(15,253,2,.12);border:1px solid rgba(15,253,2,.35)}
+  .scrap .chip{color:var(--amber);background:rgba(255,150,20,.14);border:1px solid rgba(255,150,20,.4)}
+  .sns .chip{color:var(--info);background:rgba(12,208,247,.12);border:1px solid rgba(12,208,247,.38)}
+  .tab .tx { font-size:11.5px; color:var(--mut); margin:13px 0 0; line-height:1.5; }
+
+  /* 도구 메뉴 색 */
+  .tools { display:flex; flex-wrap:wrap; gap:10px; }
+  .tool { display:flex; align-items:center; gap:9px; padding:11px 15px; border-radius:var(--r-m); background:rgba(255,255,255,.03); border:1px solid var(--line); font-size:13px; font-weight:700; }
+  .tool .sw { width:11px; height:11px; border-radius:3px; flex:none; }
+  .tool .hex { font:600 10.5px ui-monospace,Menlo,monospace; color:var(--mut); margin-left:2px; }
+
+  /* 규칙 박스 / 의미색 구분 */
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th,td { text-align:left; padding:11px 12px; border-bottom:1px solid var(--line2); vertical-align:middle; }
+  th { font-size:11px; letter-spacing:.5px; text-transform:uppercase; color:var(--mut); font-weight:700; }
+  td b { color:var(--fg); } td .sw { display:inline-block; width:12px; height:12px; border-radius:3px; vertical-align:-1px; margin-right:7px; }
+  td code { font:600 11.5px ui-monospace,Menlo,monospace; color:var(--fg-2); }
+
+  .note { margin-top:14px; font-size:12.5px; color:var(--mut); line-height:1.6; padding-left:14px; border-left:2px solid rgba(var(--accent-rgb),.3); }
+  .note b { color:var(--fg-2); }
+  .foot { margin-top:60px; padding-top:20px; border-top:1px solid var(--line); font-size:13px; color:var(--mut); } .foot a { color:var(--accent); text-decoration:none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="crumb">노뮤트 UI 구성도 · <b>색</b></p>
+  <h1>메뉴별 대표색</h1>
+  <p class="intro"><b>메뉴 대표색 = 그 메뉴의 상단 배너색.</b> 새 색을 지어내지 않는다. 한 메뉴에 들어가면 배너·프로필 링·배지·칩·hover·강조가 전부 그 한 색 계열로 통일된다. 정본 = 배너 3겹 크로스페이드(<code style="font-size:12px;color:var(--fg-2)">--glow</code> 탭별 전환).</p>
+
+  <!-- 1. 3 배너색 -->
+  <div class="sec">
+    <h2><span class="n">1</span> 탭 = 배너색 3종</h2>
+    <p class="lead">메인 3탭이 곧 3대 메뉴. 각 탭의 배너 글로우색이 그 메뉴의 대표색.</p>
+    <div class="tabs">
+      <div class="tab feed"><div class="banner feed">피드</div><div class="body">
+        <p class="nm">피드 · 큐레이션</p><p class="hex">#0FFD02 라임</p>
+        <div class="prop"><div class="ring">프로필</div><span class="chip">픽 완료</span></div>
+        <p class="tx">기본 메뉴. 브랜드 라임이 곧 대표색.</p></div></div>
+      <div class="tab scrap"><div class="banner scrap">스크랩</div><div class="body">
+        <p class="nm">스크랩 · 수집</p><p class="hex">#ff9614 앰버</p>
+        <div class="prop"><div class="ring">프로필</div><span class="chip">수집됨</span></div>
+        <p class="tx">레거시 수집함. 배너·링·배지 앰버로 매칭.</p></div></div>
+      <div class="tab sns"><div class="banner sns">SNS</div><div class="body">
+        <p class="nm">SNS · 소셜</p><p class="hex">#0cd0f7 시안</p>
+        <div class="prop"><div class="ring">프로필</div><span class="chip">후보</span></div>
+        <p class="tx">소셜 후보. 배너·링·배지 시안으로 매칭.</p></div></div>
+    </div>
+  </div>
+
+  <!-- 2. 전파 규칙 -->
+  <div class="sec">
+    <h2><span class="n">2</span> 대표색이 닿는 곳 — 전파 규칙</h2>
+    <p class="lead">메뉴에 들어가면 그 배너색이 이 요소들에 일괄 적용. 한 화면 = 한 색 계열.</p>
+    <div style="border:1px solid var(--line);border-radius:var(--r-l);overflow:hidden;background:rgba(5,12,8,.3);padding:4px 18px">
+      <table>
+        <tr><th>요소</th><th>적용</th></tr>
+        <tr><td><b>배너 글로우</b></td><td>탭 색 inset glow + 브리딩</td></tr>
+        <tr><td><b>프로필 링·배지</b></td><td>탭 색 그라데이션 링/점</td></tr>
+        <tr><td><b>활성 칩·강조 글자</b></td><td>탭 색 + 글로우</td></tr>
+        <tr><td><b>입력 focus·hover</b></td><td>탭 색 보더/배경</td></tr>
+        <tr><td><b>1차 버튼</b></td><td><b>예외 — 항상 라임</b>(전송 머신 = 공통 신호)</td></tr>
+      </table>
+    </div>
+    <p class="note"><b>버튼만 예외:</b> 전송·생성 버튼은 메뉴색을 안 따르고 라임↔앰버 공통(전송 버튼 상태머신 참조). 비용·위험 신호는 전 메뉴 동일해야 손이 기억한다.</p>
+  </div>
+
+  <!-- 3. 제작 도구 색 -->
+  <div class="sec">
+    <h2><span class="n">3</span> 제작 도구 메뉴 색</h2>
+    <p class="lead">+ 메뉴의 도구들. 자체 대표색이 정해진 것만 색을 쓰고, 나머진 라임(기본).</p>
+    <div class="tools">
+      <div class="tool"><span class="sw" style="background:var(--thumb)"></span>썸네일 생성기<span class="hex">#ffce54</span></div>
+      <div class="tool"><span class="sw" style="background:var(--accent)"></span>요약 요청<span class="hex">#0FFD02</span></div>
+      <div class="tool"><span class="sw" style="background:var(--accent)"></span>영상 자막(ly)<span class="hex">기본 라임</span></div>
+      <div class="tool"><span class="sw" style="background:var(--accent)"></span>영상 프롬프트(k)<span class="hex">기본 라임</span></div>
+    </div>
+    <p class="note"><b>썸네일 = 노랑(#ffce54)</b>은 기존 확정(요약요청 초록과 구분). ly·k는 별도 색 없이 라임 — 필요해지면 배너색 규칙대로 부여.</p>
+  </div>
+
+  <!-- 4. 의미색 구분 -->
+  <div class="sec">
+    <h2><span class="n">4</span> 대표색 vs 의미색 — 겹침 주의</h2>
+    <p class="lead">앰버·시안은 배너색이자 의미색이라 헷갈릴 수 있음. 맥락으로 구분.</p>
+    <div style="border:1px solid var(--line);border-radius:var(--r-l);overflow:hidden;background:rgba(5,12,8,.3);padding:4px 18px">
+      <table>
+        <tr><th>색</th><th>대표색 용도</th><th>의미색 용도</th></tr>
+        <tr><td><span class="sw" style="background:var(--amber)"></span><code>#ff9614</code></td><td>스크랩 탭 정체성</td><td>경고·재확인(warn)</td></tr>
+        <tr><td><span class="sw" style="background:var(--info)"></span><code>#0cd0f7</code></td><td>SNS 탭 정체성</td><td>정보·링크(info)</td></tr>
+        <tr><td><span class="sw" style="background:var(--danger)"></span><code>#ff5b4a</code></td><td>—</td><td>오류·긴급(danger)</td></tr>
+      </table>
+    </div>
+    <p class="note"><b>규칙:</b> 의미(경고·오류)는 아이콘·문맥과 함께 써서 "정체성 색"과 구분. 단독 색면으론 의미 전달 금지.</p>
+  </div>
+
+  <div class="foot">정본 = viewer/index.html (.bannerframe --glow · body.tab-scrap/sns 매칭 · bpop-hl-y 썸네일) — <a href="index.html">구성도 허브</a> · <a href="픽토그램.html">픽토그램</a></div>
+</div>
+</body>
+</html>

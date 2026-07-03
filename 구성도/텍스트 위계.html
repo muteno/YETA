@@ -1,0 +1,148 @@
+<!-- @dsCard group="구성도" viewport="900x1600" name="텍스트 위계" subtitle="대주제·섹션·소제목·문단·• (뉴스요약 기준)" -->
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>구성도 · 텍스트 위계</title>
+<link rel="stylesheet" href="base.css">
+<style>
+  /* 토큰 = base.css(AUTO-MIRROR = viewer :root 정본). 인라인 :root 제거 = 단일 거울만 봄(§🎨 ⓒ·260621). */
+  * { box-sizing:border-box; }
+  html { scrollbar-width:thin; scrollbar-color:rgba(var(--accent-rgb),.3) transparent; }
+  ::-webkit-scrollbar { width:10px; } ::-webkit-scrollbar-thumb { background:rgba(var(--accent-rgb),.26); border-radius:999px; border:2px solid var(--bg); background-clip:padding-box; }
+  body { margin:0; background:radial-gradient(125% 70% at 50% -8%, rgba(var(--accent-rgb),.06), transparent 55%) fixed, var(--bg);
+    color:var(--fg); font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; }
+  .wrap { max-width:900px; margin:0 auto; padding:42px 22px 110px; }
+  .crumb { font-size:12px; color:var(--mut); letter-spacing:.4px; margin:0 0 10px; } .crumb b { color:var(--accent); }
+  h1.t { font-size:27px; letter-spacing:-.5px; margin:0 0 10px; }
+  .intro { color:var(--fg-2); font-size:14.5px; max-width:66ch; margin:0; } .intro b { color:var(--fg); }
+
+  .sec { margin:46px 0 0; }
+  .sec > h2 { font-size:12px; letter-spacing:1.6px; text-transform:uppercase; color:var(--accent); font-weight:800; margin:0 0 4px; display:flex; align-items:center; gap:10px; }
+  .sec > h2 .n { width:22px; height:22px; border-radius:7px; display:grid; place-items:center; font-size:12px; background:rgba(var(--accent-rgb),.12); border:1px solid rgba(var(--accent-rgb),.26); }
+  .sec > p.lead { color:var(--mut); font-size:13.5px; margin:8px 0 18px; max-width:64ch; }
+
+  /* anatomy: 좌 specimen rail + 우 spec */
+  .anat { border:1px solid var(--line); border-radius:var(--r-l); overflow:hidden; }
+  .arow { display:grid; grid-template-columns:1fr 230px; gap:0; border-bottom:1px solid var(--line2); }
+  .arow:last-child { border-bottom:none; }
+  @media (max-width:680px){ .arow { grid-template-columns:1fr; } }
+  .spec-l { padding:16px 20px; min-width:0; background:rgba(5,12,8,.35); }
+  .spec-r { padding:14px 18px; border-left:1px solid var(--line2); display:flex; flex-direction:column; justify-content:center; gap:5px; background:rgba(255,255,255,.015); }
+  @media (max-width:680px){ .spec-r { border-left:none; border-top:1px solid var(--line2); } }
+  .spec-r .nm { font-size:13px; font-weight:800; color:var(--fg); }
+  .spec-r .meta { font:600 11px/1.5 ui-monospace,Menlo,monospace; color:var(--mut); }
+  .spec-r .meta b { color:var(--fg-2); font-weight:600; }
+  .tier { display:inline-block; font-size:9.5px; font-weight:800; letter-spacing:.4px; padding:2px 7px; border-radius:999px; margin-bottom:2px;
+    color:var(--accent); background:rgba(var(--accent-rgb),.1); border:1px solid rgba(var(--accent-rgb),.26); width:max-content; }
+
+  /* 뉴스요약 정본 텍스트 스타일 (viewer #mdbody/.md 계승) */
+  .nm-h1 { font-size:var(--fs-h1); font-weight:800; line-height:1.4; letter-spacing:-.4px; color:var(--fg); margin:0; }
+  .nm-h2 { font-size:var(--fs-h2); font-weight:800; color:var(--accent); letter-spacing:-.2px; margin:0; padding-top:14px; border-top:1px solid var(--line2); }
+  .nm-h3 { font-size:var(--fs-h3); font-weight:800; color:var(--accent); letter-spacing:-.2px; margin:0; }
+  .nm-h3.mut { color:var(--mut); font-weight:700; }
+  .nm-p { font-size:var(--fs-body); line-height:1.65; color:var(--fg); margin:0; }
+  .nm-sub { font-size:18px; font-weight:800; color:#fff; line-height:1.3; letter-spacing:-.4px; margin:0; }
+  .nm-li { font-size:14px; line-height:1.6; color:var(--fg); margin:0; padding-left:16px; position:relative; }
+  .nm-li::before { content:'·'; position:absolute; left:3px; color:var(--accent); font-weight:800; }
+  .nm-meta { font-size:var(--fs-xs); color:var(--mut); } .nm-meta .paren { color:var(--fg); font-weight:400; } .nm-meta .cnt { color:var(--mut); }
+
+  /* 종합 specimen */
+  .demo { border:1px solid var(--line); border-radius:var(--r-l); background:var(--glass2); padding:22px 24px; }
+  .demo > * + * { margin-top:12px; }
+  .demo .box { background:rgba(5,12,8,.55); border:1px solid var(--line2); border-radius:var(--r-l); padding:13px 15px; box-shadow:inset 0 1px 0 rgba(255,255,255,.05); }
+  .demo .sect { margin-top:22px; }
+  .demo .lirow { margin-top:7px; } .demo .lirow .nm-li + .nm-li { margin-top:5px; }
+
+  /* do/don't */
+  .dd { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  @media (max-width:680px){ .dd { grid-template-columns:1fr; } }
+  .col { border:1px solid var(--line); border-radius:var(--r-m); padding:16px 18px; background:rgba(255,255,255,.02); }
+  .col h4 { margin:0 0 10px; font-size:13px; display:flex; align-items:center; gap:7px; }
+  .col.no h4 { color:var(--danger,#ff5b4a); } .col.yes h4 { color:var(--accent); }
+  .col ul { margin:0; padding-left:18px; } .col li { font-size:12.5px; color:var(--mut); line-height:1.7; }
+  .col li b { color:var(--fg-2); }
+
+  .note { margin-top:14px; font-size:12.5px; color:var(--mut); line-height:1.6; padding-left:14px; border-left:2px solid rgba(var(--accent-rgb),.3); }
+  .note b { color:var(--fg-2); }
+  .foot { margin-top:60px; padding-top:20px; border-top:1px solid var(--line); font-size:13px; color:var(--mut); } .foot a { color:var(--accent); text-decoration:none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="crumb">노뮤트 UI 구성도 · <b>텍스트</b></p>
+  <h1 class="t">텍스트 위계</h1>
+  <p class="intro">대주제·섹션·소제목·문단·항목(•)이 메뉴마다 다르게 쓰여 위계가 무너짐. <b>뉴스요약(#mdbody) 마크업을 정본</b>으로, 머리표 4계층 + 문단 + 항목을 한 벌로 고정한다. 정본 스케일 = <code style="font-size:12px;color:var(--fg-2)">--fs-h1/h2/h3/body</code> (CLAUDE.md §📐 머리표 4계층).</p>
+
+  <!-- 1. 계층 사다리 -->
+  <div class="sec">
+    <h2><span class="n">1</span> 위계 사다리 — 6단</h2>
+    <p class="lead">위에서 아래로 1계단씩. 같은 역할엔 같은 단을 쓴다. 단을 건너뛰거나 섞지 말 것.</p>
+    <div class="anat">
+      <div class="arow">
+        <div class="spec-l"><span class="nm-sub">전세사기 빌라왕, 세입자 잃은 보증금</span></div>
+        <div class="spec-r"><span class="tier">부제 / 대주제</span><span class="nm">카드 부제 · 기사 제목</span><span class="meta"><b>19~18px</b> · 800 · 흰색<br>ls −.4 · 강조색 X</span></div>
+      </div>
+      <div class="arow">
+        <div class="spec-l"><span class="nm-h2" style="border-top:none;padding-top:0">📊 핵심 정리</span></div>
+        <div class="spec-r"><span class="tier">섹션 (h2)</span><span class="nm">큰 구획 머리</span><span class="meta"><b>14px</b> · 800 · <span style="color:var(--accent)">강조색</span><br>위 구분선 + pt14</span></div>
+      </div>
+      <div class="arow">
+        <div class="spec-l"><span class="nm-h3">피해 규모</span></div>
+        <div class="spec-r"><span class="tier">소제목 (h3)</span><span class="nm">섹션 안 작은 머리</span><span class="meta"><b>13.5px</b> · 800 · <span style="color:var(--accent)">강조색</span><br>구분선 없음(subtop)</span></div>
+      </div>
+      <div class="arow">
+        <div class="spec-l"><span class="nm-p">보증금을 돌려받지 못한 세입자는 전국 2,900여 명으로 집계됐다. 1심 재판부는 징역 10년을 선고했다.</span></div>
+        <div class="spec-r"><span class="tier">문단 (p)</span><span class="nm">본문</span><span class="meta"><b>15px</b> · 400 · fg<br>line-height 1.65</span></div>
+      </div>
+      <div class="arow">
+        <div class="spec-l"><div class="lirow"><p class="nm-li">피해 세입자 2,900여 명</p><p class="nm-li">보증금 총 1,200억 원</p></div></div>
+        <div class="spec-r"><span class="tier">항목 (•)</span><span class="nm">불릿 · 카드 라벨</span><span class="meta"><b>14px</b> · · 머리 <span style="color:var(--accent)">강조색</span><br>들여 16px · 본문보다 1단 작게</span></div>
+      </div>
+      <div class="arow">
+        <div class="spec-l"><span class="nm-meta">출처 한겨레 <span class="paren">(김기자)</span> <span class="cnt">— 약 420자</span></span></div>
+        <div class="spec-r"><span class="tier">메타 / 부연</span><span class="nm">출처·글자수·괄호</span><span class="meta"><b>11px</b> · mut<br>괄호 부연 = 흰색 400</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. 종합 specimen -->
+  <div class="sec">
+    <h2><span class="n">2</span> 한 화면에서 — 뉴스요약 종합</h2>
+    <p class="lead">계단이 실제로 어떻게 쌓이는지. 대주제(복사영역=박스) → 문단 → 섹션 → 소제목 → 항목 → 시사점.</p>
+    <div class="demo">
+      <div class="box"><span class="nm-h1">전세사기 '빌라왕' 1심 징역 10년</span></div>
+      <p class="nm-p">세입자 보증금을 가로챈 이른바 '빌라왕'에게 1심에서 징역 10년이 선고됐다. 피해자 다수가 사회초년생·신혼부부였다.</p>
+      <div class="sect"><span class="nm-h2">📊 핵심 정리</span></div>
+      <span class="nm-h3" style="display:block;margin-top:12px">피해 규모</span>
+      <div class="lirow"><p class="nm-li">피해 세입자 2,900여 명</p><p class="nm-li">보증금 총 1,200억 원 미반환</p></div>
+      <div class="sect"><span class="nm-h2">💡 시사점</span></div>
+      <p class="nm-p" style="margin-top:12px">전세보증보험 사각지대와 빌라 시세 검증 부재가 반복되는 구조. 처벌 강화만으로는 재발을 막기 어렵다.</p>
+    </div>
+    <p class="note"><b>강조색은 섹션·소제목·항목 머리에만.</b> 본문 문단·제목·메타는 강조색을 쓰지 않는다(다음 구성도 §강조 참조).</p>
+  </div>
+
+  <!-- 3. do/don't -->
+  <div class="sec">
+    <h2><span class="n">3</span> 해야 / 하지 말 것</h2>
+    <div class="dd">
+      <div class="col yes"><h4>✓ 이렇게</h4><ul>
+        <li>역할 = 계단 <b>1:1 고정</b>. 시사점은 항상 섹션(h2).</li>
+        <li>섹션 머리에만 <b>위 구분선</b> + 강조색.</li>
+        <li>문단은 <b>완결 산문</b>(§콘텐츠 규칙), 항목(•)은 짧은 사실.</li>
+        <li>대주제가 복사 영역이면 <b>박스</b>(테두리+배경).</li>
+      </ul></div>
+      <div class="col no"><h4>✕ 이러지 말 것</h4><ul>
+        <li>문단·제목에 <b>강조색</b> 칠하기(강조 인플레).</li>
+        <li>소제목(h3)을 섹션(h2) 크기로 키우기.</li>
+        <li>•와 문단을 같은 크기로 — <b>항목은 1단 작게</b>.</li>
+        <li>괄호 부연·글자수를 본문 톤으로 — <b>메타는 mut</b>.</li>
+      </ul></div>
+    </div>
+  </div>
+
+  <div class="foot">정본 = viewer/index.html #mdbody · #cardsec (머리표 4계층 = CLAUDE.md §📐) — <a href="index.html">구성도 허브</a> · <a href="표면 테두리 강조.html">표면·테두리·강조</a></div>
+</div>
+</body>
+</html>

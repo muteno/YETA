@@ -1,0 +1,98 @@
+name: yeta-chat
+
+# yeta 캐릭터 챗 — 뷰어(functions/api/yeta.js)가 유저 메시지를 R2 세션에 append 후 dispatch.
+# 이 잡이 캐릭터로 답장 1턴 생성(claude -p · 구독 OAuth) → R2 세션 append → 완료 웹푸시.
+# ⚠️ 대화 데이터는 레포에 커밋하지 않는다(public 레포 = 공개 박제 · 계획안 D2) — 세션 = R2 비공개 버킷 전용.
+# 레이턴시 설계(계획안 §2): dispatch 트리거 + fetch-depth:1 + claude CLI 주간 캐시 + R2 직읽기(재빌드 0).
+on:
+  workflow_dispatch:
+    inputs:
+      char:
+        description: '캐릭터 id (apps/yeta/characters/<id>.md)'
+        required: true
+        type: string
+
+concurrency:
+  group: yeta-chat-${{ inputs.char }}   # 같은 캐릭터 = 직렬(세션 경합 차단) · 캐릭터 간 병렬(per-item 선례 thumb-make-<id>)
+  cancel-in-progress: false             # 진행 중 턴 취소 = 답장 유실 → 금지(전 워크플로 공통)
+
+permissions:
+  contents: read   # 카드·스크립트 읽기만 — 레포 쓰기 없음(세션 = R2)
+
+jobs:
+  chat:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60   # 웜 세션(SESSION_MAX 55분 + 마진 · 아이데이션③) — 답장 후 대기하며 후속 메시지 즉답(30초 목표의 본체)
+    steps:
+      - name: Checkout (shallow+sparse — 챗은 히스토리·전체 트리 불필요 = 비대 레포 클론 비용 회피)
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          sparse-checkout: |
+            .github
+            shared
+            apps/yeta
+            push
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+
+      # claude CLI 주간 캐시 — news-ask 는 매 런 npm install -g(15~40s). 챗은 턴당 지연이 UX 라 캐시(§🧰 7일 캐시 정신).
+      - name: CLI 캐시 키(ISO 주 단위 갱신 = 최신 CLI 주 1회 추종)
+        id: week
+        run: echo "week=$(date +%G%V)" >> "$GITHUB_OUTPUT"
+      - name: Cache claude CLI
+        id: clicache
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm-global
+          key: claude-cli-${{ runner.os }}-${{ steps.week.outputs.week }}
+      - name: Install Claude Code CLI (캐시 미스 시만)
+        if: steps.clicache.outputs.cache-hit != 'true'
+        run: npm install -g --prefix "$HOME/.npm-global" @anthropic-ai/claude-code
+      - name: CLI PATH
+        run: echo "$HOME/.npm-global/bin" >> "$GITHUB_PATH"
+
+      - name: pywebpush (per-reply 푸시용 · pip 캐시라 수 초)
+        run: python3 -m pip install --quiet --break-system-packages pywebpush 2>/dev/null || echo "pywebpush 미설치 — 푸시 생략(비치명)"
+
+      - name: 캐릭터 답장 생성 (claude -p · 세션 R2)
+        id: chat
+        env:
+          # 인증 = 구독 OAuth *활성 계정만* — ⚠️ 챗 = 폴오버 최하위(계획안 §5 · 평의회⑩): ALT/ALT2 서브계정을 의도적으로
+          #   미주입 → claude_failover 가 자동 no-op(전환할 토큰 없음) = 챗이 뉴스 본업 예약 서브계정을 안 훔침.
+          #   활성 계정 주간한도면 챗은 state=error 로 정지(재전송 안내) — 본업(analyze·ask·card)은 서브 체인 정상.
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets[format('CLAUDE_CODE_OAUTH_TOKEN_{0}', vars.ACTIVE_ACCOUNT || 'MUTENO')] }}
+          ACTIVE_ACCOUNT: ${{ vars.ACTIVE_ACCOUNT || 'MUTENO' }}
+          # 세션 저장 = R2 비공개 버킷(YETA_R2_BUCKET 시크릿 — 공개 버킷 R2_BUCKET 과 별도). 계정 키는 기존 R2 시크릿 재사용.
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          YETA_R2_BUCKET: ${{ secrets.YETA_R2_BUCKET }}
+          YETA_CHAR: ${{ inputs.char }}
+          # 웜 루프 내 per-reply 즉시 푸시용(잡끝 푸시는 웜 대기만큼 지연 — 아이데이션③) · 없으면 스크립트가 조용히 생략
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+          VAPID_SUBJECT: ${{ secrets.VAPID_SUBJECT }}
+          # YETA_SAFE: '1'  ← --safe-mode 승격 지점(카나리아 rc=0·품질 실측 후 이 줄 활성 · §📰 라이브 플래그 절차 · 기본 OFF)
+        run: |
+          [ -n "${CLAUDE_CODE_OAUTH_TOKEN}" ] || { echo "::error::OAuth 토큰 없음"; exit 1; }
+          [ -n "${YETA_R2_BUCKET}" ] || { echo "YETA_R2_BUCKET 미설정 — 스캐폴드 no-op(운영자 R2 셋업 대기)"; exit 0; }
+          unset ANTHROPIC_API_KEY ANTHROPIC_AUTH_TOKEN GDRIVE_SA_JSON GEMINI_API_KEY   # 유료 자동발사 오염 0(§📰 Lock 정신)
+          bash .github/scripts/yeta_chat.sh
+
+      # (성공 푸시는 스크립트가 웜 루프 안에서 답장마다 즉시 발송 — push_reply() · 잡끝 스텝은 웜 대기만큼 지연이라 폐지 · 아이데이션③)
+      # 실패 웹푸시 — 앱 닫아둔 유저도 답장 실패를 인지(§📰 실패알림=웹푸시 정신 · 평의회①⑥⑩). 세션 state=error 는 yeta_chat.sh 가 기록.
+      - name: 실패 알림
+        if: failure()
+        env:
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+          VAPID_SUBJECT: ${{ secrets.VAPID_SUBJECT }}
+          YETA_CHAR: ${{ inputs.char }}
+        run: |
+          [ -n "${VAPID_PRIVATE_KEY}" ] || exit 0
+          [[ "$YETA_CHAR" =~ ^[a-z0-9_-]{1,24}$ ]] || exit 0
+          python3 -m pip install --quiet --break-system-packages pywebpush 2>/dev/null || exit 0
+          python3 .github/scripts/push_send.py --notify "yeta" "답장 생성에 실패했어 — 열어서 다시 보내줘" \
+            --url "/?yeta=${YETA_CHAR}" --tag "nomute-yeta-${YETA_CHAR}" || true

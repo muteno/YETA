@@ -1,0 +1,153 @@
+<!-- @dsCard group="구성도" viewport="900x1500" name="픽토그램" subtitle="라인 SVG · 스트로크 2.0 통일" -->
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>구성도 · 픽토그램</title>
+<link rel="stylesheet" href="base.css">
+<style>
+  /* 토큰 = base.css(AUTO-MIRROR = viewer :root 정본). 인라인 :root 제거 = 단일 거울만 봄(§🎨 ⓒ·260621). */
+  * { box-sizing:border-box; }
+  html { scrollbar-width:thin; scrollbar-color:rgba(var(--accent-rgb),.3) transparent; }
+  ::-webkit-scrollbar { width:10px; } ::-webkit-scrollbar-thumb { background:rgba(var(--accent-rgb),.26); border-radius:999px; border:2px solid var(--bg); background-clip:padding-box; }
+  body { margin:0; background:radial-gradient(125% 70% at 50% -8%, rgba(var(--accent-rgb),.06), transparent 55%) fixed, var(--bg);
+    color:var(--fg); font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; }
+  .wrap { max-width:900px; margin:0 auto; padding:42px 22px 110px; }
+  .crumb { font-size:12px; color:var(--mut); letter-spacing:.4px; margin:0 0 10px; } .crumb b { color:var(--accent); }
+  h1 { font-size:27px; letter-spacing:-.5px; margin:0 0 10px; }
+  .intro { color:var(--fg-2); font-size:14.5px; max-width:66ch; margin:0; } .intro b { color:var(--fg); }
+
+  .sec { margin:46px 0 0; }
+  .sec > h2 { font-size:12px; letter-spacing:1.6px; text-transform:uppercase; color:var(--accent); font-weight:800; margin:0 0 4px; display:flex; align-items:center; gap:10px; }
+  .sec > h2 .n { width:22px; height:22px; border-radius:7px; display:grid; place-items:center; font-size:12px; background:rgba(var(--accent-rgb),.12); border:1px solid rgba(var(--accent-rgb),.26); }
+  .sec > p.lead { color:var(--mut); font-size:13.5px; margin:8px 0 18px; max-width:64ch; }
+  .card { border:1px solid var(--line); border-radius:var(--r-l); background:var(--glass2); padding:22px; }
+
+  /* 규격 한 줄 */
+  .spec-strip { display:flex; flex-wrap:wrap; gap:10px; }
+  .spec-strip .s { flex:1 1 150px; border:1px solid var(--line2); border-radius:var(--r-m); padding:13px 15px; background:rgba(255,255,255,.02); }
+  .spec-strip .s .k { font-size:11px; color:var(--mut); margin:0 0 4px; }
+  .spec-strip .s .v { font:700 13px ui-monospace,Menlo,monospace; color:var(--accent); margin:0; }
+
+  /* 아이콘 그리드 */
+  .icons { display:grid; grid-template-columns:repeat(auto-fill,minmax(108px,1fr)); gap:12px; }
+  .ico { border:1px solid var(--line2); border-radius:var(--r-m); padding:16px 8px 12px; text-align:center; background:rgba(255,255,255,.02); }
+  .ico .glyph { width:34px; height:34px; margin:0 auto 10px; display:grid; place-items:center; color:var(--fg); }
+  .ico svg { display:block; }
+  .ico .nm { font-size:11.5px; color:var(--fg-2); font-weight:600; }
+  .ico .u { font-size:10px; color:var(--mut); margin-top:2px; }
+
+  /* 메뉴 픽토그램 */
+  .menus { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:12px; }
+  .menu { border:1px solid var(--line); border-radius:var(--r-m); padding:16px; text-align:center; background:rgba(255,255,255,.02); }
+  .menu .pic { width:44px; height:44px; margin:0 auto 11px; display:grid; place-items:center; border-radius:12px; border:1px solid; }
+  .menu .nm { font-size:13px; font-weight:800; } .menu .d { font-size:11px; color:var(--mut); margin-top:2px; }
+
+  /* 크기 데모 */
+  .sizes { display:flex; align-items:flex-end; gap:26px; flex-wrap:wrap; }
+  .sizes .col { text-align:center; } .sizes .col .box { display:grid; place-items:center; margin:0 auto 8px; color:var(--fg); }
+  .sizes .col .l { font:600 11px ui-monospace,Menlo,monospace; color:var(--mut); }
+
+  /* 이모지 정책 */
+  .cmp { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  @media (max-width:680px){ .cmp { grid-template-columns:1fr; } }
+  .pane { border:1px solid var(--line); border-radius:var(--r-m); overflow:hidden; background:rgba(255,255,255,.02); }
+  .pane .pl { padding:9px 13px; font-size:11.5px; font-weight:700; border-bottom:1px solid var(--line2); }
+  .pane.no .pl { color:var(--danger); } .pane.ok .pl { color:var(--accent); }
+  .pane .stg { padding:16px; display:flex; flex-direction:column; gap:11px; }
+  .ui-ex { display:flex; align-items:center; gap:9px; font-size:13px; color:var(--fg-2); }
+  .ui-ex .b { display:grid; place-items:center; width:30px; height:30px; border-radius:var(--r-s); background:rgba(8,15,11,.34); border:1px solid rgba(255,255,255,.16); color:var(--fg); }
+  .ui-ex .emo { font-size:17px; width:30px; text-align:center; }
+
+  .note { margin-top:14px; font-size:12.5px; color:var(--mut); line-height:1.6; padding-left:14px; border-left:2px solid rgba(var(--accent-rgb),.3); }
+  .note b { color:var(--fg-2); }
+  .foot { margin-top:60px; padding-top:20px; border-top:1px solid var(--line); font-size:13px; color:var(--mut); } .foot a { color:var(--accent); text-decoration:none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="crumb">노뮤트 UI 구성도 · <b>아이콘</b></p>
+  <h1>픽토그램 시스템</h1>
+  <p class="intro">조작 UI 아이콘은 전부 <b>라인 SVG · 스트로크 2.0</b> 한 규격으로 통일한다. 이모지(🖌️🍌🖼)는 조작 버튼에서 빼고, 콘텐츠 의미 표식(💡📊🚨)에만 남긴다.</p>
+
+  <!-- 1. 규격 -->
+  <div class="sec">
+    <h2><span class="n">1</span> 한 규격 — 스트로크 2.0 라인</h2>
+    <div class="card"><div class="spec-strip">
+      <div class="s"><p class="k">스타일</p><p class="v">line (fill: none)</p></div>
+      <div class="s"><p class="k">stroke-width</p><p class="v">2.0</p></div>
+      <div class="s"><p class="k">cap / join</p><p class="v">round / round</p></div>
+      <div class="s"><p class="k">viewBox</p><p class="v">0 0 24 24</p></div>
+      <div class="s"><p class="k">색</p><p class="v">currentColor</p></div>
+      <div class="s"><p class="k">정렬</p><p class="v">place-items center</p></div>
+    </div></div>
+    <p class="note">모든 아이콘은 <code style="color:var(--fg-2)">stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"</code>. 색은 버튼이 상속(메뉴 대표색/강조색).</p>
+  </div>
+
+  <!-- 2. 코어 세트 -->
+  <div class="sec">
+    <h2><span class="n">2</span> 코어 아이콘 세트</h2>
+    <p class="lead">반복 등장하는 조작들. 한 곳에서 정의해 전 메뉴 공유(viewer 계승).</p>
+    <div class="card"><div class="icons">
+      <div class="ico"><div class="glyph"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></div><div class="nm">복사</div><div class="u">copy</div></div>
+      <div class="ico"><div class="glyph"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></div><div class="nm">완료·체크</div><div class="u">check</div></div>
+      <div class="ico"><div class="glyph"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg></div><div class="nm">다운로드</div><div class="u">download</div></div>
+      <div class="ico"><div class="glyph"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></div><div class="nm">닫기</div><div class="u">close</div></div>
+      <div class="ico"><div class="glyph"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg></div><div class="nm">전송</div><div class="u">send</div></div>
+      <div class="ico"><div class="glyph"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7M21 4v5h-5"/></svg></div><div class="nm">재생성</div><div class="u">refresh</div></div>
+      <div class="ico"><div class="glyph"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M21 3l-9 9M10 4H5a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2v-5"/></svg></div><div class="nm">확대</div><div class="u">expand</div></div>
+      <div class="ico"><div class="glyph"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></div><div class="nm">검색</div><div class="u">search</div></div>
+      <div class="ico"><div class="glyph"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/></svg></div><div class="nm">파일</div><div class="u">file</div></div>
+      <div class="ico"><div class="glyph"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5z"/></svg></div><div class="nm">생성·AI</div><div class="u">spark</div></div>
+    </div></div>
+  </div>
+
+  <!-- 3. 메뉴 대표 픽토그램 -->
+  <div class="sec">
+    <h2><span class="n">3</span> 메뉴 대표 픽토그램</h2>
+    <p class="lead">메뉴당 라인 픽토그램 1개 고정 + 메뉴 대표색. 이모지 대신 이걸 항상 같이 준다.</p>
+    <div class="menus">
+      <div class="menu"><div class="pic" style="color:var(--accent);border-color:rgba(15,253,2,.3);background:rgba(15,253,2,.08)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16M4 12h16M4 19h10"/></svg></div><div class="nm">뉴스 요약</div><div class="d">문서 라인</div></div>
+      <div class="menu"><div class="pic" style="color:var(--accent);border-color:rgba(15,253,2,.3);background:rgba(15,253,2,.08)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><rect x="7" y="8" width="10" height="8" rx="1"/></svg></div><div class="nm">카드뉴스(comp)</div><div class="d">레이어</div></div>
+      <div class="menu"><div class="pic" style="color:var(--thumb);border-color:rgba(255,206,84,.35);background:rgba(255,206,84,.1)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="9" r="1.6"/><path d="M21 16l-5-5L5 21"/></svg></div><div class="nm">썸네일</div><div class="d">이미지</div></div>
+      <div class="menu"><div class="pic" style="color:var(--accent);border-color:rgba(15,253,2,.3);background:rgba(15,253,2,.08)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 15h3M14 15h3"/></svg></div><div class="nm">영상 자막(ly)</div><div class="d">캡션</div></div>
+      <div class="menu"><div class="pic" style="color:var(--accent);border-color:rgba(15,253,2,.3);background:rgba(15,253,2,.08)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 4v5M16 4v5"/><path d="M11 13l3 2-3 2z"/></svg></div><div class="nm">영상 프롬프트(k)</div><div class="d">필름·재생</div></div>
+    </div>
+  </div>
+
+  <!-- 4. 크기 -->
+  <div class="sec">
+    <h2><span class="n">4</span> 크기 — 컨테이너에 맞춤</h2>
+    <p class="lead">아이콘 px은 버튼 크기 토큰(<code style="color:var(--fg-2)">--btn 34 / --btn-sm 30 / --btn-xs 22</code>)에 비례.</p>
+    <div class="card"><div class="sizes">
+      <div class="col"><div class="box" style="width:34px;height:34px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg></div><div class="l">15px · .sbtn 34</div></div>
+      <div class="col"><div class="box" style="width:30px;height:30px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg></div><div class="l">14px · 30</div></div>
+      <div class="col"><div class="box" style="width:22px;height:22px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></div><div class="l">13px · xs 22</div></div>
+      <div class="col"><div class="box" style="width:44px;height:44px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16M4 12h16M4 19h10"/></svg></div><div class="l">20px · 타일/픽토</div></div>
+    </div></div>
+  </div>
+
+  <!-- 5. 이모지 정책 -->
+  <div class="sec">
+    <h2><span class="n">5</span> 이모지 — 콘텐츠만, 조작 X</h2>
+    <p class="lead">조작 버튼에 이모지를 쓰면 OS·폰트마다 모양·정렬이 달라 통일이 깨진다. 의미 표식만 남긴다.</p>
+    <div class="cmp">
+      <div class="pane no"><div class="pl">✕ 조작 버튼에 이모지</div><div class="stg">
+        <div class="ui-ex"><span class="emo">🖌️</span> 썸네일 생성기</div>
+        <div class="ui-ex"><span class="emo">📋</span> 복사</div>
+        <div class="ui-ex"><span class="emo">⬇️</span> 다운로드</div>
+      </div></div>
+      <div class="pane ok"><div class="pl">✓ 라인 SVG로</div><div class="stg">
+        <div class="ui-ex"><span class="b" style="color:var(--thumb)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="9" r="1.6"/><path d="M21 16l-5-5L5 21"/></svg></span> 썸네일 생성기</div>
+        <div class="ui-ex"><span class="b"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></span> 복사</div>
+        <div class="ui-ex"><span class="b"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg></span> 다운로드</div>
+      </div></div>
+    </div>
+    <p class="note"><b>이모지 허용:</b> 본문 의미 표식만 — 💡 시사점 · 📊 핵심정리 · 🚨 긴급 배지 · 🍌 생성 안내. <b>금지:</b> 버튼·아이콘 자리. 거긴 라인 SVG.</p>
+  </div>
+
+  <div class="foot">정본 = viewer/index.html COPY_SVG·CHECK_SVG·.tool-x·.sbtn — <a href="index.html">구성도 허브</a> · <a href="메뉴별 대표색.html">메뉴별 대표색</a></div>
+</div>
+</body>
+</html>

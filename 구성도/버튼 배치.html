@@ -1,0 +1,175 @@
+<!-- @dsCard group="구성도" viewport="900x1500" name="버튼 배치" subtitle="CTA 좌우 · 정렬/쏠림 · 다운로드 위치" -->
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>구성도 · 버튼 배치</title>
+<link rel="stylesheet" href="base.css">
+<style>
+  /* 토큰 = base.css(AUTO-MIRROR = viewer :root 정본). 인라인 :root 제거 = 단일 거울만 봄(§🎨 ⓒ·260621). */
+  * { box-sizing:border-box; }
+  html { scrollbar-width:thin; scrollbar-color:rgba(var(--accent-rgb),.3) transparent; }
+  ::-webkit-scrollbar { width:10px; } ::-webkit-scrollbar-thumb { background:rgba(var(--accent-rgb),.26); border-radius:999px; border:2px solid var(--bg); background-clip:padding-box; }
+  body { margin:0; background:radial-gradient(125% 70% at 50% -8%, rgba(var(--accent-rgb),.06), transparent 55%) fixed, var(--bg);
+    color:var(--fg); font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; }
+  .wrap { max-width:900px; margin:0 auto; padding:42px 22px 110px; }
+  .crumb { font-size:12px; color:var(--mut); letter-spacing:.4px; margin:0 0 10px; } .crumb b { color:var(--accent); }
+  h1 { font-size:27px; letter-spacing:-.5px; margin:0 0 10px; }
+  .intro { color:var(--fg-2); font-size:14.5px; max-width:66ch; margin:0; } .intro b { color:var(--fg); }
+
+  .sec { margin:46px 0 0; }
+  .sec > h2 { font-size:12px; letter-spacing:1.6px; text-transform:uppercase; color:var(--accent); font-weight:800; margin:0 0 4px; display:flex; align-items:center; gap:10px; }
+  .sec > h2 .n { width:22px; height:22px; border-radius:7px; display:grid; place-items:center; font-size:12px; background:rgba(var(--accent-rgb),.12); border:1px solid rgba(var(--accent-rgb),.26); }
+  .sec > p.lead { color:var(--mut); font-size:13.5px; margin:8px 0 18px; max-width:64ch; }
+
+  /* 전/후 */
+  .cmp { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  @media (max-width:720px){ .cmp { grid-template-columns:1fr; } }
+  .pane { border:1px solid var(--line); border-radius:var(--r-m); background:rgba(255,255,255,.02); overflow:hidden; }
+  .pane .pl { display:flex; align-items:center; gap:7px; padding:9px 13px; font-size:11.5px; font-weight:700; border-bottom:1px solid var(--line2); }
+  .pane.bad .pl { color:var(--danger); } .pane.good .pl { color:var(--accent); }
+  .pane .pl .x { font-size:13px; }
+  .stg { padding:20px 16px; }
+
+  /* 가짜 페이지 박스(도형) */
+  .box { background:rgba(5,12,8,.5); border:1px solid var(--line); border-radius:var(--r-m); padding:14px; }
+  .box .ph { height:30px; border-radius:var(--r-s); background:rgba(255,255,255,.05); border:1px solid var(--line2); margin-bottom:10px; }
+  .box .ph.tall { height:64px; }
+
+  /* 버튼 정본 */
+  .go { padding:12px; border-radius:var(--r-m); border:none; cursor:pointer; font:800 14px/1 inherit; color:var(--on-accent);
+    background:linear-gradient(135deg,#5ef98a,var(--accent)); box-shadow:0 6px 20px rgba(var(--accent-rgb),.22); }
+  .go.full { display:block; width:100%; }
+  /* 강조 위계 — 두께(패딩)는 그대로, 시각 무게만 낮춤 */
+  .go.glass { color:var(--accent); background:rgba(var(--accent-rgb),.12); border:1px solid rgba(var(--accent-rgb),.4); box-shadow:none; }
+  .go.glass:hover { background:rgba(var(--accent-rgb),.2); }
+  .go.ghost { color:var(--mut); background:rgba(255,255,255,.05); border:1px solid var(--line2); box-shadow:none; }
+  .file { display:flex; align-items:center; justify-content:center; padding:12px; border:1px dashed rgba(var(--accent-rgb),.5);
+    border-radius:var(--r-s); color:var(--fg-2); font-size:13px; }
+  .filerow { display:flex; gap:10px; } .filerow .file { flex:1.4 1 0; min-width:0; } .filerow .go { flex:1 1 0; }
+
+  .row { display:flex; align-items:center; gap:9px; }
+  .label { font-size:12.5px; color:var(--fg-2); } .label.flex1 { flex:1; }
+  .sbtn { display:grid; place-items:center; width:34px; height:34px; padding:0; color:rgba(255,255,255,.92);
+    background:rgba(8,15,11,.34); border:1px solid rgba(255,255,255,.16); border-radius:var(--r-s); cursor:pointer; }
+  .sbtn svg { display:block; } .sbtn.acc { color:var(--accent); border-color:rgba(var(--accent-rgb),.4); background:rgba(var(--accent-rgb),.1); }
+  .pushright { margin-left:auto; }
+
+  /* 쏠림 데모용 */
+  .skew { display:flex; }                 /* 잘못: 기본 좌측 정렬 → 버튼 좌측 쏠림 */
+  .center { display:flex; justify-content:center; }
+  .mediabox { position:relative; border-radius:var(--r-m); overflow:hidden; border:1px solid var(--line); aspect-ratio:4/5; max-width:150px;
+    background:linear-gradient(135deg,#16241b,#0c1610); display:grid; place-items:center; color:var(--mut); font-size:11px; }
+  .mediabox .acts { position:absolute; top:8px; right:8px; display:flex; gap:6px; }
+  .dl-bottom { display:block; text-align:center; font-size:11px; font-weight:700; color:var(--mut); padding:6px 0 0; }
+
+  .why { margin-top:11px; font-size:12.5px; color:var(--mut); line-height:1.6; padding-left:14px; border-left:2px solid rgba(var(--accent-rgb),.3); }
+  .why b { color:var(--fg-2); }
+
+  /* 정렬 분류표 */
+  .types { display:grid; grid-template-columns:repeat(2,1fr); gap:14px; }
+  @media (max-width:680px){ .types { grid-template-columns:1fr; } }
+  .type { border:1px solid var(--line); border-radius:var(--r-m); padding:16px; background:rgba(255,255,255,.02); }
+  .type h4 { margin:0 0 3px; font-size:14px; } .type .rule { font:600 11px ui-monospace,Menlo,monospace; color:var(--accent); margin:0 0 12px; }
+  .type p { margin:10px 0 0; font-size:12px; color:var(--mut); line-height:1.55; }
+  .demo { background:rgba(5,12,8,.5); border:1px solid var(--line2); border-radius:var(--r-s); padding:12px; }
+
+  .note { margin-top:14px; font-size:12.5px; color:var(--mut); line-height:1.6; padding-left:14px; border-left:2px solid rgba(var(--accent-rgb),.3); }
+  .note b { color:var(--fg-2); }
+  .foot { margin-top:60px; padding-top:20px; border-top:1px solid var(--line); font-size:13px; color:var(--mut); } .foot a { color:var(--accent); text-decoration:none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="crumb">노뮤트 UI 구성도 · <b>버튼</b></p>
+  <h1>버튼 배치</h1>
+  <p class="intro">버튼이 <b>어디에·어떻게 정렬되어</b> 앉는가. 같은 성격의 버튼이 페이지마다 풀폭/반폭, 좌측/우측/중앙으로 제각각 쏠리지 않게 4가지 정렬 패턴으로 고정한다.</p>
+
+  <!-- 1. CTA 좌우 -->
+  <div class="sec">
+    <h2><span class="n">1</span> 1차 CTA — 파일 있으면 좌우 한 줄</h2>
+    <p class="lead">세로 풀폭 스택은 자리 낭비(확정). 파일 입력이 있으면 <b>[파일칸 1.4] + [생성 1]</b> 한 줄. 버튼만 있는 페이지는 풀폭 하단.</p>
+    <div class="cmp">
+      <div class="pane bad"><div class="pl"><span class="x">✕</span> 전 · comp = 세로로 길다</div>
+        <div class="stg"><div class="box"><div class="file" style="margin-bottom:10px">이미지 선택</div><button class="go full">합성</button></div></div></div>
+      <div class="pane good"><div class="pl"><span class="x">✓</span> 후 · 좌우 한 줄</div>
+        <div class="stg"><div class="box"><div class="filerow"><div class="file">이미지 선택</div><button class="go">합성</button></div></div></div></div>
+    </div>
+    <p class="why"><b>규칙:</b> 파일 有 → <code style="color:var(--fg-2)">.filerow</code>(flex, gap:10px, file 1.4 : go 1). 파일 無 → <code style="color:var(--fg-2)">.go</code> 풀폭 하단.</p>
+  </div>
+
+  <!-- 2. 쏠림 -->
+  <div class="sec">
+    <h2><span class="n">2</span> 도형 안 쏠림 방지</h2>
+    <p class="lead">컨테이너 안 버튼이 의도 없이 한쪽에 붙는 경우. 단독 1차 버튼이 좌측에 쪼그라들거나, 풀폭이어야 하는데 내용폭만 차지하는 것 — 정렬을 명시.</p>
+    <div class="cmp">
+      <div class="pane bad"><div class="pl"><span class="x">✕</span> 전 · 좌측 쏠림(기본 flow)</div>
+        <div class="stg"><div class="box"><div class="ph"></div><div class="skew"><button class="go">생성</button></div></div></div></div>
+      <div class="pane good"><div class="pl"><span class="x">✓</span> 후 · 단독 1차 = 풀폭</div>
+        <div class="stg"><div class="box"><div class="ph"></div><button class="go full">생성</button></div></div></div>
+    </div>
+    <p class="why"><b>규칙:</b> 컨테이너 안 단독 1차 버튼은 <b>풀폭</b>(좌측 쏠림 금지). 폭을 줄여야 하면 <b>중앙(justify-content:center)</b>. "기본 flow에 그냥 둠" 금지 — 정렬을 항상 명시.</p>
+  </div>
+
+  <!-- 3. 정렬 4분류 -->
+  <div class="sec">
+    <h2><span class="n">3</span> 정렬 4분류 — 성격 = 자리 고정</h2>
+    <p class="lead">버튼 성격마다 정렬을 1:1로 못박는다. 같은 성격이면 어느 메뉴든 같은 정렬.</p>
+    <div class="types">
+      <div class="type"><h4>1차 액션</h4><p class="rule">width:100% · 풀폭</p>
+        <div class="demo"><button class="go full glass">카드뉴스 생성</button></div>
+        <p>생성·실행 등 그 화면의 주 행동. 항상 풀폭(또는 파일과 좌우 한 줄) · <b>기본은 글래스 강조</b>(§4).</p></div>
+      <div class="type"><h4>인라인 보조</h4><p class="rule">margin-left:auto · 우측</p>
+        <div class="demo"><div class="row"><span class="label flex1">자유요약</span><button class="sbtn pushright acc"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button></div></div>
+        <p>복사·수정처럼 라벨 옆 보조. 항상 <b>우측</b>(margin-left:auto). 좌·중앙 금지.</p></div>
+      <div class="type"><h4>미디어 액션</h4><p class="rule">absolute · 우상단</p>
+        <div class="demo"><div class="center"><div class="mediabox">4:5<div class="acts"><button class="sbtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg></button></div></div></div></div>
+        <p>이미지·카드 위 저장·확대·재생성. 항상 <b>우상단</b> 글래스 .sbtn 행.</p></div>
+      <div class="type"><h4>중앙 단일</h4><p class="rule">justify-content:center</p>
+        <div class="demo"><div class="center"><button class="sbtn acc" style="width:auto;padding:8px 16px;font-size:12px;font-weight:700;border-radius:999px">더 보기</button></div></div>
+        <p>더보기·페이지네이션 등 폭 좁은 단일 보조. 풀폭 대신 <b>중앙</b>.</p></div>
+    </div>
+  </div>
+
+  <!-- 4. 강조 위계 -->
+  <div class="sec">
+    <h2><span class="n">4</span> 강조 위계 — 솔리드는 아껰, 생성은 글래스</h2>
+    <p class="lead">단순 생성 버튼이 큰 솔리드 그라데로 채워져 <b>너무 튀고 스포티파이 그린처럼</b> 보임. 채움(솔리드)은 화면당 하나만, 생성은 <b>글래스(투명)</b>로. 두께·히트영역은 그대로.</p>
+    <div class="cmp">
+      <div class="pane bad"><div class="pl"><span class="x">✕</span> 전 · 단순 생성이 솔리드(튀·스포티파이)</div>
+        <div class="stg"><div class="box"><button class="go full">카드뉴스 생성</button></div></div></div>
+      <div class="pane good"><div class="pl"><span class="x">✓</span> 후 · 글래스 강조(진짜 #0FFD02)</div>
+        <div class="stg"><div class="box"><button class="go full glass">카드뉴스 생성</button></div></div></div>
+    </div>
+    <div class="types" style="margin-top:14px">
+      <div class="type"><h4>솔리드 (채움)</h4><p class="rule">화면당 1개 · 비용·발사</p>
+        <div class="demo"><button class="go full">발사</button></div>
+        <p>되돌리기 어려운 핵심 하나만. 그라데 채움 + 그림자.</p></div>
+      <div class="type"><h4>글래스 강조 (기본)</h4><p class="rule">accent .12 + border · 투명</p>
+        <div class="demo"><button class="go full glass">생성</button></div>
+        <p>단순 생성·실행의 기본값. 진짜 네온그린이 글자로 드러남.</p></div>
+      <div class="type"><h4>고스트 (중립)</h4><p class="rule">white .05 + line2</p>
+        <div class="demo"><button class="go full ghost">더 보기</button></div>
+        <p>취소·더보기·보조. 색 없이 조용히.</p></div>
+    </div>
+    <p class="note"><b>규칙:</b> 솔리드 채움은 화면당 1개(비용·발사)만. 나머지 생성·실행은 글래스. <b>얕게 만들지 말고</b>(히트영역 ≥44px 유지) 투명도로 무게를 낮춘다. ⚠ 솔리드 그라데(<code>#5ef98a</code>)가 스포티파이로 보이니, 가능하면 <code>#0FFD02</code> 단색도 검토.</p>
+  </div>
+
+  <!-- 5. 다운로드/저장 위치 -->
+  <div class="sec">
+    <h2><span class="n">5</span> 다운로드·저장 위치 통일</h2>
+    <p class="lead">결과물 저장 버튼이 어떤 데선 미디어 <b>우상단</b>, 어떤 데선 <b>하단 중앙 링</b>으로 갈림. 하나로 고정.</p>
+    <div class="cmp">
+      <div class="pane bad"><div class="pl"><span class="x">✕</span> 전 · 위(아이콘)·아래(링) 혼재</div>
+        <div class="stg"><div class="center"><div><div class="mediabox">4:5<div class="acts"><button class="sbtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg></button></div></div><span class="dl-bottom">⬇ 다운로드</span></div></div></div></div>
+      <div class="pane good"><div class="pl"><span class="x">✓</span> 후 · 항상 우상단 글래스</div>
+        <div class="stg"><div class="center"><div class="mediabox">4:5<div class="acts"><button class="sbtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg></button><button class="sbtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M10 14 21 3M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5"/></svg></button></div></div></div></div></div>
+    </div>
+    <p class="note"><b>규칙:</b> 미디어 결과물의 저장·다운로드·확대·재생성 = <b>미디어 우상단 글래스 .sbtn 행</b> 하나로. 하단 중앙 텍스트 링 폐지. (텍스트 결과 복사는 §3 인라인 보조 = 우측.)</p>
+  </div>
+
+  <div class="foot">정본 = viewer/index.html (.mkbtn 풀폭 · .sbtn 우상단 · .copy 우측) — <a href="index.html">구성도 허브</a> · <a href="전송 버튼 상태머신.html">전송 버튼 상태머신</a></div>
+</div>
+</body>
+</html>

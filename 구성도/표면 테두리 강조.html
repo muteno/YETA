@@ -1,0 +1,126 @@
+<!-- @dsCard group="구성도" viewport="900x1600" name="표면·테두리·강조" subtitle="도형 테두리 유무 · 배경 · 강조색 절제" -->
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>구성도 · 표면·테두리·강조</title>
+<link rel="stylesheet" href="base.css">
+<style>
+  /* 토큰 = base.css(AUTO-MIRROR = viewer :root 정본). 인라인 :root 제거 = 단일 거울만 봄(§🎨 ⓒ·260621). */
+  * { box-sizing:border-box; }
+  html { scrollbar-width:thin; scrollbar-color:rgba(var(--accent-rgb),.3) transparent; }
+  ::-webkit-scrollbar { width:10px; } ::-webkit-scrollbar-thumb { background:rgba(var(--accent-rgb),.26); border-radius:999px; border:2px solid var(--bg); background-clip:padding-box; }
+  body { margin:0; background:radial-gradient(125% 70% at 50% -8%, rgba(var(--accent-rgb),.06), transparent 55%) fixed, var(--bg);
+    color:var(--fg); font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; }
+  .wrap { max-width:900px; margin:0 auto; padding:42px 22px 110px; }
+  .crumb { font-size:12px; color:var(--mut); letter-spacing:.4px; margin:0 0 10px; } .crumb b { color:var(--accent); }
+  h1 { font-size:27px; letter-spacing:-.5px; margin:0 0 10px; }
+  .intro { color:var(--fg-2); font-size:14.5px; max-width:66ch; margin:0; } .intro b { color:var(--fg); }
+
+  .sec { margin:46px 0 0; }
+  .sec > h2 { font-size:12px; letter-spacing:1.6px; text-transform:uppercase; color:var(--accent); font-weight:800; margin:0 0 4px; display:flex; align-items:center; gap:10px; }
+  .sec > h2 .n { width:22px; height:22px; border-radius:7px; display:grid; place-items:center; font-size:12px; background:rgba(var(--accent-rgb),.12); border:1px solid rgba(var(--accent-rgb),.26); }
+  .sec > p.lead { color:var(--mut); font-size:13.5px; margin:8px 0 18px; max-width:64ch; }
+
+  /* 표면 3단 */
+  .levels { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+  @media (max-width:680px){ .levels { grid-template-columns:1fr; } }
+  .lvl { border:1px solid var(--line); border-radius:var(--r-l); padding:0; overflow:hidden; }
+  .lvl .demo { padding:24px 18px; display:grid; place-items:center; min-height:108px; background:rgba(0,0,0,.16); }
+  .lvl .cap { padding:13px 16px 15px; border-top:1px solid var(--line2); }
+  .lvl .cap h4 { margin:0 0 3px; font-size:14px; }
+  .lvl .cap .rule { font:600 11px/1.5 ui-monospace,Menlo,monospace; color:var(--accent); margin:0 0 8px; }
+  .lvl .cap p { margin:0; font-size:12px; color:var(--mut); line-height:1.55; }
+
+  /* 표면 샘플들 */
+  .s-flat { color:var(--fg); font-size:13px; }
+  .s-flat .k { color:var(--mut); }
+  .s-soft { background:rgba(255,255,255,.04); border-radius:var(--r-m); padding:11px 14px; color:var(--mut); font-size:12.5px; text-align:center; width:100%; }
+  .s-card { background:var(--glass2); border:1px solid var(--line); border-radius:var(--r-m); padding:13px 15px; width:100%; box-shadow:inset 0 1px 0 rgba(255,255,255,.05); }
+  .s-card .t { font-size:13px; color:var(--fg); font-weight:700; } .s-card .b { font-size:11.5px; color:var(--mut); margin-top:5px; }
+
+  /* 인벤토리 표 */
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th,td { text-align:left; padding:11px 12px; border-bottom:1px solid var(--line2); vertical-align:middle; }
+  th { font-size:11px; letter-spacing:.5px; text-transform:uppercase; color:var(--mut); font-weight:700; }
+  td b { color:var(--fg); } td code { font:600 11.5px ui-monospace,Menlo,monospace; color:var(--fg-2); }
+  .pill { display:inline-block; font-size:10px; font-weight:800; padding:2px 8px; border-radius:999px; }
+  .pill.flat { color:var(--mut); background:rgba(255,255,255,.06); }
+  .pill.soft { color:var(--info); background:rgba(12,208,247,.12); border:1px solid rgba(12,208,247,.3); }
+  .pill.card { color:var(--accent); background:rgba(var(--accent-rgb),.12); border:1px solid rgba(var(--accent-rgb),.3); }
+
+  /* 전/후 강조 */
+  .cmp { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  @media (max-width:680px){ .cmp { grid-template-columns:1fr; } }
+  .pane { border:1px solid var(--line); border-radius:var(--r-m); overflow:hidden; background:rgba(255,255,255,.02); }
+  .pane .pl { padding:9px 13px; font-size:11.5px; font-weight:700; border-bottom:1px solid var(--line2); }
+  .pane.bad .pl { color:var(--danger); } .pane.good .pl { color:var(--accent); }
+  .pane .stg { padding:18px; }
+  .meta-line { font-size:12px; line-height:1.9; }
+  .meta-line .lab { color:var(--mut); } 
+  .ov b { color:var(--accent); font-weight:800; }     /* 과용: 다 형광 */
+  .good-line .v { color:var(--fg); font-weight:700; } .good-line .lab { color:var(--mut); } .good-line .live { color:var(--accent); font-weight:800; }
+
+  .note { margin-top:14px; font-size:12.5px; color:var(--mut); line-height:1.6; padding-left:14px; border-left:2px solid rgba(var(--accent-rgb),.3); }
+  .note b { color:var(--fg-2); }
+  .foot { margin-top:60px; padding-top:20px; border-top:1px solid var(--line); font-size:13px; color:var(--mut); } .foot a { color:var(--accent); text-decoration:none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="crumb">노뮤트 UI 구성도 · <b>표면</b></p>
+  <h1>표면 · 테두리 · 강조</h1>
+  <p class="intro">어떤 도형은 테두리·배경이 있고 어떤 건 없어 들쭉날쭉. 그리고 강조색(형광)이 여기저기 칠해져 위계가 죽음. <b>표면은 3단</b>으로, <b>강조색은 화면당 핵심 소수</b>로 고정한다.</p>
+
+  <!-- 1. 표면 3단 -->
+  <div class="sec">
+    <h2><span class="n">1</span> 표면 3단 — 테두리·배경 기준</h2>
+    <p class="lead">"테두리를 줄까?"는 취향이 아니라 단계. 콘텐츠의 무게에 따라 셋 중 하나만 쓴다.</p>
+    <div class="levels">
+      <div class="lvl"><div class="demo"><div class="s-flat"><span class="k">출처</span> 한겨레 · 약 420자</div></div>
+        <div class="cap"><h4>1 · 평면 (flat)</h4><p class="rule">테두리 X · 배경 X</p><p>인라인 텍스트·메타·칩(글자만). 흐름에 얹는 가벼운 정보.</p></div></div>
+      <div class="lvl"><div class="demo"><div class="s-soft">🍌 카드뉴스 프롬프팅 중…</div></div>
+        <div class="cap"><h4>2 · 연면 (soft)</h4><p class="rule">배경 O · 테두리 X</p><p>상태/안내/게이지 트랙. 살짝 떠보이되 경계는 흐릿(<code>rgba(255,255,255,.04)</code>).</p></div></div>
+      <div class="lvl"><div class="demo"><div class="s-card"><div class="t">전세사기 빌라왕 1심</div><div class="b">피해 2,900명 · 보증금 1,200억</div></div></div>
+        <div class="cap"><h4>3 · 카드 (card)</h4><p class="rule">배경 O · 테두리 O</p><p>독립 단위(카드·코드박스·복사영역·모달). <code>--line</code> + inset highlight.</p></div></div>
+    </div>
+  </div>
+
+  <!-- 2. 인벤토리 -->
+  <div class="sec">
+    <h2><span class="n">2</span> 무엇이 어느 단인가 — 고정 매핑</h2>
+    <p class="lead">헷갈리는 요소를 못박는다. 같은 요소는 어느 메뉴든 같은 단.</p>
+    <div style="border:1px solid var(--line);border-radius:var(--r-l);overflow:hidden;background:rgba(5,12,8,.3);padding:4px 18px">
+      <table>
+        <tr><th>요소</th><th>단</th><th>근거</th></tr>
+        <tr><td><b>카테고리 칩</b> (사회·경제)</td><td><span class="pill flat">평면</span></td><td>박스 없이 색글자만(<code>.chip</code>)</td></tr>
+        <tr><td><b>출처·글자수·괄호</b></td><td><span class="pill flat">평면</span></td><td>메타 — 흐름에 얹음</td></tr>
+        <tr><td><b>상태/진행 안내</b></td><td><span class="pill soft">연면</span></td><td><code>.genstat</code> 배경만</td></tr>
+        <tr><td><b>편향 게이지 트랙</b></td><td><span class="pill soft">연면</span></td><td>배경 막대, 테두리 없음</td></tr>
+        <tr><td><b>요약/피드 카드</b></td><td><span class="pill card">카드</span></td><td><code>.fi-card</code> 배경+테두리</td></tr>
+        <tr><td><b>코드/프롬프트 박스</b></td><td><span class="pill card">카드</span></td><td><code>.md pre</code> 복사영역</td></tr>
+        <tr><td><b>카드뉴스 제목</b>(복사)</td><td><span class="pill card">카드</span></td><td><code>#cardsec h1</code> 박스화</td></tr>
+        <tr><td><b>입력칸</b>(textarea·input)</td><td><span class="pill card">카드</span></td><td>배경+테두리, focus=강조 보더</td></tr>
+      </table>
+    </div>
+    <p class="note"><b>단을 섞지 말 것:</b> 같은 줄에 평면 칩과 카드 칩을 나란히 두지 않는다. 한 영역은 한 단 기준.</p>
+  </div>
+
+  <!-- 3. 강조색 절제 -->
+  <div class="sec">
+    <h2><span class="n">3</span> 강조색(형광) — 화면당 소수만</h2>
+    <p class="lead">accent는 "지금 핵심"을 가리키는 손가락. 다 칠하면 아무것도 안 가리킨다. 실제로 IN/WRITE·괄호 부연은 형광을 <b>폐지</b>하고 흰색으로 돌렸다.</p>
+    <div class="cmp">
+      <div class="pane bad"><div class="pl">✕ 전 · 강조 인플레(다 형광)</div>
+        <div class="stg"><div class="meta-line ov"><span class="lab">적재 </span><b>2시간 전</b> · <span class="lab">보도 </span><b>오늘</b> · <b>약 420자</b> · <b>출처 한겨레</b></div></div></div>
+      <div class="pane good"><div class="pl">✓ 후 · 핵심 1개만 형광</div>
+        <div class="stg"><div class="meta-line good-line"><span class="lab">적재 </span><span class="live">2시간 전</span> · <span class="lab">보도 </span><span class="v">오늘</span> · <span class="lab">약 420자 · 출처 한겨레</span></div></div></div>
+    </div>
+    <p class="note"><b>강조 허용처:</b> 섹션·소제목 머리 / 활성 칩 / "지금" 라이브 값(N시간 전·진행 중) / 1차 버튼. <b>그 외</b>(날짜 라벨·글자수·괄호 부연·정적 제목)는 흰색·뮤트. 화면당 형광은 <b>2~3곳 이내</b>.</p>
+  </div>
+
+  <div class="foot">정본 = viewer/index.html (.chip 평면 · .genstat 연면 · .fi-card 카드 · 강조 폐지 결정 260618) — <a href="index.html">구성도 허브</a> · <a href="텍스트 위계.html">텍스트 위계</a></div>
+</div>
+</body>
+</html>

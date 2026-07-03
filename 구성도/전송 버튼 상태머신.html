@@ -1,0 +1,515 @@
+<!-- @dsCard group="구성도" viewport="900x1400" name="전송 버튼 상태머신" subtitle="클릭→재확인→전송→완료→원복" -->
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>구성도 · 전송 버튼 상태머신</title>
+<link rel="stylesheet" href="base.css">
+<style>
+  /* ── SSOT 토큰 (viewer/index.html :root 정본 계승) ── */
+  /* 토큰 = base.css(AUTO-MIRROR = viewer :root 정본). 인라인 :root 제거 = 단일 거울만 봄(§🎨 ⓒ·260621). */
+  * { box-sizing:border-box; }
+  html { scrollbar-width:thin; scrollbar-color:rgba(var(--accent-rgb),.3) transparent; }
+  ::-webkit-scrollbar { width:10px; }
+  ::-webkit-scrollbar-thumb { background:rgba(var(--accent-rgb),.26); border-radius:999px; border:2px solid var(--bg); background-clip:padding-box; }
+  body { margin:0; background:radial-gradient(125% 70% at 50% -8%, rgba(var(--accent-rgb),.06), transparent 55%) fixed, var(--bg);
+    color:var(--fg); font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; }
+  .wrap { max-width:900px; margin:0 auto; padding:42px 22px 110px; }
+
+  .crumb { font-size:12px; color:var(--mut); letter-spacing:.4px; margin:0 0 10px; }
+  .crumb b { color:var(--accent); }
+  h1 { font-size:27px; letter-spacing:-.5px; margin:0 0 10px; }
+  .intro { color:var(--fg-2); font-size:14.5px; max-width:66ch; margin:0; }
+  .intro b { color:var(--fg); }
+
+  .sec { margin:46px 0 0; }
+  .sec > h2 { font-size:12px; letter-spacing:1.6px; text-transform:uppercase; color:var(--accent); font-weight:800; margin:0 0 4px; display:flex; align-items:center; gap:10px; }
+  .sec > h2 .n { width:22px; height:22px; border-radius:7px; display:grid; place-items:center; font-size:12px;
+    background:rgba(var(--accent-rgb),.12); border:1px solid rgba(var(--accent-rgb),.26); }
+  .sec > p.lead { color:var(--mut); font-size:13.5px; margin:8px 0 18px; max-width:64ch; }
+  .card { background:var(--glass2); border:1px solid var(--line); border-radius:var(--r-l); padding:26px; }
+
+  /* ── 상태 흐름 칩 ── */
+  .flow { display:flex; align-items:center; flex-wrap:wrap; gap:9px; margin:0 0 26px; }
+  .fchip { display:inline-flex; align-items:center; gap:7px; padding:7px 13px; border-radius:var(--r-pill); font-size:12.5px; font-weight:700; white-space:nowrap;
+    background:rgba(255,255,255,.04); border:1px solid var(--line); color:var(--mut); transition:all var(--ease) .2s; }
+  .fchip .d { width:8px; height:8px; border-radius:999px; background:currentColor; }
+  .fchip.on { color:var(--fg); border-color:rgba(var(--accent-rgb),.5); background:rgba(var(--accent-rgb),.08); }
+  .fchip.idle.on{color:var(--accent)} .fchip.arm.on{color:var(--arm);border-color:rgba(var(--arm-rgb),.6);background:rgba(var(--arm-rgb),.12)}
+  .fchip.fire.on{color:var(--accent)} .fchip.done.on{color:var(--accent)}
+  .farrow { color:var(--mut); opacity:.5; font-size:13px; }
+
+  /* ── 전송 버튼 정본 컴포넌트 ── */
+  .send { position:relative; overflow:hidden; display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    min-width:150px; padding:11px 22px; border-radius:var(--r-pill); cursor:pointer; font:800 14px/1 inherit; letter-spacing:-.1px;
+    color:var(--accent); background:var(--accent-dim); border:1px solid rgba(var(--accent-rgb),.4);
+    transition:background var(--ease) .18s, border-color var(--ease) .18s, color var(--ease) .18s, transform .1s; }
+  .send .lbl, .send svg { position:relative; z-index:1; }
+  .send svg { display:block; }
+  .send:hover { background:rgba(var(--accent-rgb),.2); }
+  .send:active { transform:scale(.96); }
+  /* 재확인(arm) = 앰버 색변경 */
+  .send.is-arm { color:var(--arm); background:rgba(var(--arm-rgb),.18); border-color:rgba(var(--arm-rgb),.6); }
+  /* 전송(firing) = 초록 게이지 좌→우 채움 */
+  .send.is-fire { color:var(--on-accent); border-color:var(--accent); pointer-events:none; }
+  .send.is-fire::before { content:''; position:absolute; inset:0; background:var(--accent); transform:scaleX(0); transform-origin:left;
+    animation:gauge .72s linear forwards; z-index:0; }
+  @keyframes gauge { to { transform:scaleX(1); } }
+  /* 완료(done) = 솔리드 초록 + 체크 */
+  .send.is-done { color:var(--on-accent); background:var(--accent); border-color:var(--accent); pointer-events:none; }
+  .send.is-done .ck { animation:pop .34s var(--ease); }
+  @keyframes pop { 0%{transform:scale(.3)} 50%{transform:scale(1.3)} 100%{transform:scale(1)} }
+  @media (prefers-reduced-motion:reduce){ .send.is-fire::before{animation-duration:.2s} .send.is-done .ck{animation:none} }
+
+  /* 라이브 데모 영역 */
+  .live { display:flex; flex-direction:column; align-items:center; gap:20px; padding:14px 0 4px; }
+  .live .hint { font-size:12.5px; color:var(--mut); }
+  .live .hint b { color:var(--arm); }
+  .reset { font-size:12px; color:var(--mut); background:rgba(255,255,255,.04); border:1px solid var(--line); border-radius:var(--r-s); white-space:nowrap;
+    padding:6px 14px; cursor:pointer; transition:border-color var(--ease) .2s, color var(--ease) .2s; }
+  .reset:hover { color:var(--accent); border-color:rgba(var(--accent-rgb),.4); }
+
+  /* 필름스트립 */
+  .strip { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:12px; }
+  @media (max-width:680px){ .strip { grid-template-columns:repeat(2,1fr); } }
+  .frame .send { min-width:0; padding:9px 12px; font-size:12px; width:100%; }
+  .frame .send .lbl { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .frame { border:1px solid var(--line); border-radius:var(--r-m); background:rgba(255,255,255,.02); padding:16px 12px 14px; text-align:center; }
+  .frame .stg { min-height:58px; display:grid; place-items:center; }
+  .frame h4 { font-size:12px; margin:12px 0 5px; color:var(--fg); }
+  .frame .step { font:800 10px/1 ui-monospace,Menlo,monospace; color:var(--mut); letter-spacing:.5px; }
+  .frame .spec { font-size:11px; color:var(--mut); line-height:1.5; margin:7px 0 0; }
+  .frame .spec b { color:var(--fg-2); font-weight:600; }
+  .frame.acc { border-color:rgba(var(--accent-rgb),.3); }
+  .frame.amb { border-color:rgba(var(--arm-rgb),.4); }
+  /* 필름 내 강제상태(애니 없이 정지 프레임) */
+  .send.frozen { pointer-events:none; }
+  .send.frozen.is-fire::before { animation:none; transform:scaleX(.62); }
+  .send.frozen.is-done .ck { animation:none; }
+
+  /* 라벨 규약 표 */
+  table { width:100%; border-collapse:collapse; font-size:13px; margin-top:4px; }
+  th, td { text-align:left; padding:11px 12px; border-bottom:1px solid var(--line2); vertical-align:middle; }
+  th { font-size:11px; letter-spacing:.5px; text-transform:uppercase; color:var(--mut); font-weight:700; }
+  td .swatch { display:inline-block; width:13px; height:13px; border-radius:4px; vertical-align:-2px; margin-right:7px; border:1px solid rgba(255,255,255,.15); }
+  td code { font:600 12px ui-monospace,Menlo,monospace; color:var(--fg-2); }
+  td b { color:var(--fg); }
+
+  /* 통일 row */
+  .menus { display:flex; gap:14px; flex-wrap:wrap; }
+  .menucol { flex:1 1 200px; border:1px solid var(--line); border-radius:var(--r-m); padding:16px; background:rgba(255,255,255,.02); }
+  .menucol .mh { font-size:12px; font-weight:800; color:var(--mut); margin:0 0 14px; display:flex; align-items:center; gap:7px; }
+  .menucol .dot { width:9px; height:9px; border-radius:999px; }
+
+  /* 비용 vs 단순 */
+  .two { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  @media (max-width:680px){ .two { grid-template-columns:1fr; } }
+  .kind { border:1px solid var(--line); border-radius:var(--r-m); padding:18px; }
+  .kind h4 { margin:0 0 4px; font-size:14px; }
+  .kind.cost h4 { color:var(--arm); } .kind.cheap h4 { color:var(--accent); }
+  .kind p { margin:6px 0 14px; font-size:12.5px; color:var(--mut); line-height:1.55; }
+  .kind .seq { font:600 11.5px/1.7 ui-monospace,Menlo,monospace; color:var(--fg-2); }
+
+  .note { margin-top:14px; font-size:12.5px; color:var(--mut); line-height:1.6; padding-left:14px; border-left:2px solid rgba(var(--accent-rgb),.3); }
+  .note b { color:var(--fg-2); }
+  .foot { margin-top:64px; padding-top:20px; border-top:1px solid var(--line); font-size:13px; color:var(--mut); }
+  .foot a { color:var(--accent); text-decoration:none; }
+
+  /* ════ after+ 완전판 ════ */
+  .plus-divider { margin:72px 0 0; padding:22px 24px; border:1px solid rgba(var(--accent-rgb),.3); border-radius:var(--r-l);
+    background:linear-gradient(135deg, rgba(var(--accent-rgb),.07), rgba(var(--accent-rgb),.02)); }
+  .plus-divider .tagp { display:inline-block; font-size:11px; font-weight:800; letter-spacing:.6px; color:var(--on-accent); background:var(--accent);
+    padding:4px 11px; border-radius:999px; margin-bottom:10px; }
+  .plus-divider h2.big { font-size:22px; margin:0 0 8px; letter-spacing:-.5px; color:var(--fg); }
+  .plus-divider p { margin:0; font-size:13.5px; color:var(--fg-2); line-height:1.6; max-width:70ch; }
+  .plus-divider p b { color:var(--accent); }
+
+  /* 2축 차트 */
+  .axes { display:grid; grid-template-columns:1fr; gap:14px; margin-top:18px; }
+  .axis { border:1px solid var(--line); border-radius:var(--r-m); background:rgba(255,255,255,.02); padding:16px 18px; }
+  .axis .ah { font-size:12px; font-weight:800; letter-spacing:.4px; margin:0 0 12px; display:flex; align-items:center; gap:8px; }
+  .axis.gate .ah { color:var(--arm); } .axis.work .ah { color:var(--accent); }
+  .axis .ah .tg { font:600 10px ui-monospace,Menlo,monospace; color:var(--mut); font-weight:600; letter-spacing:0; }
+  .chain { display:flex; align-items:center; flex-wrap:wrap; gap:7px; }
+  .node { display:inline-flex; align-items:center; gap:6px; padding:7px 12px; border-radius:999px; font-size:12px; font-weight:700; white-space:nowrap;
+    background:rgba(255,255,255,.04); border:1px solid var(--line); color:var(--fg-2); }
+  .node .d2 { width:7px; height:7px; border-radius:999px; background:currentColor; }
+  .node.idle{color:var(--mut)} .node.arm{color:var(--arm);border-color:rgba(var(--arm-rgb),.5)}
+  .node.work{color:var(--accent);border-color:rgba(var(--accent-rgb),.45)} .node.done{color:var(--accent);background:rgba(var(--accent-rgb),.1)}
+  .node.fail{color:var(--danger);border-color:rgba(255,91,74,.5);background:rgba(255,91,74,.08)}
+  .node.partial{color:var(--amber);border-color:rgba(255,150,20,.5)} .node.picked{color:var(--mut);background:rgba(255,255,255,.05)}
+  .arr { color:var(--mut); opacity:.45; font-size:12px; }
+  .arr.br { color:var(--danger); opacity:.6; }
+
+  /* 라이브 분기 데모 */
+  .plus-live { display:grid; grid-template-columns:1fr; gap:16px; margin-top:18px; }
+  .pl-card { border:1px solid var(--line); border-radius:var(--r-l); background:var(--glass2,rgba(14,26,18,.55)); padding:20px; }
+  .pl-card .plh { font-size:12px; font-weight:800; color:var(--accent); letter-spacing:.4px; margin:0 0 4px; }
+  .pl-card .pld { font-size:12px; color:var(--mut); margin:0 0 16px; line-height:1.5; }
+  .pl-stage { display:flex; flex-direction:column; align-items:stretch; gap:14px; }
+  .scn-row { display:flex; gap:8px; flex-wrap:wrap; }
+  .scn-row .ctrl { font-size:12px; font-weight:700; padding:7px 13px; border-radius:var(--r-s); cursor:pointer; white-space:nowrap;
+    background:rgba(255,255,255,.04); border:1px solid var(--line); color:var(--fg-2); transition:all .18s var(--ease); }
+  .scn-row .ctrl:hover { border-color:rgba(var(--accent-rgb),.4); color:var(--accent); }
+  .scn-row .ctrl.amber:hover { border-color:rgba(255,150,20,.5); color:var(--amber); }
+  .scn-row .ctrl.red:hover { border-color:rgba(255,91,74,.5); color:var(--danger); }
+
+  /* 미결정 shine 바 (picking) */
+  .ind-bar { position:relative; overflow:hidden; height:34px; border-radius:999px; display:grid; place-items:center;
+    font-size:12px; font-weight:800; letter-spacing:.06em; color:var(--accent); border:1px solid rgba(var(--accent-rgb),.4);
+    background:linear-gradient(180deg, rgba(4,14,7,.62), rgba(3,10,5,.72)); }
+  .ind-bar span { position:relative; z-index:2; text-shadow:0 0 7px rgba(0,0,0,.85), 0 0 3px rgba(0,0,0,.9); }
+  /* \ub9e4\ud2b8\ub9ad\uc2a4 \uc138\ub85c \ucf54\ub4dc\ube44 \u2014 \ub5a8\uc5b4\uc9c0\ub294 \ub77c\uc784 \uc2a4\ud2b8\ub9bc(3\uce35 \uc18d\ub3c4\u00b7\ud3ed \ub2e4\ub974\uac8c, \uac00\uc7a5\uc790\ub9ac \ud398\uc774\ub4dc) */
+  .ind-bar::before { content:''; position:absolute; inset:0; z-index:1; pointer-events:none; opacity:.5;
+    background-image:
+      linear-gradient(180deg, transparent 0 52%, rgba(var(--accent-rgb),.85) 90%, #eaffb4 100%),
+      linear-gradient(180deg, transparent 0 64%, rgba(var(--accent-rgb),.45) 92%, rgba(var(--accent-rgb),.8) 100%),
+      repeating-linear-gradient(90deg, transparent 0 5px, rgba(0,0,0,.28) 5px 6px);
+    background-size: 6px 24px, 9px 17px, 6px 100%;
+    background-repeat: repeat, repeat, repeat-x;
+    background-position: 0 0, 3px 0, 0 0;
+    animation: matrixFall 1s linear infinite;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 14%, #000 86%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 14%, #000 86%, transparent); }
+  @keyframes matrixFall { to { background-position: 0 24px, 3px 34px, 0 0; } }
+  @media (prefers-reduced-motion:reduce){ .ind-bar::before { animation:none; } }
+  .ind-bar span { position:relative; z-index:2; }
+  .ind-bar::after { content:''; position:absolute; top:0; bottom:0; left:0; width:45%; z-index:1;
+    background:linear-gradient(90deg,transparent,rgba(var(--accent-rgb),.5),transparent); transform:translateX(-120%);
+    animation:indShine 1.2s linear infinite; }
+  @keyframes indShine { to { transform:translateX(280%); } }
+
+  /* 결정형 3세그 바 */
+  .seg-bar { display:flex; gap:5px; }
+  .seg { flex:1; height:9px; border-radius:5px; background:rgba(255,255,255,.06); position:relative; overflow:hidden; }
+  .seg .fill { position:absolute; inset:0; transform-origin:left; transform:scaleX(0); background:var(--accent); transition:transform .5s var(--ease); }
+  .seg.full .fill { transform:scaleX(1); }
+  .seg.busy .fill { transform:scaleX(.55); background:repeating-linear-gradient(45deg,rgba(var(--accent-rgb),.6) 0 5px,rgba(var(--accent-rgb),.25) 5px 10px); animation:segPulse 1s ease-in-out infinite; }
+  .seg.fail .fill { transform:scaleX(.55); background:repeating-linear-gradient(45deg,rgba(255,206,64,.5) 0 4px,rgba(255,206,64,.18) 4px 8px); }
+  .seg.scar::after { content:''; position:absolute; right:3px; top:50%; width:5px; height:5px; transform:translateY(-50%) rotate(45deg); background:var(--danger); border-radius:1px; }
+  @keyframes segPulse { 0%,100%{opacity:.6} 50%{opacity:1} }
+  .seg-lbls { display:flex; gap:5px; margin-top:6px; }
+  .seg-lbls span { flex:1; text-align:center; font:600 10px ui-monospace,Menlo,monospace; color:var(--mut); }
+
+  /* Failed 풀폭 칩 */
+  .fail-chip { width:100%; display:grid; place-items:center; height:34px; border-radius:var(--r-s); font-size:12px; font-weight:800; letter-spacing:.06em;
+    color:rgba(255,74,62,.95); border:1px solid rgba(255,176,46,.55); cursor:pointer;
+    background:repeating-linear-gradient(45deg,rgba(255,206,64,.26) 0 4px,rgba(255,206,64,.09) 4px 8px); transition:background .18s var(--ease); }
+  .fail-chip:hover { background:repeating-linear-gradient(45deg,rgba(255,206,64,.40) 0 4px,rgba(255,206,64,.16) 4px 8px); }
+  .picked-chip { width:100%; display:grid; place-items:center; height:34px; border-radius:999px; font-size:12px; font-weight:800; letter-spacing:.06em;
+    color:var(--mut); background:rgba(255,255,255,.05); border:1px solid var(--line2); cursor:pointer; }
+  .partial-note { font-size:11.5px; color:var(--amber); padding-left:12px; border-left:2px solid rgba(255,150,20,.5); line-height:1.5; }
+
+  /* 라벨 사전 + a11y 표 강조 */
+  .dict td .real { color:var(--accent); font-weight:700; } .dict td .old { color:var(--danger); text-decoration:line-through; opacity:.7; }
+  .a11y-row td:first-child { color:var(--info); font-weight:700; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <p class="crumb">노뮤트 UI 구성도 · <b>버튼</b></p>
+  <h1>전송 버튼 상태머신</h1>
+  <p class="intro"><b>비용이 드는 전송</b>(카드뉴스 발사·합성·생성처럼 러너/API를 쓰는 액션)은 한 흐름으로 고정한다 — <b>클릭 → 재확인 → 전송(프로그레스) → 완료 → 원복</b>. 버튼이 매 단계 살아 움직이고, 어느 메뉴(comp·ly·k·뉴스)든 색·동작·<b>버튼 안 라벨까지 동일</b>해야 한다. 정본 = viewer 수집함 <code style="font-size:12px;color:var(--fg-2)">.sc-pick</code>(arm→firing 게이지→done).</p>
+
+  <!-- 1. 라이브 -->
+  <div class="sec">
+    <h2><span class="n">1</span> 라이브 — 직접 눌러보기</h2>
+    <p class="lead">버튼을 눌러 흐름을 끝까지 밟아봐. 재확인 상태에서 <b style="color:var(--arm)">다시</b> 눌러야 비용이 나가는 전송이 실행된다(오발사 방지).</p>
+    <div class="card">
+      <div class="flow" id="flow">
+        <span class="fchip idle on" data-s="idle"><span class="d"></span>대기</span><span class="farrow">→</span>
+        <span class="fchip arm" data-s="arm"><span class="d"></span>재확인</span><span class="farrow">→</span>
+        <span class="fchip fire" data-s="fire"><span class="d"></span>전송 중</span><span class="farrow">→</span>
+        <span class="fchip done" data-s="done"><span class="d"></span>완료</span><span class="farrow">↺</span>
+        <span class="fchip idle" data-s="revert"><span class="d"></span>원복</span>
+      </div>
+      <div class="live">
+        <button class="send" id="demo"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg><span class="lbl">전송</span></button>
+        <div class="hint" id="hint">눌러서 시작 — 첫 클릭은 <b>재확인</b>으로만 바뀜(아직 전송 안 함)</div>
+        <button class="reset" id="reset">처음으로</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. 필름스트립 -->
+  <div class="sec">
+    <h2><span class="n">2</span> 5단계 정지 프레임 + 스펙</h2>
+    <p class="lead">각 상태의 정확한 색·라벨·지속시간. 게이지는 좌→우 1방향, 완료는 솔리드 채움 + 체크 pop.</p>
+    <div class="strip">
+      <div class="frame"><div class="stg"><button class="send frozen"><span class="lbl">전송</span></button></div>
+        <div class="step">STATE 1</div><h4>대기 (idle)</h4>
+        <p class="spec"><b>accent-dim</b> 글래스<br>border .4<br>라벨 "전송"</p></div>
+      <div class="frame amb"><div class="stg"><button class="send frozen is-arm"><span class="lbl">재확인</span></button></div>
+        <div class="step">STATE 2</div><h4>재확인 (arm)</h4>
+        <p class="spec"><b>앰버</b> 색변경<br>3초 무동작→대기 복귀<br>라벨 "재확인"</p></div>
+      <div class="frame acc"><div class="stg"><button class="send frozen is-fire"><span class="lbl" style="color:var(--on-accent)">전송 중…</span></button></div>
+        <div class="step">STATE 3</div><h4>전송 (firing)</h4>
+        <p class="spec">초록 게이지 <b>좌→우</b><br>.72s · 클릭잠금<br>라벨 "전송 중…"</p></div>
+      <div class="frame acc"><div class="stg"><button class="send frozen is-done"><span class="ck"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></span><span class="lbl">완료</span></button></div>
+        <div class="step">STATE 4</div><h4>완료 (done)</h4>
+        <p class="spec"><b>솔리드 초록</b> 채움<br>체크 pop · 1.2s 유지<br>라벨 "완료"</p></div>
+      <div class="frame"><div class="stg"><button class="send frozen"><span class="lbl">전송</span></button></div>
+        <div class="step">STATE 5</div><h4>원복 (revert)</h4>
+        <p class="spec">대기로 자동 복귀<br>다시 누를 수 있음<br>라벨 "전송"</p></div>
+    </div>
+  </div>
+
+  <!-- 3. 라벨 규약 -->
+  <div class="sec">
+    <h2><span class="n">3</span> 버튼 안 라벨 — 단계별 고정</h2>
+    <p class="lead">버튼 내용도 통일. 동사+상태로 한 단어 단위. 메뉴마다 다른 문구 쓰지 말 것.</p>
+    <div class="card" style="padding:8px 22px">
+      <table>
+        <tr><th>단계</th><th>버튼 라벨</th><th>색</th><th>지속</th></tr>
+        <tr><td><b>대기</b></td><td>아이콘 + "전송" <span style="color:var(--mut)">/ "발사" / "합성" / "생성"</span></td><td><span class="swatch" style="background:var(--accent-dim)"></span><code>accent-dim</code></td><td>—</td></tr>
+        <tr><td><b>재확인</b></td><td>"재확인"</td><td><span class="swatch" style="background:rgba(255,217,61,.5)"></span><code>arm #ffd93d</code></td><td>3s 타임아웃</td></tr>
+        <tr><td><b>전송</b></td><td>"전송 중…"</td><td><span class="swatch" style="background:var(--accent)"></span><code>게이지 .72s</code></td><td>실제 요청까지</td></tr>
+        <tr><td><b>완료</b></td><td>"완료" + ✓</td><td><span class="swatch" style="background:var(--accent)"></span><code>solid accent</code></td><td>1.2s</td></tr>
+      </table>
+    </div>
+    <p class="note"><b>대기 라벨만</b> 메뉴 동사로 바뀔 수 있다(전송/발사/합성/생성). <b>재확인·전송·완료 라벨은 전 메뉴 고정</b> — 이게 "버튼 안 내용 일치".</p>
+  </div>
+
+  <!-- 4. 메뉴 통일 -->
+  <div class="sec">
+    <h2><span class="n">4</span> 메뉴가 달라도 같은 버튼</h2>
+    <p class="lead">전송 버튼은 메뉴 대표색을 <b>따르지 않는다</b>. 비용·위험 신호(초록↔앰버)는 전 도구 공통이라야 손이 기억한다. 메뉴색은 헤더·아이콘에만.</p>
+    <div class="menus">
+      <div class="menucol"><div class="mh"><span class="dot" style="background:var(--accent)"></span>comp · 카드뉴스</div>
+        <button class="send" data-clone><span class="lbl">합성</span></button></div>
+      <div class="menucol"><div class="mh"><span class="dot" style="background:var(--info)"></span>ly · 영상 자막</div>
+        <button class="send" data-clone><span class="lbl">전송</span></button></div>
+      <div class="menucol"><div class="mh"><span class="dot" style="background:var(--arm)"></span>k · 영상 프롬프트</div>
+        <button class="send" data-clone><span class="lbl">생성</span></button></div>
+    </div>
+    <p class="note">대기 라벨만 다름(합성/전송/생성). 누르면 셋 다 <b>똑같이</b> 앰버 재확인 → 초록 게이지 → 완료 → 원복.</p>
+  </div>
+
+  <!-- 5. 비용 vs 단순 -->
+  <div class="sec">
+    <h2><span class="n">5</span> 비용 전송 vs 단순 액션 — 구분</h2>
+    <p class="lead">재확인 게이트는 <b>비용·되돌리기 어려운</b> 액션에만. 복사·미리보기 같은 공짜 액션에 끼우면 피로해진다.</p>
+    <div class="two">
+      <div class="kind cost"><h4>비용 전송 (재확인 O)</h4>
+        <p>러너 발사 · 카드 합성 · Gemini 생성 · API 호출 — 돈/시간이 나가거나 외부로 발사됨.</p>
+        <div class="seq">클릭 → <span style="color:var(--arm)">재확인</span> → 게이지 → 완료 → 원복</div>
+      </div>
+      <div class="kind cheap"><h4>단순 액션 (재확인 X)</h4>
+        <p>복사 · 파일 선택 · 미리보기 토글 — 공짜·즉시·되돌리기 쉬움.</p>
+        <div class="seq">클릭 → <span style="color:var(--accent)">즉시 ✓</span> → (1.5s) 원복</div>
+      </div>
+    </div>
+    <p class="note"><b>일회성(PICK 등)</b>은 예외: 완료 후 원복하지 않고 <b>소진 상태(회색 비활성)</b>로 잠근다 — 같은 항목 중복 발사 방지.</p>
+  </div>
+
+  <!-- ════════════ after+ 완전판 ════════════ -->
+  <div class="plus-divider">
+    <span class="tagp">AFTER +</span>
+    <h2 class="big">완전판 — 실패·부분·멈춤·소진까지</h2>
+    <p>위 1~5는 <b>happy-path</b>만 그렸다. 실코드(viewer/index.html)엔 <b>확인 게이트(짧음)</b>와 <b>작업 수명주기(긺)</b>가 별개로 돌고, 성공 외에 <b>실패·부분·멈춤·흉터·소진</b>이 1급 상태다. 게다가 진행 표시가 <b>미결정 shine</b>과 <b>결정형 3세그</b> 두 종류다. 이걸 전부 그린 교정판.</p>
+  </div>
+
+  <!-- A. 2축 -->
+  <div class="sec">
+    <h2><span class="n">6</span> 두 축으로 분리 — 확인 게이트 ↔ 작업 수명주기</h2>
+    <p class="lead">기존 카드의 오류: <b>확인 게이지(.72s 코스메틱)</b>를 "전송 진행"으로 오표기. 실제 생성은 분 단위 async라 둘은 다른 축이다.</p>
+    <div class="axes">
+      <div class="axis gate"><div class="ah">A · 확인 게이트 <span class="tg">짧음 · 오발사 방지 · 코스메틱</span></div>
+        <div class="chain">
+          <span class="node idle"><span class="d2"></span>대기</span><span class="arr">→</span>
+          <span class="node arm"><span class="d2"></span>재확인(앰버·3s)</span><span class="arr">→</span>
+          <span class="node done"><span class="d2"></span>게이지 .72s → 발사</span>
+        </div></div>
+      <div class="axis work"><div class="ah">B · 작업 수명주기 <span class="tg">긺 · 서버 상태 반영 · 폴링</span></div>
+        <div class="chain">
+          <span class="node work"><span class="d2"></span>Picking…(진행)</span><span class="arr">→</span>
+          <span class="node done"><span class="d2"></span>PICKED/done</span>
+          <span class="arr br">↘</span><span class="node partial"><span class="d2"></span>일부만 생성됨</span>
+          <span class="arr br">↘</span><span class="node fail"><span class="d2"></span>Failed</span>
+          <span class="arr">→</span><span class="node picked"><span class="d2"></span>소진(잠금)</span>
+        </div></div>
+    </div>
+    <p class="note"><b>핵심 교정:</b> 작업 완료는 <b>원복 안 함</b>. PICKED는 <b>소진(회색·비활성)</b>으로 잠그고 <b>탭하면 피드 이동</b>(실코드 L505). "1.2s 후 원복"은 단순 액션(복사)에만.</p>
+  </div>
+
+  <!-- B. 라이브 분기 -->
+  <div class="sec">
+    <h2><span class="n">7</span> 라이브 — 성공 / 부분 / 실패 분기</h2>
+    <p class="lead">발사 후 서버 결과에 따라 세 갈래. 버튼/바가 각각 어떻게 사는지 직접 돌려봐.</p>
+    <div class="pl-card">
+      <div class="plh">작업 진행 + 결과 분기</div>
+      <div class="pld" id="plus-hint">시나리오를 골라 발사 — 미결정 Picking… → 결정형 3세그 → 결과</div>
+      <div class="pl-stage">
+        <div class="seg-bar" id="segbar"><div class="seg"><div class="fill"></div></div><div class="seg"><div class="fill"></div></div><div class="seg"><div class="fill"></div></div></div>
+        <div class="seg-lbls"><span>요약</span><span>프롬프트</span><span>이미지</span></div>
+        <div id="plus-out"></div>
+        <div class="scn-row">
+          <button class="ctrl" data-scn="ok">✓ 성공 발사</button>
+          <button class="ctrl amber" data-scn="partial">◑ 부분 생성</button>
+          <button class="ctrl red" data-scn="fail">✕ 실패(시간초과)</button>
+          <button class="ctrl" data-scn="reset">처음으로</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- C. 진행바 2종 -->
+  <div class="sec">
+    <h2><span class="n">8</span> 진행바 2종 — 미결정 vs 결정형</h2>
+    <p class="lead">끝을 예측 못 하면 <b>미결정 shine</b>(좌→우 무한 빛쓸기), 단계를 셀 수 있으면 <b>결정형 세그</b>. 섞지 말 것.</p>
+    <div class="two">
+      <div class="kind"><h4 style="color:var(--accent)">미결정 (indeterminate)</h4>
+        <p>대기열·분석처럼 ETA 모름. 무한 shine 1.2s. 라벨 <code style="color:var(--fg-2)">Picking…</code>. 비활성.</p>
+        <div class="ind-bar"><span>PICKING…</span></div>
+      </div>
+      <div class="kind"><h4 style="color:var(--accent)">결정형 (determinate)</h4>
+        <p>요약→프롬프트→이미지 3단. 완료 세그 채움, 진행 세그 빗금 펄스, 실패 세그 노랑+빨강 흉터.</p>
+        <div class="seg-bar"><div class="seg full"><div class="fill"></div></div><div class="seg busy"><div class="fill"></div></div><div class="seg"><div class="fill"></div></div></div>
+        <div class="seg-lbls"><span>✓</span><span>진행</span><span>대기</span></div>
+      </div>
+    </div>
+    <p class="note"><b>흉터(scar):</b> 한 번이라도 깨진 단계는 성공·재시도 후에도 세그에 빨강 표식 영속(실코드 <code>failedOnce</code> L1596). "이 작업은 과거에 깨진 적 있음" 신뢰 신호.</p>
+  </div>
+
+  <!-- D. 실패/소진 칩 -->
+  <div class="sec">
+    <h2><span class="n">9</span> 실패·소진 = 죽은 버튼 아님 (진입점)</h2>
+    <p class="lead">Failed는 disabled가 아니라 <b>풀폭 위험 칩 + 컨텍스트 메뉴</b>(롱프레스: 진단 다운로드·전문 입력). PICKED는 <b>소진</b>이지만 <b>탭하면 피드로</b>.</p>
+    <div class="two">
+      <div class="kind"><h4 style="color:var(--danger)">Failed 칩</h4>
+        <p>노랑 빗금(위험 텍스처)+빨강 라벨. 풀폭. 롱프레스→실패사유/전문입력.</p>
+        <button class="fail-chip" id="faildemo">FAILED — 길게 눌러 처리</button>
+      </div>
+      <div class="kind"><h4 style="color:var(--mut)">PICKED 소진</h4>
+        <p>회색·테두리만. 중복 발사 잠금. 탭→해당 피드로 이동.</p>
+        <button class="picked-chip">PICKED · 피드 보기 →</button>
+      </div>
+    </div>
+    <p class="partial-note" style="margin-top:14px">◑ <b>일부만 생성됨(fired_partial):</b> 발사됐으나 이미지 미완. 재발사 버튼 노출. 18분째 미완이면 "인증 만료·렌더 실패" 경고로 강조(실코드 L2083).</p>
+  </div>
+
+  <!-- E. 라벨 사전 교정 -->
+  <div class="sec">
+    <h2><span class="n">10</span> 라벨 사전 — 실코드 문구 1:1</h2>
+    <p class="lead">버튼 안 라벨을 실코드와 일치시킨다. 내가 지어낸 문구(빨강 취소선)는 폐기, 실코드 문구(초록)로.</p>
+    <div class="card dict" style="padding:8px 22px">
+      <table>
+        <tr><th>상태</th><th>실코드 라벨(정본)</th><th>비고</th></tr>
+        <tr><td><b>진행(미결정)</b></td><td><span class="old">전송 중…</span> → <span class="real">Picking…</span></td><td>대문자 P, 말줄임 …</td></tr>
+        <tr><td><b>완료·소진</b></td><td><span class="old">완료</span> → <span class="real">PICKED</span></td><td>전부 대문자, 탭=피드</td></tr>
+        <tr><td><b>실패</b></td><td><span class="real">Failed</span> / <span class="real">실패(시간초과)</span></td><td>stuck=시간초과 명시</td></tr>
+        <tr><td><b>부분</b></td><td><span class="real">일부만 생성됨</span></td><td>재발사 유도 문구 동반</td></tr>
+        <tr><td><b>재시도</b></td><td><span class="real">카드뉴스 다시 생성</span></td><td>실패 후 mkbtn 라벨</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- F. a11y -->
+  <div class="sec">
+    <h2><span class="n">11</span> 접근성 — 빠졌던 행</h2>
+    <p class="lead">상태가 색·모션으로만 전달되면 스크린리더·운동장애 사용자가 놓친다. 상태마다 보조 채널을 박는다.</p>
+    <div class="card" style="padding:8px 22px">
+      <table>
+        <tr><th>상황</th><th>보조 채널</th></tr>
+        <tr class="a11y-row"><td>재확인 3s 타임아웃</td><td><code>aria-live="polite"</code>로 "다시 누르세요" 안내 · 타임아웃은 <code>prefers-reduced-motion</code>일 때 연장/해제</td></tr>
+        <tr class="a11y-row"><td>Picking…/firing 중</td><td><code>aria-busy="true"</code> + 라벨 텍스트 갱신(색만 X)</td></tr>
+        <tr class="a11y-row"><td>Failed</td><td><code>role="alert"</code> 또는 live 영역에 실패 사유 · 빗금색만으로 의미 전달 금지</td></tr>
+        <tr class="a11y-row"><td>완료/PICKED</td><td>체크 아이콘에 <code>aria-label</code> · 소진 버튼은 <code>aria-disabled</code>(탭 이동은 유지)</td></tr>
+      </table>
+    </div>
+    <p class="note"><b>터치:</b> 모든 상태 칩·버튼 최소 높이 34px 유지(실코드 .sc-* 계승). Failed 롱프레스 480ms.</p>
+  </div>
+
+  <div class="foot">정본 코드 = <a href="../viewer/index.html">viewer/index.html</a> <code style="color:var(--fg-2)">.sc-pick</code> / 규칙 정본 = CLAUDE.md §🎨 · 게이트 = shared/check_refs.py. — 다음 구성도: <a href="index.html">구성도 허브</a></div>
+</div>
+
+<script>
+const demo=document.getElementById('demo'), hint=document.getElementById('hint'),
+      flow=document.getElementById('flow'), lbl=demo.querySelector('.lbl');
+const CK='<span class="ck"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></span>';
+const SEND='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>';
+let state='idle', armTimer=null;
+
+function setFlow(s){ flow.querySelectorAll('.fchip').forEach(c=>c.classList.toggle('on', c.dataset.s===s || (s==='idle'&&c.dataset.s==='idle'))); }
+function reset(){
+  clearTimeout(armTimer); state='idle';
+  demo.className='send'; demo.innerHTML=SEND+'<span class="lbl">전송</span>';
+  hint.innerHTML='눌러서 시작 — 첫 클릭은 <b>재확인</b>으로만 바뀜(아직 전송 안 함)';
+  setFlow('idle');
+}
+demo.addEventListener('click',()=>{
+  if(state==='idle'){
+    state='arm'; demo.className='send is-arm'; demo.innerHTML='<span class="lbl">재확인</span>';
+    hint.innerHTML='<b>비용 나가는 전송</b> — 다시 누르면 실행, 3초 안 누르면 취소';
+    setFlow('arm');
+    armTimer=setTimeout(()=>{ if(state==='arm') { reset(); hint.textContent='재확인 시간 초과 — 취소됨'; } },3000);
+  } else if(state==='arm'){
+    clearTimeout(armTimer); state='fire';
+    demo.className='send is-fire'; demo.innerHTML='<span class="lbl">전송 중…</span>';
+    hint.textContent='러너로 발사 중… (게이지 좌→우)'; setFlow('fire');
+    setTimeout(()=>{
+      state='done'; demo.className='send is-done'; demo.innerHTML=CK+'<span class="lbl">완료</span>';
+      hint.textContent='✅ 완료 — 잠시 후 원복'; setFlow('done');
+      setTimeout(()=>{ reset(); hint.textContent='원복됨 — 다시 누를 수 있음'; },1200);
+    },740);
+  }
+});
+document.getElementById('reset').addEventListener('click',reset);
+
+// 메뉴 통일 데모 — 같은 머신 복제
+document.querySelectorAll('[data-clone]').forEach(b=>{
+  const base=b.querySelector('.lbl').textContent; let st='idle', t=null;
+  b.addEventListener('click',()=>{
+    if(st==='idle'){ st='arm'; b.className='send is-arm'; b.querySelector('.lbl').textContent='재확인';
+      t=setTimeout(()=>{ if(st==='arm'){st='idle';b.className='send';b.querySelector('.lbl').textContent=base;} },3000);
+    } else if(st==='arm'){ clearTimeout(t); st='fire'; b.className='send is-fire'; b.querySelector('.lbl').textContent='전송 중…';
+      setTimeout(()=>{ b.className='send is-done'; b.innerHTML=CK+'<span class="lbl">완료</span>';
+        setTimeout(()=>{ st='idle'; b.className='send'; b.innerHTML='<span class="lbl">'+base+'</span>'; },1100);
+      },740);
+    }
+  });
+});
+// ════ after+ 완전판: 분기 라이브 + Failed 데모 ════
+(function(){
+  const seg=[...document.querySelectorAll('#segbar .seg')];
+  const out=document.getElementById('plus-out'), ph=document.getElementById('plus-hint');
+  let timers=[];
+  function clearAll(){ timers.forEach(clearTimeout); timers=[]; seg.forEach(s=>s.className='seg'); out.innerHTML=''; }
+  function ind(label){ out.innerHTML='<div class="ind-bar"><span>'+label+'</span></div>'; }
+  function run(scn){
+    clearAll();
+    if(scn==='reset'){ ph.textContent='시나리오를 골라 발사 — 미결정 Picking… → 결정형 3세그 → 결과'; return; }
+    ph.innerHTML='발사됨 — <b style="color:var(--accent)">Picking…</b>(미결정) 후 단계 진행';
+    ind('PICKING…');
+    timers.push(setTimeout(()=>{ out.innerHTML=''; seg[0].className='seg busy'; },1100));
+    timers.push(setTimeout(()=>{ seg[0].className='seg full'; seg[1].className='seg busy'; },1900));
+    if(scn==='ok'){
+      timers.push(setTimeout(()=>{ seg[1].className='seg full'; seg[2].className='seg busy'; },2700));
+      timers.push(setTimeout(()=>{ seg[2].className='seg full';
+        out.innerHTML='<button class="picked-chip">PICKED · 피드 보기 →</button>';
+        ph.innerHTML='✅ <b style="color:var(--accent)">PICKED</b> — 원복 안 함. 소진 잠금 + 탭=피드 이동'; },3500));
+    } else if(scn==='partial'){
+      timers.push(setTimeout(()=>{ seg[1].className='seg full'; seg[2].className='seg busy'; },2700));
+      timers.push(setTimeout(()=>{ seg[2].className='seg fail';
+        out.innerHTML='<div class="partial-note">◑ <b>일부만 생성됨</b> — 이미지 미완. 아래 재발사로 나머지 채우기</div>';
+        ph.innerHTML='◑ <b style="color:var(--amber)">일부만 생성됨</b> — 부분 성공, 재발사 유도'; },3500));
+    } else if(scn==='fail'){
+      timers.push(setTimeout(()=>{ seg[1].className='seg fail scar';
+        out.innerHTML='<button class="fail-chip">FAILED — 실패(시간초과)</button>';
+        ph.innerHTML='✕ <b style="color:var(--danger)">Failed</b> — 멈춤 감지. 세그에 흉터(scar) 영속, 칩=진입점'; },2700));
+    }
+  }
+  document.querySelectorAll('[data-scn]').forEach(b=>b.addEventListener('click',()=>run(b.dataset.scn)));
+  const fd=document.getElementById('faildemo');
+  if(fd){ let lp=null;
+    const arm=()=>{ lp=setTimeout(()=>{ fd.textContent='▸ 실패사유 · 전문입력'; setTimeout(()=>fd.textContent='FAILED — 길게 눌러 처리',1400); },480); };
+    fd.addEventListener('pointerdown',arm);
+    ['pointerup','pointerleave','pointercancel'].forEach(e=>fd.addEventListener(e,()=>clearTimeout(lp)));
+    fd.addEventListener('contextmenu',e=>{ e.preventDefault(); fd.textContent='▸ 실패사유 · 전문입력'; setTimeout(()=>fd.textContent='FAILED — 길게 눌러 처리',1400); });
+  }
+})();
+</script>
+</body>
+</html>

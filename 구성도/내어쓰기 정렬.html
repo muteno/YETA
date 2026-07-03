@@ -1,0 +1,138 @@
+<!-- @dsCard group="구성도" viewport="900x1400" name="내어쓰기 · 정렬" subtitle="본문 좌측정렬 · 불릿 행잉 인덴트 · 리스트 들여쓰기" -->
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>구성도 · 내어쓰기 · 정렬</title>
+<link rel="stylesheet" href="base.css">
+<style>
+  /* 토큰 = base.css(AUTO-MIRROR = viewer :root 정본). 인라인 :root 제거 = 단일 거울만 봄(§🎨 ⓒ·260621). */
+  * { box-sizing:border-box; }
+  html { scrollbar-width:thin; scrollbar-color:rgba(var(--accent-rgb),.3) transparent; }
+  ::-webkit-scrollbar { width:10px; } ::-webkit-scrollbar-thumb { background:rgba(var(--accent-rgb),.26); border-radius:999px; border:2px solid var(--bg); background-clip:padding-box; }
+  body { margin:0; background:radial-gradient(125% 70% at 50% -8%, rgba(var(--accent-rgb),.06), transparent 55%) fixed, var(--bg);
+    color:var(--fg); font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; }
+  .wrap { max-width:900px; margin:0 auto; padding:42px 22px 110px; }
+  .crumb { font-size:12px; color:var(--mut); letter-spacing:.4px; margin:0 0 10px; } .crumb b { color:var(--accent); }
+  h1.t { font-size:27px; letter-spacing:-.5px; margin:0 0 10px; }
+  .intro { color:var(--fg-2); font-size:14.5px; max-width:66ch; margin:0; } .intro b { color:var(--fg); }
+  code { font-size:12px; color:var(--fg-2); font-family:ui-monospace,Menlo,monospace; }
+
+  .sec { margin:46px 0 0; }
+  .sec > h2 { font-size:12px; letter-spacing:1.6px; text-transform:uppercase; color:var(--accent); font-weight:800; margin:0 0 4px; display:flex; align-items:center; gap:10px; }
+  .sec > h2 .n { width:22px; height:22px; border-radius:7px; display:grid; place-items:center; font-size:12px; background:rgba(var(--accent-rgb),.12); border:1px solid rgba(var(--accent-rgb),.26); }
+  .sec > p.lead { color:var(--mut); font-size:13.5px; margin:8px 0 18px; max-width:64ch; }
+
+  .anat { border:1px solid var(--line); border-radius:var(--r-l); overflow:hidden; }
+  .arow { display:grid; grid-template-columns:1fr 250px; gap:0; border-bottom:1px solid var(--line2); }
+  .arow:last-child { border-bottom:none; }
+  @media (max-width:680px){ .arow { grid-template-columns:1fr; } }
+  .spec-l { padding:18px 20px; min-width:0; background:rgba(5,12,8,.35); position:relative; }
+  .spec-r { padding:14px 18px; border-left:1px solid var(--line2); display:flex; flex-direction:column; justify-content:center; gap:5px; background:rgba(255,255,255,.015); }
+  @media (max-width:680px){ .spec-r { border-left:none; border-top:1px solid var(--line2); } }
+  .spec-r .nm { font-size:13px; font-weight:800; color:var(--fg); }
+  .spec-r .meta { font:600 11px/1.5 ui-monospace,Menlo,monospace; color:var(--mut); }
+  .spec-r .meta b { color:var(--fg-2); font-weight:600; }
+  .tier { display:inline-block; font-size:9.5px; font-weight:800; letter-spacing:.4px; padding:2px 7px; border-radius:999px; margin-bottom:2px;
+    color:var(--accent); background:rgba(var(--accent-rgb),.1); border:1px solid rgba(var(--accent-rgb),.26); width:max-content; }
+
+  /* viewer #mdbody 계승 견본 */
+  .b-p { font-size:var(--fs-body); line-height:1.65; color:var(--fg); margin:0; text-align:left; }
+  .b-ul { margin:0; padding-left:18px; color:var(--fg); font-size:14px; }
+  .b-ul li::marker { color:var(--accent); }
+  .b-li { position:relative; padding-left:14px; margin:0; font-size:14px; line-height:1.6; color:var(--fg); }
+  .b-li::before { content:'•'; position:absolute; left:0; color:var(--accent); font-weight:700; }
+  .b-li + .b-li { margin-top:5px; }
+  /* 인덴트 가이드 — 좌측 라인 시각화 */
+  .guide { position:absolute; top:14px; bottom:14px; width:1px; background:repeating-linear-gradient(var(--accent) 0 4px, transparent 4px 8px); opacity:.5; }
+  .tick { font:600 10px ui-monospace,Menlo,monospace; color:var(--accent); position:absolute; top:2px; }
+
+  .dd { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  @media (max-width:680px){ .dd { grid-template-columns:1fr; } }
+  .col { border:1px solid var(--line); border-radius:var(--r-m); padding:16px 18px; background:rgba(255,255,255,.02); }
+  .col h4 { margin:0 0 10px; font-size:13px; display:flex; align-items:center; gap:7px; }
+  .col.no h4 { color:var(--danger,#ff5b4a); } .col.yes h4 { color:var(--accent); }
+  .col ul { margin:0; padding-left:18px; } .col li { font-size:12.5px; color:var(--mut); line-height:1.7; }
+  .col li b { color:var(--fg-2); }
+
+  .note { margin-top:14px; font-size:12.5px; color:var(--mut); line-height:1.6; padding-left:14px; border-left:2px solid rgba(var(--accent-rgb),.3); }
+  .note b { color:var(--fg-2); }
+  .foot { margin-top:60px; padding-top:20px; border-top:1px solid var(--line); font-size:13px; color:var(--mut); } .foot a { color:var(--accent); text-decoration:none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="crumb">노뮤트 UI 구성도 · <b>텍스트</b></p>
+  <h1 class="t">내어쓰기 · 정렬</h1>
+  <p class="intro">메뉴마다 들여쓰기·정렬이 즉흥이면 같은 항목이 화면마다 다르게 굳는다. <b>뉴스요약(#mdbody)을 정본</b>으로 정렬(전부 좌측) + 들여쓰기 3종(리스트·불릿 행잉·항목)을 한 벌로 고정. 핵심 = <b>말머리는 좌측 끝, 본문만 안으로</b>(행잉 인덴트) — 둘째 줄도 본문 라인에 정렬된다.</p>
+
+  <!-- 1. 정렬 -->
+  <div class="sec">
+    <h2><span class="n">1</span> 정렬 — 본문은 전부 좌측</h2>
+    <p class="lead">읽는 글(본문·항목·라벨·hint)은 예외 없이 <b>좌측정렬</b>. 가운데정렬은 "내용이 없는" 자리에만 — 빈 상태(empty)·로딩·상태 박스·모달 안내.</p>
+    <div class="anat">
+      <div class="arow">
+        <div class="spec-l"><p class="b-p">보증금을 돌려받지 못한 세입자는 전국 2,900여 명으로 집계됐다. 1심 재판부는 징역 10년을 선고했다. 전세보증보험 사각지대가 반복된다.</p></div>
+        <div class="spec-r"><span class="tier">본문 (p)</span><span class="nm">읽는 글 = 좌측</span><span class="meta"><b>text-align:left</b><br>15px · lh 1.65<br>viewer <code>#mdbody p</code></span></div>
+      </div>
+      <div class="arow">
+        <div class="spec-l"><div style="text-align:center;color:var(--mut);font-size:13px;padding:8px 0">대기·최근 내역 없음 ✓</div></div>
+        <div class="spec-r"><span class="tier">빈 상태만</span><span class="nm">내용 없음 = 가운데</span><span class="meta"><b>text-align:center</b><br>empty·loading·모달<br>viewer <code>.qempty · .empty</code></span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. 들여쓰기 3종 -->
+  <div class="sec">
+    <h2><span class="n">2</span> 들여쓰기 — 3종</h2>
+    <p class="lead">대상에 따라 들여쓰기 값이 갈린다. 불릿·항목은 <b>행잉 인덴트</b>(말머리 좌측 끝, 본문만 들임), 마크다운 리스트는 표준 18px.</p>
+    <div class="anat">
+      <div class="arow">
+        <div class="spec-l">
+          <span class="guide" style="left:34px"></span><span class="tick" style="left:30px">14</span>
+          <p class="b-li">피해 세입자 2,900여 명 — 둘째 줄도 본문 라인(14px)에 맞춰 정렬되어 말머리 아래로 안 흘러내린다.</p>
+        </div>
+        <div class="spec-r"><span class="tier">불릿 (•)</span><span class="nm">행잉 인덴트</span><span class="meta">본문 <b>padding-left:14px</b><br>• = 좌측 끝(<span style="color:var(--accent)">accent</span>)<br>viewer <code>.md p.bullet</code></span></div>
+      </div>
+      <div class="arow">
+        <div class="spec-l">
+          <span class="guide" style="left:36px"></span><span class="tick" style="left:32px">16</span>
+          <p class="b-li" style="padding-left:16px">텍스트 위계의 항목 — 본문보다 1단 작게(14px), 머리 강조색.</p>
+        </div>
+        <div class="spec-r"><span class="tier">항목</span><span class="nm">카드 라벨·항목</span><span class="meta">본문 <b>padding-left:16px</b><br>머리 <span style="color:var(--accent)">accent</span> · 14px<br>viewer <code>.nm-li</code> · 텍스트위계</span></div>
+      </div>
+      <div class="arow">
+        <div class="spec-l">
+          <span class="guide" style="left:38px"></span><span class="tick" style="left:34px">18</span>
+          <ul class="b-ul"><li>마크다운 리스트(자동 렌더) = 표준 들여쓰기, 마커는 강조색.</li></ul>
+        </div>
+        <div class="spec-r"><span class="tier">리스트 (ul)</span><span class="nm">마크다운 자동</span><span class="meta"><b>padding-left:18px</b><br>li::marker = <span style="color:var(--accent)">accent</span><br>viewer <code>.md ul</code></span></div>
+      </div>
+    </div>
+    <p class="note"><b>옛 메모 정정(31·18·54px).</b> 리뷰요청 §3B의 따옴표 내어쓰기 31·54px는 현 viewer에 그 시스템이 없다 — 실 정본은 <b>행잉 인덴트(14·16px) + 리스트(18px)</b>. 18px만 유효, 31·54는 폐기.</p>
+  </div>
+
+  <!-- 3. do/don't -->
+  <div class="sec">
+    <h2><span class="n">3</span> 해야 / 하지 말 것</h2>
+    <div class="dd">
+      <div class="col yes"><h4>✓ 이렇게</h4><ul>
+        <li>읽는 글은 전부 <b>좌측</b>. 가운데는 빈 상태·상태 박스만.</li>
+        <li>불릿·항목 = <b>행잉 인덴트</b>(말머리 좌측 끝, 본문만 들임).</li>
+        <li>둘째 줄이 본문 라인에 <b>정확히 정렬</b>되게(들여쓰기 = 패딩).</li>
+        <li>말머리(•)는 <b>강조색</b>으로 통일.</li>
+      </ul></div>
+      <div class="col no"><h4>✕ 이러지 말 것</h4><ul>
+        <li>본문·항목 <b>가운데정렬</b>(읽기 흐름 깨짐).</li>
+        <li>둘째 줄이 <b>말머리 아래로</b> 흘러내리게(인덴트 안 줌).</li>
+        <li>메뉴마다 들여쓰기 px <b>즉흥</b>으로 정하기.</li>
+        <li>옛 31·54px 따옴표 내어쓰기 <b>되살리기</b>(현 정본 아님).</li>
+      </ul></div>
+    </div>
+  </div>
+
+  <div class="foot">정본 = viewer/index.html <code>#mdbody · .md p.bullet(14) · .nm-li(16) · .md ul(18)</code> — <a href="index.html">구성도 허브</a> · <a href="텍스트 위계.html">텍스트 위계</a> · <a href="부속 설명 규약.html">부속 설명 규약</a></div>
+</div>
+</body>
+</html>

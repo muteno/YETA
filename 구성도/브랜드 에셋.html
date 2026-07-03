@@ -1,0 +1,149 @@
+<!-- @dsCard group="구성도" viewport="900x1600" name="브랜드 에셋" subtitle="로고 · 진입 아이콘 · 웹 대표 이미지" -->
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>구성도 · 브랜드 에셋</title>
+<link rel="stylesheet" href="base.css">
+<style>
+  /* 토큰 = base.css(AUTO-MIRROR = viewer :root 정본). 인라인 :root 제거 = 단일 거울만 봄(§🎨 ⓒ·260621). */
+  * { box-sizing:border-box; }
+  html { scrollbar-width:thin; scrollbar-color:rgba(var(--accent-rgb),.3) transparent; }
+  ::-webkit-scrollbar { width:10px; } ::-webkit-scrollbar-thumb { background:rgba(var(--accent-rgb),.26); border-radius:999px; border:2px solid var(--bg); background-clip:padding-box; }
+  body { margin:0; background:radial-gradient(125% 70% at 50% -8%, rgba(var(--accent-rgb),.06), transparent 55%) fixed, var(--bg);
+    color:var(--fg); font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; }
+  .wrap { max-width:900px; margin:0 auto; padding:42px 22px 110px; }
+  .crumb { font-size:12px; color:var(--mut); letter-spacing:.4px; margin:0 0 10px; } .crumb b { color:var(--accent); }
+  h1 { font-size:27px; letter-spacing:-.5px; margin:0 0 10px; }
+  .intro { color:var(--fg-2); font-size:14.5px; max-width:66ch; margin:0; } .intro b { color:var(--fg); }
+
+  .sec { margin:46px 0 0; }
+  .sec > h2 { font-size:12px; letter-spacing:1.6px; text-transform:uppercase; color:var(--accent); font-weight:800; margin:0 0 4px; display:flex; align-items:center; gap:10px; }
+  .sec > h2 .n { width:22px; height:22px; border-radius:7px; display:grid; place-items:center; font-size:12px; background:rgba(var(--accent-rgb),.12); border:1px solid rgba(var(--accent-rgb),.26); }
+  .sec > p.lead { color:var(--mut); font-size:13.5px; margin:8px 0 18px; max-width:64ch; }
+  .card { border:1px solid var(--line); border-radius:var(--r-l); background:var(--glass2); padding:24px; }
+
+  /* 로고 */
+  .logo-stage { display:grid; place-items:center; padding:34px; background:#0a120d; border-radius:var(--r-m); border:1px solid var(--line2); }
+  .logo-stage img { width:240px; max-width:70%; display:block; }
+  .logo-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px; }
+  @media (max-width:680px){ .logo-grid { grid-template-columns:1fr; } }
+  .lg-cell { border:1px solid var(--line2); border-radius:var(--r-m); padding:18px; display:grid; place-items:center; min-height:96px; }
+  .lg-cell.light { background:#eef7f0; } .lg-cell.dark { background:#0a120d; }
+  .lg-cell img { width:140px; }
+  .cap { font-size:11.5px; color:var(--mut); margin-top:9px; text-align:center; }
+
+  /* 진입 아이콘 */
+  .icons { display:flex; align-items:flex-end; gap:22px; flex-wrap:wrap; }
+  .iblock { text-align:center; }
+  .iblock img { display:block; margin:0 auto; object-fit:cover; border:1px solid var(--line2); }
+  .iblock .l { font:600 11px/1.5 ui-monospace,Menlo,monospace; color:var(--mut); margin-top:8px; }
+  .i16 { width:16px; height:16px; border-radius:3px; } .i32 { width:32px; height:32px; border-radius:5px; }
+  .i64 { width:64px; height:64px; border-radius:13px; } .i96 { width:96px; height:96px; border-radius:20px; }
+  .imask { width:96px; height:96px; border-radius:50%; }
+
+  /* 웹 대표 이미지 */
+  .ogcard { border:1px solid var(--line); border-radius:var(--r-m); overflow:hidden; background:#0a120d; max-width:540px; }
+  .ogcard .img { width:100%; aspect-ratio:1200/420; object-fit:cover; display:block; }
+  .ogcard .meta { padding:13px 16px; }
+  .ogcard .meta .t { font-size:14px; font-weight:800; color:var(--fg); } .ogcard .meta .u { font-size:11.5px; color:var(--mut); margin-top:3px; }
+  .bg-strip { display:flex; gap:12px; flex-wrap:wrap; margin-top:14px; }
+  .bg-strip .b { flex:1 1 150px; }
+  .bg-strip img { width:100%; height:84px; object-fit:cover; border-radius:var(--r-s); border:1px solid var(--line2); display:block; }
+
+  /* 화풍 */
+  .style-tags { display:flex; gap:9px; flex-wrap:wrap; }
+  .stag { font-size:12px; font-weight:700; padding:6px 13px; border-radius:999px; color:var(--accent); background:rgba(var(--accent-rgb),.1); border:1px solid rgba(var(--accent-rgb),.3); }
+
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th,td { text-align:left; padding:10px 12px; border-bottom:1px solid var(--line2); vertical-align:middle; }
+  th { font-size:11px; letter-spacing:.5px; text-transform:uppercase; color:var(--mut); font-weight:700; }
+  td b { color:var(--fg); } td code { font:600 11.5px ui-monospace,Menlo,monospace; color:var(--fg-2); }
+
+  .note { margin-top:14px; font-size:12.5px; color:var(--mut); line-height:1.6; padding-left:14px; border-left:2px solid rgba(var(--accent-rgb),.3); }
+  .note b { color:var(--fg-2); }
+  .foot { margin-top:60px; padding-top:20px; border-top:1px solid var(--line); font-size:13px; color:var(--mut); } .foot a { color:var(--accent); text-decoration:none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="crumb">노뮤트 UI 구성도 · <b>브랜드</b></p>
+  <h1>브랜드 에셋</h1>
+  <p class="intro">로고·진입 아이콘·웹 대표 이미지를 한곳에. 어떤 표면이든 같은 얼굴로 등장하게 — <b>워드마크 NO+mute</b>, <b>팝아트 극화 프로필</b>, <b>MUTE 배너</b>. theme-color는 <code style="font-size:12px;color:var(--fg-2)">#0a120d</code>.</p>
+
+  <!-- 1. 로고 -->
+  <div class="sec">
+    <h2><span class="n">1</span> 로고 (워드마크)</h2>
+    <p class="lead">NO=네온그린(#0FFD02) + mute=흰색 양각. 변형·재배색·기울임 금지. 보호여백 = 'O' 높이만큼.</p>
+    <div class="card">
+      <div class="logo-stage"><img src="../assets/brand/logo.png" alt="no_mute 로고"></div>
+      <div class="logo-grid">
+        <div><div class="lg-cell dark"><img src="../assets/brand/logo.png" alt=""></div><p class="cap">✓ 어두운 배경 — 기본</p></div>
+        <div><div class="lg-cell light"><img src="../assets/brand/logo.png" alt="" style="filter:none"></div><p class="cap">밝은 배경 — 그린만 유지(흰 mute는 외곽선 필요)</p></div>
+      </div>
+    </div>
+    <p class="note"><b>최소 폭 120px.</b> 그 이하는 'mute' 양각이 뭉개짐 → 아이콘(프로필)으로 대체.</p>
+  </div>
+
+  <!-- 2. 진입 아이콘 -->
+  <div class="sec">
+    <h2><span class="n">2</span> 진입 아이콘 — 파비콘·앱·PWA</h2>
+    <p class="lead">홈화면·탭·설치 아이콘은 전부 <b>팝아트 극화 프로필</b> 한 장. SVG 미지원(홈화면)이라 PNG가 정본. 라운드/마스커블 대응.</p>
+    <div class="card">
+      <div class="icons">
+        <div class="iblock"><img class="i16" src="../assets/brand/icon-192.png" alt=""><div class="l">16 favicon</div></div>
+        <div class="iblock"><img class="i32" src="../assets/brand/icon-192.png" alt=""><div class="l">32 탭</div></div>
+        <div class="iblock"><img class="i64" src="../assets/brand/icon-192.png" alt=""><div class="l">192 PWA</div></div>
+        <div class="iblock"><img class="i96" src="../assets/brand/icon-512.png" alt=""><div class="l">512 앱</div></div>
+        <div class="iblock"><img class="i96" src="../assets/brand/icon-512.png" alt=""><div class="l">apple-touch</div></div>
+        <div class="iblock"><img class="imask" src="../assets/brand/icon-512.png" alt=""><div class="l">maskable(원형)</div></div>
+      </div>
+    </div>
+    <div style="border:1px solid var(--line);border-radius:var(--r-l);overflow:hidden;background:rgba(5,12,8,.3);padding:4px 18px;margin-top:14px">
+      <table>
+        <tr><th>용도</th><th>파일</th><th>크기</th></tr>
+        <tr><td><b>파비콘</b></td><td><code>favicon.ico · icon-192.png</code></td><td>16·32·192</td></tr>
+        <tr><td><b>apple-touch</b></td><td><code>apple-touch-icon.png</code></td><td>180</td></tr>
+        <tr><td><b>PWA / maskable</b></td><td><code>icon-192 · icon-512 · icon-maskable-512</code></td><td>192·512</td></tr>
+        <tr><td><b>theme-color</b></td><td><code>#0a120d</code></td><td>—</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- 3. 웹 대표 이미지 -->
+  <div class="sec">
+    <h2><span class="n">3</span> 웹 대표 이미지 — og:image · 히어로 배너</h2>
+    <p class="lead">공유 카드·상단 배너의 얼굴 = <b>MUTE TV 월 + 오웰 인용</b>. 네온그린 글로우가 브랜드 시그니처.</p>
+    <div class="card">
+      <div class="ogcard">
+        <img class="img" src="../assets/brand/main_background.jpg" alt="MUTE 배너">
+        <div class="meta"><div class="t">no_mute · 노뮤트</div><div class="u">muteno — 시사 콘텐츠를 IG/Threads 카드뉴스로</div></div>
+      </div>
+      <div class="bg-strip">
+        <div class="b"><img src="../assets/brand/main_background.jpg" alt=""><p class="cap">히어로 배너(피드)</p></div>
+        <div class="b"><img src="../assets/brand/icon-512.png" alt=""><p class="cap">프로필 포트레잇</p></div>
+      </div>
+    </div>
+    <p class="note"><b>og:image = 1200×630</b> 권장(배너 크롭). 인용 문구가 잘리지 않게 우측 텍스트 안전영역 확보. 어두운 배경 + 그린 글로우 유지.</p>
+  </div>
+
+  <!-- 4. 화풍 -->
+  <div class="sec">
+    <h2><span class="n">4</span> 이미지 화풍 — 콘텐츠 생성 기준</h2>
+    <p class="lead">카드뉴스·썸네일 이미지의 룩. 브랜드 메모리 정본(화풍 2종 고정).</p>
+    <div class="card">
+      <div class="style-tags">
+        <span class="stag">한국웹툰 극화</span><span class="stag">한국웹툰 수채화</span><span class="stag">하프톤 도트</span>
+        <span class="stag">팝아트</span><span class="stag">film-noir low-key</span><span class="stag">단색 + 네온그린 강조</span>
+      </div>
+      <p style="font-size:12.5px;color:var(--mut);line-height:1.7;margin:16px 0 0">
+        <b style="color:var(--fg-2)">극화</b> = 범죄·법리·권력·구조 고발 / <b style="color:var(--fg-2)">수채화</b> = 휴먼·추모·감성. 기사 1건 = 1화풍. 악센트는 단색 + 1색(기본 네온그린 또는 사건 상징색).</p>
+    </div>
+    <p class="note"><b>윤리 카메라:</b> 피해자 Eye-level · 가해자 High · 권력/구조 Low·Worm. (브랜드 메모리)</p>
+  </div>
+
+  <div class="foot">정본 = assets/brand/* · viewer/index.html head(파비콘·theme-color) · PROJECT_MEMORY 비주얼 — <a href="index.html">구성도 허브</a> · <a href="글래스모피즘.html">글래스모피즘</a></div>
+</div>
+</body>
+</html>

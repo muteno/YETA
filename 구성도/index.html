@@ -1,0 +1,94 @@
+<!-- @dsCard group="구성도" viewport="900x900" name="구성도 허브" subtitle="UI 구성도 전체 색인" -->
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>노뮤트 UI 구성도 · 허브</title>
+<link rel="stylesheet" href="base.css">
+<style>
+  /* 토큰 = base.css(AUTO-MIRROR = viewer :root 정본). 인라인 :root 제거 = 단일 거울만 봄(§🎨 ⓒ·260621). */
+  * { box-sizing:border-box; }
+  body { margin:0; background:radial-gradient(125% 70% at 50% -8%, rgba(var(--accent-rgb),.06), transparent 55%) fixed, var(--bg);
+    color:var(--fg); font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; }
+  .wrap { max-width:900px; margin:0 auto; padding:48px 22px 110px; }
+  .crumb { font-size:12px; color:var(--mut); letter-spacing:.4px; margin:0 0 10px; }
+  .crumb b { color:var(--accent); }
+  h1 { font-size:30px; letter-spacing:-.6px; margin:0 0 12px; }
+  h1 b { color:var(--accent); }
+  .intro { color:var(--fg-2); font-size:14.5px; max-width:64ch; margin:0 0 6px; }
+  .intro b { color:var(--fg); }
+
+  .grp { margin:42px 0 16px; font-size:12px; letter-spacing:1.6px; text-transform:uppercase; color:var(--accent); font-weight:800; }
+  .grid { display:grid; grid-template-columns:repeat(2,1fr); gap:14px; }
+  @media (max-width:680px){ .grid { grid-template-columns:1fr; } }
+  .tile { display:block; text-decoration:none; color:inherit; background:var(--glass2); border:1px solid var(--line); border-radius:var(--r-l);
+    padding:20px; transition:border-color var(--ease) .2s, transform var(--ease) .2s, background var(--ease) .2s; position:relative; }
+  .tile:hover { border-color:rgba(var(--accent-rgb),.45); transform:translateY(-2px); background:rgba(var(--accent-rgb),.04); }
+  .tile.soon { opacity:.6; pointer-events:none; }
+  .tile .ic { width:38px; height:38px; border-radius:10px; display:grid; place-items:center; margin-bottom:14px;
+    background:rgba(var(--accent-rgb),.1); border:1px solid rgba(var(--accent-rgb),.22); color:var(--accent); }
+  .tile h3 { font-size:16px; margin:0 0 5px; letter-spacing:-.2px; }
+  .tile p { font-size:12.5px; color:var(--mut); margin:0; line-height:1.5; }
+  .tile .badge { position:absolute; top:16px; right:16px; font-size:10px; font-weight:800; letter-spacing:.4px; padding:3px 9px; border-radius:999px; }
+  .badge.done { color:var(--accent); background:rgba(var(--accent-rgb),.12); border:1px solid rgba(var(--accent-rgb),.3); }
+  .badge.wip { color:var(--arm); background:rgba(255,200,60,.12); border:1px solid rgba(255,200,60,.35); }
+
+  .foot { margin-top:56px; padding-top:20px; border-top:1px solid var(--line); font-size:13px; color:var(--mut); line-height:1.7; }
+  .foot b { color:var(--fg-2); } .foot a { color:var(--accent); text-decoration:none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="crumb"><b>노뮤트</b> 디자인 시스템</p>
+  <h1>UI <b>구성도</b></h1>
+  <p class="intro">메뉴마다 어긋나던 배치·버튼·색·아이콘·정렬을 <b>관심사별 한 장</b>으로 못박는다. 각 구성도는 정본 토큰(viewer/index.html SSOT) 위에서 그리며, 확정된 것만 모아 라우터 MD로 내려보낸다. 매번 디테일을 다시 잡지 않게 하는 게 목적.</p>
+
+  <div class="grp">📖 마스터 가이드북</div>
+  <div class="grid">
+    <a class="tile" href="00_가이드북_버튼인터랙션.html" style="grid-column:1/-1"><span class="badge done">총정리</span>
+      <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
+      <h3>버튼 인터랙션 가이드북</h3><p>모든 버튼·토큰·크기·여백·눌림/시맨틱 모션/탭 피드백/재확인·픽토그램·조건 총정리. HTML + <a href="00_가이드북_버튼인터랙션.md">MD</a> + <a href="버튼인터랙션_기틀북.css">CSS 기틀북</a>. 새 버튼은 여기 계승.</p></a>
+  </div>
+
+  <div class="grp">버튼 · 인터랙션</div>
+  <div class="grid">
+    <a class="tile" href="전송 버튼 상태머신.html"><span class="badge done">완료</span>
+      <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg></div>
+      <h3>전송 버튼 상태머신</h3><p>비용 전송 = 클릭→재확인→전송(게이지)→완료→원복. 메뉴 무관 동일·버튼 안 라벨까지 고정.</p></a>
+    <a class="tile" href="버튼 배치.html"><span class="badge done">완료</span>
+      <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div>
+      <h3>버튼 배치</h3><p>1차 CTA = 파일 있으면 좌우 한 줄. 도형 안 쓸림 방지 · 다운로드·저장 위치 통일.</p></a>
+  </div>
+
+  <div class="grp">텍스트 · 레이아웃</div>
+  <div class="grid">
+    <a class="tile" href="텍스트 위계.html"><span class="badge done">완료</span>
+      <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V5h16v2M9 5v14M7 19h4"/><path d="M14 13v-1h7v1M17 12v7M15.5 19h3"/></svg></div>
+      <h3>텍스트 위계</h3><p>대주제·섹션·소제목·문단·항목(•) 6단. 뉴스요약 마크업 기준 · 머리표 4계층.</p></a>
+    <a class="tile" href="표면 테두리 강조.html"><span class="badge done">완료</span>
+      <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="14" width="11" height="6" rx="1.5" stroke-dasharray="2 2"/></svg></div>
+      <h3>표면·테두리·강조</h3><p>도형 테두리 유무 3단(평면·연면·카드), 배경 기준, 강조색은 화면당 소수만.</p></a>
+    <a class="tile" href="부속 설명 규약.html"><span class="badge done">완료</span>
+      <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h10M4 18h13"/></svg></div>
+      <h3>부속 설명 규약</h3><p>label·sub·hint·status — 무엇을 언제 쓰나, 어디에 두나, 좌측정렬 기준.</p></a>
+    <a class="tile" href="내어쓰기 정렬.html"><span class="badge done">완료</span>
+      <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h18M7 5v14M3 19h8M14 9h7M14 13h7M14 17h5"/></svg></div>
+      <h3>내어쓰기 · 정렬</h3><p>본문 좌측정렬, 불릿 행잉 인덴트(14·16), 리스트 들여쓰기(18) — 메뉴 안에서 고정.</p></a>
+  </div>
+
+  <div class="grp">색 · 아이콘</div>
+  <div class="grid">
+    <a class="tile" href="메뉴별 대표색.html"><span class="badge done">완료</span>
+      <h3>메뉴별 대표색</h3><p>썸네일=노랑(#ffce54·기존). ly·k·comp 대표색 확정 + 카테고리·의미색 매핑.</p></a>
+    <a class="tile" href="픽토그램.html"><span class="badge done">완료</span>
+      <h3>픽토그램 시스템</h3><p>SVG 라인셋(복사·체크·다운로드·닫기) 스트로크 규격, 메뉴별 대표 픽토그램, 이모지 vs SVG.</p></a>
+  </div>
+
+  <div class="foot">
+    <b>워크플로:</b> 각 구성도에서 확정 → 확정값만 모아 <b>라우터 참조용 단일 MD</b>로 → 전 앱(comp·ly·k·뉴스)에 전역 적용.<br>
+    참고: <a href="../노뮤트 웹UI 개선안 전후비교.html">버튼·애니 전/후 비교</a> · 정본 토큰 = viewer/index.html :root (CLAUDE.md §🎨)
+  </div>
+</div>
+</body>
+</html>

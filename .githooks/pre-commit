@@ -1,0 +1,5 @@
+#!/bin/sh
+# 커밋 게이트(260702) — 어느 모델·어느 도구가 커밋해도 check_refs 하드게이트 강제.
+# 셋업(기기·clone마다 1회): git config core.hooksPath .githooks
+# 의도적 우회(비상시만): git commit --no-verify
+exec python3 "$(git rev-parse --show-toplevel)/shared/check_refs.py"

@@ -1,0 +1,159 @@
+<!-- @dsCard group="구성도" viewport="900x1500" name="부속 설명 규약" subtitle="label·sub·hint·status — 무엇을·언제·어디" -->
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>구성도 · 부속 설명 규약</title>
+<link rel="stylesheet" href="base.css">
+<style>
+  /* 토큰 = base.css(AUTO-MIRROR = viewer :root 정본). 인라인 :root 제거 = 단일 거울만 봄(§🎨 ⓒ·260621). */
+  * { box-sizing:border-box; }
+  html { scrollbar-width:thin; scrollbar-color:rgba(var(--accent-rgb),.3) transparent; }
+  ::-webkit-scrollbar { width:10px; } ::-webkit-scrollbar-thumb { background:rgba(var(--accent-rgb),.26); border-radius:999px; border:2px solid var(--bg); background-clip:padding-box; }
+  body { margin:0; background:radial-gradient(125% 70% at 50% -8%, rgba(var(--accent-rgb),.06), transparent 55%) fixed, var(--bg);
+    color:var(--fg); font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; }
+  .wrap { max-width:900px; margin:0 auto; padding:42px 22px 110px; }
+  .crumb { font-size:12px; color:var(--mut); letter-spacing:.4px; margin:0 0 10px; } .crumb b { color:var(--accent); }
+  h1.t { font-size:27px; letter-spacing:-.5px; margin:0 0 10px; }
+  .intro { color:var(--fg-2); font-size:14.5px; max-width:66ch; margin:0; } .intro b { color:var(--fg); }
+  code { font-size:12px; color:var(--fg-2); font-family:ui-monospace,Menlo,monospace; }
+
+  .sec { margin:46px 0 0; }
+  .sec > h2 { font-size:12px; letter-spacing:1.6px; text-transform:uppercase; color:var(--accent); font-weight:800; margin:0 0 4px; display:flex; align-items:center; gap:10px; }
+  .sec > h2 .n { width:22px; height:22px; border-radius:7px; display:grid; place-items:center; font-size:12px; background:rgba(var(--accent-rgb),.12); border:1px solid rgba(var(--accent-rgb),.26); }
+  .sec > p.lead { color:var(--mut); font-size:13.5px; margin:8px 0 18px; max-width:64ch; }
+
+  /* anatomy: 좌 specimen + 우 spec */
+  .anat { border:1px solid var(--line); border-radius:var(--r-l); overflow:hidden; }
+  .arow { display:grid; grid-template-columns:1fr 250px; gap:0; border-bottom:1px solid var(--line2); }
+  .arow:last-child { border-bottom:none; }
+  @media (max-width:680px){ .arow { grid-template-columns:1fr; } }
+  .spec-l { padding:18px 20px; min-width:0; background:rgba(5,12,8,.35); display:flex; flex-direction:column; gap:7px; justify-content:center; }
+  .spec-r { padding:14px 18px; border-left:1px solid var(--line2); display:flex; flex-direction:column; justify-content:center; gap:5px; background:rgba(255,255,255,.015); }
+  @media (max-width:680px){ .spec-r { border-left:none; border-top:1px solid var(--line2); } }
+  .spec-r .nm { font-size:13px; font-weight:800; color:var(--fg); }
+  .spec-r .meta { font:600 11px/1.5 ui-monospace,Menlo,monospace; color:var(--mut); }
+  .spec-r .meta b { color:var(--fg-2); font-weight:600; }
+  .tier { display:inline-block; font-size:9.5px; font-weight:800; letter-spacing:.4px; padding:2px 7px; border-radius:999px; margin-bottom:2px;
+    color:var(--accent); background:rgba(var(--accent-rgb),.1); border:1px solid rgba(var(--accent-rgb),.26); width:max-content; }
+
+  /* viewer 부속 텍스트 계승 견본 */
+  .lbl { font-size:12px; font-weight:700; color:var(--mut); }
+  .lbl.on { color:var(--accent); font-weight:700; }
+  .sub { font-size:12.5px; color:var(--mut); line-height:1.5; }
+  .hint { font-size:11px; color:var(--mut); text-align:left; }
+  .field { display:inline-flex; align-items:center; min-width:230px; padding:9px 12px; border:1px solid var(--line); border-radius:var(--r-m); background:rgba(5,12,8,.5); color:var(--mut); font-size:13px; }
+  .stat { margin:0; padding:11px 14px; border:1px solid var(--line); border-radius:var(--r-m); color:var(--mut); font-size:13px; background:rgba(255,255,255,.04); }
+  .stat.live { color:var(--accent); border-color:rgba(var(--accent-rgb),.3); }
+  .badge { font-size:10px; font-weight:900; letter-spacing:.04em; padding:2px 7px; border-radius:6px; width:max-content; }
+  .badge.ok { color:#7dffa0; background:rgba(var(--accent-rgb),.16); }
+  .badge.proc { color:var(--thumb); background:rgba(255,200,60,.14); }
+
+  /* 위치 다이어그램 */
+  .place { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  @media (max-width:680px){ .place { grid-template-columns:1fr; } }
+  .pcard { border:1px solid var(--line); border-radius:var(--r-m); padding:16px 18px; background:rgba(255,255,255,.02); }
+  .pcard h4 { margin:0 0 10px; font-size:13px; color:var(--fg-2); }
+  .frow { display:flex; flex-direction:column; gap:4px; padding:11px 13px; border:1px solid var(--line2); border-radius:var(--r-m); background:rgba(5,12,8,.4); }
+  .frow + .frow { margin-top:9px; }
+
+  .dd { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  @media (max-width:680px){ .dd { grid-template-columns:1fr; } }
+  .col { border:1px solid var(--line); border-radius:var(--r-m); padding:16px 18px; background:rgba(255,255,255,.02); }
+  .col h4 { margin:0 0 10px; font-size:13px; display:flex; align-items:center; gap:7px; }
+  .col.no h4 { color:var(--danger,#ff5b4a); } .col.yes h4 { color:var(--accent); }
+  .col ul { margin:0; padding-left:18px; } .col li { font-size:12.5px; color:var(--mut); line-height:1.7; }
+  .col li b { color:var(--fg-2); }
+
+  .note { margin-top:14px; font-size:12.5px; color:var(--mut); line-height:1.6; padding-left:14px; border-left:2px solid rgba(var(--accent-rgb),.3); }
+  .note b { color:var(--fg-2); }
+  .foot { margin-top:60px; padding-top:20px; border-top:1px solid var(--line); font-size:13px; color:var(--mut); } .foot a { color:var(--accent); text-decoration:none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="crumb">노뮤트 UI 구성도 · <b>텍스트</b></p>
+  <h1 class="t">부속 설명 규약</h1>
+  <p class="intro">본문(텍스트 위계)이 아닌 <b>UI를 거드는 보조 텍스트</b> 4종 — <b>label · sub · hint · status</b>. 매 화면에서 크기·색·위치가 제각각이면 "어디까지가 설명이고 어디부터 내용인지"가 흐려진다. viewer 실사용을 정본으로 4종의 역할·톤·정렬을 못박는다. 공통 원칙 = <b>전부 좌측정렬</b>, 본문보다 <b>작고 mut</b>, 활성/라이브일 때만 <code>--accent</code>.</p>
+
+  <!-- 1. 4종 -->
+  <div class="sec">
+    <h2><span class="n">1</span> 보조 텍스트 4종</h2>
+    <p class="lead">각 종은 역할이 1:1로 갈린다. 헷갈리면 "이건 무엇을 거드나"로 판정 — 칸 이름이면 label, 화면 부연이면 sub, 입력 안내면 hint, 진행/결과면 status.</p>
+    <div class="anat">
+      <div class="arow">
+        <div class="spec-l">
+          <span class="lbl">카드만 <span style="color:var(--line2)">·</span> <span class="lbl on">카드만</span></span>
+          <span class="field">제목을 입력해줘</span>
+        </div>
+        <div class="spec-r"><span class="tier">label</span><span class="nm">칸·토글 이름</span><span class="meta"><b>12px</b> · 700 · mut<br>활성 = <span style="color:var(--accent)">accent</span> · 칸 좌측/위<br>viewer <code>.tlbl</code> · field label</span></div>
+      </div>
+      <div class="arow">
+        <div class="spec-l"><span class="sub">들어온 기사를 요약·시사점으로 한눈에.</span></div>
+        <div class="spec-r"><span class="tier">sub</span><span class="nm">화면·섹션 부연</span><span class="meta"><b>12.5px</b> · mut · lh 1.5<br>제목 바로 아래<br>viewer <code>.vh-sub</code></span></div>
+      </div>
+      <div class="arow">
+        <div class="spec-l"><span class="hint">막힌 매체라 자동 수집이 안 됐어 — 전문을 붙여넣고 전송하면 그 내용으로 재분석해.</span></div>
+        <div class="spec-r"><span class="tier">hint</span><span class="nm">입력 안내·도움말</span><span class="meta"><b>11px</b> · mut · 좌측정렬<br>입력칸 안(placeholder)/아래<br>viewer placeholder · <code>.qnote</code></span></div>
+      </div>
+      <div class="arow">
+        <div class="spec-l">
+          <div class="stat">카드뉴스 생성 대기 중</div>
+          <div class="stat live">프롬프팅 중…</div>
+          <span style="display:flex;gap:6px"><span class="badge ok">SUCC</span><span class="badge proc">처리중</span></span>
+        </div>
+        <div class="spec-r"><span class="tier">status</span><span class="nm">진행·결과 상태</span><span class="meta"><b>13px</b> · mut → <span style="color:var(--accent)">live=accent+pulse</span><br>박스(genstat)/배지(qb)<br>viewer <code>.genstat</code> · <code>.qb</code></span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. 어디에 두나 -->
+  <div class="sec">
+    <h2><span class="n">2</span> 어디에 두나 — 좌측정렬 기준</h2>
+    <p class="lead">보조 텍스트는 <b>거드는 대상의 좌측 라인에 맞춰 시작</b>한다. 가운데정렬은 빈 상태(empty)·모달 안내처럼 "내용이 없을 때"만. 입력·항목 곁의 설명은 항상 좌측.</p>
+    <div class="place">
+      <div class="pcard">
+        <h4>입력칸 한 벌</h4>
+        <div class="frow">
+          <span class="lbl on">제목</span>
+          <span class="field" style="width:100%">속보 — 듣기 싫은 말</span>
+          <span class="hint">엔터로 전송 · 비우면 자동 생성</span>
+        </div>
+        <p class="note" style="margin-top:11px">label(위) → 입력칸 → hint(아래). 셋 다 칸과 <b>같은 좌측 라인</b>.</p>
+      </div>
+      <div class="pcard">
+        <h4>상태 박스</h4>
+        <div class="frow" style="gap:8px">
+          <div class="stat live" style="text-align:center">카드 생성 중… (적응형 ~15분)</div>
+          <span class="sub">완료되면 이미지로 교체됩니다.</span>
+        </div>
+        <p class="note" style="margin-top:11px">status 박스는 <b>가운데</b>(genstat 정본), 그 아래 부연 sub는 <b>좌측</b>. 역할 따라 정렬이 갈림.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. do/don't -->
+  <div class="sec">
+    <h2><span class="n">3</span> 해야 / 하지 말 것</h2>
+    <div class="dd">
+      <div class="col yes"><h4>✓ 이렇게</h4><ul>
+        <li>4종 모두 <b>본문보다 작게 + mut</b>. 활성/라이브만 <b>accent</b>.</li>
+        <li>label·hint·sub = <b>좌측정렬</b>(거드는 칸 라인).</li>
+        <li>status = 진행 중이면 <b>pulse</b>, 결과는 배지 3색(SUCC·처리·FAIL).</li>
+        <li>같은 역할엔 같은 종 — 칸 이름은 늘 label.</li>
+      </ul></div>
+      <div class="col no"><h4>✕ 이러지 말 것</h4><ul>
+        <li>hint를 <b>가운데정렬</b>(입력 옆 설명은 좌측).</li>
+        <li>label·sub에 <b>강조색</b> 상시 칠하기(강조 인플레).</li>
+        <li>status를 본문 크기로 키워 <b>내용과 혼동</b>.</li>
+        <li>sub와 hint를 섞어 — <b>화면 부연(sub) ≠ 입력 안내(hint)</b>.</li>
+      </ul></div>
+    </div>
+    <p class="note"><b>정본 = viewer 실사용.</b> 신규 화면은 새 보조 텍스트 스타일을 짓지 말고 위 4종(<code>.tlbl · .vh-sub · placeholder/.qnote · .genstat/.qb</code>)을 그대로 계승한다.</p>
+  </div>
+
+  <div class="foot">정본 = viewer/index.html <code>.tlbl · .vh-sub · .genstat · .qb · placeholder</code> — <a href="index.html">구성도 허브</a> · <a href="텍스트 위계.html">텍스트 위계</a> · <a href="내어쓰기 정렬.html">내어쓰기 · 정렬</a></div>
+</div>
+</body>
+</html>
