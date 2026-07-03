@@ -21,9 +21,10 @@
 ## 🗺 구조
 - `viewer/` = 뷰어. `index.html`(값 SSOT `:root` + yeta UI) · `tokens.css`(구조토큰 거울) · `nm-svg.js`(아이콘 SSOT) · `_headers`(정적 no-cache)
 - `functions/api/yeta.js` = Cloudflare Pages Function 게이트웨이. 7 op = `chars`(로스터)·`get`(세션)·`send`(유저턴+dispatch)·`draw`(페르소나 뽑기)·`warm`(프리웜)·`retry`(재시도)·`reset`. `REPO='muteno/yeta'`·`originOk`=`.pages.dev`.
-- `functions/_middleware.js` = pages.dev 우회차단 리다이렉트 **자리(현재 무력화)**. 커스텀 도메인+Access 붙일 때 재활성(⚠️ `yeta.js` originOk도 **동시** 수정 — 안 하면 403 자폭).
+- `functions/_middleware.js` = pages.dev 우회차단 리다이렉트 **자리(현재 무력화)**. 커스텀 도메인+Access 붙일 때 재활성(⚠️ `yeta.js` originOk도 **동시** 수정 — 안 하면 403 자폭). **현재 = originOk가 `.pages.dev`+`yeta.nomute.kr` 허용**(260704 · 커스텀 도메인 `yeta.nomute.kr` 연결 대기)·**무인증 공개**(운영자 260704 '공개 유지' — 언제든 Zero Trust Access로 잠금 가능).
 - `.github/workflows/yeta-chat.yml` + `.github/scripts/yeta_chat.sh` = 답장 생성(claude -p·페르소나 카드 주입·웜 루프). `push_send.py` = 실패 웹푸시.
 - `.github/workflows/yeta-face.yml` + `.github/scripts/yeta_face.py` = 캐릭터 얼굴(프로필) 생성 — **수동 dispatch 전용**(OpenAI gpt-image·⚠️유료 종량제·챗 구독OAuth와 별개 축). 10인 1:1 초상 → 공개 R2 `yeta_face/` → `roster.json` `avatar` 주입 커밋. 멱등(채워진 건 skip·`force=1` 재생성)·자립형(thumb_gen 의존 없음). 얼굴 산출물은 이미 roster에 주입됨 = 이건 *재생성* 도구(260703 이식).
+- `.github/workflows/yeta-bg.yml` + `.github/scripts/yeta_bg.py` = 무대 **배경**(bg) 생성 — **수동 dispatch 전용**(Gemini `gemini-3.1-flash-image`·⚠️유료·챗 구독OAuth와 별개 축). 무음동 8무대 9:16(+무드 배리언트 warm/tense/blue = `<<MOOD:x>>` 크로스페이드용) → 공개 R2 `yeta_bg/` → `roster.json` `bg` 주입. 멱등(채워진 건 skip·R2 기존 객체 재과금0·`force=1` 재생성)·자립형(thumb_gen 의존 제거·Gemini 호출·R2 업로드 인라인·260704 이식). 배경도 이미 roster 주입 완료 = *재생성/신규 무드* 도구.
 - `shared/` = `claude_transient.sh`(폴오버 SSOT)·`claude_meter.sh`·`inject_character.sh`(카드 강제주입) · `check_refs.py`(게이트)·`build_design_mirror.py`(거울 빌드).
 - `apps/yeta/` = 캐릭터 **10인**(`characters/*.md`)·`roster.json`(뷰어 표시 SSOT)·`apps/yeta/00_지침_캐릭터챗.md`·`apps/yeta/10_세계관.md`·`apps/yeta/PEXELS_배경_큐레이션_설계.md`.
 - `구성도/`·`docs/CII_컴포넌트계승인덱스.md` = 디자인 블루프린트·계승 인덱스.
@@ -39,7 +40,7 @@
 - **GitHub Secrets**: `CLAUDE_CODE_OAUTH_TOKEN_MUTENO`(필수·가장 먼저) · `R2_ACCOUNT_ID`·`R2_ACCESS_KEY_ID`·`R2_SECRET_ACCESS_KEY`·`YETA_R2_BUCKET` · `VAPID_PRIVATE_KEY`/`VAPID_SUBJECT`(푸시). Variable `ACTIVE_ACCOUNT`(기본 MUTENO). **3계정 폴오버** MUTENO→NOMUTEFB→EMS1130G(운영자 260704·⚠️쿼터 nomute 공유).
 - **레포 = public**(roster raw fetch 전제). **첫 실행 순서**: OAuth 토큰을 R2보다 **먼저**(없으면 잡 RED).
 - ⚠️ **보안**: middleware 무력화 = `yeta.pages.dev` 무인증 공개. Access 없이 `YETA_R2` 바인딩하면 **대화 노출** → 커스텀 도메인+Cloudflare Access 후 배포(또는 pages.dev에 Access 직접 부착).
-- **얼굴 파이프(선택·수동)** `yeta-face.yml`: GH Secret `OPENAI_API_KEY_nomute`(폴백 `OPENAI_API_KEY`·없으면 no-op) + **공개** R2 `R2_BUCKET`·`R2_PUBLIC_BASE`(계정키 `R2_ACCOUNT_ID`/`R2_ACCESS_KEY_ID`/`R2_SECRET_ACCESS_KEY`는 챗과 공용). ⚠️ 공개 버킷은 비공개 세션 `YETA_R2_BUCKET`과 **별도** — 공개 R2 5개 없으면 git 폴백(`viewer/assets/yeta_face/` 커밋). 얼굴은 이미 생성·주입 완료라 이 시크릿은 *재생성 시에만* 필요.
+- **이미지 파이프(선택·수동)** — 얼굴 `yeta-face.yml`(OpenAI `gpt-image` · GH Secret `OPENAI_API_KEY`, 폴백 `OPENAI_API_KEY_nomute`) · 배경 `yeta-bg.yml`(Gemini `gemini-3.1-flash-image` · GH Secret `GEMINI_API_KEY`). 둘 다 **공개** R2 `R2_BUCKET`·`R2_PUBLIC_BASE`(계정키 `R2_ACCOUNT_ID`/`R2_ACCESS_KEY_ID`/`R2_SECRET_ACCESS_KEY`는 챗과 공용)에 올림. ⚠️ **공개 버킷은 비공개 세션 `YETA_R2_BUCKET`과 별도**(하나는 public 접근 켜야 함) — 공개 R2 5개 없으면 git 폴백(`viewer/assets/yeta_face|yeta_bg/` 커밋). ⚠️ **유료 종량제 = 자동 트리거 금지·수동 dispatch만**. 얼굴·배경은 이미 생성·주입 완료(현재 **nomute R2** `pub-83f8…r2.dev` 서빙)라 이 시크릿·공개버킷은 *재생성/신규 무드·완전독립 이전* 시에만 필요.
 
 ## 🤖 모델
 - 답장 생성 = **opus 4.8**(`claude-opus-4-8`) 기본 · sonnet-5 다이얼 선택 · effort는 다이얼.

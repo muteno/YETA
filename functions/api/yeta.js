@@ -152,5 +152,5 @@ async function dispatch(env) {   // yeta-chat.yml 기동(단일 스레드 = char
 function originOk(request) {   // publish.js originOk 계승 — 상태변경 POST 는 동일출처만(CSRF)
   const o = request.headers.get('origin');
   if (!o) return false;
-  try { const h = new URL(o).hostname; return h.endsWith('.pages.dev'); } catch { return false; }   // 커스텀 도메인 붙이면 여기 추가(예: h === 'yeta.example.kr' || …)
+  try { const h = new URL(o).hostname; return h.endsWith('.pages.dev') || h === 'yeta.nomute.kr'; } catch { return false; }   // 커스텀 도메인 = yeta.nomute.kr(260704) · 추가 도메인은 || h === '…' 이어붙임
 }

@@ -1,0 +1,54 @@
+# yeta 무대 배경 생성 — 수동 dispatch 전용(⚠️ Gemini 유료 = 자동 트리거 금지 · 챗 구독 OAuth와 별개 축)
+# 무음동 8무대 9:16 배경(+무드 배리언트) → 공개 R2 yeta_bg/ 업로드 → roster.json bg 주입 커밋. 운영자 직접 지시 1회성.
+# 게이트 = GEMINI_API_KEY(없으면 no-op). 공개 R2 5시크릿 없으면 git 폴백(viewer/assets/yeta_bg/ 커밋).
+# 멱등: bg 채워진 무대는 skip · R2에 이미 있으면 재생성 0. 전체 재생성 = input force=1.
+# ⚠️ 공개 버킷 R2_BUCKET/R2_PUBLIC_BASE = 챗 세션(YETA_R2_BUCKET·비공개)과 별도. 자립형(thumb_gen 의존 없음·260704 이식).
+name: yeta-bg
+
+on:
+  workflow_dispatch:
+    inputs:
+      force:
+        description: '1 = 기존 bg 도 재생성·덮어쓰기(기본 = 빈 슬롯만)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+concurrency:
+  group: yeta-bg
+  cancel-in-progress: false
+
+jobs:
+  gen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30   # 8무대 + 무드 24장 ≈ 32콜 × ~수십초 → 여유(얼굴 파이프와 동일 상향)
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: 배경 생성 + roster 주입
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}                  # 공개 버킷(≠ YETA_R2_BUCKET 비공개 세션)
+          R2_PUBLIC_BASE: ${{ secrets.R2_PUBLIC_BASE }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          FORCE: ${{ github.event.inputs.force }}
+        run: python3 .github/scripts/yeta_bg.py
+
+      - name: roster 커밋 (rebase 재시도 = yeta-face 패턴)
+        run: |
+          git config user.name "yeta-bot"
+          git config user.email "bot@nomute.local"
+          # ⚠️ pathspec 분리 필수 — 한 add에 없는 경로 섞이면 git add 전체 무스테이징(전례)
+          git add apps/yeta/characters/roster.json
+          git add viewer/assets/yeta_bg 2>/dev/null || true
+          git commit -m "yeta: 무대 배경 생성 → roster bg 주입" || { echo "커밋할 것 없음"; exit 0; }
+          pushed=0
+          for i in 1 2 3 4 5; do
+            if git fetch origin main && git rebase origin/main && git push origin HEAD:main; then pushed=1; break; fi
+            git rebase --abort 2>/dev/null || true; sleep $((i*3))
+          done
+          [ "$pushed" = 1 ] || { echo "::error::push 5회 실패"; exit 1; }
