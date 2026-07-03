@@ -1,0 +1,59 @@
+name: yeta-face
+
+# yeta 캐릭터 얼굴(프로필) 생성 — 수동 dispatch 전용(⚠️ OpenAI 유료 종량제 = 자동 트리거 금지 · 챗 구독 OAuth와 별개 축).
+# 무음동 10인 1:1 얼굴중심 초상 → 공개 R2 yeta_face/ 업로드 → roster.json avatar 주입 커밋. 운영자 직접 지시(260703) 1회성.
+# 게이트 = OPENAI_API_KEY(GitHub Secret · 없으면 no-op). 멱등: avatar 채워진 캐릭터 skip · 전체 재생성 = input force=1.
+# ⚠️ 공개 버킷 R2_BUCKET/R2_PUBLIC_BASE = 챗 세션(YETA_R2_BUCKET·비공개)과 별도. 없으면 git 폴백(viewer/assets/yeta_face/ 커밋).
+on:
+  workflow_dispatch:
+    inputs:
+      force:
+        description: '1 = 기존 avatar 도 재생성·덮어쓰기(기본 = 빈 슬롯만)'
+        required: false
+        default: ''
+      only:
+        description: '특정 캐릭터 id 하나만(연결·모델 테스트 · 예: mudi). 비우면 전체'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+concurrency:
+  group: yeta-face
+  cancel-in-progress: false
+
+jobs:
+  gen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30   # ⚠️ 10장 × ~81초 ≈ 13분 + 재시도 → 15분이면 취소·roster 커밋 skip(무반영). 30분 상향이 열쇠(인계 260703).
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: 얼굴 생성 + roster avatar 주입
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY_nomute || secrets.OPENAI_API_KEY }}   # 운영자 등록 시크릿명 = OPENAI_API_KEY_nomute(폴백 OPENAI_API_KEY)
+          OPENAI_IMAGE_MODEL: ${{ vars.OPENAI_IMAGE_MODEL }}   # 선택 — 미설정이면 스크립트 기본(gpt-image-2)
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}                  # 공개 버킷(≠ YETA_R2_BUCKET 비공개 세션)
+          R2_PUBLIC_BASE: ${{ secrets.R2_PUBLIC_BASE }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          FORCE: ${{ github.event.inputs.force }}
+          YETA_FACE_ONLY: ${{ github.event.inputs.only }}
+        run: python3 .github/scripts/yeta_face.py
+
+      - name: roster 커밋 (rebase 재시도 = thumb-make 패턴)
+        run: |
+          git config user.name "yeta-bot"
+          git config user.email "bot@nomute.local"
+          # ⚠️ pathspec 분리 필수 — 한 add에 없는 경로 섞이면 git add 전체 무스테이징(전례)
+          git add apps/yeta/characters/roster.json
+          git add viewer/assets/yeta_face 2>/dev/null || true
+          git commit -m "yeta: 캐릭터 얼굴 생성 → roster avatar 주입" || { echo "커밋할 것 없음"; exit 0; }
+          pushed=0
+          for i in 1 2 3 4 5; do
+            if git fetch origin main && git rebase origin/main && git push origin HEAD:main; then pushed=1; break; fi
+            git rebase --abort 2>/dev/null || true; sleep $((i*3))
+          done
+          [ "$pushed" = 1 ] || { echo "::error::push 5회 실패"; exit 1; }
