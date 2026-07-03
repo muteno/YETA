@@ -1,0 +1,50 @@
+# 말벗 제타(yeta) — 캐릭터챗 (CLAUDE.md)
+
+> 매 세션 자동 로드. yeta는 **캐릭터챗 단독 앱**(nomute-editor에서 260703 분리·독립 레포 `muteno/yeta`). **반말·사족 없이·결론부터.** 응답은 첫 글자부터 한국어(코드·경로·고유명사만 예외).
+
+## 🎬 앱 개요
+- **말벗 제타** = 무음동 10인 페르소나와의 랜덤 톡방. 세션 = R2 비공개 **단일 스레드**(맥락·관계노트 공유).
+- 페르소나 = **랜덤 뽑기 + 🎲 재뽑기**(고정 선택 없음·화자만 교체·맥락 승계). 내 버블 = 네온보라(`--bubble-me`). *나레이션* = 이탤릭.
+- 답장 = `claude -p`(구독 OAuth) · GitHub Actions dispatch · **웜 세션 루프**(답장 후 대기 → 후속 메시지 같은 런 즉답).
+- 다이얼 = model(opus 4.8 / sonnet-5) × effort(low/''/max) — 턴별 박제. 기본 = opus×low(30초 컷).
+
+## 🎨 디자인 계약 — 계승이 디폴트 (기틀·항상 유효)
+> "디자인 기틀이 계속 바뀌는" 것을 기계로 차단하는 3층 방어(nomute 260703 이식). 규칙 SSOT = 이 절.
+1. 모든 UI/UX = **기틀에 이미 있는 형태만** 구현. 새 색/px/blur/radius/scale/컴포넌트 임의 창작 **절대 금지**.
+2. **값 SSOT = `viewer/index.html` `:root` 단 하나**(34토큰). raw 값 대신 `var()` 토큰.
+3. 기틀에 없는 값 필요 → **작업 멈추고 운영자에 질문**(왜 필요 + 가장 가까운 기존 후보). 승인분은 즉시 편입: `:root` 토큰 추가 → `python3 shared/build_design_mirror.py build`(거울 재생성) → `docs/CII_컴포넌트계승인덱스.md` 행 → check_refs baseline 사유.
+4. 새 버튼·모달·입력칸·아이콘 = **CII 정본 셀렉터 계승**(재설계 금지). 버튼·눌림 패턴 = `구성도/00_가이드북_버튼인터랙션.html`. 눌림 scale = `--press-*` 토큰.
+5. `viewer/tokens.css`·`구성도/base.css` = **build 산출 거울**(직접 수정 금지·다음 build에 덮어씀).
+6. **3층 강제**: ① SessionStart/UI턴 = `.claude/hooks/design_digest.py`가 계약 자동 주입 ② UI 파일 저장 후 = `.claude/hooks/design_gate.py`가 check_refs 디자인 게이트(위반 exit 2) ③ 커밋 = `.githooks/pre-commit`이 `check_refs` 강제(`core.hooksPath=.githooks`는 design_digest가 세션마다 자동 설정). 타 모델 = `AGENTS.md`.
+7. **색은 yeta 팔레트**(네온보라·근흑) — nomute 녹색 브랜드와 다름. 구조 토큰(반지름·간격·타이포·모션·눌림)만 계승, 색은 yeta 정체성.
+
+## 🗺 구조
+- `viewer/` = 뷰어. `index.html`(값 SSOT `:root` + yeta UI) · `tokens.css`(구조토큰 거울) · `nm-svg.js`(아이콘 SSOT) · `_headers`(정적 no-cache)
+- `functions/api/yeta.js` = Cloudflare Pages Function 게이트웨이. 7 op = `chars`(로스터)·`get`(세션)·`send`(유저턴+dispatch)·`draw`(페르소나 뽑기)·`warm`(프리웜)·`retry`(재시도)·`reset`. `REPO='muteno/yeta'`·`originOk`=`.pages.dev`.
+- `functions/_middleware.js` = pages.dev 우회차단 리다이렉트 **자리(현재 무력화)**. 커스텀 도메인+Access 붙일 때 재활성(⚠️ `yeta.js` originOk도 **동시** 수정 — 안 하면 403 자폭).
+- `.github/workflows/yeta-chat.yml` + `.github/scripts/yeta_chat.sh` = 답장 생성(claude -p·페르소나 카드 주입·웜 루프). `push_send.py` = 실패 웹푸시.
+- `shared/` = `claude_transient.sh`(폴오버 SSOT)·`claude_meter.sh`·`inject_character.sh`(카드 강제주입) · `check_refs.py`(게이트)·`build_design_mirror.py`(거울 빌드).
+- `apps/yeta/` = 캐릭터 **10인**(`characters/*.md`)·`roster.json`(뷰어 표시 SSOT)·`apps/yeta/00_지침_캐릭터챗.md`·`apps/yeta/10_세계관.md`·`apps/yeta/PEXELS_배경_큐레이션_설계.md`.
+- `구성도/`·`docs/CII_컴포넌트계승인덱스.md` = 디자인 블루프린트·계승 인덱스.
+
+## 📰 파이프라인 (한 답장 = 이 체인)
+뷰어 `send` → `functions/api/yeta.js`(R2 세션 append + `dispatch`) → `yeta-chat.yml` → `yeta_chat.sh`(claude -p · 카드 주입 · 앵커-ts insert) → R2 세션 → 뷰어 폴(적응형 4s).
+- 세션 = R2 비공개 `sessions/main.json`. ⚠️ **대화는 레포에 커밋 금지**(public 레포 = 공개 박제 · `contents:read`).
+- 지침 강제주입 = `inject_character.sh`가 `00→10→카드` 전문 cat(해시 도장 = 지침 바뀌면 재생성).
+
+## 🔑 인프라 (완전 신규)
+- **Cloudflare Pages**: build command **공란**(정적 서빙 · build-viewer 불필요) · output **`viewer`** · `functions/` 자동 인식.
+- **R2 바인딩** `YETA_R2`(비공개 세션 버킷) + Pages env `GH_TOKEN`(actions:write PAT) · `YETA_MAX_PER_DAY`(선택).
+- **GitHub Secrets**: `CLAUDE_CODE_OAUTH_TOKEN_MUTENO`(필수·가장 먼저) · `R2_ACCOUNT_ID`·`R2_ACCESS_KEY_ID`·`R2_SECRET_ACCESS_KEY`·`YETA_R2_BUCKET` · `VAPID_PRIVATE_KEY`/`VAPID_SUBJECT`(푸시). Variable `ACTIVE_ACCOUNT`(기본 MUTENO). ✗ `_ALT`/`_ALT2`(챗 폴오버 최하위 설계).
+- **레포 = public**(roster raw fetch 전제). **첫 실행 순서**: OAuth 토큰을 R2보다 **먼저**(없으면 잡 RED).
+- ⚠️ **보안**: middleware 무력화 = `yeta.pages.dev` 무인증 공개. Access 없이 `YETA_R2` 바인딩하면 **대화 노출** → 커스텀 도메인+Cloudflare Access 후 배포(또는 pages.dev에 Access 직접 부착).
+
+## 🤖 모델
+- 답장 생성 = **opus 4.8**(`claude-opus-4-8`) 기본 · sonnet-5 다이얼 선택 · effort는 다이얼.
+- ⚠️ **`--bare` 절대 금지**(OAuth 안 읽어 인증 즉사). `--safe-mode`는 카나리아 통과 후(`YETA_SAFE`).
+- 폴오버 = 활성 계정만(서브계정 미주입 = 챗 최하위). 세션 작업자·검증은 opus 4.8 유지.
+
+## ✂️ 수정·검증·커밋
+- 커밋 전 **`python3 shared/check_refs.py` rc=0 필수**(pre-commit 자동 강제). UI 변경은 design_gate가 저장 즉시 검사.
+- 기틀(구조·`:root`·파이프라인) 변경 = 운영자 확인 필수. 주변부(문구·캐릭터 카드·임계) = 자유.
+- 실질 변경은 실측 검증 후 보고. `git show origin/main:<파일>`로 반영 확인.
