@@ -3,7 +3,7 @@
 # 세션 = R2 비공개 sessions/main.json 단일 스레드(맥락 공유 · 화자 = sess.persona — 뽑기/재뽑기).
 # 다이얼 = 마지막 pending 유저 턴의 {model,effort}(턴별 박제 · 화이트리스트 재강제 · effort 거부 시 1회 폴백).
 # 웜 = 답장 후 WARM_WAIT 동안 R2 폴 대기 → 후속 메시지 같은 런 즉답(러너 재부팅 생략 = 30초 목표의 본체).
-# 규율: opus 기본 + effort low 기본(30초 컷) · 도구 0 · turns 1 · stdin · 폴오버 SSOT(⚠️ 서브계정 미주입 = 최하위).
+# 규율: opus 기본 + effort low 기본(30초 컷) · 도구 0 · turns 1 · stdin · 폴오버 SSOT(3계정 로테이션 MUTENO→NOMUTEFB→EMS1130G · 운영자 260704).
 set -uo pipefail
 
 ROOT="$(git rev-parse --show-toplevel)"

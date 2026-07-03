@@ -36,7 +36,7 @@
 ## 🔑 인프라 (완전 신규)
 - **Cloudflare Pages**: build command **공란**(정적 서빙 · build-viewer 불필요) · output **`viewer`** · `functions/` 자동 인식.
 - **R2 바인딩** `YETA_R2`(비공개 세션 버킷) + Pages env `GH_TOKEN`(actions:write PAT) · `YETA_MAX_PER_DAY`(선택).
-- **GitHub Secrets**: `CLAUDE_CODE_OAUTH_TOKEN_MUTENO`(필수·가장 먼저) · `R2_ACCOUNT_ID`·`R2_ACCESS_KEY_ID`·`R2_SECRET_ACCESS_KEY`·`YETA_R2_BUCKET` · `VAPID_PRIVATE_KEY`/`VAPID_SUBJECT`(푸시). Variable `ACTIVE_ACCOUNT`(기본 MUTENO). ✗ `_ALT`/`_ALT2`(챗 폴오버 최하위 설계).
+- **GitHub Secrets**: `CLAUDE_CODE_OAUTH_TOKEN_MUTENO`(필수·가장 먼저) · `R2_ACCOUNT_ID`·`R2_ACCESS_KEY_ID`·`R2_SECRET_ACCESS_KEY`·`YETA_R2_BUCKET` · `VAPID_PRIVATE_KEY`/`VAPID_SUBJECT`(푸시). Variable `ACTIVE_ACCOUNT`(기본 MUTENO). **3계정 폴오버** MUTENO→NOMUTEFB→EMS1130G(운영자 260704·⚠️쿼터 nomute 공유).
 - **레포 = public**(roster raw fetch 전제). **첫 실행 순서**: OAuth 토큰을 R2보다 **먼저**(없으면 잡 RED).
 - ⚠️ **보안**: middleware 무력화 = `yeta.pages.dev` 무인증 공개. Access 없이 `YETA_R2` 바인딩하면 **대화 노출** → 커스텀 도메인+Cloudflare Access 후 배포(또는 pages.dev에 Access 직접 부착).
 - **얼굴 파이프(선택·수동)** `yeta-face.yml`: GH Secret `OPENAI_API_KEY_nomute`(폴백 `OPENAI_API_KEY`·없으면 no-op) + **공개** R2 `R2_BUCKET`·`R2_PUBLIC_BASE`(계정키 `R2_ACCOUNT_ID`/`R2_ACCESS_KEY_ID`/`R2_SECRET_ACCESS_KEY`는 챗과 공용). ⚠️ 공개 버킷은 비공개 세션 `YETA_R2_BUCKET`과 **별도** — 공개 R2 5개 없으면 git 폴백(`viewer/assets/yeta_face/` 커밋). 얼굴은 이미 생성·주입 완료라 이 시크릿은 *재생성 시에만* 필요.
@@ -44,7 +44,7 @@
 ## 🤖 모델
 - 답장 생성 = **opus 4.8**(`claude-opus-4-8`) 기본 · sonnet-5 다이얼 선택 · effort는 다이얼.
 - ⚠️ **`--bare` 절대 금지**(OAuth 안 읽어 인증 즉사). `--safe-mode`는 카나리아 통과 후(`YETA_SAFE`).
-- 폴오버 = 활성 계정만(서브계정 미주입 = 챗 최하위). 세션 작업자·검증은 opus 4.8 유지.
+- 폴오버 = 3계정 로테이션 MUTENO→NOMUTEFB→EMS1130G(⚠️쿼터 nomute 공유·운영자 260704). 세션 작업자·검증은 opus 4.8 유지.
 
 ## ✂️ 수정·검증·커밋
 - 커밋 전 **`python3 shared/check_refs.py` rc=0 필수**(pre-commit 자동 강제). UI 변경은 design_gate가 저장 즉시 검사.
