@@ -1,0 +1,172 @@
+<!-- @dsCard group="구성도" viewport="900x1600" name="페이지 구성도 · 대화 상태" subtitle="전송→대기→답장 상태머신 · 실패/재시도/좀비/미설정" -->
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>구성도 · 페이지 06 대화 상태</title>
+<link rel="stylesheet" href="base.css">
+<style>
+  /* 토큰 = base.css(AUTO-MIRROR = viewer/index.html :root 정본). 브랜드 = 네온레몬 var(--brand)(운영자 260704 고정 · yeta 레포 한정). */
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html { scrollbar-width:thin; scrollbar-color:rgba(var(--brand-rgb),.3) transparent; }
+  ::-webkit-scrollbar { width:10px; } ::-webkit-scrollbar-thumb { background:rgba(var(--brand-rgb),.26); border-radius:var(--r-pill); border:2px solid var(--yeta-bg); background-clip:padding-box; }
+  body { margin:0; background:radial-gradient(125% 70% at 50% -8%, rgba(var(--brand-rgb),.06), transparent 55%) fixed, var(--yeta-bg); color:var(--fg); font:15px/1.6 Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans KR",sans-serif; }
+  .wrap { max-width:940px; margin:0 auto; padding:42px 22px 110px; }
+  .crumb { font-size:var(--fs-sm); color:var(--mut); letter-spacing:.4px; margin:0 0 10px; } .crumb b { color:var(--brand); }
+  h1 { font-size:27px; letter-spacing:-.5px; margin:0 0 10px; }
+  .intro { color:var(--fg-2); font-size:14.5px; max-width:68ch; margin:0; } .intro b { color:var(--fg); }
+  .ssot { margin:16px 0 0; padding:12px 16px; border:1px solid rgba(var(--brand-rgb),.3); border-radius:var(--r-m); background:rgba(var(--brand-rgb),.05); font-size:12.5px; color:var(--fg-2); line-height:1.7; }
+  .ssot code { color:var(--brand); font-family:ui-monospace,Menlo,monospace; font-size:11.5px; }
+  nav.docnav { margin:20px 0 0; display:flex; flex-wrap:wrap; gap:8px; }
+  nav.docnav a { font-size:var(--fs-sm); font-weight:var(--fw-b); color:var(--fg-2); text-decoration:none; padding:6px 12px; border-radius:var(--r-pill); background:rgba(255,255,255,.04); border:1px solid var(--line); }
+  nav.docnav a:hover, nav.docnav a.cur { color:var(--brand); border-color:rgba(var(--brand-rgb),.4); }
+  .sec { margin:48px 0 0; }
+  .sec>h2 { font-size:var(--fs-sm); letter-spacing:1.6px; text-transform:uppercase; color:var(--brand); font-weight:var(--fw-x); margin:0 0 4px; display:flex; align-items:center; gap:10px; }
+  .sec>h2 .n { width:22px; height:22px; border-radius:7px; display:grid; place-items:center; font-size:var(--fs-sm); background:rgba(var(--brand-rgb),.12); border:1px solid rgba(var(--brand-rgb),.26); }
+  .sec>p.lead { color:var(--mut); font-size:13.5px; margin:8px 0 18px; max-width:66ch; }
+  .card { background:rgba(255,255,255,.03); border:1px solid var(--line); border-radius:var(--r-l); padding:22px; }
+  table { width:100%; border-collapse:collapse; font-size:12.5px; }
+  th,td { text-align:left; padding:9px 11px; border-bottom:1px solid var(--line2); vertical-align:top; }
+  th { font-size:10.5px; letter-spacing:.4px; text-transform:uppercase; color:var(--mut); font-weight:var(--fw-b); }
+  td b { color:var(--fg); } td code, p code, .note code { color:var(--brand); font-family:ui-monospace,Menlo,monospace; font-size:11px; }
+  .note { margin-top:14px; font-size:12.5px; color:var(--mut); line-height:1.65; padding-left:14px; border-left:2px solid rgba(var(--brand-rgb),.3); }
+  .note b { color:var(--fg-2); }
+  .foot { margin-top:60px; padding-top:20px; border-top:1px solid var(--line); font-size:var(--fs-label); color:var(--mut); line-height:1.7; } .foot a { color:var(--brand); text-decoration:none; }
+  /* 흐름 칩 */
+  .flow { display:flex; align-items:center; flex-wrap:wrap; gap:9px; margin:0 0 22px; }
+  .fchip { display:inline-flex; align-items:center; gap:7px; padding:7px 13px; border-radius:var(--r-pill); font-size:12.5px; font-weight:var(--fw-b); white-space:nowrap; background:rgba(255,255,255,.04); border:1px solid var(--line); color:var(--mut); }
+  .fchip .d { width:8px; height:8px; border-radius:var(--r-pill); background:currentColor; }
+  .fchip.me { color:var(--fg); border-color:rgba(255,255,255,.25); }
+  .fchip.wait { color:var(--brand); border-color:rgba(var(--brand-rgb),.5); background:rgba(var(--brand-rgb),.08); }
+  .fchip.bad { color:var(--danger); border-color:rgba(var(--danger-rgb),.5); background:rgba(var(--danger-rgb),.08); }
+  .farrow { color:var(--mut); opacity:.5; font-size:var(--fs-label); }
+  /* 필름 */
+  .strip { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
+  @media (max-width:680px){ .strip { grid-template-columns:1fr; } }
+  .frame { border:1px solid var(--line); border-radius:var(--r-m); background:rgba(255,255,255,.02); padding:16px 12px 14px; }
+  .frame h4 { font-size:var(--fs-sm); margin:12px 0 5px; color:var(--fg); text-align:center; }
+  .frame .spec { font-size:11px; color:var(--mut); line-height:1.55; margin:7px 0 0; }
+  .frame .spec b { color:var(--fg-2); font-weight:600; }
+  .frame .stg2 { min-height:84px; display:flex; flex-direction:column; justify-content:center; gap:8px; border-radius:var(--r-s); background:var(--yeta-bg); border:1px solid var(--line2); padding:12px; --yeta-ac:#7ee0a3; }
+  .frame.bad { border-color:rgba(var(--danger-rgb),.35); }
+  /* 버블 미니 컴포넌트(05 계승 축약) */
+  .ymsg { display:flex; gap:8px; align-items:flex-start; max-width:92%; }
+  .ymsg .a32 { flex:none; width:28px; height:28px; border-radius:50%; display:grid; place-items:center; font-size:var(--fs-xs); font-weight:var(--fw-x); background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10); color:var(--yeta-ac); }
+  .ymsg .col { display:flex; flex-direction:column; gap:3px; min-width:0; }
+  .ymsg .nm2 { font-size:var(--fs-xs); color:var(--mut); padding-left:2px; }
+  .yb { padding:9px 12px; border-radius:var(--r-l); font-size:var(--fs-label); line-height:1.5; }
+  .yb.ai { background:var(--bubble-ai); border:1px solid rgba(255,255,255,.05); border-top-left-radius:var(--r-s); }
+  .yb.me { align-self:flex-end; background:var(--bubble-me); color:#fff; border-top-right-radius:var(--r-s); }
+  .yb.fail { align-self:flex-start; background:rgba(var(--danger-rgb),.08); border:1px solid rgba(var(--danger-rgb),.4); color:var(--danger); font-size:var(--fs-sm); }
+  .retry { display:block; margin-top:7px; padding:5px 12px; border:1px solid rgba(var(--danger-rgb),.5); border-radius:var(--r-pill); background:none; color:var(--danger); font:inherit; font-size:var(--fs-xs); font-weight:var(--fw-b); cursor:pointer; width:max-content; }
+  .retry:active { transform:scale(var(--press-m,.9)); }
+  .yb.sysmut { color:var(--mut); font-size:var(--fs-sm); background:none; border:none; padding:2px 0; }
+  .cap { display:block; margin-top:4px; font-size:var(--fs-xs); color:var(--mut); opacity:.8; font-variant-numeric:tabular-nums; }
+  .ytdots { display:inline-flex; gap:5px; align-items:center; height:1.2em; }
+  .ytdots i { width:6px; height:6px; border-radius:50%; background:var(--fg-2); animation:ytdot 1.15s ease-in-out infinite; }
+  .ytdots i:nth-child(2){animation-delay:.14s} .ytdots i:nth-child(3){animation-delay:.28s}
+  @keyframes ytdot { 0%,55%,100%{transform:none;opacity:.4} 25%{transform:translateY(-4px);opacity:1} }
+  @media (prefers-reduced-motion:reduce){ .ytdots i{animation:none} }
+  /* 파이프라인 박스 */
+  .pipe { display:flex; flex-wrap:wrap; gap:8px; align-items:center; font-size:12px; }
+  .pb { padding:8px 12px; border-radius:var(--r-m); border:1px solid var(--line); background:rgba(255,255,255,.04); color:var(--fg-2); font-weight:var(--fw-b); white-space:nowrap; }
+  .pb.hot { border-color:rgba(var(--brand-rgb),.45); color:var(--brand); background:rgba(var(--brand-rgb),.07); }
+  .pa { color:var(--mut); opacity:.6; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="crumb">말벗 제타 · 페이지 구성도 <b>06 대화 상태</b></p>
+  <h1>대화 상태머신 — 전송·대기·실패·재시도</h1>
+  <p class="intro">전송 버튼 하나가 지나는 <b>모든 상태</b>와 그때 화면이 보여주는 것. 판정은 클록이 아니라 세션 <code>state</code>(<code>idle/awaiting/error</code>) 기준, 표시는 전부 <b>버블 문법</b>(스쳐가는 토스트 대신 모달 안 인라인 — top-layer 뒤 숨음 방지). 정본 = <code>viewer/index.html</code> <code>ySend/yRender/yStartPoll</code>(L505~561) · <code>functions/api/yeta.js</code>.</p>
+  <div class="ssot">📍 상태 SSOT = R2 세션 <code>sessions/main.json</code>(<code>state·awaiting_since·err</code>) · 화면 어휘 = <code>--bubble-*</code>·<code>--danger</code>·<code>--arm</code> · <b>브랜드 = 네온레몬 <code>--brand</code></b>(의미색과 분리 — §5).</div>
+  <nav class="docnav"><a href="01_페이지맵_yeta.html">01 페이지맵</a><a href="02_페이지구성도_메인.html">02 메인</a><a href="03_페이지구성도_PIN게이트.html">03 PIN 게이트</a><a href="04_페이지구성도_캐릭터선택.html">04 캐릭터 선택</a><a href="05_페이지구성도_대화방.html">05 대화방</a><a class="cur" href="06_페이지구성도_대화상태.html">06 대화 상태</a><a href="index.html">허브 ↗</a></nav>
+
+  <!-- 1 정상 흐름 -->
+  <div class="sec"><h2><span class="n">1</span> 정상 흐름 (해피패스)</h2>
+    <div class="flow">
+      <span class="fchip me"><span class="d"></span>전송 탭</span><span class="farrow">낙관 표시</span>
+      <span class="fchip me"><span class="d"></span>내 버블 촤르륵</span><span class="farrow">+</span>
+      <span class="fchip wait"><span class="d"></span>타이핑 버블(점 3개)</span><span class="farrow">폴 4s</span>
+      <span class="fchip wait"><span class="d"></span>awaiting</span><span class="farrow">답장 착지</span>
+      <span class="fchip me"><span class="d"></span>캐릭터 버블 + 캡션 Ns</span>
+    </div>
+    <div class="card">
+      <div class="pipe">
+        <span class="pb hot">뷰어 send</span><span class="pa">→</span>
+        <span class="pb">functions/api/yeta.js<br><small style="color:var(--mut)">턴 append · state=awaiting · dispatch</small></span><span class="pa">→</span>
+        <span class="pb">yeta-chat.yml</span><span class="pa">→</span>
+        <span class="pb">yeta_chat.sh<br><small style="color:var(--mut)">claude -p(opus·low) · 카드 주입 · 웜 루프</small></span><span class="pa">→</span>
+        <span class="pb">R2 세션</span><span class="pa">→</span>
+        <span class="pb hot">뷰어 폴 4s 픽업</span>
+      </div>
+      <p class="note"><b>프리웜</b> = 창 열 때 <code>warm</code> 선발사(4.5분 디바운스 <code>nomute_yeta_warm</code>) — 러너 선부팅으로 첫 답장 30초 목표. <b>웜 루프</b> = 답장 후 러너가 대기, 후속 메시지는 같은 런이 즉답. <b>폴</b> = 대기 중에만 4s(탭 가시·모달 열림 조건) · 답장 착지 시 정지. <b>무드</b> = 답장 <code>&lt;&lt;MOOD:warm|tense|blue&gt;&gt;</code> → 무대 배리언트 크로스페이드(프리로드 성공 시에만·실패 = base 유지).</p>
+    </div>
+  </div>
+
+  <!-- 2 상태 필름 -->
+  <div class="sec"><h2><span class="n">2</span> 상태 필름 (기틀 실값 · 문구 원문)</h2>
+    <div class="strip">
+      <div class="frame"><div class="stg2">
+        <div class="ymsg"><span class="a32">무</span><span class="col"><span class="nm2">무디 · 입력 중</span><div class="yb ai"><span class="ytdots"><i></i><i></i><i></i></span></div></span></div>
+      </div><h4>① 대기 = 타이핑 버블</h4><p class="spec"><code>.ytyp</code> — 점 3개 바운스(1.15s 순차). <b>실제 버블로 위장</b>(카톡 결) · 오래 걸려도 "입력 중" 확신. 등장만 촤르륵, 폴 재렌더는 무애니.</p></div>
+      <div class="frame"><div class="stg2">
+        <div class="ymsg"><span class="a32">무</span><span class="col"><span class="nm2">무디</span><div class="yb ai">천천히 마셔. 아무도 안 뺏어.<span class="cap">27s</span></div></span></div>
+      </div><h4>② 답장 착지</h4><p class="spec">타이핑 버블 자리 → 캐릭터 버블 촤르륵 + 캡션(소요초 tabular). 폴 정지 · <code>state=idle</code>.</p></div>
+      <div class="frame bad"><div class="stg2">
+        <div class="yb me" style="opacity:.35;text-decoration:line-through">오늘 좀 길었어</div>
+        <div class="yb fail">네트워크 실패 — 다시 보내줘</div>
+      </div><h4>③ 전송 실패(즉시)</h4><p class="spec">fetch 실패 = <b>낙관 노드 촤르륵 회수</b>(<code>ybOut</code> 접힘) + <b>입력창에 원문 복원</b>(재타이핑 0) + 실패 버블.</p></div>
+      <div class="frame bad"><div class="stg2">
+        <div class="yb fail">답장을 못 만들었어 — 다시 보내면 재시도야. (quota)<button class="retry" type="button">다시 보내기</button></div>
+      </div><h4>④ 생성 실패 <code>state=error</code></h4><p class="spec">러너 실패(에러 80자 동봉). <b>[다시 보내기]</b> = <code>retry</code> op — 기존 pending 턴 재발사(새 턴 추가 X). 실패 시 <code>miniToast</code> "재시도 실패 — 잠시 후 다시".</p></div>
+      <div class="frame bad"><div class="stg2">
+        <div class="yb fail">답장이 너무 늦네 — 러너가 밀렸거나 실패한 듯. 다시 보내면 재시도야.</div>
+      </div><h4>⑤ 좀비(5분 초과)</h4><p class="spec"><code>awaiting_since</code> +5분(<code>zlim 300000</code> · effort low 고정) 넘으면 대기 중단 표시 + 폴 정지 — 가짜 실패로 인한 중복 쿼터 방지 임계.</p></div>
+      <div class="frame"><div class="stg2">
+        <div class="yb sysmut">⚠️ 저장소(R2) 미설정 — 셋업 후 대화가 켜져.</div>
+      </div><h4>⑥ R2 미설정</h4><p class="spec"><code>setup</code> 응답 = 안내만 + <b>입력행 숨김</b>. 리스트에서 진입 시엔 소개 배너 + "소개만 볼 수 있어" — 구경은 항상 가능(<code>chars</code>는 R2 불필요).</p></div>
+    </div>
+  </div>
+
+  <!-- 3 판정 규칙 -->
+  <div class="sec"><h2><span class="n">3</span> 판정 규칙 (yRender 분기 원문)</h2>
+    <div class="card"><table>
+      <tr><th>조건</th><th>화면</th><th>비고</th></tr>
+      <tr><td><code>state=error</code></td><td>실패 버블 + [다시 보내기]</td><td>에러 원문 80자 슬라이스 동봉</td></tr>
+      <tr><td><code>state=awaiting</code> · ≤5분</td><td>타이핑 버블 + 폴 4s 가동</td><td>판정 = state(클록 스큐 함정 회피)</td></tr>
+      <tr><td><code>state=awaiting</code> · &gt;5분</td><td>좀비 안내 버블 · 폴 정지</td><td>다시 보내면 재시도</td></tr>
+      <tr><td>일 상한(<code>YETA_MAX_PER_DAY</code>)</td><td>send 429 → 실패 버블 "오늘 대화 상한(N턴) 도달 — 내일 다시"</td><td>기본 무제한(양수 설정 시만)</td></tr>
+      <tr><td>페르소나 없음</td><td>send 409 "페르소나가 없어 — 🎲 먼저 뽑아줘" / get = 04 리스트 폴백</td><td>스테일 id도 리스트 폴백</td></tr>
+      <tr><td><b>새 대화(리셋)</b></td><td>2탭 재확인(<code>--arm</code> "지우고 새로?") → <code>reset</code></td><td>삭제 직전 <code>main.prev.json</code> 1세대 백업 → 04 리스트</td></tr>
+    </table>
+    <p class="note"><b>스크롤 계약</b> = 바닥 80px 이내일 때만 자동 추적(위로 읽는 중 강탈 금지) · <b>낙관 계약</b> = 성공 시 낙관 버블 재애니 방지(<code>_yLastN</code> 선증가), 실패 시 촤르륵 회수 + 원문 복원.</p></div>
+  </div>
+
+  <!-- 4 실패 표면 어휘 -->
+  <div class="sec"><h2><span class="n">4</span> 실패 표면 어휘 (계승용)</h2>
+    <div class="card"><table>
+      <tr><th>표면</th><th>정본</th><th>규칙</th></tr>
+      <tr><td><b>인라인 실패 버블</b></td><td><code>.yb.fail</code></td><td><code>--danger</code> 8% 면 · 40% 선 · <code>--fs-sm</code> — 모달 안 1급 표면(토스트 대체)</td></tr>
+      <tr><td><b>원탭 재시도</b></td><td><code>.yfail-retry</code></td><td>알약(<code>--r-pill</code>) 유령 버튼 · <code>--danger</code> 50% 선 · 눌림 <code>--press-m</code></td></tr>
+      <tr><td><b>미니 토스트</b></td><td><code>.nm-toast</code>(CII 행)</td><td>보조 통보 전용(재시도 실패 등) · 하단 86px · <code>--z-float</code></td></tr>
+      <tr><td><b>재확인</b></td><td><code>.yh-reset.armed</code></td><td>파괴 액션 = 2탭 문구 교체 + <code>--arm</code>(§📐) — 팝업 없이 제자리</td></tr>
+    </table></div>
+  </div>
+
+  <!-- 5 브랜드 적용 -->
+  <div class="sec"><h2><span class="n">5</span> 🍋 브랜드 적용 — 네온레몬</h2>
+    <div class="card"><table>
+      <tr><th>요소</th><th>판정</th></tr>
+      <tr><td><b>실패(<code>--danger</code>)·재확인(<code>--arm</code>) 의미색</b></td><td>✓ 불변 — 브랜드는 의미색을 침범하지 않는다(§🎨 · 레몬은 긍정/브랜드 순간 전용)</td></tr>
+      <tr><td><b>타이핑 점(<code>--fg-2</code>)</b></td><td>✓ 불변 — 캐릭터 발화 위장이므로 무채 유지(레몬이면 시스템처럼 보임)</td></tr>
+      <tr><td><b>대기 흐름의 브랜드 순간</b></td><td>내 버블·전송 CTA(05 §5)가 레몬이면 "내가 보낸 것"만 레몬으로 남음 — 상태 표면은 전부 무채/의미색. 추가 스왑 없음</td></tr>
+    </table></div>
+  </div>
+
+  <div class="foot">정본 = <a href="../viewer/index.html">viewer/index.html</a> yRender·ySend · <a href="../functions/api/yeta.js">functions/api/yeta.js</a>(7 op) · 이전 ← <a href="05_페이지구성도_대화방.html">05 대화방</a> · 처음 → <a href="01_페이지맵_yeta.html">01 페이지맵</a> · <a href="index.html">허브</a></div>
+</div>
+</body>
+</html>

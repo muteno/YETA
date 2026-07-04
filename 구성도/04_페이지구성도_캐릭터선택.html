@@ -1,0 +1,140 @@
+<!-- @dsCard group="구성도" viewport="900x1500" name="페이지 구성도 · 캐릭터 선택" subtitle="무음동 사람들 — SNS식 리스트 + 🎲 랜덤" -->
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>구성도 · 페이지 04 캐릭터 선택</title>
+<link rel="stylesheet" href="base.css">
+<style>
+  /* 토큰 = base.css(AUTO-MIRROR = viewer/index.html :root 정본). 브랜드 = 네온레몬 var(--brand)(운영자 260704 고정 · yeta 레포 한정). */
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html { scrollbar-width:thin; scrollbar-color:rgba(var(--brand-rgb),.3) transparent; }
+  ::-webkit-scrollbar { width:10px; } ::-webkit-scrollbar-thumb { background:rgba(var(--brand-rgb),.26); border-radius:var(--r-pill); border:2px solid var(--yeta-bg); background-clip:padding-box; }
+  body { margin:0; background:radial-gradient(125% 70% at 50% -8%, rgba(var(--brand-rgb),.06), transparent 55%) fixed, var(--yeta-bg); color:var(--fg); font:15px/1.6 Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans KR",sans-serif; }
+  .wrap { max-width:940px; margin:0 auto; padding:42px 22px 110px; }
+  .crumb { font-size:var(--fs-sm); color:var(--mut); letter-spacing:.4px; margin:0 0 10px; } .crumb b { color:var(--brand); }
+  h1 { font-size:27px; letter-spacing:-.5px; margin:0 0 10px; }
+  .intro { color:var(--fg-2); font-size:14.5px; max-width:68ch; margin:0; } .intro b { color:var(--fg); }
+  .ssot { margin:16px 0 0; padding:12px 16px; border:1px solid rgba(var(--brand-rgb),.3); border-radius:var(--r-m); background:rgba(var(--brand-rgb),.05); font-size:12.5px; color:var(--fg-2); line-height:1.7; }
+  .ssot code { color:var(--brand); font-family:ui-monospace,Menlo,monospace; font-size:11.5px; }
+  nav.docnav { margin:20px 0 0; display:flex; flex-wrap:wrap; gap:8px; }
+  nav.docnav a { font-size:var(--fs-sm); font-weight:var(--fw-b); color:var(--fg-2); text-decoration:none; padding:6px 12px; border-radius:var(--r-pill); background:rgba(255,255,255,.04); border:1px solid var(--line); }
+  nav.docnav a:hover, nav.docnav a.cur { color:var(--brand); border-color:rgba(var(--brand-rgb),.4); }
+  .sec { margin:48px 0 0; }
+  .sec>h2 { font-size:var(--fs-sm); letter-spacing:1.6px; text-transform:uppercase; color:var(--brand); font-weight:var(--fw-x); margin:0 0 4px; display:flex; align-items:center; gap:10px; }
+  .sec>h2 .n { width:22px; height:22px; border-radius:7px; display:grid; place-items:center; font-size:var(--fs-sm); background:rgba(var(--brand-rgb),.12); border:1px solid rgba(var(--brand-rgb),.26); }
+  .sec>p.lead { color:var(--mut); font-size:13.5px; margin:8px 0 18px; max-width:66ch; }
+  .card { background:rgba(255,255,255,.03); border:1px solid var(--line); border-radius:var(--r-l); padding:22px; }
+  table { width:100%; border-collapse:collapse; font-size:12.5px; }
+  th,td { text-align:left; padding:9px 11px; border-bottom:1px solid var(--line2); vertical-align:top; }
+  th { font-size:10.5px; letter-spacing:.4px; text-transform:uppercase; color:var(--mut); font-weight:var(--fw-b); }
+  td b { color:var(--fg); } td code, p code, .note code { color:var(--brand); font-family:ui-monospace,Menlo,monospace; font-size:11px; }
+  .note { margin-top:14px; font-size:12.5px; color:var(--mut); line-height:1.65; padding-left:14px; border-left:2px solid rgba(var(--brand-rgb),.3); }
+  .note b { color:var(--fg-2); }
+  .foot { margin-top:60px; padding-top:20px; border-top:1px solid var(--line); font-size:var(--fs-label); color:var(--mut); line-height:1.7; } .foot a { color:var(--brand); text-decoration:none; }
+
+  /* ── 모달 목업(#yetadlg 리스트뷰 · viewer L90~186 실값) ── */
+  .stage { display:flex; gap:26px; flex-wrap:wrap; align-items:flex-start; }
+  .dlg { width:300px; height:520px; flex:none; border:1px solid rgba(255,255,255,.10); border-radius:var(--r-modal); overflow:hidden; display:flex; flex-direction:column;
+    background:var(--yeta-bg); box-shadow:0 30px 80px rgba(0,0,0,.5); }
+  .yh { display:flex; align-items:center; gap:10px; padding:11px 14px; border-bottom:1px solid var(--line2); flex:none; }
+  .yh b { font-size:var(--fs-h2); font-weight:var(--fw-x); }
+  .yh .tag { font-size:var(--fs-xs); color:var(--mut); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .yh .r { margin-left:auto; display:flex; align-items:center; gap:6px; }
+  .tool-x { width:30px; height:30px; flex:none; display:grid; place-items:center; background:rgba(255,255,255,.06); color:var(--fg); border:1px solid var(--line); border-radius:9px; cursor:pointer; transition:transform .3s var(--ease); }
+  .tool-x:hover { color:var(--brand); border-color:rgba(var(--brand-rgb),.4); }
+  .tool-x:active { transform:rotate(180deg) scale(var(--press-m,.92)); }
+  .list { flex:1; overflow-y:auto; padding:var(--sp-2) var(--sp-2) 20px; display:flex; flex-direction:column; gap:4px; }
+  .row { display:flex; align-items:center; gap:10px; width:100%; text-align:left; background:none; border:none; color:var(--fg); font:inherit;
+    padding:11px 12px; border-radius:var(--r-m); cursor:pointer; touch-action:manipulation; -webkit-touch-callout:none; user-select:none; }
+  .row:hover { background:rgba(255,255,255,.06); }
+  .row:active { transform:scale(var(--press-l,.95)); }
+  .ava { flex:none; width:44px; height:44px; border-radius:50%; display:grid; place-items:center; font-size:var(--fs-body); font-weight:var(--fw-x);
+    background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10); }
+  .col { min-width:0; display:flex; flex-direction:column; }
+  .nm { font-weight:var(--fw-x); font-size:var(--fs-h3); }
+  .tg2 { font-size:var(--fs-xs); color:var(--mut); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .dice { margin-top:6px; border:1px dashed var(--line); border-radius:var(--r-m); background:none; color:var(--mut); font:inherit; font-size:var(--fs-sm); font-weight:var(--fw-b); padding:12px; cursor:pointer; text-align:center; touch-action:manipulation; }
+  .dice:active { transform:scale(var(--press-l,.96)); }
+  .legend { flex:1 1 300px; min-width:260px; }
+  .pinlay { display:inline-grid; place-items:center; min-width:16px; height:16px; border-radius:var(--r-pill); background:var(--brand); color:var(--yeta-bg); font:800 10px/1 ui-monospace,Menlo,monospace; padding:0 3px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="crumb">말벗 제타 · 페이지 구성도 <b>04 캐릭터 선택</b></p>
+  <h1>캐릭터 선택 — 무음동 사람들 (<code>#yetadlg</code> 리스트뷰)</h1>
+  <p class="intro">챗 모달의 <b>첫 진입 뷰</b>. 페르소나가 아직 없거나(첫 방문·리셋 직후), 헤더 프로필을 탭했을 때 무대 전체를 덮는 <b>SNS식 주민 리스트</b>가 뜬다(<code>.yeta-list</code> — 랜덤 자동진입 폐지·선택 먼저). 행 탭 = <code>draw</code>로 대화방 진입, 하단 🎲 = 랜덤 매칭. 정본 = <code>viewer/index.html</code> CSS L182~188 · JS <code>yShowList/yEnterChat</code>(L345~379).</p>
+  <div class="ssot">📍 값 SSOT = <code>viewer/index.html :root</code> → <code>base.css</code> 거울 계승 · 페르소나 색 = <code>roster.json color</code>(이니셜에 인라인 주입 — 기틀 <code>yAva()</code> 동작) · <b>브랜드 = 네온레몬 <code>--brand</code></b>(§4).</div>
+  <nav class="docnav"><a href="01_페이지맵_yeta.html">01 페이지맵</a><a href="02_페이지구성도_메인.html">02 메인</a><a href="03_페이지구성도_PIN게이트.html">03 PIN 게이트</a><a class="cur" href="04_페이지구성도_캐릭터선택.html">04 캐릭터 선택</a><a href="05_페이지구성도_대화방.html">05 대화방</a><a href="06_페이지구성도_대화상태.html">06 대화 상태</a><a href="index.html">허브 ↗</a></nav>
+
+  <!-- 1 와이어 -->
+  <div class="sec"><h2><span class="n">1</span> 화면 와이어 (기틀 실값 · 로스터 실데이터)</h2>
+    <p class="lead">아바타 = 얼굴 이미지(<code>roster avatar</code> — yeta_face 산출) 채움, 없으면 이니셜+페르소나색 폴백. 목업은 이니셜 폴백형.</p>
+    <div class="stage">
+      <div class="dlg">
+        <div class="yh">
+          <b>무음동 사람들</b><span class="tag">대화할 상대를 골라</span>
+          <span class="r"><button class="tool-x" type="button" aria-label="닫기"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6 18 18M18 6 6 18"/></svg></button></span>
+        </div>
+        <div class="list">
+          <button class="row" type="button"><span class="ava" style="color:#8fb7ff">데</span><span class="col"><span class="nm">데스크</span><span class="tg2">3층 편집국의 냉철한 편집장</span></span></button>
+          <button class="row" type="button"><span class="ava" style="color:#ffb46b">카</span><span class="col"><span class="nm">카피</span><span class="tg2">찻집 죽돌이 카피라이터</span></span></button>
+          <button class="row" type="button"><span class="ava" style="color:#7ee0a3">무</span><span class="col"><span class="nm">무디</span><span class="tg2">24시 찻집 '무음'의 주인</span></span></button>
+          <button class="row" type="button"><span class="ava" style="color:#ff8fb3">세</span><span class="col"><span class="nm">세라</span><span class="tg2">지하 연습실의 까칠한 연습생</span></span></button>
+          <button class="row" type="button"><span class="ava" style="color:#ffd36b">하</span><span class="col"><span class="nm">하은</span><span class="tg2">퇴근길의 능글맞은 국어교사</span></span></button>
+          <button class="row" type="button"><span class="ava" style="color:#c9a2ff">가</span><span class="col"><span class="nm">가을</span><span class="tg2">무음동 상인회장 — 골목의 실권자</span></span></button>
+          <button class="dice" type="button">🎲 랜덤으로 만나기</button>
+        </div>
+      </div>
+      <div class="legend"><table>
+        <tr><th></th><th>요소</th><th>정본 셀렉터 · 값</th></tr>
+        <tr><td><span class="pinlay">1</span></td><td><b>헤더(리스트 모드)</b></td><td>제목 "무음동 사람들" + 태그 "대화할 상대를 골라" — 🎲·아바타·셰브론·새 대화 <b>전부 숨김</b>(<code>yView('list')</code>) · X만 유지</td></tr>
+        <tr><td><span class="pinlay">2</span></td><td><b>주민 행</b></td><td><code>.ypick-row</code>(리스트 변형: pad 11/12) — 아바타 44px + 이름 <code>--fs-h3</code> 800 + 태그라인 <code>--fs-xs --mut</code> · hover 무채 <code>.06</code> · 눌림 <code>--press-l</code></td></tr>
+        <tr><td><span class="pinlay">3</span></td><td><b>아바타</b></td><td><code>.yava</code> 원형 — 얼굴 이미지(<code>.has-img</code> cover) 우선 · 폴백 = 이니셜 + <code>roster color</code></td></tr>
+        <tr><td><span class="pinlay">4</span></td><td><b>🎲 랜덤</b></td><td><code>.yl-dice</code> — 대시 보더 <code>--line</code> · <code>--r-m</code> · 전폭 · 유일한 이모지 허용처(콘텐츠 표식 결)</td></tr>
+      </table></div>
+    </div>
+    <p class="note"><b>로스터 10인</b>(<code>apps/yeta/characters/roster.json</code> — 뷰어 표시 SSOT): 데스크·카피·무디·세라·하은·가을·백·류·본·윤. 목업은 6인만 표시(스크롤 영역). 리스트는 무대 전체 오버레이(<code>inset:0 · z6</code>)라 뒤 배경·로그를 완전히 덮는다.</p>
+  </div>
+
+  <!-- 2 클릭 맵 -->
+  <div class="sec"><h2><span class="n">2</span> 클릭 → 전이</h2>
+    <div class="card"><table>
+      <tr><th>클릭</th><th>동작(op)</th><th>결과</th></tr>
+      <tr><td><b>주민 행</b></td><td><code>draw {persona,name,enter,greeting}</code></td><td><a href="05_페이지구성도_대화방.html">05 대화방</a> 진입 — 첫 대화면 greeting이 실제 턴으로 박제, 대화 중 교체면 sys "합류" 턴</td></tr>
+      <tr><td><b>🎲 랜덤으로 만나기</b></td><td>랜덤 1인 → <code>draw</code></td><td>동상(맥락·관계노트 승계 — 화자만 교체)</td></tr>
+      <tr><td><b>X / 폰 뒤로가기</b></td><td>—</td><td>모달 닫힘 → 02 메인 복귀(<code>pushState</code> 칸 회수)</td></tr>
+      <tr><td><b>행 진입 실패</b></td><td><code>draw</code> 오류/<code>setup</code></td><td>대화방으로는 들어가되 <b>소개 배너 + 안내만</b>(입력 숨김) — 06 §R2 미설정 참조</td></tr>
+    </table>
+    <p class="note"><b>진입 분기(<code>openYeta</code>)</b>: 로스터 로드(<code>chars</code> — R2 불필요) → <code>ready</code>(R2) 아니면 리스트만(구경 가능) → 세션에 페르소나 있으면 대화방 직행, 없으면 이 리스트. <b>레거시</b>: 헤더 아래 팝업 픽커 <code>.yeta-pick</code>은 마크업·핸들러만 남은 비활성 경로(열기 호출 0) — 신규 작업은 리스트뷰만 계승.</p></div>
+  </div>
+
+  <!-- 3 컴포넌트 스펙 -->
+  <div class="sec"><h2><span class="n">3</span> 컴포넌트 스펙 (계승용)</h2>
+    <div class="card"><table>
+      <tr><th>항목</th><th>규칙</th></tr>
+      <tr><td><b>행 = 버튼</b></td><td>네이티브 <code>button</code> + <code>touch-action:manipulation</code> + <code>user-select:none</code> — 스크롤 컨테이너 안 탭 신뢰성(레포 관례).</td></tr>
+      <tr><td><b>표면 위계</b></td><td>행 rest = 투명 · hover <code>.06</code> · 현재 선택 <code>.cur .08</code> — 무채 크롬(§🎨 · 색은 페르소나 이니셜에만).</td></tr>
+      <tr><td><b>텍스트 위계</b></td><td>이름 <code>--fs-h3/--fw-x</code> → 태그라인 <code>--fs-xs/--mut</code> 한 줄 말줄임.</td></tr>
+      <tr><td><b>닫기</b></td><td>CII 정본 <code>.tool-x</code> 30px — X path <code>M6 6 18 18M18 6 6 18</code> · 눌림 회전180+<code>--press-m</code>.</td></tr>
+    </table></div>
+  </div>
+
+  <!-- 4 브랜드 적용 -->
+  <div class="sec"><h2><span class="n">4</span> 🍋 브랜드 적용 — 네온레몬</h2>
+    <div class="card"><table>
+      <tr><th>요소</th><th>현행</th><th>브랜드 적용안</th><th>판정</th></tr>
+      <tr><td><b>닫기 X hover·focus 링</b></td><td><code>--accent</code>(nomute 초록 잔재)</td><td><code>--brand</code> — 근흑 위 레몬 ≈17:1</td><td>✓ 즉시 가능</td></tr>
+      <tr><td><b>행 hover·선택 표면</b></td><td>무채 <code>.06/.08</code></td><td>유지 — 무채 크롬 원칙(레몬 남발 금지·페르소나색과 충돌 방지)</td><td>✓ 불변</td></tr>
+      <tr><td><b>페르소나 이니셜 색</b></td><td>roster 10색</td><td>유지 — 캐릭터 정체성 색은 브랜드와 별개 축</td><td>✓ 불변</td></tr>
+    </table>
+    <p class="note">이 화면은 무채+페르소나색 구성이라 브랜드 전환 영향이 가장 작다. 유일한 스왑 = 공통 컴포넌트 강조(<code>--accent</code>→<code>--brand</code>) — 다크 챗 계열 전체(04·05·06)에 동일 적용.</p></div>
+  </div>
+
+  <div class="foot">정본 = <a href="../viewer/index.html">viewer/index.html</a> <code>#yetadlg</code> 리스트뷰 · 로스터 = apps/yeta/characters/roster.json · 이전 ← <a href="03_페이지구성도_PIN게이트.html">03 PIN</a> · 다음 → <a href="05_페이지구성도_대화방.html">05 대화방</a> · <a href="index.html">허브</a></div>
+</div>
+</body>
+</html>

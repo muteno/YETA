@@ -115,6 +115,8 @@ _FWD_UNUSED = {
     '--fw-b', '--fw-x', '--lh-base', '--on-arm', '--r-l', '--r-m', '--r-pill', '--sp-1', '--sp-2',
     '--sp-3', '--sp-4', '--warn',
     '--press-pico',   # 픽토온리 눌림 = thumb/ly/k의 rmin/file가 씀(index엔 .55 픽토 버튼 없음) = forward-declared(260628)
+    '--brand', '--brand-rgb',   # yeta 브랜드 네온레몬(#E7FF2E) — 운영자 260704 고정(이 레포 한정). 구성도/01~06 페이지 구성도가 base.css 거울로 계승. 앱 배선(버블·CTA·활성 강조 스왑)은 구성도 승인 후 일괄 = forward-declared(260704)
+    '--cream', '--m-danger-rgb', '--m-line', '--sky',   # V1 라이트 메인 팔레트 어휘(첨부2 · 260704) — 선선언·미배선(짝 토큰 --sky-rgb·--m-danger·--m-line2는 배선됨). 후속 화면(캐릭터·설정 탭)용 예약
 }
 # --on-arm(arm 채움 위 글자색) = .revsend.confirm 채움 그라데 → 표준 플랫 arm 전환(260622)으로 현재 미배선.
 # 정의는 보존(--arm/--arm-rgb 짝 · 향후 채움형 arm 컴포넌트용 어휘) → forward-unused 처리(§🎨).

@@ -1,0 +1,209 @@
+<!-- @dsCard group="구성도" viewport="900x1700" name="페이지 구성도 · 대화방" subtitle="헤더·무대 배경·소개 배너·버블 어휘·입력행" -->
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>구성도 · 페이지 05 대화방</title>
+<link rel="stylesheet" href="base.css">
+<style>
+  /* 토큰 = base.css(AUTO-MIRROR = viewer/index.html :root 정본). 브랜드 = 네온레몬 var(--brand)(운영자 260704 고정 · yeta 레포 한정). */
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html { scrollbar-width:thin; scrollbar-color:rgba(var(--brand-rgb),.3) transparent; }
+  ::-webkit-scrollbar { width:10px; } ::-webkit-scrollbar-thumb { background:rgba(var(--brand-rgb),.26); border-radius:var(--r-pill); border:2px solid var(--yeta-bg); background-clip:padding-box; }
+  body { margin:0; background:radial-gradient(125% 70% at 50% -8%, rgba(var(--brand-rgb),.06), transparent 55%) fixed, var(--yeta-bg); color:var(--fg); font:15px/1.6 Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans KR",sans-serif; }
+  .wrap { max-width:940px; margin:0 auto; padding:42px 22px 110px; }
+  .crumb { font-size:var(--fs-sm); color:var(--mut); letter-spacing:.4px; margin:0 0 10px; } .crumb b { color:var(--brand); }
+  h1 { font-size:27px; letter-spacing:-.5px; margin:0 0 10px; }
+  .intro { color:var(--fg-2); font-size:14.5px; max-width:68ch; margin:0; } .intro b { color:var(--fg); }
+  .ssot { margin:16px 0 0; padding:12px 16px; border:1px solid rgba(var(--brand-rgb),.3); border-radius:var(--r-m); background:rgba(var(--brand-rgb),.05); font-size:12.5px; color:var(--fg-2); line-height:1.7; }
+  .ssot code { color:var(--brand); font-family:ui-monospace,Menlo,monospace; font-size:11.5px; }
+  nav.docnav { margin:20px 0 0; display:flex; flex-wrap:wrap; gap:8px; }
+  nav.docnav a { font-size:var(--fs-sm); font-weight:var(--fw-b); color:var(--fg-2); text-decoration:none; padding:6px 12px; border-radius:var(--r-pill); background:rgba(255,255,255,.04); border:1px solid var(--line); }
+  nav.docnav a:hover, nav.docnav a.cur { color:var(--brand); border-color:rgba(var(--brand-rgb),.4); }
+  .sec { margin:48px 0 0; }
+  .sec>h2 { font-size:var(--fs-sm); letter-spacing:1.6px; text-transform:uppercase; color:var(--brand); font-weight:var(--fw-x); margin:0 0 4px; display:flex; align-items:center; gap:10px; }
+  .sec>h2 .n { width:22px; height:22px; border-radius:7px; display:grid; place-items:center; font-size:var(--fs-sm); background:rgba(var(--brand-rgb),.12); border:1px solid rgba(var(--brand-rgb),.26); }
+  .sec>p.lead { color:var(--mut); font-size:13.5px; margin:8px 0 18px; max-width:66ch; }
+  .card { background:rgba(255,255,255,.03); border:1px solid var(--line); border-radius:var(--r-l); padding:22px; }
+  table { width:100%; border-collapse:collapse; font-size:12.5px; }
+  th,td { text-align:left; padding:9px 11px; border-bottom:1px solid var(--line2); vertical-align:top; }
+  th { font-size:10.5px; letter-spacing:.4px; text-transform:uppercase; color:var(--mut); font-weight:var(--fw-b); }
+  td b { color:var(--fg); } td code, p code, .note code { color:var(--brand); font-family:ui-monospace,Menlo,monospace; font-size:11px; }
+  .note { margin-top:14px; font-size:12.5px; color:var(--mut); line-height:1.65; padding-left:14px; border-left:2px solid rgba(var(--brand-rgb),.3); }
+  .note b { color:var(--fg-2); }
+  .sw { display:inline-block; width:13px; height:13px; border-radius:4px; vertical-align:-2px; margin-right:6px; border:1px solid rgba(255,255,255,.15); }
+  .foot { margin-top:60px; padding-top:20px; border-top:1px solid var(--line); font-size:var(--fs-label); color:var(--mut); line-height:1.7; } .foot a { color:var(--brand); text-decoration:none; }
+
+  /* ── 대화방 목업(#yetadlg 챗뷰 · viewer L90~186 실값 · 페르소나 = 무디) ── */
+  .stage { display:flex; gap:26px; flex-wrap:wrap; align-items:flex-start; }
+  .dlg { width:300px; height:560px; flex:none; border:1px solid rgba(255,255,255,.10); border-radius:var(--r-modal); overflow:hidden; display:flex; flex-direction:column;
+    background:var(--yeta-bg); box-shadow:0 30px 80px rgba(0,0,0,.5); --yeta-ac:#7ee0a3; }
+  .yh { display:flex; align-items:center; gap:10px; padding:11px 14px; border-bottom:1px solid var(--line2); flex:none; }
+  .yh b { font-size:var(--fs-h2); font-weight:var(--fw-x); }
+  .yh .tag { font-size:var(--fs-xs); color:var(--mut); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; flex:1; }
+  .yh .r { margin-left:auto; display:flex; align-items:center; gap:6px; flex:none; }
+  .tool-x { width:30px; height:30px; flex:none; display:grid; place-items:center; background:rgba(255,255,255,.06); color:var(--fg); border:1px solid var(--line); border-radius:9px; cursor:pointer; transition:transform .3s var(--ease); }
+  .tool-x:hover { color:var(--brand); border-color:rgba(var(--brand-rgb),.4); }
+  .tool-x:active { transform:rotate(180deg) scale(var(--press-m,.92)); }
+  .who { display:flex; align-items:center; gap:8px; min-width:0; background:none; border:none; color:inherit; font:inherit; cursor:pointer; padding:0; }
+  .who:active { transform:scale(var(--press-l,.95)); }
+  .hava { flex:none; width:34px; height:34px; border-radius:50%; display:grid; place-items:center; font-size:var(--fs-sm); font-weight:var(--fw-x);
+    background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10); color:var(--yeta-ac); }
+  .reset { border:none; background:none; color:var(--mut); font-size:var(--fs-sm); font-weight:var(--fw-b); cursor:pointer; padding:4px 6px; white-space:nowrap; }
+  .reset.armed { color:var(--arm); }
+  .stg { position:relative; flex:1; display:flex; flex-direction:column; overflow:hidden;
+    background:radial-gradient(120% 90% at 50% 0%, rgba(126,224,163,.08), transparent 55%); }   /* 무대 폴백 = 페르소나색 틴트(이미지 없을 때 기틀 동작) */
+  .log { position:relative; flex:1; overflow-y:auto; padding:var(--sp-3) var(--sp-2) var(--sp-2); display:flex; flex-direction:column; gap:10px; }
+  .yintro { align-self:stretch; display:flex; flex-direction:column; align-items:center; text-align:center; gap:6px; padding:var(--sp-2) var(--sp-3) 0; }
+  .yintro .a66 { width:66px; height:66px; border-radius:50%; display:grid; place-items:center; font-size:var(--fs-h2); font-weight:var(--fw-x); background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); color:var(--yeta-ac); }
+  .yintro .nm { font-size:var(--fs-h2); font-weight:var(--fw-x); color:var(--fg); margin-top:2px; }
+  .yintro .tg { font-size:var(--fs-sm); font-weight:var(--fw-b); color:var(--yeta-ac); }
+  .yintro .ds { font-size:var(--fs-sm); color:var(--mut); line-height:var(--lh-base); max-width:36ch; }
+  .yintro .sep { width:100%; height:1px; background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent); margin-top:8px; }
+  .ymsg { display:flex; gap:8px; align-items:flex-start; max-width:86%; }
+  .ymsg .a32 { flex:none; width:32px; height:32px; border-radius:50%; display:grid; place-items:center; font-size:var(--fs-sm); font-weight:var(--fw-x); background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10); color:var(--yeta-ac); margin-top:2px; }
+  .ymsg .col { display:flex; flex-direction:column; gap:3px; min-width:0; }
+  .ymsg .nm2 { font-size:var(--fs-xs); color:var(--mut); padding-left:2px; }
+  .yb { padding:10px 13px; border-radius:var(--r-l); font-size:var(--fs-body); line-height:var(--lh-base); white-space:pre-wrap; word-break:break-word; }
+  .yb i.yn { font-style:italic; color:var(--fg-2); opacity:.75; }
+  .yb.ai { background:var(--bubble-ai); border:1px solid rgba(255,255,255,.05); border-top-left-radius:var(--r-s); }
+  .yb.me { align-self:flex-end; max-width:78%; background:var(--bubble-me); color:#fff; border-top-right-radius:var(--r-s); }
+  .yb.sys { align-self:center; background:none; border:none; color:var(--mut); font-size:var(--fs-sm); padding:2px 4px; }
+  .cap { display:block; margin-top:5px; font-size:var(--fs-xs); color:var(--mut); opacity:.8; font-variant-numeric:tabular-nums; font-style:normal; }
+  .yin { flex:none; display:flex; gap:8px; padding:10px 12px; }
+  .yin .ta { flex:1; background:rgba(255,255,255,.05); border:1px solid var(--line); border-radius:var(--r-l); color:var(--fg);
+    font-size:var(--fs-body); line-height:1.4; padding:10px 13px; text-align:center; font-family:inherit; }
+  .send { flex:none; width:var(--btn); height:var(--btn); align-self:flex-end; border-radius:50%; border:none;
+    background:var(--bubble-me); color:#fff; display:grid; place-items:center; cursor:pointer; touch-action:manipulation; }
+  .send:active { transform:scale(var(--press-m,.9)); }
+  .legend { flex:1 1 300px; min-width:260px; }
+  .pinlay { display:inline-grid; place-items:center; min-width:16px; height:16px; border-radius:var(--r-pill); background:var(--brand); color:var(--yeta-bg); font:800 10px/1 ui-monospace,Menlo,monospace; padding:0 3px; }
+  /* 브랜드 적용 미리보기 버블 */
+  .b-me { align-self:flex-end; padding:10px 13px; border-radius:var(--r-l); border-top-right-radius:var(--r-s); background:var(--brand); color:var(--m-fg); font-size:var(--fs-body); line-height:var(--lh-base); display:inline-block; }
+  .b-me i { font-style:italic; opacity:.72; }
+  .b-send { width:var(--btn); height:var(--btn); border-radius:50%; border:none; background:var(--brand); color:var(--m-fg); display:grid; place-items:center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="crumb">말벗 제타 · 페이지 구성도 <b>05 대화방</b></p>
+  <h1>대화방 — 챗뷰 (<code>#yetadlg</code>)</h1>
+  <p class="intro">앱의 본체. <b>헤더(재뽑기·상주 프로필·새 대화·닫기) + 무대(배경 크로스페이드) + 로그(소개 배너·버블) + 입력행</b>의 4단 구조. 페르소나 강조색 <code>--yeta-ac</code>가 아바타 이니셜·소개 태그·입력 포커스에 흐른다(현재 기본값 = <code>var(--bubble-me)</code>). 정본 = <code>viewer/index.html</code> CSS L91~188 · 마크업 L282~303 · JS <code>yRender/yApply</code>.</p>
+  <div class="ssot">📍 값 SSOT = <code>viewer/index.html :root</code> → <code>base.css</code> 거울 계승 · 버블 = <code>--bubble-me/--bubble-ai</code> · 창 = <code>--yeta-bg</code> · <b>브랜드 = 네온레몬 <code>--brand</code></b>(내 버블·전송 CTA 스왑안 §5).</div>
+  <nav class="docnav"><a href="01_페이지맵_yeta.html">01 페이지맵</a><a href="02_페이지구성도_메인.html">02 메인</a><a href="03_페이지구성도_PIN게이트.html">03 PIN 게이트</a><a href="04_페이지구성도_캐릭터선택.html">04 캐릭터 선택</a><a class="cur" href="05_페이지구성도_대화방.html">05 대화방</a><a href="06_페이지구성도_대화상태.html">06 대화 상태</a><a href="index.html">허브 ↗</a></nav>
+
+  <!-- 1 와이어 -->
+  <div class="sec"><h2><span class="n">1</span> 화면 와이어 (기틀 실값 · 페르소나 = 무디)</h2>
+    <p class="lead">"새 대화"는 라이브 — 눌러서 2탭 재확인(<code>.armed</code>) 색 전환을 확인해봐(2.6s 자동 해제).</p>
+    <div class="stage">
+      <div class="dlg">
+        <div class="yh">
+          <button class="tool-x" type="button" aria-label="페르소나 재뽑기" title="재뽑기"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="4.5"/><circle cx="9.2" cy="9.2" r="1.15" fill="currentColor" stroke="none"/><circle cx="14.8" cy="9.2" r="1.15" fill="currentColor" stroke="none"/><circle cx="9.2" cy="14.8" r="1.15" fill="currentColor" stroke="none"/><circle cx="14.8" cy="14.8" r="1.15" fill="currentColor" stroke="none"/></svg></button>
+          <button class="who" type="button" aria-label="페르소나 선택"><span class="hava">무</span><b>무디</b></button>
+          <span class="tag">24시 찻집 '무음'의 주인</span>
+          <span class="r">
+            <button class="reset" id="demoReset" type="button">새 대화</button>
+            <button class="tool-x" type="button" aria-label="닫기"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6 18 18M18 6 6 18"/></svg></button>
+          </span>
+        </div>
+        <div class="stg">
+          <div class="log">
+            <div class="yintro"><span class="a66">무</span><span class="nm">무디</span><span class="tg">24시 찻집 '무음'의 주인</span><span class="ds">말없이 찻잔을 채워주는 사람. 새벽에도 불이 켜져 있다.</span><span class="sep"></span></div>
+            <div class="ymsg"><span class="a32">무</span><span class="col"><span class="nm2">무디</span><div class="yb ai">왔네. <i class="yn">*컵을 하나 더 꺼낸다*</i><span class="cap">12s</span></div></span></div>
+            <div class="yb me">오늘 좀 길었어. 따뜻한 걸로.</div>
+            <div class="yb sys">카피 등장</div>
+            <div class="ymsg"><span class="a32" style="color:#ffb46b">카</span><span class="col"><span class="nm2">카피</span><div class="yb ai">어 뭐야, 나 빼고 심야 티타임?</div></span></div>
+          </div>
+        </div>
+        <div class="yin">
+          <div class="ta" aria-hidden="true" style="color:var(--mut)">메시지</div>
+          <button class="send" type="button" aria-label="전송"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2 15 22 11 13 2 9z"/></svg></button>
+        </div>
+      </div>
+      <div class="legend"><table>
+        <tr><th></th><th>요소</th><th>정본 셀렉터 · 값</th></tr>
+        <tr><td><span class="pinlay">1</span></td><td><b>🎲 재뽑기</b></td><td><code>#yetaDice</code> = <code>.tool-x</code> 30px 계승 · 주사위 라인 SVG · 맥락 유지·화자만 교체</td></tr>
+        <tr><td><span class="pinlay">2</span></td><td><b>상주 프로필</b></td><td><code>.yeta-who</code> — 아바타 34px(<code>.yh-ava</code>) + 이름 <code>--fs-h2</code> 800 + 태그라인 + 셰브론 12px · 탭 = 04 리스트</td></tr>
+        <tr><td><span class="pinlay">3</span></td><td><b>새 대화</b></td><td><code>.yh-reset</code> — 텍스트 버튼 <code>--fs-sm</code> 700 <code>--mut</code> · 2탭 재확인 = 문구 교체 + <code>--arm</code>(§📐 결)</td></tr>
+        <tr><td><span class="pinlay">4</span></td><td><b>무대 배경</b></td><td><code>.ybg</code>×2 겹 크로스페이드(.6s) — 이미지(<code>roster bg</code>+어둠 그라데 .72/.86) 또는 페르소나색 틴트 폴백</td></tr>
+        <tr><td><span class="pinlay">5</span></td><td><b>소개 배너</b></td><td><code>.yintro</code> — 66px 아바타 + 이름 + 태그(<code>--yeta-ac</code>) + 소개 36ch + 그라데 구분선 · 로그 최상단 상주</td></tr>
+        <tr><td><span class="pinlay">6</span></td><td><b>입력행</b></td><td><code>.yeta-in</code> — 중앙정렬 textarea(max-height 120·auto-resize) + 원형 전송 34px(<code>--btn</code>) 종이비행기</td></tr>
+      </table></div>
+    </div>
+  </div>
+
+  <!-- 2 버블 어휘 -->
+  <div class="sec"><h2><span class="n">2</span> 버블 어휘 (CII "채팅 버블(yeta)" 행)</h2>
+    <div class="card"><table>
+      <tr><th>버블</th><th>정본</th><th>규칙</th></tr>
+      <tr><td><b>캐릭터</b></td><td><code>.ymsg</code> + <code>.yb.ai</code></td><td>아바타 32px + 이름 <code>--fs-xs</code> + 버블 <code>--bubble-ai</code> · 좌상단 모서리만 <code>--r-s</code>(말꼬리) · 폭 ≤86%</td></tr>
+      <tr><td><b>나</b></td><td><code>.yb.me</code></td><td><span class="sw" style="background:var(--bubble-me)"></span><code>--bubble-me</code>(현행 네온보라) + 흰 글자 · 우측 정렬 · 우상단 <code>--r-s</code> · 폭 ≤78%</td></tr>
+      <tr><td><b>나레이션</b></td><td><code>i.yn</code></td><td><code>*지문*</code> → 이탤릭 톤다운(<code>--fg-2</code> .75) — 대화 폰트 결(제타)</td></tr>
+      <tr><td><b>시스템</b></td><td><code>.yb.sys</code></td><td>중앙 무배경 <code>--mut --fs-sm</code> — 페르소나 합류 등(그룹 끊음)</td></tr>
+      <tr><td><b>캡션</b></td><td><code>.yb-cap</code></td><td>소요초(tabular-nums) — 답장 버블 하단</td></tr>
+      <tr><td><b>연속 그룹핑</b></td><td><code>.cont</code></td><td>같은 화자 연속 = 아바타·이름 생략 + -6px 바짝(톡방 결)</td></tr>
+      <tr><td><b>실패</b></td><td><code>.yb.fail</code></td><td><code>--danger</code> 8% 면 + 40% 선 + [다시 보내기] 알약 → <a href="06_페이지구성도_대화상태.html">06</a></td></tr>
+    </table>
+    <p class="note"><b>모션</b> = 신규 노드만 촤르륵 등장(<code>ybIn</code> .3s — transform-origin 말꼬리쪽), 회수는 <code>ybOut</code> 접힘 후 제거. 히스토리 재렌더는 무애니(인덱스 키드) · reduced-motion 전부 무효.</p></div>
+  </div>
+
+  <!-- 3 클릭 맵 -->
+  <div class="sec"><h2><span class="n">3</span> 클릭 → 전이</h2>
+    <div class="card"><table>
+      <tr><th>클릭</th><th>동작(op)</th><th>결과</th></tr>
+      <tr><td><b>🎲</b></td><td><code>draw</code>(현재 화자 제외 랜덤)</td><td>화자 교체 — 소개 배너·강조색·무대 스르륵 전환, 대화 중이면 sys "합류" 턴 · 실패 = <code>.yb.fail</code> 인라인</td></tr>
+      <tr><td><b>프로필(이름)</b></td><td>—</td><td><a href="04_페이지구성도_캐릭터선택.html">04 리스트</a>로 전환(직접 선택)</td></tr>
+      <tr><td><b>새 대화</b></td><td>1탭 arm → 2탭 <code>reset</code></td><td>"지우고 새로?"(<code>--arm</code> · 2.6s) → 세션 백업 후 초기화 → 04 리스트</td></tr>
+      <tr><td><b>전송 / Enter</b></td><td><code>send {text,model,effort}</code></td><td>낙관 내 버블 + 타이핑 버블 촤르륵 → <a href="06_페이지구성도_대화상태.html">06 상태머신</a> (Shift+Enter = 줄바꿈)</td></tr>
+      <tr><td><b>X / 폰 뒤로가기</b></td><td>—</td><td>닫힘 → 02 메인 복귀(폴 정지 · pushState 칸 회수)</td></tr>
+    </table></div>
+  </div>
+
+  <!-- 4 모달 스펙 -->
+  <div class="sec"><h2><span class="n">4</span> 모달 스펙 (CII "캐릭터 챗 모달" 행)</h2>
+    <div class="card"><table>
+      <tr><th>항목</th><th>값</th></tr>
+      <tr><td><b>크기</b></td><td><code>min(600px,94vw) × min(88dvh,760px)</code> · 모바일 <code>margin:auto</code> 필수(좌상단 쏠림 함정)</td></tr>
+      <tr><td><b>표면</b></td><td>불투명 <code>--yeta-bg</code>(전역 dialog blur 상속 차단 — <code>backdrop-filter:none</code> 명시) · 라운드 <code>--r-modal</code>(22) · 백드롭 <code>rgba(0,0,0,.6)</code></td></tr>
+      <tr><td><b>내비 계약</b></td><td><code>showModal + history.pushState</code> — 폰 뒤로가기 = 닫기 · 닫힘 시 폴 정지·스크롤 복원</td></tr>
+      <tr><td><b>스크롤</b></td><td>로그만 스크롤(<code>flex:1 overflow-y:auto</code>) · 바닥 80px 이내일 때만 자동 따라감(스크롤 강탈 방지)</td></tr>
+      <tr><td><b>입력</b></td><td>textarea 중앙정렬 · 포커스 = <code>--yeta-ac</code> 테두리 + 무채 링 · <code>enterkeyhint=send</code> · 자동완성 4종 off</td></tr>
+    </table></div>
+  </div>
+
+  <!-- 5 브랜드 적용 -->
+  <div class="sec"><h2><span class="n">5</span> 🍋 브랜드 적용 — 네온레몬 (다크 챗 = 본진)</h2>
+    <p class="lead">근흑 위 레몬 대비 ≈17:1 · 레몬 위 잉크(<code>--m-fg</code>) ≈16:1 — 다크 챗은 결정 대기 없이 전부 성립. <b>내 버블이 곧 브랜드 순간</b>.</p>
+    <div class="card">
+      <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-bottom:6px">
+        <span class="b-me">오늘 좀 길었어. <i>*가방을 내려놓는다*</i></span>
+        <button class="b-send" type="button" aria-label="전송(브랜드 적용안)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2 15 22 11 13 2 9z"/></svg></button>
+        <span style="font-size:12px;color:var(--mut)">← 적용안 미리보기: <code>--brand</code> 채움 + 잉크 <code>--m-fg</code></span>
+      </div>
+      <table>
+        <tr><th>요소</th><th>현행</th><th>브랜드 적용안</th><th>동반 수정</th></tr>
+        <tr><td><b>내 버블</b> <code>.yb.me</code></td><td><span class="sw" style="background:var(--bubble-me)"></span><code>--bubble-me #b45cff</code> + 흰 글자</td><td><span class="sw" style="background:var(--brand)"></span><code>--bubble-me → #E7FF2E(--brand 값)</code> + 잉크 글자</td><td><code>color:#fff → var(--m-fg)</code> · 나레이션 <code>rgba(255,255,255,.82) → 잉크 .72</code></td></tr>
+        <tr><td><b>전송 버튼</b> <code>.yeta-send</code></td><td><code>--bubble-me</code> + 흰 아이콘</td><td><code>--brand</code> + 잉크 아이콘</td><td><code>color:#fff → var(--m-fg)</code></td></tr>
+        <tr><td><b>강조 훅</b> <code>--yeta-ac</code></td><td><code>var(--bubble-me)</code></td><td><code>var(--brand)</code> — 이니셜·소개 태그·입력 포커스가 일괄 레몬</td><td>없음(변수 1곳)</td></tr>
+        <tr><td><b>무대 틴트 폴백</b></td><td><code>#7c5cfc</code>(보라 리터럴)</td><td><code>var(--brand)</code> 틴트(8~12%)</td><td>JS <code>yStage</code> 1곳</td></tr>
+        <tr><td><b>버블 <code>--bubble-ai</code>·창 <code>--yeta-bg</code></b></td><td>근흑 계열</td><td>유지 — 근흑은 브랜드 짝 색</td><td>—</td></tr>
+      </table>
+      <p class="note"><b>승인 시 실행 순서</b>(§🎨 2-2): <code>:root</code> 값 스왑 → <code>python3 shared/build_design_mirror.py build</code> → CII "채팅 버블(yeta)" 행 갱신 → check_refs 통과. 코드 산점 수정은 위 "동반 수정" 3곳뿐.</p>
+    </div>
+  </div>
+
+  <div class="foot">정본 = <a href="../viewer/index.html">viewer/index.html</a> <code>#yetadlg</code> · CII = 채팅 버블(yeta)·캐릭터 챗 모달 행 · 이전 ← <a href="04_페이지구성도_캐릭터선택.html">04 캐릭터 선택</a> · 다음 → <a href="06_페이지구성도_대화상태.html">06 대화 상태</a> · <a href="index.html">허브</a></div>
+</div>
+<script>
+  // 새 대화 2탭 재확인 라이브 데모(기틀 yResetArm 재현 · 문서 전용)
+  const rb = document.getElementById('demoReset'); let armed = 0, t = null;
+  rb.addEventListener('click', () => {
+    if (!armed) { armed = 1; rb.textContent = '지우고 새로?'; rb.classList.add('armed'); t = setTimeout(clear, 2600); return; }
+    clear();
+  });
+  function clear(){ armed = 0; clearTimeout(t); rb.textContent = '새 대화'; rb.classList.remove('armed'); }
+</script>
+</body>
+</html>

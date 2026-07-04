@@ -13,6 +13,9 @@
     --danger:#ff5b4a; --danger-rgb:255,91,74; --arm:#ffd93d;
     /* yeta 정체성 — 네온보라 버블·근흑 창(운영자 260703) */
     --bubble-me:#b45cff; --bubble-ai:#1e2023; --yeta-bg:#0d0b12;
+    /* yeta 브랜드 — 네온레몬 고정(운영자 260704·이 레포 한정). 값 = 플랫폼 기존 레몬(#e7ff2e·thumb reels) 채택.
+       현행 화면 배선은 구성도/01~06 승인 후 일괄(레몬 채움 위 전경 = 잉크 --m-fg · 라이트 바탕 레몬 단독 텍스트 금지) */
+    --brand:#E7FF2E; --brand-rgb:231,255,46;
     /* 반지름 */
     --r-s:9px; --r-m:11px; --r-l:16px; --r-modal:22px; --r-pill:999px;
     /* 간격·버튼 */

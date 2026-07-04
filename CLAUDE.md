@@ -16,7 +16,7 @@
 4. 새 버튼·모달·입력칸·아이콘 = **CII 정본 셀렉터 계승**(재설계 금지). 버튼·눌림 패턴 = `구성도/00_가이드북_버튼인터랙션.html`. 눌림 scale = `--press-*` 토큰.
 5. `viewer/tokens.css`·`구성도/base.css` = **build 산출 거울**(직접 수정 금지·다음 build에 덮어씀).
 6. **3층 강제**: ① SessionStart/UI턴 = `.claude/hooks/design_digest.py`가 계약 자동 주입 ② UI 파일 저장 후 = `.claude/hooks/design_gate.py`가 check_refs 디자인 게이트(위반 exit 2) ③ 커밋 = `.githooks/pre-commit`이 `check_refs` 강제(`core.hooksPath=.githooks`는 design_digest가 세션마다 자동 설정). 타 모델 = `AGENTS.md`.
-7. **색은 yeta 팔레트**(네온보라·근흑) — nomute 녹색 브랜드와 다름. 구조 토큰(반지름·간격·타이포·모션·눌림)만 계승, 색은 yeta 정체성.
+7. **색은 yeta 팔레트 — 브랜드 = 네온레몬 고정**(`--brand #E7FF2E`·운영자 260704·**이 레포 한정**) + 근흑. nomute 녹색 브랜드와 다름. 구조 토큰(반지름·간격·타이포·모션·눌림)만 계승, 색은 yeta 정체성. 화면별 적용 스펙 = 페이지 구성도 01~06(`구성도/01_페이지맵_yeta.html` 색인 — 다크 챗 = 레몬+잉크 확정 · 라이트 메인 = 전략 A/B/C 운영자 결정 대기). 현행 화면색(버블 네온보라·메인 오렌지/코발트) 스왑은 구성도 승인 후 일괄.
 
 ## 🗺 구조
 - `viewer/` = 뷰어. `index.html`(값 SSOT `:root` + yeta UI) · `tokens.css`(구조토큰 거울) · `nm-svg.js`(아이콘 SSOT) · `_headers`(정적 no-cache)
@@ -27,7 +27,7 @@
 - `.github/workflows/yeta-bg.yml` + `.github/scripts/yeta_bg.py` = 무대 **배경**(bg) 생성 — **수동 dispatch 전용**(Gemini `gemini-3.1-flash-image`·⚠️유료·챗 구독OAuth와 별개 축). 무음동 8무대 9:16(+무드 배리언트 warm/tense/blue = `<<MOOD:x>>` 크로스페이드용) → 공개 R2 `yeta_bg/` → `roster.json` `bg` 주입. 멱등(채워진 건 skip·R2 기존 객체 재과금0·`force=1` 재생성)·자립형(thumb_gen 의존 제거·Gemini 호출·R2 업로드 인라인·260704 이식). 배경도 이미 roster 주입 완료 = *재생성/신규 무드* 도구.
 - `shared/` = `claude_transient.sh`(폴오버 SSOT)·`claude_meter.sh`·`inject_character.sh`(카드 강제주입) · `check_refs.py`(게이트)·`build_design_mirror.py`(거울 빌드).
 - `apps/yeta/` = 캐릭터 **10인**(`characters/*.md`)·`roster.json`(뷰어 표시 SSOT)·`apps/yeta/00_지침_캐릭터챗.md`·`apps/yeta/10_세계관.md`·`apps/yeta/PEXELS_배경_큐레이션_설계.md`.
-- `구성도/`·`docs/CII_컴포넌트계승인덱스.md` = 디자인 블루프린트·계승 인덱스.
+- `구성도/`·`docs/CII_컴포넌트계승인덱스.md` = 디자인 블루프린트·계승 인덱스. **페이지 구성도 01~06**(260704) = 유저가 클릭하는 전 화면(페이지맵·메인·PIN·캐릭터선택·대화방·대화상태) — 화면 구조·클릭 전이·상태·네온레몬 브랜드 매핑의 SSOT.
 
 ## 📰 파이프라인 (한 답장 = 이 체인)
 뷰어 `send` → `functions/api/yeta.js`(R2 세션 append + `dispatch`) → `yeta-chat.yml` → `yeta_chat.sh`(claude -p · 카드 주입 · 앵커-ts insert) → R2 세션 → 뷰어 폴(적응형 4s).
