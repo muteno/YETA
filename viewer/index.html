@@ -31,7 +31,7 @@
     /* 의미색 */
     --danger:#ff5b4a; --danger-rgb:255,91,74; --arm:#ffd93d;
     /* yeta 챗 — 내 버블=브랜드 라임(보라 폐지·전체 그린 통일 260704) · 캐릭터 버블=근흑 · 창=스포티파이 블랙 */
-    --bubble-me:var(--accent); --bubble-ai:#1e2023; --yeta-bg:#141416;
+    --bubble-me:var(--accent); --bubble-ai:#1e2023; --yeta-bg:var(--bg);   /* 챗창 = 스포티파이 블랙 통일(--bg) · 글래스 엣지로 분리(운영자 260704) */
     /* 반지름 */
     --r-s:9px; --r-m:11px; --r-l:16px; --r-modal:22px; --r-pill:999px;
     /* 간격·버튼 */
@@ -90,7 +90,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   @keyframes gdots { 0% { opacity:0; } 25%,70% { opacity:1; } 95%,100% { opacity:0; } }
 /* ── yeta 전용 CSS(L309-405) ── */
   /* ── yeta 말벗 제타(#yetadlg · 260703 v2 제타결) — 랜덤 페르소나 톡방. 다크 창(--yeta-bg) + 캐릭터 버블(--bubble-ai·아바타+이름) + 내 버블 제타 보라(--bubble-me) + *나레이션* 이탤릭. 페르소나 색 = --yeta-ac(JS가 roster color 주입 = "캐릭터 따라 톤" 운영자 컨셉) ── */
-  #yetadlg { width:min(600px,94vw); height:min(88dvh,760px); padding:0; border:1px solid rgba(255,255,255,.10); border-radius:var(--r-modal);
+  #yetadlg { width:min(600px,94vw); height:min(88dvh,760px); padding:0; border:1px solid var(--glass-line); border-radius:var(--r-modal); box-shadow:inset 0 1px 0 var(--glass-line), var(--shadow-card);
     background:var(--yeta-bg); color:var(--fg); overflow:hidden; --yeta-ac:var(--bubble-me);
     backdrop-filter:none; -webkit-backdrop-filter:none; }   /* 불투명 bg → 전역 dialog blur30 상속 낭비 차단(#editdlg 패턴 · 평의회④) */
   #yetadlg::backdrop { background:rgba(0,0,0,.6); }
