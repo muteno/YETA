@@ -256,28 +256,27 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   .ym-pin { width:100%; max-width:300px; display:flex; flex-direction:column; align-items:center;
     opacity:0; transform:translateY(24px); pointer-events:none; height:0; overflow:hidden;
     transition:opacity .45s var(--ease) .1s, transform .45s var(--ease) .1s; }
-  .ymain.pin-mode .ym-hero { flex-grow:0; gap:0; padding-top:34vh; }   /* PIN = 캐릭터 가슴팍으로 내림(운영자 260704) */
+  .ymain.pin-mode .ym-hero { flex-grow:0; gap:0; padding-top:39vh; }   /* PIN 키패드 = 캐릭터 몸통으로 더 내림(운영자 260704) */
   .ymain.pin-mode .ym-access, .ymain.pin-mode .ym-access-lbl { opacity:0; pointer-events:none; height:0; margin:0; }
   .ymain.pin-mode .ym-pin { opacity:1; transform:none; pointer-events:auto; height:auto; overflow:visible; }
   /* PIN 인디케이터 4점 = 캐릭터 바이저(눈) 위 · 포스터 이미지 고정이라 %로 배치·균일 간격(운영자 260704) */
-  .ymain.pin-mode .lk-slots { position:absolute; top:38.5%; left:50%; transform:translateX(-50%); width:44vw; max-width:196px; justify-content:space-between; gap:0; margin:0; z-index:3; }
+  .ymain.pin-mode .lk-slots { position:absolute; top:35%; left:50%; transform:translateX(-50%) rotate(-10deg); width:44vw; max-width:196px; justify-content:space-between; gap:0; margin:0; z-index:3; }   /* 바이저(라벨) 위 정중앙 + 라벨 기울기 정합 rotate(운영자 260704) */
   /* PIN 키패드 = nomute lk- 이식 · 다크+라임 리컬러(260704) */
   .lk-m { display:none; }   /* "PIN 입력" 라벨 제거 — 인디케이터 = 바이저 위 4점(운영자 260704) */
   .lk-slots { display:flex; justify-content:center; gap:15px; margin:22px 0 2px; }
   /* 4 PIN 인디케이터(바이저 위) 상태 — empty(빈링)·active(다음입력·펄스)·cur(현재숫자·강조)·done(기입력·흰채움) · 운영자 260704 */
   .lk-slot { width:30px; height:30px; display:grid; place-items:center; position:relative; transition:transform .18s var(--ease); }
-  .lk-slot::before { content:''; grid-area:1/1; width:26px; height:26px; box-sizing:border-box; border-radius:50%;
-    border:2.5px solid var(--bg); background:transparent; box-shadow:0 1px 3px rgba(0,0,0,.4);
-    transition:background .2s var(--ease), border-color .2s, transform .2s var(--ease), box-shadow .2s; }
-  .lk-slot b { grid-area:1/1; z-index:1; font-family:var(--font-tech); font-weight:700; font-size:15px; line-height:1;
+  .lk-slot::before { content:''; grid-area:1/1; width:24px; height:24px; border-radius:50%;
+    background:var(--bg); box-shadow:0 1px 4px rgba(0,0,0,.45);
+    transition:background .2s var(--ease), transform .2s var(--ease), box-shadow .2s; }   /* 테두리 없음 = 채움만(운영자 260704) */
+  .lk-slot b { grid-area:1/1; z-index:1; font-family:var(--font-tech); font-weight:700; font-size:14px; line-height:1;
     color:var(--accent); opacity:0; transform:scale(.55); transition:opacity .14s, transform .2s var(--ease); }
-  .lk-slot.active::before { border-width:3px; animation:lkPulse 1.25s ease-in-out infinite; }   /* 자동 활성 = 다음 입력칸(구분) */
-  @keyframes lkPulse { 0%,100%{transform:scale(1); box-shadow:0 1px 3px rgba(0,0,0,.4)} 50%{transform:scale(1.16); box-shadow:0 0 0 4px rgba(18,18,18,.3)} }
-  .lk-slot.cur::before { background:var(--bg); border-color:var(--bg); transform:scale(1.1); box-shadow:0 3px 9px rgba(0,0,0,.55); }   /* 현재 = 다크칩 + 강조 숫자 */
+  .lk-slot.active::before { animation:lkPulse 1.25s ease-in-out infinite; }   /* 자동 활성 = 다음 입력칸(펄스) */
+  @keyframes lkPulse { 0%,100%{transform:scale(1); opacity:.72} 50%{transform:scale(1.22); opacity:1} }
+  .lk-slot.cur::before { transform:scale(1.16); box-shadow:0 3px 9px rgba(0,0,0,.55); }   /* 현재 = 다크칩(+강조 숫자) */
   .lk-slot.cur b { opacity:1; transform:scale(1); }
-  .lk-slot.done::before { background:var(--fg); border-color:var(--fg); }   /* 기입력 = 흰색 채움(숫자 숨김) */
-  .lk-slots.bad .lk-slot::before { border-color:var(--danger); }
-  .lk-slots.bad .lk-slot.cur::before, .lk-slots.bad .lk-slot.done::before { background:var(--danger); border-color:var(--danger); }
+  .lk-slot.done::before { background:var(--fg); }   /* 기입력 = 흰색 채움(숫자 숨김) */
+  .lk-slots.bad .lk-slot::before { background:var(--danger); }
   .lk-slots.bad .lk-slot b { color:var(--fg); }
   @media (prefers-reduced-motion:reduce){ .lk-slot.active::before{animation:none} }
   @keyframes lkShake { 0%,100%{transform:translateX(0)} 12%{transform:translateX(-9px)} 28%{transform:translateX(8px)} 44%{transform:translateX(-6px)} 60%{transform:translateX(4px)} 76%{transform:translateX(-2px)} }
