@@ -231,6 +231,35 @@ def check_design():
         print('✅ 디자인 토큰 게이트 — raw 값 baseline 이내(신규 미토큰 없음).')
     return 1 if hard else 0   # accent_raw·accent_hex만 차단, hex/blur/죽은토큰은 WARN
 
+
+def check_token_lock():
+    """절대명령#1 기계강제 — design-tokens.lock(승인 원장)에 없는 :root 신규 토큰 = 커밋 차단(rc=1).
+    승인 = 락 등재(PR diff 리뷰). '승인 없이 조용히 :root 토큰 추가'를 기계가 봉쇄 = §🔒 진짜 강제 지렛대.
+    (자기참조 완화: 추가는 반드시 락에 명시적 등재 = PR에서 운영자가 그 한 줄을 봄.)"""
+    lock_path = os.path.join(ROOT, 'design-tokens.lock')
+    if not os.path.exists(lock_path):
+        print('⚠️ 토큰 락 스킵 — design-tokens.lock 없음')
+        return 0
+    try:
+        import build_design_mirror
+        root = build_design_mirror.extract_root()
+    except Exception as e:
+        print('⚠️ 토큰 락 스킵 —', e)
+        return 0
+    root = re.sub(r'/\*.*?\*/', '', root, flags=re.S)   # :root 주석 제거(오탐 가드)
+    cur = set(re.findall(r'(--[A-Za-z0-9-]+)\s*:', root))
+    lock = set(re.findall(r'^\s*(--[A-Za-z0-9-]+)\b', open(lock_path, encoding='utf-8').read(), re.M))
+    new, gone = sorted(cur - lock), sorted(lock - cur)
+    if new:
+        print('❌ 토큰 락 게이트(차단·절대명령#1) — 미승인 신규 :root 토큰:')
+        for n in new:
+            print('  -', n, '→ 운영자 승인 후 design-tokens.lock 등재(임의 추가 금지)')
+        return 1
+    if gone:
+        print('⚠️ 토큰 락 — 락 등재됐으나 :root 부재(삭제됨 → 락 정리 권장):', ' '.join(gone))
+    print('✅ 토큰 락 게이트 — :root 토큰 %d개 전원 승인 등재(미승인 신규 0)' % len(cur))
+    return 0
+
 # 주입 지침 소스에 '----- ... -----' 형태 본문 줄 금지 (R6 가드 · 260624).
 # inject_guidelines.sh 의 guidelines_version() 은 해시 입력에서 경로헤더('^----- path -----$')를 제외해
 #   파일 rename 에도 같은 버전을 내(불필요 재생성 방지). 그런데 *주입 지침 본문*에 같은 형태의 줄이 있으면
@@ -680,6 +709,11 @@ def main():
             rc = 1
     except Exception as e:
         print('⚠️ check_design 스킵:', e)
+    try:
+        if check_token_lock() != 0:   # 절대명령#1 기계강제 — 미승인 신규 :root 토큰 차단(승인원장 design-tokens.lock)
+            rc = 1
+    except Exception as e:
+        print('⚠️ 토큰 락 게이트 스킵:', e)
     try:
         if check_claude_failover() != 0:   # claude -p 호출 = 폴오버 SSOT 경유 통일(자체 쿼터처리·따로놀기 차단 · 260629 weekly한도 전건실패)
             rc = 1

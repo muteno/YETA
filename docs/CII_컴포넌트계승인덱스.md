@@ -70,3 +70,4 @@
 - **픽토그램 액티브** = 브랜드 라임(`.ynav button.on{color:var(--accent)}`) — nomute 하단바 계승, **색만 브랜드**(재설계 금지). 비활성 픽토 = `--mut`.
 - 폐지: `--bubble-me` 보라→`var(--accent)` · `--accent-1/2`(오렌지/코발트)·`--m-*`(라이트)·`--sky`·`--cream` 제거 · 메인 화면 라이트→다크.
 - 강제: `check_refs.check_design()` accent 패턴 = `rgba(207,255,64)`/`#cfff40`·baseline 0(새 브랜드 raw = var() 강제). 미러 = base.css/tokens.css(`build_design_mirror.py build`).
+- **절대명령#1 기계강제(260704 · 15인 교차검증 v2)**: `design-tokens.lock`(승인 원장) — `:root` 새 토큰이 락 미등재면 `check_refs.check_token_lock()` rc=1(커밋 차단·승인=락 등재). 계승 3티어(정확→근접 자동→갱신) · 갱신 2티어(값=승인+check / 구조 토큰 신설=기틀=교차검증) · raw 예외축(기하·안무·광학·OS·로컬z·box-shadow). 포터블 이식판 = `docs/절대명령1_포터블.md`.
