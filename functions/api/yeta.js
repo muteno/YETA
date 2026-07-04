@@ -100,16 +100,29 @@ export async function onRequestPost({ request, env }) {
     const rc = await fetch(`https://raw.githubusercontent.com/${REPO}/main/apps/yeta/characters/roster.json`,
       { headers: { 'user-agent': 'nomute-viewer' }, cf: { cacheTtl: 300, cacheEverything: true } });
     if (!rc.ok) return json({ error: '로스터 로드 실패' }, 502);
-    const ch = (await rc.json()).find(c => c.id === persona);
+    let roster;
+    try { roster = await rc.json(); } catch { return json({ error: '로스터 파싱 실패(raw)' }, 502); }
+    const ch = Array.isArray(roster) ? roster.find(c => c.id === persona) : null;
     if (!ch || !ch.phone) return json({ error: '이 캐릭터는 아직 전화 미지원 — 프리미엄(전용 음색+phone 등재) 캐릭터만' }, 409);
-    await env.YETA_R2.put(pqkey, JSON.stringify({ n: pused + 1 }), { httpMetadata: { contentType: 'application/json' } });
-    const vr = await fetch('https://api.vapi.ai/call', {
-      method: 'POST',
-      headers: { authorization: `Bearer ${env.VAPI_API_KEY}`, 'content-type': 'application/json' },
-      body: JSON.stringify({ assistantId: ch.phone, phoneNumberId: env.VAPI_PHONE_ID, customer: { number: env.YETA_PHONE_TO } }),
-    });
-    if (vr.ok) return json({ ok: true, remain: pcap > 0 ? pcap - pused - 1 : -1 });
-    return json({ error: `전화 발신 실패(Vapi ${vr.status})` }, 502);
+    // Vapi 아웃바운드 — 예외/에러바디 방어(미방어 시 Function throw = Cloudflare 생 502 자폭 · 국제발신 차단 사유도 여기서 노출)
+    let vr, vbody;
+    try {
+      vr = await fetch('https://api.vapi.ai/call', {
+        method: 'POST',
+        headers: { authorization: `Bearer ${env.VAPI_API_KEY}`, 'content-type': 'application/json' },
+        body: JSON.stringify({ assistantId: ch.phone, phoneNumberId: env.VAPI_PHONE_ID, customer: { number: env.YETA_PHONE_TO } }),
+      });
+      vbody = await vr.text();
+    } catch (e) {
+      return json({ error: `Vapi 연결 실패 — ${String(e).slice(0, 120)}` }, 502);
+    }
+    if (vr.ok) {
+      await env.YETA_R2.put(pqkey, JSON.stringify({ n: pused + 1 }), { httpMetadata: { contentType: 'application/json' } });   // 성공분만 카운트(실패=쿼터 소모 0)
+      return json({ ok: true, remain: pcap > 0 ? pcap - pused - 1 : -1 });
+    }
+    let vmsg = vbody || '';
+    try { const j = JSON.parse(vbody); vmsg = Array.isArray(j.message) ? j.message.join(' · ') : (j.message || j.error || vbody); } catch {}
+    return json({ error: `전화 발신 실패(Vapi ${vr.status}): ${String(vmsg).slice(0, 300)}` }, 502);
   }
 
   if (op === 'ring') {   // 전화 걸어달라(수신 UI·테스트 훅) → yeta-call.yml dispatch. ⚠️ TTS 유료 종량제 + 무인증 공개 사이트 → 일 상한 기본 3(보수 기본)
