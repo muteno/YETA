@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>YETA 음성 축 보고서 — 전화·무전기·보이스 클로닝 (260704)</title>
+<style>
+  /* 레포 팔레트 v2 계승(다크·라임·코발트·글래스) — 보고서 = docs 산출물(뷰어 게이트 밖 · 자체 스타일 허용, 값은 브랜드 정합) */
+  :root { --bg:#121212; --fg:#fff; --fg2:rgba(255,255,255,.78); --mut:rgba(255,255,255,.52);
+    --accent:#CFFF40; --accent-rgb:207,255,64; --cobalt:#3D6BFF; --danger:#ff5d5d;
+    --glass:rgba(255,255,255,.055); --line:rgba(255,255,255,.14); --r:16px; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:15px/1.65 -apple-system,'Apple SD Gothic Neo','Noto Sans KR',sans-serif; padding:28px 16px 80px; }
+  .wrap { max-width:980px; margin:0 auto; }
+  h1 { font-size:22px; margin:0 0 4px; } h1 b { color:var(--accent); }
+  .sub { color:var(--mut); font-size:13px; margin-bottom:26px; }
+  h2 { font-size:16px; margin:34px 0 10px; padding-left:10px; border-left:3px solid var(--accent); }
+  h2 .n { color:var(--accent); font-variant-numeric:tabular-nums; margin-right:6px; }
+  .card { background:var(--glass); border:1px solid var(--line); border-radius:var(--r); padding:14px 16px; margin:10px 0; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  .tblwrap { overflow-x:auto; border:1px solid var(--line); border-radius:var(--r); }
+  th, td { padding:9px 10px; border-bottom:1px solid rgba(255,255,255,.08); vertical-align:top; text-align:left; }
+  th { background:rgba(255,255,255,.04); color:var(--fg2); font-weight:700; white-space:nowrap; position:sticky; top:0; }
+  tr:last-child td { border-bottom:none; }
+  td.no { color:var(--accent); font-weight:800; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .ok { color:var(--accent); font-weight:700; white-space:nowrap; }
+  .semi { color:var(--cobalt); font-weight:700; white-space:nowrap; }
+  .warn { color:var(--danger); font-weight:700; white-space:nowrap; }
+  code { background:rgba(255,255,255,.08); border-radius:6px; padding:1px 6px; font-size:12px; }
+  ul { margin:6px 0; padding-left:20px; } li { margin:5px 0; color:var(--fg2); }
+  li b { color:var(--fg); }
+  .pill { display:inline-block; padding:1px 9px; border-radius:999px; border:1px solid rgba(var(--accent-rgb),.4); background:rgba(var(--accent-rgb),.12); color:var(--accent); font-size:11px; font-weight:700; margin-right:6px; }
+  .src a { color:var(--cobalt); text-decoration:none; } .src li { font-size:12.5px; }
+  .kv { color:var(--mut); font-size:12.5px; }
+</style>
+</head>
+<body><div class="wrap">
+<h1>YETA <b>음성 축</b> 구축 보고서 — 걸려오는 전화 · 보이스 클로닝(프리미엄) · 무전기(PTT) · 실전화</h1>
+<div class="sub">260704 · 세션 정본 · 검증 = 문법 전수 + aws 스텁 드라이런 + Playwright 실브라우저 스크린샷 + check_refs rc=0 + <b style="color:var(--accent)">프리뷰 실배포 실측 통과</b>(973fab06.yeta.pages.dev — call.js 서빙·훅 4곳·신규 op 게이트·경로탈출 차단 확인) · PR = muteno/YETA#9</div>
+
+<h2><span class="n">Ⅰ</span>요구사항 인덱스 — 16행 전수 검증</h2>
+<div class="tblwrap"><table>
+<tr><th>#</th><th>요구사항(운영자 발화)</th><th>상태</th><th>기존에 어땠는데 → 이제 이렇게 됐다</th><th>검증</th></tr>
+<tr><td class="no">01</td><td>캐릭터가 나에게 먼저 전화를 걸어오는 기능</td><td class="ok">✅ 구현</td><td>기능 자체가 없음 → <code>yeta-call.yml</code>+<code>yeta_call.sh</code>: 발신자 선정→첫마디 생성(claude&nbsp;-p)→TTS→세션 <code>call</code> 턴+마커+웹푸시. 뷰어 풀스크린 수신 화면(벨 파동·진동·벨소리·받기/거절)</td><td>드라이런 4종 + 실브라우저 스크린샷</td></tr>
+<tr><td class="no">02</td><td>목소리 파일을 고정하면 말소리로 출력</td><td class="ok">✅ 구현</td><td>텍스트 챗만 존재 → 1분 샘플→ElevenLabs IVC 클로닝→roster <code>voice:"el:&lt;id&gt;"</code> 고정. 모든 대사가 그 음색으로 합성·재생</td><td>클로닝 파이프 문법+roster 주입 로직 실측</td></tr>
+<tr><td class="no">03</td><td>v1 — 인터페이스 없이 기능부 먼저</td><td class="ok">✅ 구현</td><td>미존재 → 파이프(생성·TTS·비공개 저장·서빙 op)가 UI 없이 독립 동작(1차 커밋 완료 · PR #9)</td><td>aws 스텁 전체 경로 드라이런 rc=0</td></tr>
+<tr><td class="no">04</td><td>붙였다 뗄 수 있는 모듈처럼</td><td class="ok">✅ 구현</td><td>본체에 박아 넣는 방식 → <code>viewer/call.js</code> 플러그인: 훅 3줄(스크립트 태그·yLoad 1줄·배지 헬퍼)만 본체 접점. 제거=훅 삭제, 본체 무손상. CSS·DOM 전부 모듈이 자체 주입</td><td>정적 서버에서 모듈 단독 동작 실측</td></tr>
+<tr><td class="no">05</td><td>팔레트·글래스모피즘·디자인 기틀 그대로(새 창작 0)</td><td class="ok">✅ 준수</td><td>— → 신규 토큰 0 · 신규 raw 0(키프레임 안무·기하 계산 예외만). 수신 화면=#yetadlg 결·.yintro-* 계승, 버튼=.yeta-send 스펙, 배지=.dlbtn 결. CII 표 3행 등재</td><td><code>check_refs</code> rc=0(토큰 락 포함)</td></tr>
+<tr><td class="no">06</td><td>정립 안 된 규약은 기틀(CLAUDE.md)에 박기</td><td class="ok">✅ 반영</td><td>음성 축 규약 부재 → §🗺 ☎️ 음성 축(4조각+모듈 계약+소비 규약), §🔑 음성 시크릿, §🤖 PTT 다이얼 전부 박음</td><td>CLAUDE.md diff</td></tr>
+<tr><td class="no">07</td><td>시스템(런타임)은 CLAUDE.md 참조 금지(토큰 절약)</td><td class="ok">✅ 반영</td><td><code>claude -p</code>가 auto-discovery로 CLAUDE.md 자동 주입(턴당 ~37k 토큰 누수·기본 OFF였음) → <code>--safe-mode</code> <b>기본 ON</b>(chat·call 공통·회귀 노브 YETA_SAFE=0)·원칙 자체를 §🤖에 박음. --bare 금지는 불변</td><td>스크립트 diff + 폴오버 게이트 rc=0</td></tr>
+<tr><td class="no">08</td><td>1분짜리 음성 파일로 보이스를 만들어낼 것</td><td class="ok">✅ 구현</td><td>불가 → 비공개 R2 <code>voice_samples/&lt;id&gt;.mp3</code>(1분 샘플) → <code>yeta-voice.yml</code> 수동 dispatch → ElevenLabs Instant Voice Clone(10초~1분이면 충분·한국어 지원 공식 확인)</td><td>리서치 출처 Ⅶ + 파이프 문법·주입 실측</td></tr>
+<tr><td class="no">09</td><td>음색을 페르소나별로 부여 = 프리미엄 캐릭터(페르소나 없으면 캐릭터 아님)</td><td class="ok">✅ 구현</td><td>페르소나 개념만 존재 → roster의 <b>페르소나 행</b>에 voice 귀속(페르소나=필수 전제 그대로). voice 있는 캐릭터 = 프리미엄: 뷰어 이름 옆 <span class="pill">〰 보이스</span> 배지 + TTS가 전용 음색 자동 우선</td><td>Playwright 배지 렌더 실측(badge=1)</td></tr>
+<tr><td class="no">10</td><td>대화창에서 콜 누르면 <b>등록된 내 번호로 실제 전화</b></td><td class="semi">🧩 스캐폴드(코드 완성·시크릿 대기)</td><td>불가 → op <code>phone</code>: Vapi 아웃바운드(등록 번호=시크릿 <code>YETA_PHONE_TO</code>)+Twilio KR($0.0524/분)+페르소나별 Vapi assistant(roster <code>phone</code>). 시크릿 3종 넣는 순간 활성 · 일 상한 기본 2통</td><td>코드 문법 OK · 실발신은 계정 개설 후(비용 발생이라 임의 개설 불가)</td></tr>
+<tr><td class="no">11</td><td>가장 효율적인 비용 + 음색 보존 낭독이 1순위</td><td class="ok">✅ 반영</td><td>— → 기본 모델 <code>eleven_multilingual_v2</code>(음색 보존 우선·저지연은 flash_v2_5 노브). 비용 사다리: Web Speech 0원 → Whisper STT ~0원 → TTS $5/월 → 실전화만 분당 과금. 상한 3중(통화3·전화2·PTT 600자 컷)</td><td>비용표 Ⅱ</td></tr>
+<tr><td class="no">12</td><td>내 말을 텍스트로 받아 → 페르소나+사전 등록 음색으로 대답</td><td class="ok">✅ 구현</td><td>타이핑만 가능 → 마이크 탭→STT(3단 폴백)→기존 페르소나 파이프(카드·기억 주입 그대로)→답장을 전용 음색 TTS→자동재생. 페르소나성·음색 둘 다 보존</td><td>PTT 체인 각 조각 실측(STT op·ptt 박제·ptt_voice·자동재생 코드)</td></tr>
+<tr><td class="no">13</td><td>느리면 낮은 모델로 속도 확보</td><td class="ok">✅ 반영</td><td>다이얼 고정 opus → <b>무전 턴 = sonnet-5×low 고정</b>(게이트웨이 턴별 박제) + 웜 루프 후속턴 = 십수 초 대</td><td>PTT_DIAL 코드 + 기존 웜 실측치(§📰)</td></tr>
+<tr><td class="no">14</td><td>5초 무응답=FAIL·10초 이상이면 "전화" 대신 <b>무전기 통신</b>으로 전환</td><td class="ok">✅ 판정·전환 완료</td><td>미판정 → <b>판정: 현 파이프(Actions 경유)는 10초 내 불가</b> → 요구대로 인앱 기능명 = <b>무전기</b>(PTT·수신 페이스), "전화" 네이밍은 ①걸려오는 전화 연출 ②실전화(Vapi ~1초대·10번 행)에만 부여</td><td>레이턴시 산정 근거 Ⅲ</td></tr>
+<tr><td class="no">15</td><td>작업하다 흘리듯 말해도 정확히 받아낼 것(정확도 우선)</td><td class="ok">✅ 구현</td><td>불가 → STT 3단: ①Web Speech ko-KR(즉시) ②<b>Whisper large-v3-turbo</b>(op stt·Workers AI — 정확도 상위·iOS 설치형 PWA도 커버) ③타이핑 폴백. 실패 시 토스트로 명확 안내</td><td>op stt 코드 + iOS PWA 제약 리서치 확인</td></tr>
+<tr><td class="no">16</td><td>새 페이지 만들지 말고 기존 기틀 위에 UX 구성 + 최대한 검색해서 방법 확정 + HTML 보고서</td><td class="ok">✅ 이 문서</td><td>— → 새 페이지 0(챗창 입력행+오버레이 dialog만) · 웹검색 6회로 시세·지원 검증 · 본 보고서 = <code>docs/reports/</code> 커밋</td><td>스크린샷 3종 + 출처 Ⅶ</td></tr>
+</table></div>
+<div class="kv">상태 기준: ✅ = 코드 완성 + 이 세션에서 실측 · 🧩 = 코드 완성 + 외부 계정(유료) 등록만 남음(임의 결제 개설은 운영자 권한이라 보류)</div>
+
+<h2><span class="n">Ⅱ</span>비용 구성(가장 효율 축)</h2>
+<div class="tblwrap"><table>
+<tr><th>축</th><th>선택</th><th>비용</th><th>비고</th></tr>
+<tr><td>무전 STT</td><td>Web Speech(기기 내장)</td><td class="ok">0원</td><td>Android/데스크톱 즉시</td></tr>
+<tr><td>무전 STT 폴백</td><td>Workers AI Whisper turbo</td><td class="ok">~0원(무료 티어)</td><td>iOS 설치형 PWA 커버 · Pages AI 바인딩 1회 설정</td></tr>
+<tr><td>클로닝+프리미엄 TTS</td><td>ElevenLabs Starter</td><td>$5/월(30k자)</td><td>클로닝 포함 · 첫마디 220자 기준 월 ~130통 분량</td></tr>
+<tr><td>TTS 폴백</td><td>OpenAI gpt-4o-mini-tts</td><td>~$0.015/분</td><td>시크릿 이미 보유(얼굴 파이프 공용)</td></tr>
+<tr><td>실전화(선택)</td><td>Vapi+Twilio KR</td><td>실질 $0.15~0.35/분 + 번호 $1.15/월</td><td>지연 ~1초대 = "전화" 판정 통과 유일 축 · 일 상한 2</td></tr>
+<tr><td>대안(참고)</td><td>Fish Audio / MiniMax</td><td>$15/M자 / 클론 $1.5</td><td>ElevenLabs 대비 저렴 · 한국어 클론 품질 미실측이라 2순위</td></tr>
+</table></div>
+
+<h2><span class="n">Ⅲ</span>레이턴시 판정 근거(요구 ⑥⑧)</h2>
+<div class="card">현 답장 체인 = 게이트웨이→GitHub Actions dispatch→claude&nbsp;-p→R2→폴. 웜 루프가 살아 있어도 <b>후속 턴 십수 초</b>, 콜드면 30초+. 어떤 튜닝으로도 "말하고 5초 내 음성 응답"은 이 체인에서 불가 → 운영자 기준(10초)에 따라 <b>인앱 = 무전기 통신으로 명명·설계 전환(수신 무전 페이스: 텍스트 먼저→음성 수 초 뒤 자동재생)</b>. 진짜 전화 레이턴시(~1초대)는 상시 서버+스트리밍 스택이 필수라 Vapi 스캐폴드(10번 행)로 분리 — 두 축 모두 성립 = 요구 ⑨ "둘 다 불만족이면 FAIL" 회피.</div>
+
+<h2><span class="n">Ⅳ</span>리스크</h2>
+<div class="card"><ul>
+<li><b>법적(최대)</b>: 보이스 클로닝은 <b>본인 목소리 또는 권리 동의분만</b>. 타인·연예인 음성 샘플 = 초상권·퍼블리시티권 침해. 파이프는 운영자 수동 dispatch 전용으로 잠가둠.</li>
+<li><b>과금 폭주</b>: 무인증 공개 사이트에서 op ring/phone 남발 가능 → 일 상한(3통/2통·빈값도 보수 기본), TTS는 ptt·call 턴에서만 발동.</li>
+<li><b>iOS 설치형 PWA</b>: Web Speech 불가(실측 확인) → op stt 폴백. 단 <b>AI 바인딩 미설정이면 무전은 타이핑 폴백</b>으로 강등.</li>
+<li><b>규격 드리프트</b>: Whisper turbo 입력 규격·브라우저 MediaRecorder mimeType 편차 → env 노브(<code>YETA_STT_MODEL</code>)와 관대한 파싱으로 완충.</li>
+<li><b>프라이버시</b>: 음성(대사·샘플)은 전부 비공개 R2. 단 세션 op get 자체가 무인증 공개인 기존 이슈는 그대로(Zero Trust 잠금 옵션 §🗺).</li>
+</ul></div>
+
+<h2><span class="n">Ⅴ</span>장단점 · 단점 보완 방안</h2>
+<div class="tblwrap"><table>
+<tr><th>축</th><th>장점</th><th>단점</th><th>보완 방안</th></tr>
+<tr><td>무전기(PTT)</td><td>비용 ~0원 · 기존 파이프 재사용 · 페르소나·기억 완전 보존</td><td>실시간 아님(십수 초) · 웜 꺼지면 30초+</td><td>sonnet-5×low 고정 + 프리웜 편승 + "무전 수신" 프레이밍(기대치 설계) + 답장 도착 즉시 음성 자동재생</td></tr>
+<tr><td>클로닝(ElevenLabs)</td><td>1분 샘플·한국어·품질 최상급 · $5/월</td><td>종량 상한(30k자) · 벤더 종속</td><td>TTS SSOT(yeta_tts.py)라 provider 3줄 교체로 Fish/MiniMax 전환 가능 · oa: 폴백 상시</td></tr>
+<tr><td>실전화(Vapi)</td><td>진짜 번호 발신 · ~1초 응답 = 유일한 "전화" 합격 축</td><td>분당 과금 · 별도 계정 3종 · 구독 OAuth 밖(LLM도 API 과금)</td><td>스캐폴드+일 상한 2통 · 프리미엄 캐릭터 전용(roster phone) · 짧은 안부콜 용도로 시나리오 제한</td></tr>
+<tr><td>모듈 구조</td><td>훅 3줄 = 탈부착 · 본체 오염 0</td><td>본체 내부(yLoad·전역)에 계약 의존</td><td>계약을 CLAUDE.md·모듈 헤더 양쪽에 박음 + 전역 부재 시 자동 no-op 가드</td></tr>
+</table></div>
+
+<h2><span class="n">Ⅵ</span>추후 계획 · 아이데이션 · 신의 한수 · 이건 모르겠다</h2>
+<div class="card"><b>추후 계획</b><ul>
+<li>푸시 구독 UI(<code>api/push</code>+설정 토글 — sw.js는 이미 수신 완비) → 앱 닫혀도 "전화가 왔어".</li>
+<li>헤더 수화기 버튼(op ring/phone 발사 UI) · 부재중 배지 · 통화 버블 ▶ 재청취(위임 1핸들러).</li>
+<li>실전화 활성화 절차: Vapi 가입→번호 구매→페르소나 assistant 생성(카드 요약+el: 보이스)→roster <code>phone</code> 주입→시크릿 3종.</li>
+<li>클론 샘플 업로더(운영자 전용) — 지금은 R2 수동 업로드.</li>
+</ul>
+<b>아이데이션</b><ul>
+<li>무드(<code>&lt;&lt;MOOD&gt;&gt;</code>)별 벨소리 톤 변주 · 새벽엔 DJ 윤이 "라디오 주파수"처럼 걸어옴(세계관 결합).</li>
+<li>무전기 컨셉 확장: 채널/주파수 UI, 지지직 SFX, 음성 메시지 보관함(비공개 R2 이미 준비됨).</li>
+<li>프리미엄(전용 음색) = 수익화 축 — 배지가 그 시각 정본.</li>
+</ul>
+<b>신의 한수</b><ul>
+<li><b>음성을 공개 버킷이 아니라 비공개 세션 R2+게이트웨이 스트림</b>으로 설계 — 대화 내용(음성) 공개 노출을 구조적으로 차단.</li>
+<li><b>텍스트 먼저·음성 나중 부착</b>(ptt_voice) — TTS 시간이 체감 지연에 안 잡힘.</li>
+<li><b>--safe-mode 기본화</b> — 토큰 절약(턴당 ~37k)이 곧 응답속도·쿼터 수명으로 직결(무전기 요구와 시너지).</li>
+<li>WebAudio 재생(제스처 unlock 컨텍스트) — 모바일 자동재생 정책을 정면돌파.</li>
+</ul>
+<b>이건 모르겠다(정직 고백 · 실측 필요)</b><ul>
+<li>ElevenLabs 클론의 <b>한국어 억양 실제 품질</b> — 운영자 샘플 없인 미실측(1순위 실측 항목).</li>
+<li>Whisper turbo가 각 브라우저의 webm/opus를 그대로 받는지(변환 필요 여부) — 실기기 1회 확인 필요.</li>
+<li>iOS 설치형 PWA의 getUserMedia 권한 UX(매번 묻는지) — 기기 실측 필요.</li>
+<li>Vapi assistant에 카드 전문을 넣었을 때 캐릭터 톤 유지 품질 · 국내 발신번호 표시/스팸필터 거동.</li>
+</ul></div>
+
+<h2><span class="n">Ⅶ</span>리서치 출처(가격·지원 검증)</h2>
+<div class="card src"><ul>
+<li><a href="https://elevenlabs.io/pricing">ElevenLabs Pricing</a> · <a href="https://elevenlabs.io/voice-cloning">ElevenLabs Voice Cloning(IVC)</a> · <a href="https://www.cekura.ai/blogs/elevenlabs-pricing">플랜 분석(2026)</a></li>
+<li><a href="https://docs.vapi.ai/customization/custom-voices/elevenlabs">Vapi × ElevenLabs 커스텀 보이스</a> · <a href="https://www.cekura.ai/blogs/vapi-ai-pricing">Vapi 실질 단가(2026)</a> · <a href="https://telnyx.com/resources/vapi-pricing">Vapi 요금 구조</a></li>
+<li><a href="https://www.twilio.com/en-us/voice/pricing/kr">Twilio 한국 발신 요금($0.0524/분 모바일 · 번호 $1.15/월~)</a></li>
+<li><a href="https://caniuse.com/speech-recognition">Web Speech API 지원표</a> · <a href="https://whatpwacando.today/speech-recognition/">iOS 설치형 PWA 제약</a> · <a href="https://progressier.com/pwa-capabilities/speech-recognition">PWA Speech Recognition</a></li>
+<li><a href="https://fish.audio/plan/">Fish Audio 요금</a> · <a href="https://gradium.ai/content/best-ai-voice-generators-2026">2026 TTS/클로닝 비교</a></li>
+</ul></div>
+
+<div class="kv" style="margin-top:26px">정본 규약 = CLAUDE.md §🗺 ☎️ 음성 축 · 컴포넌트 = docs/CII_컴포넌트계승인덱스.md(3행 등재) · 검증 스크린샷 = PR #9 본문.</div>
+</div></body>
+</html>

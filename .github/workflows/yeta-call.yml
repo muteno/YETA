@@ -1,0 +1,106 @@
+name: yeta-call
+
+# yeta 걸려오는 전화 v1 — 캐릭터가 먼저 전화 거는 이벤트(첫마디 생성 + 음성 TTS) · UI 미구현 = 기능부만(260704).
+# 트리거 = 수동 dispatch 또는 뷰어 게이트웨이 op ring(functions/api/yeta.js · 일 상한 YETA_CALL_MAX_PER_DAY 기본 3).
+# ⚠️ TTS = OpenAI 유료 종량제(챗 구독 OAuth와 별개 축) — cron 등 자동 트리거 금지(yeta-face/bg 동일 원칙).
+#   OPENAI_API_KEY 없으면 무음 전화(fail-soft). 음성 mp3 = **비공개** 세션 버킷 voice/ (대사=대화 내용 → 공개 금지).
+on:
+  workflow_dispatch:
+    inputs:
+      persona:
+        description: '발신 캐릭터 id(비우면 세션 현재 페르소나 → 없으면 랜덤)'
+        required: false
+        default: ''
+      line:
+        description: '수동 대사(테스트용 — claude 생성 생략·TTS만)'
+        required: false
+        default: ''
+      voice:
+        description: 'OpenAI TTS 보이스 강제(비우면 캐릭터 매핑 · 예: nova)'
+        required: false
+        default: ''
+
+concurrency:
+  group: yeta-call            # 전화는 직렬(세션 경합 차단) — 챗과는 별개 그룹(레이스 = 스크립트 fresh 재-read가 방어)
+  cancel-in-progress: false
+
+permissions:
+  contents: read   # 카드·스크립트 읽기만 — 세션·음성 = R2
+
+jobs:
+  call:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10   # 첫마디 1턴(claude 240s 상한) + TTS + 업로드 — 웜 루프 없음
+    steps:
+      - name: Checkout (shallow+sparse — yeta-chat.yml 동형)
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          sparse-checkout: |
+            .github
+            shared
+            apps/yeta
+            push
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+
+      - name: CLI 캐시 키(ISO 주 단위 — yeta-chat.yml 동형)
+        id: week
+        run: echo "week=$(date +%G%V)" >> "$GITHUB_OUTPUT"
+      - name: Cache claude CLI
+        id: clicache
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm-global
+          key: claude-cli-${{ runner.os }}-${{ steps.week.outputs.week }}
+      - name: Install Claude Code CLI (캐시 미스 시만)
+        if: steps.clicache.outputs.cache-hit != 'true'
+        run: npm install -g --prefix "$HOME/.npm-global" @anthropic-ai/claude-code
+      - name: CLI PATH
+        run: echo "$HOME/.npm-global/bin" >> "$GITHUB_PATH"
+
+      - name: pywebpush (전화 알림 푸시용 · 비치명)
+        run: python3 -m pip install --quiet --break-system-packages pywebpush 2>/dev/null || echo "pywebpush 미설치 — 푸시 생략(비치명)"
+
+      - name: 전화 생성 (첫마디 claude -p + TTS + 세션 R2)
+        env:
+          # 인증 = 구독 OAuth 3계정 폴오버(yeta-chat.yml 동형 · 체인 MUTENO→NOMUTEFB→EMS1130G)
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets[format('CLAUDE_CODE_OAUTH_TOKEN_{0}', vars.ACTIVE_ACCOUNT || 'MUTENO')] }}
+          CLAUDE_CODE_OAUTH_TOKEN_ALT: ${{ (vars.ACTIVE_ACCOUNT || 'MUTENO') == 'NOMUTEFB' && secrets.CLAUDE_CODE_OAUTH_TOKEN_EMS1130G || secrets.CLAUDE_CODE_OAUTH_TOKEN_NOMUTEFB }}
+          CLAUDE_CODE_OAUTH_TOKEN_ALT2: ${{ (vars.ACTIVE_ACCOUNT || 'MUTENO') == 'MUTENO' && secrets.CLAUDE_CODE_OAUTH_TOKEN_EMS1130G || secrets.CLAUDE_CODE_OAUTH_TOKEN_MUTENO }}
+          ACTIVE_ACCOUNT: ${{ vars.ACTIVE_ACCOUNT || 'MUTENO' }}
+          # 세션·음성 = R2 비공개 버킷(YETA_R2_BUCKET — 공개 R2_BUCKET 과 별도)
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          YETA_R2_BUCKET: ${{ secrets.YETA_R2_BUCKET }}
+          # TTS SSOT = yeta_tts.py — 클론 보이스(el:·프리미엄) 우선 → OpenAI 프리셋 폴백(⚠️둘 다 유료 · 없으면 무음 전화)
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          ELEVENLABS_TTS_MODEL: ${{ vars.ELEVENLABS_TTS_MODEL }}   # 선택 — 기본 eleven_multilingual_v2(음색 보존)·저지연은 eleven_flash_v2_5
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY_nomute || secrets.OPENAI_API_KEY }}
+          OPENAI_TTS_MODEL: ${{ vars.OPENAI_TTS_MODEL }}   # 선택 — 미설정이면 스크립트 기본(gpt-4o-mini-tts)
+          # 전화 알림 웹푸시(구독자 없으면 no-op)
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+          VAPID_SUBJECT: ${{ secrets.VAPID_SUBJECT }}
+          YETA_CALL_PERSONA: ${{ inputs.persona }}
+          YETA_CALL_LINE: ${{ inputs.line }}
+          YETA_CALL_VOICE: ${{ inputs.voice }}
+        run: |
+          [ -n "${YETA_R2_BUCKET}" ] || { echo "YETA_R2_BUCKET 미설정 — 스캐폴드 no-op(운영자 R2 셋업 대기)"; exit 0; }
+          unset ANTHROPIC_API_KEY ANTHROPIC_AUTH_TOKEN GDRIVE_SA_JSON GEMINI_API_KEY   # 유료 자동발사 오염 0(OPENAI 는 TTS 의도 사용)
+          bash .github/scripts/yeta_call.sh
+
+      # 실패 웹푸시 — 앱 닫아둔 유저도 실패 인지(yeta-chat.yml 동형 · 비치명)
+      - name: 실패 알림
+        if: failure()
+        env:
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+          VAPID_SUBJECT: ${{ secrets.VAPID_SUBJECT }}
+        run: |
+          [ -n "${VAPID_PRIVATE_KEY}" ] || exit 0
+          python3 -m pip install --quiet --break-system-packages pywebpush 2>/dev/null || exit 0
+          python3 .github/scripts/push_send.py --notify "yeta" "전화 연결에 실패했어" \
+            --url "/?yeta=main" --tag "nomute-yeta-call" || true

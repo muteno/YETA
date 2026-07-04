@@ -42,6 +42,9 @@
 | 캐릭터 챗 모달 | `#yetadlg`(dialog+pushState) | min(600px,94vw)×min(88dvh,760px) | 무채 그라데 .92/.96(불투명 — backdrop-filter:none 명시) | — | 닫기=`.tool-x`·전송=`.yeta-send`(모션 위임 등재) | 중앙(모바일 margin:auto 필수) | radius `--r-modal` | 뒤로가기=popstate | index `openYeta`·greeting SSOT=roster.json(카드 frontmatter와 동기 유지) |
 | 캐러셀 | scroll-snap 트랙 | — | — | — | — | — | — | — | `feed-ui`/`cardRefCarousel` |
 | 수정 진행바 | `.reshoot-badge`+`.reshoot-bar`(썸네일) · 카드=`.reshoot-badge`(텍스트만·바 없음) | 바 118px·h4 | 배지 glass `rgba(8,15,11,.62)`blur10 · 바 track `rgba(255,255,255,.16)`·채움 `--accent` | — | 없음(텍스트 "수정 중…" + 인디터미넌트 스윕) | 이미지/슬롯 정중앙 abs·z3 · dim `brightness(.5)` | radius `--r-pill` | reduced-motion=감속(2.4s) | 썸네일 index `markSlotReshooting` · 카드 `markReshooting` |
+| 수신 콜 화면(yeta) | `#calldlg`(dialog)+`.ycall-btn`(.take/.drop) | 버튼 `--btn`+`--sp-3`×2 원형 | 페르소나 bg+`--bg-scrim` · 자막 `--glass`+`--blur-m` · dialog=`#yetadlg` 결(글래스 엣지·`::backdrop`·모바일 margin:auto) | `--press-m` | 수화기 SVG 단일 path(거절=회전135°) · 파동 링=키프레임(안무 예외) | top-layer(dialog) | pad `--sp-3` | `aria-label` 받기/거절 · Esc=거절 · 뒤로가기=거절 | viewer/call.js(플러그인 · CLAUDE.md §🗺 ☎️) |
+| 무전 마이크(yeta) | `#yetaMic`(`.ycall-mic`) | `--btn` 원형 | 무채 글래스 `--glass`+`--glass-line`(CTA 아님) · 녹음=`--danger` 점멸 | `--press-m` | 마이크 SVG 단일 path | `.yeta-in` 좌측(모듈 주입) | — | `aria-label` 무전 · 녹음중 placeholder 교체 | viewer/call.js `initPtt` |
+| 프리미엄 보이스 배지(yeta) | `.yprem` | `--fs-xs`·`--fw-b` | accent 12% 플레이트+40% 테두리(`.dlbtn` 결) | — | 파형 SVG 단일 path | 캐릭터 이름 우측(`yPremBadge(c)` 훅) | ml 6 | `title="전용 음색(프리미엄)"` · roster `voice` 존재 시만 | viewer/call.js `yPremBadge` |
 
 ⚠ = 현 드리프트(후속 교정). 별칭 셀렉터(`.ed-x` 등)는 `.tool-x` 스펙을 *복제*가 아니라 *계승*해야 함 — 단일화 후속.
 
