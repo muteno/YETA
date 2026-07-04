@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>260704 기틀 이식 — 마스터 라우터 병합 보고</title>
+<style>
+:root{--bg:#121212;--fg:#e9eaec;--mut:#9aa0a6;--accent:#CFFF40;--cobalt:#3D6BFF;--line:#2a2c2e;--card:#1b1d1f}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;padding:28px 18px;max-width:920px;margin-inline:auto}
+h1{font-size:22px;margin:0 0 4px}h2{font-size:16px;margin:30px 0 10px;color:var(--accent)}
+.kv{color:var(--mut);font-size:13px}
+table{border-collapse:collapse;width:100%;font-size:13.5px;margin:8px 0}
+th,td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:var(--card);color:var(--fg)}
+code{background:var(--card);padding:1px 5px;border-radius:4px;font-size:12.5px}
+.ok{color:var(--accent);font-weight:700}.warn{color:#ffb64a;font-weight:700}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:10px 0}
+ul{margin:6px 0;padding-left:20px}li{margin:3px 0}
+.foot{margin-top:30px;color:var(--mut);font-size:12.5px;border-top:1px solid var(--line);padding-top:12px}
+</style></head><body>
+<h1>기틀 이식 1호 — 마스터 라우터 병합</h1>
+<div class="kv">260704 KST · 레포 muteno/yeta · 원본 = 기틀 복제팩(노뮤트 로직 이식 정본) · 운영자 선택 = 병합 + 5인 교차검증</div>
+
+<h2>1. 무엇을 했나 (전/후)</h2>
+<table>
+<tr><th></th><th>전</th><th>후</th></tr>
+<tr><td><b>CLAUDE.md</b></td><td>절대명령#1 + 디자인 계약 + 앱 정본만. 수정 모드 절차·검증 티어·원장 규약 없음</td><td>절대명령#1 최상단 <b>불변</b> → 라우터 0.~5.(표기 규약 · 절대명령 표 8행 · 라우팅 · 운영 태도 · 작업 4대 표준 · 선택질문 · PR웹훅 · 모델 · 수정 모드 절차 · 반영 보장 · 기틀 보호 · 기틀검증 5인 · 검증 10인 티어 · 분신술 · KST 표기 · 기록SSOT 지도) → 앱 정본(§🎬~§🤖) <b>원문 보존</b></td></tr>
+<tr><td><b>§✂️ 수정·검증·커밋</b></td><td>3행 축약 절</td><td>라우터 3.(수정 모드)·4.(기틀 보호)에 흡수 — 외부 참조 0 실측 후 제거</td></tr>
+<tr><td><b>원장</b></td><td>없음</td><td><code>docs/작업이력.md</code> 신설(append-only · 항목 양식 고정 · 이식 1호 기록)</td></tr>
+<tr><td><b>백업</b></td><td>없음</td><td><code>_versions/260704_2353_기틀이식_마스터라우터/CLAUDE.md</code>(롤백 지점)</td></tr>
+<tr><td><b>게이트</b></td><td>shared/check_refs.py(확장판)</td><td><b>그대로 유지</b> — 팩 스켈레톤으로 다운그레이드 안 함</td></tr>
+</table>
+
+<h2>2. 바인딩표 (팩 3. 슬롯 → yeta 실측값)</h2>
+<table>
+<tr><th>슬롯</th><th>답</th></tr>
+<tr><td>S1 레포</td><td><code>muteno/yeta</code></td></tr>
+<tr><td>S2 작업 목록</td><td>단일 작업 = yeta 캐릭터챗(진입 명령 불요 · git/깃 = 수정 모드)</td></tr>
+<tr><td>S3 콘텐츠 두뇌</td><td><code>apps/yeta/</code>(00_지침·10_세계관·characters/)</td></tr>
+<tr><td>S4 디자인 값 SSOT</td><td><code>viewer/index.html :root</code> — <b>이미 완비</b>(절대명령#1·락·3층 방어) = 재이식 불필요</td></tr>
+<tr><td>S5 라이브</td><td><code>https://yeta.soong.kr</code></td></tr>
+<tr><td>S6 게이트</td><td><code>shared/check_refs.py</code>(기존 확장판)</td></tr>
+<tr><td>S7 백업</td><td><code>_versions/{yymmdd_HHmm}_{라벨}/</code></td></tr>
+<tr><td>S8 기록</td><td><code>docs/작업이력.md</code> + <code>docs/reports/</code></td></tr>
+<tr><td>S9 모델</td><td>세션·검증 = Opus 최상위(현행 opus 4.8)</td></tr>
+<tr><td>S10 언어·톤</td><td>한국어·반말·결론부터</td></tr>
+</table>
+
+<h2>3. 병합 결정 — 팩 규약과의 편차 (정직 기록)</h2>
+<div class="card"><ul>
+<li><b>절대명령 배번</b>: yeta 기존 #1(디자인)·#2(정본인덱스) 유지 → 팩 절대명령은 #3~#8 후속 배번. 팩 원문 번호를 강제하면 기확정 정본(§🔒·정본인덱스)의 자기서술과 충돌.</li>
+<li><b>날짜 스탬프</b>: 신규 라우터 본문 = 0. 기확정 앱 정본 절의 기존 경위 스탬프(260703·260704)는 소급 제거 안 함(운영자 결정 경위 유실 방지) — 규약 0. 2) d)에 예외 명문화.</li>
+<li><b>낫표</b>: §🔒 기확정 문구(「계승」·「갱신」)만 존치(개정 = 기틀 절차) — 규약 0. 2) c)에 예외 명문화.</li>
+<li><b>파일 지도</b>: 팩 6부 별도 신설 대신 기존 §🗺 구조가 그 역할(0. 1) b)에 명시) — 중복 지도 = 드리프트 씨앗.</li>
+</ul></div>
+
+<h2>4. 효율성·리스크</h2>
+<table>
+<tr><th>축</th><th>평가</th></tr>
+<tr><td>효과</td><td>수정 모드 절차(fetch→백업→게이트→PR→즉시 머지→read-back)·반영 보장·검증 티어·기록 지도가 매 세션 상시 로드 = 세션 간 일관성 기계화</td></tr>
+<tr><td>토큰 비용</td><td>CLAUDE.md 길이 증가 = 개발 세션 로드만 증가. <b>런타임 무영향</b>(§🤖 --safe-mode = claude -p가 CLAUDE.md 미참조)</td></tr>
+<tr><td>품질저하 리스크</td><td>라우터↔앱 절 중복 서술 드리프트 가능 → 1. 3) 정본 우선순위로 완화(공용 불변 = 라우터 우선)</td></tr>
+</table>
+
+<h2>5. 검증</h2>
+<table>
+<tr><th>#</th><th>항목</th><th>결과</th></tr>
+<tr><td>1</td><td>python3 shared/check_refs.py rc=0</td><td class="ok">✅ 통과</td></tr>
+<tr><td>2</td><td>표기 자가 스캔(신규 본문 날짜 스탬프 0 · 금지 인용부호 0 · 4단 넘버링)</td><td class="ok">✅ 통과(예외 = 명문화된 존치분)</td></tr>
+<tr><td>3</td><td>5인 교차검증(READ-ONLY · 각기 다른 앵글 · 전원 APPROVE 루프)</td><td class="ok">✅ 1라운드 4 APPROVE + 1 REJECT(3건) → 메인 수정 → 재검증 APPROVE = 만장일치</td></tr>
+<tr><td>4</td><td>main 머지 + git show origin/main:CLAUDE.md read-back</td><td class="warn">⏳ 본 PR 머지 직후 실측(§수정 모드 3.3 — 결과는 채팅 보고·원장이 정본. 이 표는 커밋 시점 박제라 여기엔 선표기 안 함)</td></tr>
+<tr><td>5</td><td>원장 이식 1호 기록</td><td class="ok">✅ docs/작업이력.md</td></tr>
+</table>
+
+<div class="foot">정본 = CLAUDE.md(라우터+앱) · 원장 = docs/작업이력.md · 백업 = _versions/260704_2353_기틀이식_마스터라우터/ · 원본 팩 = 운영자 첨부(기틀 복제팩 — 마스터 라우터 이식용).</div>
+</body></html>
