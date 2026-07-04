@@ -234,18 +234,8 @@ body { background:var(--yeta-bg,#0d0b12); color:var(--fg); font-family:Pretendar
   .lk-err { color:var(--danger); font-size:var(--fs-sm); margin-top:12px; min-height:15px; font-weight:var(--fw-b); }
   .lk-ok { color:var(--pin-ac); font-size:var(--fs-sm); margin-top:12px; min-height:15px; font-weight:var(--fw-x); }
   @media (prefers-reduced-motion:reduce){ .pin-slots.shake{animation-duration:.01s} }
-  /* 하단 네비 — PIN 전 = 메인만, 나머지 잠김 */
-  .ynav { flex:none; display:flex; background:rgba(255,255,255,.06); border-top:1px solid var(--line2); padding-bottom:calc(5px + env(safe-area-inset-bottom)); backdrop-filter:blur(16px); }   /* 다크 글래스 = .tool-x 플레이트(.06)+--line2 계승 · 활성=브랜드 */
-  .ynav button { flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; padding:8px 0 4px; color:var(--mut); font-size:10px; font-weight:700; background:none; border:none; cursor:pointer; position:relative; transition:transform .28s var(--ease), color .2s, opacity .3s; touch-action:manipulation; }
-  .ynav button:active { transform:scale(var(--press-s)); }
-  .ynav button.on { color:var(--brand); }
-  .ynav button.locked { opacity:.4; }
-  .ynav button svg { width:21px; height:21px; }
-  .ynav .lockdot { position:absolute; top:5px; right:calc(50% - 18px); width:11px; height:11px; }
-  .ynav .lockdot svg { width:11px; height:11px; stroke:var(--mut); fill:none; stroke-width:2.4; }
-  .ymain.unlocked .ynav button.locked { opacity:1; }
-  .ymain.unlocked .ynav button.locked .lockdot { display:none; }
-  @media (prefers-reduced-motion:reduce){ .ym-hero, .ym-yeta, .ym-pin, .ym-access, .ynav button { transition:none; } }
+  /* 하단 네비(.ynav) 제거(운영자 260704) — 앱 = PIN 게이트→대화 단일 흐름. 진입점 = 접속 버튼 하나(잠금 전=PIN 전개 / 해제 후=대화 바로 열기). 잠금탭 4분할 네비 폐지 = 화면 정리 + 흐름 단순화 */
+  @media (prefers-reduced-motion:reduce){ .ym-hero, .ym-yeta, .ym-pin, .ym-access { transition:none; } }
 </style>
 </head>
 <body>
@@ -271,12 +261,7 @@ body { background:var(--yeta-bg,#0d0b12); color:var(--fg); font-family:Pretendar
       </div>
     </div>
   </div>
-  <nav class="ynav" id="ynav">
-    <button class="on" data-tab="main" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8M5 10v10h14V10"/></svg>메인</button>
-    <button class="locked" data-tab="char" type="button"><span class="lockdot"><svg viewBox="0 0 24 24" stroke-linecap="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0112 0v1"/></svg>캐릭터</button>
-    <button class="locked" data-tab="chat" type="button"><span class="lockdot"><svg viewBox="0 0 24 24" stroke-linecap="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 01-12 7.7L3 21l1.8-6A8.5 8.5 0 1121 11.5z"/></svg>대화</button>
-    <button class="locked" data-tab="settings" type="button"><span class="lockdot"><svg viewBox="0 0 24 24" stroke-linecap="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.9M4.6 9A1.7 1.7 0 004.3 7"/></svg>설정</button>
-  </nav>
+  <!-- 하단 네비(.ynav) 제거 — 진입점 = 접속 버튼 단일화(PIN 게이트→대화 · 260704) -->
 </div>
 <!-- yeta dialog 마크업(L2544-2566) -->
 <!-- yeta 말벗 제타 — 프로필 메뉴 진입(랜덤 페르소나 톡방 · 세션=R2 비공개 단일 스레드 · 260703 v2). 🎲=재뽑기(맥락 유지·화자 교체) · 다이얼=모델×노력(턴별 박제). 폰 뒤로가기=닫기(dlg pushState 패턴). -->
@@ -581,7 +566,7 @@ try { if (new URLSearchParams(location.search).get('yeta')) setTimeout(() => ope
 
 /* ═══ YETA 메인 PIN 게이트 (데모 정본 이식 — 투명 입력=OS 숫자키패드·커스텀 키패드 폐지 · SHA-256·5회=10분 잠금 · 260704 V2) ═══ */
 (function () {
-  const ymain = $('#ymain'), slotsEl = $('#ymSlots'), inEl = $('#ymPinIn'), errEl = $('#ymErr'), accessBtn = $('#ymAccess'), nav = $('#ynav');
+  const ymain = $('#ymain'), slotsEl = $('#ymSlots'), inEl = $('#ymPinIn'), errEl = $('#ymErr'), accessBtn = $('#ymAccess');
   const YM_PIN_H = 'ce019bfca1b22ed8c7dd882b875e65a97048a467f64d717b4ebb76d1cd644b63';                    // sha256('<PIN>:yeta') — V1 기본 PIN, 운영자 변경 예정
   const YM_LEN = 4, YM_MAX = 5, YM_OUT_MS = 600000;
   let unlocked = false;
@@ -599,7 +584,9 @@ try { if (new URLSearchParams(location.search).get('yeta')) setTimeout(() => ope
   }
   const outLeft = () => { try { const u = +localStorage.getItem('yeta_pin_until') || 0; return Math.max(0, u - Date.now()); } catch { return 0; } };
   function setUnlocked() { unlocked = true; ymain.classList.add('unlocked'); inEl.disabled = true; inEl.blur(); }
-  accessBtn.onclick = () => { ymain.classList.add('pin-mode'); inEl.focus(); };
+  function goChat() { ymain.classList.remove('pin-mode'); openYeta(); }   // 대화 진입 = pin-mode 해제(복귀 시 히어로 노출) + 챗 오픈
+  // 접속 버튼 = 단일 진입점(네비 폐지 260704): 해제 전 = PIN 전개 / 해제 후 = 대화 바로 열기(재방문·챗 닫고 재진입 포함)
+  accessBtn.onclick = () => { if (unlocked) return goChat(); ymain.classList.add('pin-mode'); inEl.focus(); };
   inEl.addEventListener('input', async () => {
     const clean = inEl.value.replace(/\D/g, '').slice(0, YM_LEN);
     if (clean !== inEl.value) inEl.value = clean;
@@ -610,7 +597,8 @@ try { if (new URLSearchParams(location.search).get('yeta')) setTimeout(() => ope
       const h = await ymHash(clean);
       if (h === YM_PIN_H) {
         try { localStorage.setItem('yeta_pin_ok', '1'); localStorage.removeItem('yeta_pin_fails'); localStorage.removeItem('yeta_pin_until'); } catch {}
-        errEl.className = 'lk-ok'; errEl.textContent = '잠금 해제 — 메뉴 활성'; setUnlocked();
+        errEl.className = 'lk-ok'; errEl.textContent = '잠금 해제 — 대화 여는 중'; setUnlocked();
+        setTimeout(goChat, 650);   // 해제 플래시 잠깐 → 대화 자동 진입(네비 폐지로 유일 목적지)
       } else {
         let n = 0; try { n = (+localStorage.getItem('yeta_pin_fails') || 0) + 1; localStorage.setItem('yeta_pin_fails', String(n)); if (n >= YM_MAX) localStorage.setItem('yeta_pin_until', String(Date.now() + YM_OUT_MS)); } catch {}
         slotsEl.classList.add('bad', 'shake'); errEl.className = 'lk-err'; errEl.textContent = n >= YM_MAX ? `PIN 오류 ${YM_MAX}회 — 10분 후 다시` : `PIN 번호가 틀립니다 (${n}/${YM_MAX})`;
@@ -618,15 +606,7 @@ try { if (new URLSearchParams(location.search).get('yeta')) setTimeout(() => ope
       }
     }
   });
-  try { if (localStorage.getItem('yeta_pin_ok') === '1') setUnlocked(); } catch {}   // 재방문 = 이미 해제면 통과(로컬 소프트 게이트)
-  nav.onclick = e => {
-    const b = e.target.closest('button'); if (!b) return;
-    const tab = b.dataset.tab;
-    if (tab === 'main') return;
-    if (!unlocked) { ymain.classList.add('pin-mode'); inEl.focus(); slotsEl.classList.add('shake'); setTimeout(() => slotsEl.classList.remove('shake'), 450); return; }
-    if (tab === 'chat') { openYeta(); return; }
-    miniToast('준비중 — 곧 열려');   // 캐릭터·설정(다음 머지)
-  };
+  try { if (localStorage.getItem('yeta_pin_ok') === '1') setUnlocked(); } catch {}   // 재방문 = 이미 해제면 통과(로컬 소프트 게이트) → 접속 버튼이 바로 대화 오픈
 })();
 /* PWA 서비스워커 등록 */
 try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch {}
