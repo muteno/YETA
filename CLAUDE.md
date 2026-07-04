@@ -37,11 +37,12 @@
 
 ## 🗺 구조
 - `viewer/` = 뷰어. `index.html`(값 SSOT `:root` + yeta UI) · `tokens.css`(구조토큰 거울) · `nm-svg.js`(아이콘 SSOT) · `_headers`(정적 no-cache)
-- `functions/api/yeta.js` = Cloudflare Pages Function 게이트웨이. 7 op = `chars`(로스터)·`get`(세션)·`send`(유저턴+dispatch)·`draw`(페르소나 뽑기)·`warm`(프리웜)·`retry`(재시도)·`reset`. `REPO='muteno/yeta'`·`originOk`=`.pages.dev`.
+- `functions/api/yeta.js` = Cloudflare Pages Function 게이트웨이. 9 op = `chars`(로스터)·`get`(세션)·`send`(유저턴+dispatch)·`draw`(페르소나 뽑기)·`warm`(프리웜)·`retry`(재시도)·`ring`(전화 요청 dispatch — ⚠️유료 TTS 가드 = 일 상한 기본 3 `YETA_CALL_MAX_PER_DAY`)·`voice`(통화 음성 스트림 — 비공개 R2 `voice/`만)·`reset`. `REPO='muteno/yeta'`·`originOk`=`.pages.dev`.
 - `functions/_middleware.js` = pages.dev 우회차단 리다이렉트 **자리(현재 무력화)**. 커스텀 도메인+Access 붙일 때 재활성(⚠️ `yeta.js` originOk도 **동시** 수정 — 안 하면 403 자폭). **현재 = originOk가 `.pages.dev`+`soong.kr`(루트+서브) 허용**(260704 · nomute 도메인 미사용)·**라이브 = `https://yeta.soong.kr`**(+ `soong.kr` 루트 · 둘 다 활성·SSL·실측 통과 260704)·**무인증 공개**(운영자 260704 '공개 유지' — 언제든 Zero Trust Access로 잠금 가능).
 - `.github/workflows/yeta-chat.yml` + `.github/scripts/yeta_chat.sh` = 답장 생성(claude -p·페르소나 카드 주입·웜 루프). `push_send.py` = 실패 웹푸시.
 - `.github/workflows/yeta-face.yml` + `.github/scripts/yeta_face.py` = 캐릭터 얼굴(프로필) 생성 — **수동 dispatch 전용**(OpenAI gpt-image·⚠️유료 종량제·챗 구독OAuth와 별개 축). 10인 1:1 초상 → 공개 R2 `yeta_face/` → `roster.json` `avatar` 주입 커밋. 멱등(채워진 건 skip·`force=1` 재생성)·자립형(thumb_gen 의존 없음). 얼굴 산출물은 이미 roster에 주입됨 = 이건 *재생성* 도구(260703 이식).
 - `.github/workflows/yeta-bg.yml` + `.github/scripts/yeta_bg.py` = 무대 **배경**(bg) 생성 — **수동 dispatch 전용**(Gemini `gemini-3.1-flash-image`·⚠️유료·챗 구독OAuth와 별개 축). 무음동 8무대 9:16(+무드 배리언트 warm/tense/blue = `<<MOOD:x>>` 크로스페이드용) → 공개 R2 `yeta_bg/` → `roster.json` `bg` 주입. 멱등(채워진 건 skip·R2 기존 객체 재과금0·`force=1` 재생성)·자립형(thumb_gen 의존 제거·Gemini 호출·R2 업로드 인라인·260704 이식). 배경도 이미 roster 주입 완료 = *재생성/신규 무드* 도구.
+- `.github/workflows/yeta-call.yml` + `.github/scripts/yeta_call.sh` = **걸려오는 전화 v1**(260704 · 수신 UI 미구현 = 기능부만) — 발신자 선정(입력→세션 페르소나→랜덤) → 첫마디 생성(claude -p·구독 OAuth 폴오버) → OpenAI TTS(⚠️유료 `gpt-4o-mini-tts`·페르소나별 보이스 매핑·실패=무음 전화) → 음성 mp3 = **비공개** 세션 R2 `voice/`(대사=대화 내용 → 공개 버킷·git 커밋 금지 · 서빙=op `voice`) → 세션 `kind:'call'` 턴 + `sess.call` 마커(수신 UI 훅) append + 웹푸시 "전화가 왔어". 트리거 = 수동 dispatch 또는 op `ring` · **cron 자동 트리거 금지**(face/bg 동일 원칙). 대화 중(pending 유저 턴)엔 안 걸림 + 반영 직전 fresh 재-read 재확인(챗 우선·매몰 방지).
 - `shared/` = `claude_transient.sh`(폴오버 SSOT)·`claude_meter.sh`·`inject_character.sh`(카드 강제주입) · `check_refs.py`(게이트)·`build_design_mirror.py`(거울 빌드).
 - `apps/yeta/` = 캐릭터 **10인**(`characters/*.md`)·`roster.json`(뷰어 표시 SSOT)·`apps/yeta/00_지침_캐릭터챗.md`·`apps/yeta/10_세계관.md`·`apps/yeta/PEXELS_배경_큐레이션_설계.md`.
 - `구성도/`·`docs/CII_컴포넌트계승인덱스.md` = 디자인 블루프린트·계승 인덱스.

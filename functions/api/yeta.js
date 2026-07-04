@@ -6,10 +6,13 @@
 //   send  {text, model, effort}    : 유저 턴 append(다이얼 턴별 박제 · 화이트리스트) → yeta-chat.yml dispatch
 //   draw  {persona, name}          : 페르소나 뽑기/재뽑기 — sess.persona 갱신(+대화 중이면 sys 턴)
 //   warm  {}                       : 프리웜 — dispatch만(러너 선부팅 → 첫 답장 30초 목표 · 쿼터 소비 0[NOPENDING 웜대기])
+//   retry {}                       : 원탭 재시도 — 실패(state=error) pending 유저 턴 재발사(새 턴 추가 X)
+//   ring  {persona?}               : 걸려오는 전화 요청 → yeta-call.yml dispatch(⚠️ TTS 유료 → 일 상한 기본 3 · YETA_CALL_MAX_PER_DAY)
+//   voice {key}                    : 통화 음성 스트림 — 비공개 버킷 voice/ 만(대사=대화 내용 → 공개 버킷 금지 · 동일출처 게이트)
 //   reset {}                       : 세션 초기화(페르소나도 비움 → 다음 진입 시 재뽑기)
 // 저장 = R2 비공개 버킷 바인딩 env.YETA_R2 (⚠️ 대화는 public 레포 커밋 절대 금지 — 계획안 D2).
 // 게이트: Cloudflare Access(도메인 전체 자동 계승) + originOk(CSRF) + 일 상한 = D4 무제한(env YETA_MAX_PER_DAY 양수로만 발동).
-// env: GH_TOKEN(Actions write) · YETA_R2(R2 바인딩) · YETA_MAX_PER_DAY(선택).
+// env: GH_TOKEN(Actions write) · YETA_R2(R2 바인딩) · YETA_MAX_PER_DAY(선택) · YETA_CALL_MAX_PER_DAY(선택·기본 3 — 유료 TTS 가드).
 const REPO = 'muteno/yeta';
 const ID_RE = /^[a-z0-9_-]{1,24}$/;
 const KEY = 'sessions/main.json';
@@ -50,6 +53,32 @@ export async function onRequestPost({ request, env }) {
   const putSess = (s) => env.YETA_R2.put(KEY, JSON.stringify(s), { httpMetadata: { contentType: 'application/json' } });
 
   if (op === 'get') return json({ ok: true, sess: await readSess() });
+
+  if (op === 'voice') {   // 통화 음성 스트림(걸려오는 전화 v1) — 비공개 세션 버킷 voice/ 프리픽스만 · POST 유지(originOk 대칭)
+    const key = String(body.key || '');
+    if (!/^voice\/[a-z0-9_-]+\.mp3$/.test(key)) return json({ error: '잘못된 음성 키' }, 400);
+    const o = await env.YETA_R2.get(key);
+    if (!o) return json({ error: '음성 없음' }, 404);
+    return new Response(o.body, { headers: { 'content-type': 'audio/mpeg', 'cache-control': 'private, max-age=3600' } });   // 같은 통화 재청취 = 재다운로드 방지(비공개 캐시만)
+  }
+
+  if (op === 'ring') {   // 전화 걸어달라(수신 UI·테스트 훅) → yeta-call.yml dispatch. ⚠️ TTS 유료 종량제 + 무인증 공개 사이트 → 일 상한 기본 3(보수 기본)
+    if (!env.GH_TOKEN) return json({ error: '서버 미설정 — GH_TOKEN 필요' }, 500);
+    const persona = String(body.persona || '');
+    if (persona && !ID_RE.test(persona)) return json({ error: '잘못된 페르소나 id' }, 400);
+    let cap = parseInt(env.YETA_CALL_MAX_PER_DAY ?? '3', 10);
+    if (!Number.isFinite(cap)) cap = 3;   // 미설정·빈값·오타 = 보수 기본 3(유료 가드가 조용히 풀리는 구멍 차단 · 0 = 명시적 무제한)
+    const kst = new Date(Date.now() + 9 * 3600e3).toISOString().slice(2, 10).replace(/-/g, '');
+    const qkey = `quota/call-${kst}.json`;
+    let used = 0;
+    const qo = await env.YETA_R2.get(qkey);
+    if (qo) { try { used = (await qo.json()).n || 0; } catch { used = 0; } }
+    if (cap > 0 && used >= cap) return json({ error: `오늘 통화 상한(${cap}통) 도달 — 내일 다시`, remain: 0 }, 429);
+    await env.YETA_R2.put(qkey, JSON.stringify({ n: used + 1 }), { httpMetadata: { contentType: 'application/json' } });
+    const st = await dispatch(env, 'yeta-call.yml', persona ? { persona } : {});
+    if (st === 204) return json({ ok: true, remain: cap > 0 ? cap - used - 1 : -1 });
+    return json({ error: `GitHub dispatch ${st}` }, 502);
+  }
 
   if (op === 'reset') {
     const cur = await env.YETA_R2.get(KEY);   // 삭제 직전 1세대 백업(reset 비가역 완화 — R2엔 copy 없어 get→put) · 비공개 버킷
@@ -135,8 +164,8 @@ export async function onRequestPost({ request, env }) {
   return json({ error: `GitHub dispatch ${st}`, remain }, 502);
 }
 
-async function dispatch(env) {   // yeta-chat.yml 기동(단일 스레드 = char 'main' 고정 → concurrency 직렬)
-  const r = await fetch(`https://api.github.com/repos/${REPO}/actions/workflows/yeta-chat.yml/dispatches`, {
+async function dispatch(env, wf = 'yeta-chat.yml', inputs = { char: 'main' }) {   // 워크플로 기동(기본 = 챗 · 단일 스레드 = char 'main' 고정 → concurrency 직렬 / ring = yeta-call.yml)
+  const r = await fetch(`https://api.github.com/repos/${REPO}/actions/workflows/${wf}/dispatches`, {
     method: 'POST',
     headers: {
       authorization: `Bearer ${env.GH_TOKEN}`,
@@ -144,7 +173,7 @@ async function dispatch(env) {   // yeta-chat.yml 기동(단일 스레드 = char
       'user-agent': 'nomute-viewer',
       'x-github-api-version': '2022-11-28',
     },
-    body: JSON.stringify({ ref: 'main', inputs: { char: 'main' } }),
+    body: JSON.stringify({ ref: 'main', inputs }),
   });
   return r.status;
 }
