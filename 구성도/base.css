@@ -36,7 +36,7 @@
     --m-line:rgba(20,30,60,.12); --m-line2:rgba(20,30,60,.08);
     --m-glass:rgba(255,255,255,.62); --m-glass2:rgba(255,255,255,.8);
     --m-danger:#e23b2e; --m-danger-rgb:226,59,46;
-    --pin-ac:var(--accent-2); --pin-ac-rgb:var(--accent-2-rgb);
+    --pin-ac:var(--brand); --pin-ac-rgb:var(--brand-rgb);   /* PIN 강조 = 브랜드 네온레몬 스왑(메인 다크 글래스 전환 · 운영자 260704 "브랜드 메인색만") */
   }
 /* === AUTO-MIRROR:END === */
 /* ↑ 토큰값은 전부 viewer :root에서 옴(--arm·--font-status 포함). base.css에 토큰 인라인 재정의 금지. */
