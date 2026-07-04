@@ -26,6 +26,8 @@
     --cobalt:#3D6BFF; --cobalt-rgb:61,107,255;
     /* 글래스모피즘 — 프로스티드 표면·엣지 하이라이트(구성도 표면3단 계승·260704) */
     --glass:rgba(255,255,255,.055); --glass-2:rgba(255,255,255,.09); --glass-line:rgba(255,255,255,.14);
+    /* 그림자·배경 스크림(절대1: raw 금지→토큰 · 260704) */
+    --shadow-card:0 24px 60px rgba(0,0,0,.42); --bg-scrim:linear-gradient(transparent 44%,rgba(0,0,0,.5) 76%,rgba(0,0,0,.85));
     /* 의미색 */
     --danger:#ff5b4a; --danger-rgb:255,91,74; --arm:#ffd93d;
     /* yeta 챗 — 내 버블=브랜드 라임(보라 폐지·전체 그린 통일 260704) · 캐릭터 버블=근흑 · 창=스포티파이 블랙 */
@@ -187,17 +189,15 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
 
   /* ═══ YETA 메인 화면 (다크·PIN 게이트 · 260704 브랜드 통일 — 스포티파이 블랙+라임 글래스) ═══ */
   body { background:
-      radial-gradient(circle at 50% 40%, rgba(var(--accent-rgb),.10), transparent 30%),
-      radial-gradient(circle at 10% 92%, rgba(var(--cobalt-rgb),.12), transparent 34%),
-      linear-gradient(rgba(0,0,0,.5), rgba(0,0,0,.8)),
-      url(assets/brand/yeta-bg.webp) center/cover fixed var(--bg); color:var(--fg); }
-  .ymain { position:fixed; inset:0; display:flex; flex-direction:column; z-index:1; }
+      radial-gradient(circle at 50% 40%, rgba(var(--accent-rgb),.08), transparent 34%),
+      radial-gradient(circle at 12% 90%, rgba(var(--cobalt-rgb),.10), transparent 36%),
+      var(--bg); color:var(--fg); }
+  /* step1 로그인창 = 운영자 포스터(main.png → yeta-hero.webp) 전면 full-bleed. 하단 --bg-scrim 딤(로그인·네비 가독) */
+  .ymain { position:fixed; inset:0; display:flex; flex-direction:column; z-index:1;
+    background:var(--bg-scrim), url(assets/brand/yeta-hero.webp) center/cover no-repeat var(--bg); }
   .ymain-body { flex:1; display:flex; flex-direction:column; align-items:center; overflow:hidden; padding:0 24px; }
-  .ym-hero { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:26px;
+  .ym-hero { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; gap:26px; padding-bottom:8vh;
     transition:flex-grow .5s var(--ease), gap .5s var(--ease), padding .5s var(--ease); }
-  /* 메인 히어로 = 운영자 포스터(main.png → yeta-hero.webp) · 워드마크 대체(포스터에 YETA 각인) */
-  .ym-hero-img { display:block; width:auto; height:auto; max-width:84%; max-height:56vh; object-fit:contain;
-    filter:drop-shadow(0 22px 55px rgba(0,0,0,.55)); transition:max-height .5s var(--ease), opacity .4s var(--ease); }
   .ym-access { width:56px; height:56px; border-radius:50%; border:none; cursor:pointer; display:grid; place-items:center;
     background:var(--accent); color:var(--bg); box-shadow:0 8px 22px rgba(var(--accent-rgb),.36);
     transition:transform .28s var(--ease), opacity .35s var(--ease); touch-action:manipulation; }
@@ -207,13 +207,12 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   /* 글래스모피즘 히어로 카드 — 접속 CTA 프로스티드 글래스(레퍼런스 계승 · --glass-2·--glass-line·--blur-l · 260704) */
   .ym-access-card { display:flex; flex-direction:column; align-items:center; gap:8px; padding:26px 52px 22px; border-radius:var(--r-modal);
     background:var(--glass-2); border:1px solid var(--glass-line); backdrop-filter:blur(var(--blur-l)); -webkit-backdrop-filter:blur(var(--blur-l));
-    box-shadow:inset 0 1px 0 var(--glass-line), 0 24px 60px rgba(0,0,0,.42); transition:opacity .4s var(--ease), transform .4s var(--ease); }
+    box-shadow:inset 0 1px 0 var(--glass-line), var(--shadow-card); transition:opacity .4s var(--ease), transform .4s var(--ease); }
   .ymain.pin-mode .ym-access-card { opacity:0; transform:scale(.92); height:0; padding:0; margin:0; overflow:hidden; pointer-events:none; }
   .ym-pin { width:100%; max-width:300px; display:flex; flex-direction:column; align-items:center;
     opacity:0; transform:translateY(24px); pointer-events:none; height:0; overflow:hidden;
     transition:opacity .45s var(--ease) .1s, transform .45s var(--ease) .1s; }
   .ymain.pin-mode .ym-hero { flex-grow:0; gap:0; padding-top:52px; }
-  .ymain.pin-mode .ym-hero-img { max-height:15vh; opacity:.5; }
   .ymain.pin-mode .ym-access, .ymain.pin-mode .ym-access-lbl { opacity:0; pointer-events:none; height:0; margin:0; }
   .ymain.pin-mode .ym-pin { opacity:1; transform:none; pointer-events:auto; height:auto; overflow:visible; }
   /* PIN 키패드 = nomute lk- 이식 · 다크+라임 리컬러(260704) */
@@ -242,7 +241,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   .lk-key.back.hit svg { stroke:var(--pin-ac); }
   @media (prefers-reduced-motion:reduce){ .lk-slots.shake{animation-duration:.01s} .lk-key:active{transform:none} }
   /* 하단 네비 — PIN 전 = 메인만, 나머지 잠김 · 액티브 픽토그램=브랜드 라임(260704) */
-  .ynav { flex:none; display:flex; background:var(--glass-2); border-top:1px solid var(--glass-line); padding-bottom:calc(5px + env(safe-area-inset-bottom)); backdrop-filter:blur(var(--blur-l)); -webkit-backdrop-filter:blur(var(--blur-l)); }
+  .ynav { flex:none; display:none; background:var(--glass-2); border-top:1px solid var(--glass-line); padding-bottom:calc(5px + env(safe-area-inset-bottom)); backdrop-filter:blur(var(--blur-l)); -webkit-backdrop-filter:blur(var(--blur-l)); }
   .ynav button { flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; padding:8px 0 4px; color:var(--mut); font-size:10px; font-weight:700; background:none; border:none; cursor:pointer; position:relative; transition:transform .28s var(--ease), color .2s, opacity .3s; touch-action:manipulation; }
   .ynav button:active { transform:scale(var(--press-s)); }
   .ynav button.on { color:var(--accent); }
@@ -252,7 +251,8 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   .ynav .lockdot svg { width:11px; height:11px; stroke:var(--mut); fill:none; stroke-width:2.4; }
   .ymain.unlocked .ynav button.locked { opacity:1; }
   .ymain.unlocked .ynav button.locked .lockdot { display:none; }
-  @media (prefers-reduced-motion:reduce){ .ym-hero, .ym-hero-img, .ym-pin, .ym-access, .ynav button { transition:none; } }
+  .ymain.unlocked .ynav { display:flex; }   /* 네비 = step2(로그인 언락 후)만 · step1 로그인창엔 없음(운영자 260704 · 네비는 step2) */
+  @media (prefers-reduced-motion:reduce){ .ym-hero, .ym-pin, .ym-access, .ynav button { transition:none; } }
 </style>
 </head>
 <body>
@@ -260,7 +260,6 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
 <div class="ymain" id="ymain">
   <div class="ymain-body">
     <div class="ym-hero">
-      <img class="ym-hero-img" src="assets/brand/yeta-hero.webp" alt="YETA — PLAY a Episode" />
       <div class="ym-access-card">
         <button class="ym-access" id="ymAccess" type="button" aria-label="접속">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>
