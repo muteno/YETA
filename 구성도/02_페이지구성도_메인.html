@@ -1,0 +1,144 @@
+<!-- @dsCard group="구성도" viewport="900x1500" name="페이지 구성도 · 메인" subtitle="다크 포스터 히어로 — YE·TA 레몬블록 + ZETA 글로우 무대 + 네비" -->
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>구성도 · 페이지 02 메인</title>
+<link rel="stylesheet" href="base.css">
+<style>
+  /* 토큰 = base.css(AUTO-MIRROR = viewer/index.html :root 정본). 브랜드 = 네온레몬 var(--brand)(운영자 260704 고정 · yeta 레포 한정). */
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  @font-face{font-family:'LEMONMILK';font-weight:700;font-style:normal;src:url('../viewer/fonts/LEMONMILK-Bold.otf') format('opentype');font-display:swap}
+  html { scrollbar-width:thin; scrollbar-color:rgba(var(--brand-rgb),.3) transparent; }
+  ::-webkit-scrollbar { width:10px; } ::-webkit-scrollbar-thumb { background:rgba(var(--brand-rgb),.26); border-radius:var(--r-pill); border:2px solid var(--yeta-bg); background-clip:padding-box; }
+  body { margin:0; background:radial-gradient(125% 70% at 50% -8%, rgba(var(--brand-rgb),.06), transparent 55%) fixed, var(--yeta-bg); color:var(--fg); font:15px/1.6 Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans KR",sans-serif; }
+  .wrap { max-width:940px; margin:0 auto; padding:42px 22px 110px; }
+  .crumb { font-size:var(--fs-sm); color:var(--mut); letter-spacing:.4px; margin:0 0 10px; } .crumb b { color:var(--brand); }
+  h1 { font-size:27px; letter-spacing:-.5px; margin:0 0 10px; }
+  .intro { color:var(--fg-2); font-size:14.5px; max-width:68ch; margin:0; } .intro b { color:var(--fg); }
+  .ssot { margin:16px 0 0; padding:12px 16px; border:1px solid rgba(var(--brand-rgb),.3); border-radius:var(--r-m); background:rgba(var(--brand-rgb),.05); font-size:12.5px; color:var(--fg-2); line-height:1.7; }
+  .ssot code { color:var(--brand); font-family:ui-monospace,Menlo,monospace; font-size:11.5px; }
+  nav.docnav { margin:20px 0 0; display:flex; flex-wrap:wrap; gap:8px; }
+  nav.docnav a { font-size:var(--fs-sm); font-weight:var(--fw-b); color:var(--fg-2); text-decoration:none; padding:6px 12px; border-radius:var(--r-pill); background:rgba(255,255,255,.04); border:1px solid var(--line); }
+  nav.docnav a:hover, nav.docnav a.cur { color:var(--brand); border-color:rgba(var(--brand-rgb),.4); }
+  .sec { margin:48px 0 0; }
+  .sec>h2 { font-size:var(--fs-sm); letter-spacing:1.6px; text-transform:uppercase; color:var(--brand); font-weight:var(--fw-x); margin:0 0 4px; display:flex; align-items:center; gap:10px; }
+  .sec>h2 .n { width:22px; height:22px; border-radius:7px; display:grid; place-items:center; font-size:var(--fs-sm); background:rgba(var(--brand-rgb),.12); border:1px solid rgba(var(--brand-rgb),.26); }
+  .sec>p.lead { color:var(--mut); font-size:13.5px; margin:8px 0 18px; max-width:66ch; }
+  .card { background:rgba(255,255,255,.03); border:1px solid var(--line); border-radius:var(--r-l); padding:22px; }
+  table { width:100%; border-collapse:collapse; font-size:12.5px; }
+  th,td { text-align:left; padding:9px 11px; border-bottom:1px solid var(--line2); vertical-align:top; }
+  th { font-size:10.5px; letter-spacing:.4px; text-transform:uppercase; color:var(--mut); font-weight:var(--fw-b); }
+  td b { color:var(--fg); } td a { color:var(--brand); text-decoration:none; } td code, p code, .note code { color:var(--brand); font-family:ui-monospace,Menlo,monospace; font-size:11px; }
+  .note { margin-top:14px; font-size:12.5px; color:var(--mut); line-height:1.65; padding-left:14px; border-left:2px solid rgba(var(--brand-rgb),.3); }
+  .note b { color:var(--fg-2); }
+  .sw { display:inline-block; width:13px; height:13px; border-radius:4px; vertical-align:-2px; margin-right:6px; border:1px solid rgba(255,255,255,.15); }
+  .k { display:inline-grid; place-items:center; min-width:16px; height:16px; border-radius:var(--r-pill); background:var(--brand); color:var(--yeta-bg); font:800 10px/1 ui-monospace,Menlo,monospace; flex:none; padding:0 3px; }
+  .foot { margin-top:60px; padding-top:20px; border-top:1px solid var(--line); font-size:var(--fs-label); color:var(--mut); line-height:1.7; } .foot a { color:var(--brand); text-decoration:none; }
+
+  /* ── 와이어 목업(다크 포스터 히어로 V2 · viewer 실값 재현) ── */
+  .stage { display:flex; gap:26px; flex-wrap:wrap; align-items:flex-start; }
+  .ph { width:290px; height:560px; flex:none; border:1px solid var(--line); border-radius:var(--r-modal); overflow:hidden; display:flex; flex-direction:column; position:relative;
+    background:var(--yeta-bg); color:var(--fg); box-shadow:0 30px 80px rgba(0,0,0,.5); }
+  .mk-hero { flex:1; position:relative; display:flex; flex-direction:column; align-items:center; overflow:hidden; padding-top:64px; }
+  .mk-arc { position:absolute; top:-320px; left:-58px; width:406px; height:400px; border-radius:50%; border:1px solid rgba(255,255,255,.13); }
+  .mk-badge { position:absolute; top:12px; right:10px; width:26px; opacity:.92; }
+  .mk-dash { position:absolute; right:6%; bottom:24%; width:54px; height:54px; border-right:1.5px dashed rgba(255,255,255,.45); border-radius:50%; transform:rotate(18deg); }
+  .mk-yeta { position:relative; z-index:2; font-family:'LEMONMILK',sans-serif; font-weight:700; font-size:46px; line-height:1; letter-spacing:.02em; color:var(--fg); display:flex; align-items:baseline; }
+  .mk-yeta .t { color:var(--m-fg); background:var(--brand); padding:.03em .1em .05em .08em; margin-left:.06em; transform:skewX(-6deg); box-shadow:0 0 34px rgba(var(--brand-rgb),.35); }
+  .mk-stage { position:relative; flex:1; align-self:stretch; display:grid; place-items:end center; }
+  .mk-glow { position:absolute; bottom:-70px; width:216px; height:216px; border-radius:50%;
+    background:radial-gradient(closest-side, rgba(var(--brand-rgb),.88) 58%, rgba(var(--brand-rgb),.28) 68%, transparent 76%); }
+  .mk-zslot { position:relative; z-index:1; width:120px; height:150px; margin-bottom:8px; border:1.5px dashed rgba(255,255,255,.3); border-radius:var(--r-m); display:grid; place-items:center; font-size:var(--fs-xs); color:var(--mut); text-align:center; line-height:1.5; }
+  .mk-nav { flex:none; display:flex; background:rgba(255,255,255,.04); border-top:1px solid var(--line2); padding-bottom:5px; backdrop-filter:blur(16px); }
+  .mk-nav button { flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; padding:9px 0 7px; color:var(--mut); font-size:10px; font-weight:var(--fw-b); background:none; border:none; cursor:pointer; position:relative; touch-action:manipulation; }
+  .mk-nav button:active { transform:scale(var(--press-s)); }
+  .mk-nav button.on { color:var(--brand); }
+  .mk-nav button.on::after { content:''; position:absolute; bottom:2px; left:50%; transform:translateX(-50%); width:4px; height:4px; border-radius:var(--r-pill); background:var(--brand); }
+  .mk-nav button.locked { opacity:.4; }
+  .mk-nav button svg { width:21px; height:21px; }
+  .mk-nav .lockdot { position:absolute; top:5px; right:calc(50% - 18px); width:11px; height:11px; }
+  .mk-nav .lockdot svg { width:11px; height:11px; stroke:var(--mut); fill:none; stroke-width:2.4; }
+  .legend { flex:1 1 300px; min-width:260px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="crumb">말벗 제타 · 페이지 구성도 <b>02 메인</b></p>
+  <h1>메인 — 다크 포스터 히어로 (<code>.ymain</code> · V2 260704)</h1>
+  <p class="intro">운영자 레퍼런스("이 느낌 그대로")를 계승한 진입 화면: <b>근흑 바탕 + YE·TA 레몬 하이라이트 블록 워드마크 + 하단 레몬 글로우 서클(ZETA 무대) + 미니 크롬(스우시 아크·뱃지·대시 아크)</b>. 접속 CTA는 폐지 — 진입은 잠긴 탭 탭. 라이트 V1은 폐지(운영자 260704 "어두운 메인만"). 정본 = <code>viewer/index.html</code> §YETA 메인 V2.</p>
+  <div class="ssot">📍 값 SSOT = <code>viewer/index.html :root</code> → <code>base.css</code> 거울 계승 · <b>브랜드 = 네온레몬 <code>--brand #CFFF40</code> 적용 완료</b> · 이미지리 규칙 = <b>그레이스케일 + 레몬 1색</b>(포스터 계승 · <code>.ym-zeta filter:grayscale</code>).</div>
+  <nav class="docnav"><a href="01_페이지맵_yeta.html">01 페이지맵</a><a class="cur" href="02_페이지구성도_메인.html">02 메인</a><a href="03_페이지구성도_PIN게이트.html">03 PIN 게이트</a><a href="04_페이지구성도_캐릭터선택.html">04 캐릭터 선택</a><a href="05_페이지구성도_대화방.html">05 대화방</a><a href="06_페이지구성도_대화상태.html">06 대화 상태</a><a href="index.html">허브 ↗</a></nav>
+
+  <!-- 1 와이어 -->
+  <div class="sec"><h2><span class="n">1</span> 화면 와이어 (기틀 실값)</h2>
+    <div class="stage">
+      <div class="ph">
+        <div class="mk-hero">
+          <span class="mk-arc" aria-hidden="true"></span>
+          <img class="mk-badge" src="../viewer/assets/brand/yeta-badge.png" alt="" aria-hidden="true">
+          <div class="mk-yeta">YE<span class="t">TA</span></div>
+          <div class="mk-stage" aria-hidden="true">
+            <span class="mk-glow"></span>
+            <span class="mk-zslot">ZETA 캐릭터 슬롯<br>assets/brand/zeta.png<br>(운영자 삽입 예정)</span>
+          </div>
+          <span class="mk-dash" aria-hidden="true"></span>
+        </div>
+        <nav class="mk-nav">
+          <button class="on" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8M5 10v10h14V10"/></svg>메인</button>
+          <button class="locked" type="button"><span class="lockdot"><svg viewBox="0 0 24 24" stroke-linecap="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0112 0v1"/></svg>캐릭터</button>
+          <button class="locked" type="button"><span class="lockdot"><svg viewBox="0 0 24 24" stroke-linecap="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 01-12 7.7L3 21l1.8-6A8.5 8.5 0 1121 11.5z"/></svg>대화</button>
+          <button class="locked" type="button"><span class="lockdot"><svg viewBox="0 0 24 24" stroke-linecap="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.9M4.6 9A1.7 1.7 0 004.3 7"/></svg>설정</button>
+        </nav>
+      </div>
+      <div class="legend"><table>
+        <tr><th>요소</th><th>정본 셀렉터 · 값</th></tr>
+        <tr><td><b>워드마크 락업</b></td><td><code>.ym-yeta</code> — LEMONMILK Bold <code>clamp(46px,15vw,64px)</code> · YE = <code>--fg</code> / <b>TA = <code>--brand</code> 블록 + 잉크(<code>--m-fg</code>) + skewX(-6°) + 레몬 글로우</b>(포스터 하이라이트 바 문법)</td></tr>
+        <tr><td><b>ZETA 무대</b></td><td><code>.ym-stage</code> — 하단 정렬 · <code>.ym-glow</code> 레몬 글로우 서클(radial · 정적·펄스 없음) + <code>.ym-zeta</code> 캐릭터 이미지(<code>grayscale(1)</code> 강제 · <code>zeta.png</code> 없으면 <code>onerror</code> 제거 = 서클만)</td></tr>
+        <tr><td><b>미니 크롬</b></td><td><code>.ym-arc</code> 상단 스우시(헤어라인 원호) · <code>.ym-badge</code> 우상단 뱃지 30px(<code>yeta-badge.png</code>) · <code>.ym-dash</code> 우하단 대시 원호 — 전부 <code>aria-hidden</code> 장식</td></tr>
+        <tr><td><b>하단 네비</b></td><td><code>.ynav</code> — 다크 글래스(<code>rgba(255,255,255,.04)</code>+blur16) · 활성 = <b><code>--brand</code> + 도트 4px</b>(색+형태 이중 부호화) · 잠김 = .4 + 자물쇠 도트 · 히트영역 ≥48px · <code>:focus-visible</code> 레몬 링</td></tr>
+      </table></div>
+    </div>
+    <p class="note"><b>ZETA 슬롯 규격(운영자 삽입용)</b>: <code>viewer/assets/brand/zeta.png</code> — 투명 배경 PNG · 상반신~3/4신 세로형 권장 · 렌더 최대 <code>min(40vh,300px)</code> · <b>색은 신경 안 써도 됨</b>(CSS가 그레이스케일 강제 → 포스터 규칙 자동 준수). 파일이 레포에 떨어지는 순간 자동 표시.</p>
+  </div>
+
+  <!-- 2 클릭 맵 -->
+  <div class="sec"><h2><span class="n">2</span> 클릭 → 전이</h2>
+    <div class="card"><table>
+      <tr><th>클릭 대상</th><th>잠금 전</th><th>잠금 해제 후(<code>.unlocked</code>)</th></tr>
+      <tr><td><b>네비 · 메인</b></td><td colspan="2">no-op(현재 탭)</td></tr>
+      <tr><td><b>네비 · 대화</b></td><td><code>.pin-mode</code> 진입 + 슬롯 shake → <a href="03_페이지구성도_PIN게이트.html">03 PIN</a></td><td><code>openYeta()</code> → 챗(<a href="04_페이지구성도_캐릭터선택.html">04</a>/<a href="05_페이지구성도_대화방.html">05</a>)</td></tr>
+      <tr><td><b>네비 · 캐릭터 / 설정</b></td><td>동상(PIN 유도)</td><td>준비중 토스트 — 4메뉴 흐름 설계 = <code>docs/흐름설계_기본채팅_4메뉴.md</code></td></tr>
+    </table>
+    <p class="note"><b>접속 CTA 폐지(V2)</b> — 진입 어포던스는 잠긴 탭 자체(탭 → PIN 유도 shake가 안내 역할). 딥링크 <code>?yeta=</code>만 챗 직행 예외. 챗 닫기 = 이 화면 복귀.</p></div>
+  </div>
+
+  <!-- 3 상태 -->
+  <div class="sec"><h2><span class="n">3</span> 화면 상태 3종</h2>
+    <div class="card"><table>
+      <tr><th>상태</th><th>화면</th></tr>
+      <tr><td><b>① 기본(포스터)</b></td><td>워드마크 + ZETA 무대 + 크롬 + 네비(3탭 잠김)</td></tr>
+      <tr><td><b>② <code>.pin-mode</code></b></td><td>히어로 상단 고정(<code>flex:0 0 auto</code>·pad-top 52) · 워드마크 40px · <b>무대/아크/대시 제거</b>(집중 모드) · 키패드 등장 — ⚠️ <code>flex:1</code>(basis 0) 잔존 시 워드마크 클리핑(실측 260704)</td></tr>
+      <tr><td><b>③ <code>.unlocked</code></b></td><td>네비 전탭 활성·자물쇠 도트 제거 · 대화 탭 = 챗 진입</td></tr>
+    </table></div>
+  </div>
+
+  <!-- 4 BEST UI/UX 근거 -->
+  <div class="sec"><h2><span class="n">4</span> BEST UI/UX 적용 근거 (운영자 260704 "검색해서 적용")</h2>
+    <div class="card"><table>
+      <tr><th>원칙(출처)</th><th>이 화면 적용</th></tr>
+      <tr><td>다크 = 순흑 대신 근흑·본문은 소프트 화이트(WCAG 4.5:1)</td><td><code>--yeta-bg #0d0b12</code> + <code>--fg #eef7f0</code> — 기틀 그대로 ✓</td></tr>
+      <tr><td>네온은 강조 전용·고채도 면적 절제("calm interface")</td><td>레몬 = TA 블록·글로우·활성 도트만 · 이미지리 그레이스케일 → 고채도 면적 최소 ✓</td></tr>
+      <tr><td>상태를 색만으로 전달 금지(색각 안전)</td><td>네비 활성 = 레몬 <b>+ 도트</b> · 잠김 = 투명도 <b>+ 자물쇠 도트</b> ✓</td></tr>
+      <tr><td>터치 타깃 ≥24px(WCAG 2.5.8) · 권장 44~48px</td><td>네비 탭 세로 패딩 9/7 = ≥48px · 키패드 키 56px ✓</td></tr>
+      <tr><td>키보드 포커스 가시화(WCAG 2.4.7)</td><td>네비·키패드 <code>:focus-visible</code> 레몬 인셋 링 신설 ✓</td></tr>
+      <tr><td><code>prefers-reduced-motion</code> 존중·모션 ≤300ms·장식 모션 제거 가능</td><td>전이 가드 블록 유지 · 글로우 = 정적(펄스 없음) ✓</td></tr>
+    </table></div>
+  </div>
+
+  <div class="foot">정본 = <a href="../viewer/index.html">viewer/index.html</a> §YETA 메인 V2(260704) · 규칙 = CLAUDE.md §🎨 · 이전 ← <a href="01_페이지맵_yeta.html">01 페이지맵</a> · 다음 → <a href="03_페이지구성도_PIN게이트.html">03 PIN 게이트</a> · <a href="index.html">허브</a></div>
+</div>
+</body>
+</html>

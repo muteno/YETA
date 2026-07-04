@@ -1,0 +1,183 @@
+<!-- @dsCard group="구성도" viewport="900x1500" name="페이지 구성도 · PIN 게이트" subtitle="키패드 입력 → 오류/잠금/해제 상태머신" -->
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>구성도 · 페이지 03 PIN 게이트</title>
+<link rel="stylesheet" href="base.css">
+<style>
+  /* 토큰 = base.css(AUTO-MIRROR = viewer/index.html :root 정본). 브랜드 = 네온레몬 var(--brand)(운영자 260704 고정 · yeta 레포 한정). */
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  @font-face{font-family:'LEMONMILK';font-weight:700;font-style:normal;src:url('../viewer/fonts/LEMONMILK-Bold.otf') format('opentype');font-display:swap}
+  html { scrollbar-width:thin; scrollbar-color:rgba(var(--brand-rgb),.3) transparent; }
+  ::-webkit-scrollbar { width:10px; } ::-webkit-scrollbar-thumb { background:rgba(var(--brand-rgb),.26); border-radius:var(--r-pill); border:2px solid var(--yeta-bg); background-clip:padding-box; }
+  body { margin:0; background:radial-gradient(125% 70% at 50% -8%, rgba(var(--brand-rgb),.06), transparent 55%) fixed, var(--yeta-bg); color:var(--fg); font:15px/1.6 Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans KR",sans-serif; }
+  .wrap { max-width:940px; margin:0 auto; padding:42px 22px 110px; }
+  .crumb { font-size:var(--fs-sm); color:var(--mut); letter-spacing:.4px; margin:0 0 10px; } .crumb b { color:var(--brand); }
+  h1 { font-size:27px; letter-spacing:-.5px; margin:0 0 10px; }
+  .intro { color:var(--fg-2); font-size:14.5px; max-width:68ch; margin:0; } .intro b { color:var(--fg); }
+  .ssot { margin:16px 0 0; padding:12px 16px; border:1px solid rgba(var(--brand-rgb),.3); border-radius:var(--r-m); background:rgba(var(--brand-rgb),.05); font-size:12.5px; color:var(--fg-2); line-height:1.7; }
+  .ssot code { color:var(--brand); font-family:ui-monospace,Menlo,monospace; font-size:11.5px; }
+  nav.docnav { margin:20px 0 0; display:flex; flex-wrap:wrap; gap:8px; }
+  nav.docnav a { font-size:var(--fs-sm); font-weight:var(--fw-b); color:var(--fg-2); text-decoration:none; padding:6px 12px; border-radius:var(--r-pill); background:rgba(255,255,255,.04); border:1px solid var(--line); }
+  nav.docnav a:hover, nav.docnav a.cur { color:var(--brand); border-color:rgba(var(--brand-rgb),.4); }
+  .sec { margin:48px 0 0; }
+  .sec>h2 { font-size:var(--fs-sm); letter-spacing:1.6px; text-transform:uppercase; color:var(--brand); font-weight:var(--fw-x); margin:0 0 4px; display:flex; align-items:center; gap:10px; }
+  .sec>h2 .n { width:22px; height:22px; border-radius:7px; display:grid; place-items:center; font-size:var(--fs-sm); background:rgba(var(--brand-rgb),.12); border:1px solid rgba(var(--brand-rgb),.26); }
+  .sec>p.lead { color:var(--mut); font-size:13.5px; margin:8px 0 18px; max-width:66ch; }
+  .card { background:rgba(255,255,255,.03); border:1px solid var(--line); border-radius:var(--r-l); padding:22px; }
+  table { width:100%; border-collapse:collapse; font-size:12.5px; }
+  th,td { text-align:left; padding:9px 11px; border-bottom:1px solid var(--line2); vertical-align:top; }
+  th { font-size:10.5px; letter-spacing:.4px; text-transform:uppercase; color:var(--mut); font-weight:var(--fw-b); }
+  td b { color:var(--fg); } td code, p code, .note code { color:var(--brand); font-family:ui-monospace,Menlo,monospace; font-size:11px; }
+  .note { margin-top:14px; font-size:12.5px; color:var(--mut); line-height:1.65; padding-left:14px; border-left:2px solid rgba(var(--brand-rgb),.3); }
+  .note b { color:var(--fg-2); }
+  .warnbox { margin-top:16px; padding:13px 16px; border:1px solid rgba(255,217,61,.4); border-radius:var(--r-m); background:rgba(255,217,61,.06); font-size:12.5px; color:var(--fg-2); line-height:1.7; }
+  .warnbox b { color:var(--arm); }
+  .foot { margin-top:60px; padding-top:20px; border-top:1px solid var(--line); font-size:var(--fs-label); color:var(--mut); line-height:1.7; } .foot a { color:var(--brand); text-decoration:none; }
+  /* 상태 흐름 칩(전송 버튼 상태머신 계승) */
+  .flow { display:flex; align-items:center; flex-wrap:wrap; gap:9px; margin:0 0 22px; }
+  .fchip { display:inline-flex; align-items:center; gap:7px; padding:7px 13px; border-radius:var(--r-pill); font-size:12.5px; font-weight:var(--fw-b); white-space:nowrap; background:rgba(255,255,255,.04); border:1px solid var(--line); color:var(--mut); }
+  .fchip .d { width:8px; height:8px; border-radius:var(--r-pill); background:currentColor; }
+  .fchip.ok { color:var(--brand); border-color:rgba(var(--brand-rgb),.5); background:rgba(var(--brand-rgb),.08); }
+  .fchip.bad { color:var(--danger); border-color:rgba(var(--danger-rgb),.5); background:rgba(var(--danger-rgb),.08); }
+  .fchip.arm { color:var(--arm); border-color:rgba(255,217,61,.5); background:rgba(255,217,61,.08); }
+  .farrow { color:var(--mut); opacity:.5; font-size:var(--fs-label); }
+
+  /* ── 라이브 키패드(기틀 lk- 실값 재현 · viewer L217~240 계승) ── */
+  .stage { display:flex; gap:26px; flex-wrap:wrap; align-items:flex-start; }
+  .ph { width:290px; flex:none; border:1px solid var(--line); border-radius:var(--r-modal); overflow:hidden; padding:30px 20px 26px; display:flex; flex-direction:column; align-items:center;
+    background:var(--yeta-bg); color:var(--fg); box-shadow:0 30px 80px rgba(0,0,0,.5); }
+  .mk-yeta { font-family:'LEMONMILK',sans-serif; font-weight:700; font-size:40px; line-height:1; letter-spacing:.02em; color:var(--fg); display:flex; align-items:baseline; }
+  .mk-yeta .t { color:var(--m-fg); background:var(--brand); padding:.03em .1em .05em .08em; margin-left:.06em; transform:skewX(-6deg); box-shadow:0 0 34px rgba(var(--brand-rgb),.35); }
+  .lk-m { font-size:var(--fs-h3); font-weight:var(--fw-x); color:var(--fg-2); letter-spacing:-.2px; margin-top:26px; }
+  .lk-slots { display:flex; justify-content:center; gap:15px; margin:22px 0 2px; }
+  .lk-slot { width:16px; height:20px; display:grid; place-items:center; font:400 18px/1 Pretendard,sans-serif; color:var(--pin-ac); opacity:.5; transition:opacity .15s, transform .15s; }
+  .lk-slot::before { content:''; grid-area:1/1; width:13px; height:13px; box-sizing:border-box; border-radius:50%; border:2px solid var(--mut); transition:border-color .15s; }
+  .lk-slot.on { opacity:1; }
+  .lk-slot.on::before { content:'*'; width:auto; height:auto; border:none; border-radius:0; font:800 24px/1 ui-monospace,SFMono-Regular,Menlo,monospace; color:var(--pin-ac); transform:translateY(3px); }
+  .lk-slots.bad .lk-slot::before { border-color:var(--danger); }
+  .lk-slots.bad .lk-slot.on::before { color:var(--danger); }
+  @keyframes lkShake { 0%,100%{transform:translateX(0)} 12%{transform:translateX(-9px)} 28%{transform:translateX(8px)} 44%{transform:translateX(-6px)} 60%{transform:translateX(4px)} 76%{transform:translateX(-2px)} }
+  .lk-slots.shake { animation:lkShake .45s cubic-bezier(.36,.07,.19,.97); }
+  .lk-err { color:var(--danger); font-size:var(--fs-sm); margin-top:12px; min-height:15px; font-weight:var(--fw-b); }
+  .lk-err.ok { color:var(--brand); font-weight:var(--fw-x); }
+  .lk-pad { display:grid; grid-template-columns:repeat(3,1fr); gap:0; width:100%; max-width:270px; margin:20px auto 0;
+    border:1px solid var(--line2); border-radius:16px; overflow:hidden; background:rgba(255,255,255,.05); backdrop-filter:blur(10px); }
+  .lk-key { height:56px; display:grid; place-items:center; font-size:22px; font-weight:var(--fw-b); color:var(--fg); background:none; border:none; cursor:pointer;
+    -webkit-tap-highlight-color:transparent; user-select:none; touch-action:manipulation; transition:background .12s, color .15s, transform .07s; }
+  .lk-key:nth-child(3n+2), .lk-key:nth-child(3n) { border-left:1px solid var(--line2); }
+  .lk-key:nth-child(n+4) { border-top:1px solid var(--line2); }
+  .lk-key:active { background:rgba(255,255,255,.06); transform:scale(.93); }
+  .lk-key.hit { background:rgba(var(--pin-ac-rgb),.14); color:var(--pin-ac); }
+  .lk-key.empty { pointer-events:none; }
+  .lk-key.back svg { width:25px; height:25px; stroke:var(--fg-2); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+  @media (prefers-reduced-motion:reduce){ .lk-slots.shake{animation-duration:.01s} .lk-key:active{transform:none} }
+  .legend { flex:1 1 300px; min-width:260px; }
+  .hint { font-size:var(--fs-sm); color:var(--mut); margin-top:10px; text-align:center; } .hint b { color:var(--brand); }   /* 다크 프레임 = 레몬 강조 가능(≈17:1) */
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="crumb">말벗 제타 · 페이지 구성도 <b>03 PIN 게이트</b></p>
+  <h1>PIN 게이트 — <code>.ymain.pin-mode</code></h1>
+  <p class="intro">잠긴 탭(대화·캐릭터·설정)이 데려오는 <b>메인 화면의 2번째 상태</b>(별도 라우트 아님). 워드마크가 40px로 줄며 상단 고정되고, 4슬롯 + 3×4 키패드가 올라온다. 검증 = <code>SHA-256(pin+':yeta')</code> 로컬 대조, <b>5회 오류 = 10분 잠금</b>, 성공 = 네비 전체 활성(<code>.unlocked</code>). 정본 = <code>viewer/index.html</code> CSS L217~252 · JS L581~625.</p>
+  <div class="ssot">📍 값 SSOT = <code>viewer/index.html :root</code> → <code>base.css</code> 거울 계승 · PIN 강조 = <code>--pin-ac(= var(--brand) 네온레몬 · 다크 V2)</code>·오류 = <code>--danger</code> · <b>브랜드 = 네온레몬 <code>--brand</code> 적용 완료</b>(§4).</div>
+  <nav class="docnav"><a href="01_페이지맵_yeta.html">01 페이지맵</a><a href="02_페이지구성도_메인.html">02 메인</a><a class="cur" href="03_페이지구성도_PIN게이트.html">03 PIN 게이트</a><a href="04_페이지구성도_캐릭터선택.html">04 캐릭터 선택</a><a href="05_페이지구성도_대화방.html">05 대화방</a><a href="06_페이지구성도_대화상태.html">06 대화 상태</a><a href="index.html">허브 ↗</a></nav>
+
+  <!-- 1 라이브 와이어 -->
+  <div class="sec"><h2><span class="n">1</span> 화면 와이어 — 라이브(눌러봐)</h2>
+    <p class="lead">기틀 <code>lk-</code> 컴포넌트 실값 재현. 데모 PIN = <b>0704</b>(문서용 — 실제 PIN은 해시로만 존재·코드에 평문 없음).</p>
+    <div class="stage">
+      <div class="ph">
+        <div class="mk-yeta">YE<span class="t">T</span>A</div>
+        <div class="lk-m">PIN 입력</div>
+        <div class="lk-slots" id="slots"><span class="lk-slot"></span><span class="lk-slot"></span><span class="lk-slot"></span><span class="lk-slot"></span></div>
+        <div class="lk-err" id="err"></div>
+        <div class="lk-pad" id="pad"></div>
+        <div class="hint">데모 PIN = <b>0704</b> · 틀리면 shake</div>
+      </div>
+      <div class="legend"><table>
+        <tr><th>요소</th><th>정본 셀렉터 · 값</th></tr>
+        <tr><td><b>안내 라벨</b></td><td><code>.lk-m</code> — 14px 800 <code>--m-fg2</code> · 문구 "PIN 입력"</td></tr>
+        <tr><td><b>슬롯 4칸</b></td><td><code>.lk-slot</code> — 빈칸 = 13px 링(2px <code>--mut</code>) · 입력 = <code>*</code> 모노 800 24px <code>--pin-ac</code></td></tr>
+        <tr><td><b>메시지 줄</b></td><td><code>.lk-err</code> 12px 700 <code>--danger</code> / 성공 <code>.lk-ok</code> 12.5px 800 <code>--brand</code> · min-height 15(레이아웃 점프 방지)</td></tr>
+        <tr><td><b>키패드</b></td><td><code>.lk-pad</code> — 3열 그리드 max 270 · 다크 글래스 <code>rgba(255,255,255,.05)</code>+blur10 · 셀 경계 <code>--line2</code> 헤어라인 · 배열 1~9 / 빈칸·0·⌫</td></tr>
+        <tr><td><b>키</b></td><td><code>.lk-key</code> — 높이 56 · 22px 700 <code>--fg</code> · 탭 플래시 <code>.hit</code> = <code>rgba(var(--pin-ac-rgb),.14)</code> 140ms · 눌림 scale .93</td></tr>
+        <tr><td><b>⌫ 지우기</b></td><td><code>.lk-key.back</code> — 라인 SVG 25px sw2 <code>--fg-2</code> · <code>aria-label="지우기"</code> · 오류 표시도 함께 클리어</td></tr>
+      </table></div>
+    </div>
+  </div>
+
+  <!-- 2 상태머신 -->
+  <div class="sec"><h2><span class="n">2</span> 상태머신</h2>
+    <div class="flow">
+      <span class="fchip"><span class="d"></span>입력 중(0~4자리)</span><span class="farrow">→ 4자리 자동판정</span>
+      <span class="fchip ok"><span class="d"></span>성공 = 해제</span><span class="farrow">/</span>
+      <span class="fchip bad"><span class="d"></span>오류 (n/5)</span><span class="farrow">→ 5회</span>
+      <span class="fchip arm"><span class="d"></span>10분 잠금</span>
+    </div>
+    <div class="card"><table>
+      <tr><th>상태</th><th>화면 반응</th><th>영속(localStorage)</th></tr>
+      <tr><td><b>입력 중</b></td><td>슬롯 차오름(<code>.on</code>) · 키 탭 플래시 · 4자리째 즉시 해시 대조(확인 버튼 없음)</td><td>—</td></tr>
+      <tr><td><b>오류</b></td><td>슬롯 4칸 <code>.bad</code>(링·별 <code>--m-danger</code>) + <code>lkShake</code> .45s + "PIN 번호가 틀립니다 (n/5)" → 1.4s 후 자동 비움</td><td><code>yeta_pin_fails</code> 누적</td></tr>
+      <tr><td><b>잠금</b></td><td>"PIN 오류 5회 — N분 후 다시" · 키 입력 무시(메시지만 갱신)</td><td><code>yeta_pin_until</code> = now+10분</td></tr>
+      <tr><td><b>성공</b></td><td><b>브랜드 레몬</b> 문구 "잠금 해제 — 메뉴 활성"(<code>.lk-ok</code>) · <code>.unlocked</code> 부여 → 네비 잠금 해제</td><td><code>yeta_pin_ok=1</code> · fails/until 삭제</td></tr>
+      <tr><td><b>재방문</b></td><td><code>yeta_pin_ok=1</code>이면 로드 즉시 해제(키패드 생략 — 소프트 게이트)</td><td>읽기</td></tr>
+    </table>
+    <p class="note"><b>보안 결</b>: 해시 = <code>crypto.subtle.digest('SHA-256', pin+':yeta')</code> — 평문 PIN 비저장. 이건 <b>UI 소프트 게이트</b>(연출·오조작 방지)일 뿐 서버 게이트가 아님 — 서버측은 Cloudflare Access 부착이 정본(CLAUDE.md §🔑). reduced-motion = shake 즉시 종료.</p></div>
+  </div>
+
+  <!-- 3 클릭 맵 -->
+  <div class="sec"><h2><span class="n">3</span> 클릭 → 전이</h2>
+    <div class="card"><table>
+      <tr><th>클릭</th><th>결과</th></tr>
+      <tr><td><b>숫자 키</b></td><td>슬롯 채움(&lt;4자리) · 잠금 중엔 잔여 분 안내만</td></tr>
+      <tr><td><b>⌫</b></td><td>마지막 자리 삭제 + 오류 상태 클리어</td></tr>
+      <tr><td><b>성공</b></td><td><code>.unlocked</code> → 02 메인(해제 상태) — 이후 대화 탭 = 챗 모달(<a href="04_페이지구성도_캐릭터선택.html">04</a>)</td></tr>
+      <tr><td><b>네비 · 메인</b></td><td>pin-mode 유지한 채 no-op(이탈은 다른 탭/성공으로)</td></tr>
+    </table></div>
+  </div>
+
+  <!-- 4 브랜드 적용 -->
+  <div class="sec"><h2><span class="n">4</span> 🍋 브랜드 적용 — 완료(다크 V2 · 260704)</h2>
+    <div class="card"><table>
+      <tr><th>요소</th><th>적용</th></tr>
+      <tr><td><b><code>--pin-ac</code></b>(슬롯 별·키 플래시)</td><td><code>var(--brand)</code> 네온레몬 — 근흑 위 ≈17:1 ✓ (구 코발트 폐지)</td></tr>
+      <tr><td><b>성공 문구 <code>.lk-ok</code></b></td><td><code>--brand</code> ✓</td></tr>
+      <tr><td><b>오류·잠금</b></td><td><code>--danger</code> 유지 — 의미색은 브랜드와 분리(§🎨)</td></tr>
+      <tr><td><b>키보드 포커스</b></td><td><code>.lk-key:focus-visible</code> 레몬 인셋 링 신설(WCAG 2.4.7 · BEST UIUX 260704)</td></tr>
+    </table></div>
+  </div>
+
+  <div class="foot">정본 = <a href="../viewer/index.html">viewer/index.html</a> PIN 게이트(V1 260704) · 규칙 = CLAUDE.md §🎨 · 이전 ← <a href="02_페이지구성도_메인.html">02 메인</a> · 다음 → <a href="04_페이지구성도_캐릭터선택.html">04 캐릭터 선택</a> · <a href="index.html">허브</a></div>
+</div>
+<script>
+  // 문서용 라이브 데모 — 기틀 JS(L581~625)의 UI 반응만 재현(해시·잠금·localStorage 없음 · 데모 PIN 평문 0704는 문서 전용)
+  const KEYS = ['1','2','3','4','5','6','7','8','9','','0','back'];
+  const BSVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 5H9l-6 7 6 7h11a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1z"/><path d="M16 9l-4 4M12 9l4 4"/></svg>';
+  const pad = document.getElementById('pad'), slotsEl = document.getElementById('slots'), err = document.getElementById('err');
+  pad.innerHTML = KEYS.map(k => k === '' ? '<button class="lk-key empty" tabindex="-1"></button>'
+    : k === 'back' ? `<button class="lk-key back" data-back="1" aria-label="지우기">${BSVG}</button>`
+    : `<button class="lk-key" data-n="${k}">${k}</button>`).join('');
+  const slots = [...slotsEl.children];
+  let val = '', done = false;
+  const fill = () => slots.forEach((s,i) => s.classList.toggle('on', i < val.length));
+  pad.onclick = e => {
+    const b = e.target.closest('.lk-key'); if (!b || done) return;
+    b.classList.add('hit'); setTimeout(() => b.classList.remove('hit'), 140);
+    if (b.dataset.back) { val = val.slice(0,-1); err.textContent=''; err.className='lk-err'; slotsEl.classList.remove('bad'); fill(); return; }
+    if (b.dataset.n && val.length < 4) {
+      val += b.dataset.n; fill();
+      if (val.length === 4) {
+        if (val === '0704') { err.className='lk-err ok'; err.textContent='잠금 해제 — 메뉴 활성'; done = true; setTimeout(()=>{done=false; val=''; fill(); err.textContent=''; err.className='lk-err';}, 2200); }
+        else { slotsEl.classList.add('bad','shake'); err.className='lk-err'; err.textContent='PIN 번호가 틀립니다 (1/5)';
+          setTimeout(()=>{ val=''; fill(); slotsEl.classList.remove('bad','shake'); err.textContent=''; }, 1400); }
+      }
+    }
+  };
+</script>
+</body>
+</html>
