@@ -21,6 +21,8 @@
   --fw-b: 700;
   --lh-base: 1.6;
   --ease: cubic-bezier(.2,.7,.3,1);
+  --blur-m: 16px;
+  --blur-l: 24px;
   --z-float: 60;
   --press-m: .9;
   --press-l: .95;

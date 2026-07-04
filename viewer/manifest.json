@@ -5,8 +5,8 @@
   "id": "/",
   "start_url": ".",
   "display": "standalone",
-  "background_color": "#eef3ff",
-  "theme_color": "#eef3ff",
+  "background_color": "#121212",
+  "theme_color": "#121212",
   "icons": [
     {
       "src": "assets/brand/yeta-icon-192.png",

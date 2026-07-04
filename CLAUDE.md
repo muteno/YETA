@@ -4,19 +4,19 @@
 
 ## 🎬 앱 개요
 - **말벗 제타** = 무음동 10인 페르소나와의 랜덤 톡방. 세션 = R2 비공개 **단일 스레드**(맥락·관계노트 공유).
-- 페르소나 = **랜덤 뽑기 + 🎲 재뽑기**(고정 선택 없음·화자만 교체·맥락 승계). 내 버블 = 네온보라(`--bubble-me`). *나레이션* = 이탤릭.
+- 페르소나 = **랜덤 뽑기 + 🎲 재뽑기**(고정 선택 없음·화자만 교체·맥락 승계). 내 버블 = 브랜드 라임(`--bubble-me`=`--accent`). *나레이션* = 이탤릭.
 - 답장 = `claude -p`(구독 OAuth) · GitHub Actions dispatch · **웜 세션 루프**(답장 후 대기 → 후속 메시지 같은 런 즉답).
 - 다이얼 = model(opus 4.8 / sonnet-5) × effort(low/''/max) — 턴별 박제. 기본 = opus×low(30초 컷).
 
 ## 🎨 디자인 계약 — 계승이 디폴트 (기틀·항상 유효)
 > "디자인 기틀이 계속 바뀌는" 것을 기계로 차단하는 3층 방어(nomute 260703 이식). 규칙 SSOT = 이 절.
 1. 모든 UI/UX = **기틀에 이미 있는 형태만** 구현. 새 색/px/blur/radius/scale/컴포넌트 임의 창작 **절대 금지**.
-2. **값 SSOT = `viewer/index.html` `:root` 단 하나**(34토큰). raw 값 대신 `var()` 토큰.
+2. **값 SSOT = `viewer/index.html` `:root` 단 하나**(색+구조 토큰). raw 값 대신 `var()` 토큰.
 3. 기틀에 없는 값 필요 → **작업 멈추고 운영자에 질문**(왜 필요 + 가장 가까운 기존 후보). 승인분은 즉시 편입: `:root` 토큰 추가 → `python3 shared/build_design_mirror.py build`(거울 재생성) → `docs/CII_컴포넌트계승인덱스.md` 행 → check_refs baseline 사유.
 4. 새 버튼·모달·입력칸·아이콘 = **CII 정본 셀렉터 계승**(재설계 금지). 버튼·눌림 패턴 = `구성도/00_가이드북_버튼인터랙션.html`. 눌림 scale = `--press-*` 토큰.
 5. `viewer/tokens.css`·`구성도/base.css` = **build 산출 거울**(직접 수정 금지·다음 build에 덮어씀).
 6. **3층 강제**: ① SessionStart/UI턴 = `.claude/hooks/design_digest.py`가 계약 자동 주입 ② UI 파일 저장 후 = `.claude/hooks/design_gate.py`가 check_refs 디자인 게이트(위반 exit 2) ③ 커밋 = `.githooks/pre-commit`이 `check_refs` 강제(`core.hooksPath=.githooks`는 design_digest가 세션마다 자동 설정). 타 모델 = `AGENTS.md`.
-7. **색은 yeta 팔레트**(네온보라·근흑) — nomute 녹색 브랜드와 다름. 구조 토큰(반지름·간격·타이포·모션·눌림)만 계승, 색은 yeta 정체성.
+7. **색 = yeta 브랜드 팔레트 v2**(260704 운영자 그린 전환): 강조1 브랜드 라임 `--accent:#CFFF40`·강조2 코발트 형광 `--cobalt:#3D6BFF`·뉴트럴 흰(`--fg`)/스포티파이블랙(`--bg:#121212`)·글래스모피즘(`--glass*`·`--blur-*`). 강조는 **이 2색만**, 나머지 흰/근흑. 옛 네온보라(`--bubble-me`)·라이트 코발트/오렌지(`--accent-1/2`·`--m-*`) 폐지 → 전체 다크·그린 통일(챗 버블 포함). 구조 토큰(반지름·간격·타이포·모션·눌림) 계승은 그대로.
 
 ## 🗺 구조
 - `viewer/` = 뷰어. `index.html`(값 SSOT `:root` + yeta UI) · `tokens.css`(구조토큰 거울) · `nm-svg.js`(아이콘 SSOT) · `_headers`(정적 no-cache)
