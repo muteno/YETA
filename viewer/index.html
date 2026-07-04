@@ -212,7 +212,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   .ym-pin { width:100%; max-width:300px; display:flex; flex-direction:column; align-items:center;
     opacity:0; transform:translateY(24px); pointer-events:none; height:0; overflow:hidden;
     transition:opacity .45s var(--ease) .1s, transform .45s var(--ease) .1s; }
-  .ymain.pin-mode .ym-hero { flex-grow:0; gap:0; padding-top:52px; }
+  .ymain.pin-mode .ym-hero { flex-grow:0; gap:0; padding-top:34vh; }   /* PIN = 캐릭터 가슴팍으로 내림(운영자 260704) */
   .ymain.pin-mode .ym-access, .ymain.pin-mode .ym-access-lbl { opacity:0; pointer-events:none; height:0; margin:0; }
   .ymain.pin-mode .ym-pin { opacity:1; transform:none; pointer-events:auto; height:auto; overflow:visible; }
   /* PIN 키패드 = nomute lk- 이식 · 다크+라임 리컬러(260704) */
@@ -234,12 +234,13 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
     -webkit-tap-highlight-color:transparent; user-select:none; touch-action:manipulation; transition:background .12s, color .15s, transform .07s; }
   .lk-key:nth-child(3n+2), .lk-key:nth-child(3n) { border-left:1px solid var(--line2); }
   .lk-key:nth-child(n+4) { border-top:1px solid var(--line2); }
-  .lk-key:active { background:rgba(255,255,255,.05); transform:scale(.93); }
-  .lk-key.hit { background:rgba(var(--pin-ac-rgb),.14); color:var(--pin-ac); }
+  .lk-key:active { background:rgba(var(--pin-ac-rgb),.12); color:var(--pin-ac); transform:scale(var(--press-m)); }
+  @keyframes lkPop { 0%{transform:scale(1)} 38%{transform:scale(1.14)} 100%{transform:scale(1)} }
+  .lk-key.hit { background:rgba(var(--pin-ac-rgb),.18); color:var(--pin-ac); box-shadow:inset 0 0 0 1.5px rgba(var(--pin-ac-rgb),.45); animation:lkPop .22s var(--ease); }
   .lk-key.empty { pointer-events:none; }
   .lk-key.back svg { width:25px; height:25px; stroke:var(--fg-2); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; transition:stroke .15s; }
   .lk-key.back.hit svg { stroke:var(--pin-ac); }
-  @media (prefers-reduced-motion:reduce){ .lk-slots.shake{animation-duration:.01s} .lk-key:active{transform:none} }
+  @media (prefers-reduced-motion:reduce){ .lk-slots.shake{animation-duration:.01s} .lk-key:active{transform:none} .lk-key.hit{animation:none} }
   /* 하단 네비 — PIN 전 = 메인만, 나머지 잠김 · 액티브 픽토그램=브랜드 라임(260704) */
   .ynav { flex:none; display:none; background:var(--glass-2); border-top:1px solid var(--glass-line); padding-bottom:calc(5px + env(safe-area-inset-bottom)); backdrop-filter:blur(var(--blur-l)); -webkit-backdrop-filter:blur(var(--blur-l)); }
   .ynav button { flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; padding:8px 0 4px; color:var(--mut); font-size:10px; font-weight:700; background:none; border:none; cursor:pointer; position:relative; transition:transform .28s var(--ease), color .2s, opacity .3s; touch-action:manipulation; }
@@ -597,7 +598,10 @@ try { if (new URLSearchParams(location.search).get('yeta')) setTimeout(() => ope
   const flash = el => { if (!el) return; el.classList.add('hit'); setTimeout(() => el.classList.remove('hit'), 140); };
   const outLeft = () => { try { const u = +localStorage.getItem('yeta_pin_until') || 0; return Math.max(0, u - Date.now()); } catch { return 0; } };
   function setUnlocked() { unlocked = true; ymain.classList.add('unlocked'); }
-  accessBtn.onclick = () => ymain.classList.add('pin-mode');
+  const enterPin = () => { if (unlocked || ymain.classList.contains('pin-mode')) return; ymain.classList.add('pin-mode'); try { history.pushState({ ympin: 1 }, ''); } catch {} };   // PIN = 고유 페이지(pushState) → 폰 뒤로가기로 닫힘(dlg 패턴 계승)
+  const closePin = () => { ymain.classList.remove('pin-mode'); val = ''; fill(); errEl.textContent = ''; errEl.className = 'lk-err'; slotsEl.classList.remove('bad', 'shake'); };   // 촤르륵 닫힘(.ym-pin/.ym-hero 슬라이드 트랜지션 = 메인 복귀)
+  accessBtn.onclick = enterPin;
+  window.addEventListener('popstate', () => { if (ymain.classList.contains('pin-mode') && !unlocked) closePin(); });   // 폰 뒤로가기 = PIN 촤르륵 닫힘
   padEl.onclick = async e => {
     const b = e.target.closest('.lk-key'); if (!b || unlocked) return;
     if (b.dataset.back) { flash(b); val = val.slice(0, -1); errEl.textContent = ''; errEl.className = 'lk-err'; slotsEl.classList.remove('bad'); fill(); return; }
@@ -622,7 +626,7 @@ try { if (new URLSearchParams(location.search).get('yeta')) setTimeout(() => ope
     const b = e.target.closest('button'); if (!b) return;
     const tab = b.dataset.tab;
     if (tab === 'main') return;
-    if (!unlocked) { ymain.classList.add('pin-mode'); slotsEl.classList.add('shake'); setTimeout(() => slotsEl.classList.remove('shake'), 450); return; }
+    if (!unlocked) { enterPin(); slotsEl.classList.add('shake'); setTimeout(() => slotsEl.classList.remove('shake'), 450); return; }
     if (tab === 'chat') { openYeta(); return; }
     miniToast('준비중 — 곧 열려');   // 캐릭터·설정(다음 머지)
   };
