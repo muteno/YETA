@@ -1,0 +1,76 @@
+<!doctype html><meta charset="utf-8"><meta name="color-scheme" content="dark">
+<title>yeta 브랜드 컬러 — 확립본</title>
+<!-- yeta 팔레트 확립본(운영자 260704). 값 SSOT = viewer/index.html :root(전부 var() 계승·design-tokens.lock 승인). 이 페이지 = 그 팔레트의 시각 정본(이 색 밖 사용 금지). -->
+<style>
+  :root{
+    --accent:#CFFF40;--cobalt:#3D6BFF;--danger:#FF5B4A;--arm:#FFD93D;
+    --fg:#FFFFFF;--fg-2:#C4C9C4;--mut:#8B8F8A;--bg:#121212;--yeta-bg:#121212;--bubble-ai:#1E2023;
+    --glass:rgba(255,255,255,.055);--glass-2:rgba(255,255,255,.09);--glass-line:rgba(255,255,255,.14);
+    --line:rgba(255,255,255,.09);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:'Pretendard',-apple-system,system-ui,'Malgun Gothic',sans-serif;
+    -webkit-font-smoothing:antialiased;padding:26px 18px 55px;line-height:1.5;max-width:760px;margin:0 auto;
+    background-image:radial-gradient(60% 34% at 84% 4%,rgba(207,255,64,.09),transparent 60%),radial-gradient(50% 34% at 6% 96%,rgba(61,107,255,.11),transparent 60%);}
+  h1{font-size:19px;font-weight:800;margin:0 0 3px}
+  .sub{font-size:12px;color:var(--mut);margin:0 0 22px}
+  h2{font-size:12px;font-weight:800;color:var(--mut);text-transform:uppercase;letter-spacing:.6px;margin:24px 0 11px;border-left:3px solid var(--accent);padding-left:9px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:10px}
+  .sw{border:1px solid var(--line);border-radius:13px;overflow:hidden;background:#191919}
+  .band{height:56px;position:relative}
+  .band .tag{position:absolute;top:7px;left:8px;font-size:9px;font-weight:800;background:rgba(0,0,0,.42);color:#fff;border-radius:5px;padding:1px 6px}
+  .meta{padding:9px 10px}.tn{font-size:13px;font-weight:800}
+  .tv{font-size:10.5px;color:var(--mut);font-family:ui-monospace,monospace;margin-top:1px}
+  .role{font-size:10.5px;color:#cfd3d6;margin-top:5px;line-height:1.4}
+  .core{border-color:rgba(207,255,64,.5)}
+  .neu{display:flex;gap:10px;flex-wrap:wrap}
+  .neu .box{flex:1;min-width:150px;border:1px solid var(--line);border-radius:13px;overflow:hidden;background:#191919}
+  .neu .nb{height:50px}.neu .nm{padding:9px 11px}
+  .glassdemo{margin-top:8px;border:1px solid var(--glass-line);background:var(--glass-2);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border-radius:14px;padding:13px 15px;font-size:12px;color:#dfe3df;box-shadow:inset 0 1px 0 var(--glass-line)}
+  .rm{border:1px dashed rgba(255,255,255,.18);border-radius:12px;background:rgba(255,255,255,.02);padding:12px 14px;margin-top:9px;font-size:11.5px;color:#b9beb9;line-height:1.7}
+  .rm b{color:#fff}
+  .ok{border:1px solid rgba(207,255,64,.4);border-radius:12px;background:rgba(207,255,64,.06);padding:13px 15px;margin-top:16px;font-size:12px;color:#eaffb8;line-height:1.7}
+  .ok b{color:var(--accent)}
+  code{background:rgba(255,255,255,.08);border-radius:5px;padding:1px 5px;font-size:10.5px}
+</style>
+<h1>yeta 브랜드 컬러 — <span style="color:var(--accent)">확립본</span></h1>
+<p class="sub">값 SSOT = <code>viewer/index.html :root</code> · 전부 <code>var()</code> 계승 · 신규/변경은 <code>design-tokens.lock</code> 승인(절대명령#1). <b>이 팔레트 밖 색 사용 금지.</b></p>
+
+<h2>① 브랜드 코어 (1) — 불변</h2>
+<div class="grid">
+  <div class="sw core"><div class="band" style="background:#CFFF40"><span class="tag">★ 코어</span></div>
+    <div class="meta"><div class="tn" style="color:#CFFF40">--accent</div><div class="tv">#CFFF40</div><div class="role">네온레몬 라임 = yeta 아이덴티티. 버튼·링·액티브·챗버블·PIN.</div></div></div>
+</div>
+
+<h2>② 2차 강조 (1)</h2>
+<div class="grid">
+  <div class="sw"><div class="band" style="background:#3D6BFF"><span class="tag">2</span></div>
+    <div class="meta"><div class="tn" style="color:#6E93FF">--cobalt</div><div class="tv">#3D6BFF</div><div class="role">코발트 형광 = 링크·정보·대비·<code>::selection</code>.</div></div></div>
+</div>
+
+<h2>③ 의미색 (2) — 유일</h2>
+<div class="grid">
+  <div class="sw"><div class="band" style="background:#FF5B4A"><span class="tag">유일 레드</span></div>
+    <div class="meta"><div class="tn" style="color:#FF7A6B">--danger</div><div class="tv">#FF5B4A</div><div class="role">위험·오류·실패. 유일한 레드.</div></div></div>
+  <div class="sw"><div class="band" style="background:#FFD93D"></div>
+    <div class="meta"><div class="tn" style="color:#FFD93D">--arm</div><div class="tv">#FFD93D</div><div class="role">경고·준비·재확인(armed).</div></div></div>
+</div>
+
+<h2>④ 중립 — 흰 + 스포티파이 블랙 + 뮤트</h2>
+<div class="neu">
+  <div class="box"><div class="nb" style="background:#FFFFFF"></div><div class="nm"><div class="tn" style="color:#111">--fg</div><div class="tv">#FFFFFF</div><div class="role">본문 텍스트(흰).</div></div></div>
+  <div class="box"><div class="nb" style="background:#C4C9C4"></div><div class="nm"><div class="tn" style="color:#111">--fg-2</div><div class="tv">#C4C9C4</div><div class="role">보조 텍스트.</div></div></div>
+  <div class="box"><div class="nb" style="background:#8B8F8A"></div><div class="nm"><div class="tn">--mut</div><div class="tv">#8B8F8A</div><div class="role">뮤트·흐림·비활성.</div></div></div>
+  <div class="box"><div class="nb" style="background:#121212;border-bottom:1px solid var(--line)"></div><div class="nm"><div class="tn">--bg</div><div class="tv">#121212</div><div class="role">스포티파이 블랙 = 캔버스·<b>챗창</b>·딤 바닥(통일).</div></div></div>
+</div>
+
+<h2>⑤ 표면 · 글래스 (스포티파이 블랙 위 무채 글래스)</h2>
+<div class="grid">
+  <div class="sw"><div class="band" style="background:#121212;border-bottom:1px solid var(--glass-line)"><span class="tag">= --bg</span></div><div class="meta"><div class="tn">--yeta-bg</div><div class="tv">var(--bg) · #121212</div><div class="role">챗 창 = 스포티파이 블랙 <b>통일</b>. 분리는 글래스 엣지(테두리 --glass-line + inset 하이라이트).</div></div></div>
+  <div class="sw"><div class="band" style="background:#1E2023"></div><div class="meta"><div class="tn">--bubble-ai</div><div class="tv">#1E2023</div><div class="role">캐릭터 버블(근흑 살짝 띄움).</div></div></div>
+</div>
+<div class="glassdemo">글래스모피즘 — <code>--glass</code>(.055)/<code>--glass-2</code>(.09) 프로스티드 표면 · <code>--glass-line</code>(.14) 엣지 하이라이트 · <code>--shadow-card</code> 그림자 · <code>--bg-scrim</code> 포스터 딤 · <code>--line</code>/<code>--line2</code> 구분선. 전부 <b>흰색 오버레이</b>(뜬 회색 0). 챗창·PIN·네비·접속버튼·히어로카드 = 이 글래스로 스포티파이 블랙 위에 분리.</div>
+
+<div class="rm"><b>제거 (nomute 전용 · yeta 무관)</b>: 편향 5단(정치색) · 수집함 앰버 · 서브코어 accent-3~5(뉴스 메뉴색) · 이력 보라. — yeta는 캐릭터 챗앱이라 <b>아예 없앰</b>.</div>
+
+<div class="ok"><b>확정 (운영자 260704)</b> — 강조 = <b>라임 + 코발트 2개</b>만 · 의미색 = danger/arm 유지 · 챗창 = 스포티파이 블랙 통일 + 글래스 엣지. 이 팔레트로 :root 정립 · design-tokens.lock 등재.</div>

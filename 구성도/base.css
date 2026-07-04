@@ -19,7 +19,7 @@
     /* 의미색 */
     --danger:#ff5b4a; --danger-rgb:255,91,74; --arm:#ffd93d;
     /* yeta 챗 — 내 버블=브랜드 라임(보라 폐지·전체 그린 통일 260704) · 캐릭터 버블=근흑 · 창=스포티파이 블랙 */
-    --bubble-me:var(--accent); --bubble-ai:#1e2023; --yeta-bg:#141416;
+    --bubble-me:var(--accent); --bubble-ai:#1e2023; --yeta-bg:var(--bg);   /* 챗창 = 스포티파이 블랙 통일(--bg) · 글래스 엣지로 분리(운영자 260704) */
     /* 반지름 */
     --r-s:9px; --r-m:11px; --r-l:16px; --r-modal:22px; --r-pill:999px;
     /* 간격·버튼 */
