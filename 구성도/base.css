@@ -7,14 +7,14 @@
     /* 중립 표면·텍스트 */
     --fg:#eef7f0; --fg-2:#cfd8d0; --mut:#8fa697;
     --line:rgba(255,255,255,.08); --line2:rgba(255,255,255,.06);
-    /* 강조 — 공통 컴포넌트(.tool-x hover·focus ring) */
-    --accent:#0FFD02; --accent-rgb:15,253,2;
+    /* yeta 브랜드 = 네온레몬 최종 고정(운영자 260704 "메인 브랜드 컬러는 이거로 고정: cfff40" · 이 레포 한정). 값 교체 = 이 두 줄만 */
+    --brand:#CFFF40; --brand-rgb:207,255,64;
+    /* 강조 = --brand 합류(배선 완료 260704 — 공통 컴포넌트(.tool-x hover·focus ring)·로고 T·활성 탭·버블이 전부 브랜드 추종 · 구 그린 #0FFD02 폐기) */
+    --accent:var(--brand); --accent-rgb:var(--brand-rgb);
     /* 의미색 */
     --danger:#ff5b4a; --danger-rgb:255,91,74; --arm:#ffd93d;
-    /* yeta 정체성 — 네온보라 버블·근흑 창(운영자 260703) */
-    --bubble-me:#b45cff; --bubble-ai:#1e2023; --yeta-bg:#0d0b12;
-    /* yeta 브랜드 = 네온레몬 최종 고정(운영자 260704 "메인 브랜드 컬러는 이거로 고정: cfff40" · 이 레포 한정). 배선(버블·CTA·강조 스왑)은 후속 = forward-declared */
-    --brand:#CFFF40; --brand-rgb:207,255,64;
+    /* yeta 정체성 — 네온레몬 버블·근흑 창(운영자 260704 브랜드 확정 — --accent 합류·레몬 위 글자 = --yeta-bg) */
+    --bubble-me:var(--accent); --bubble-ai:#1e2023; --yeta-bg:#0d0b12;
     /* 반지름 */
     --r-s:9px; --r-m:11px; --r-l:16px; --r-modal:22px; --r-pill:999px;
     /* 간격·버튼 */
@@ -28,15 +28,6 @@
     --z-float:60;
     /* 눌림 scale 사다리 */
     --press-m:.9; --press-l:.95; --press-s:.9;
-    /* ── YETA 메인/라이트 팔레트(강조1 오렌지·강조2 코발트 · 첨부2) — 메인 화면 전용(챗은 위 다크 토큰 유지) ── */
-    --accent-1:#FF6648; --accent-1-rgb:255,102,72;
-    --accent-2:#0259DD; --accent-2-rgb:2,89,221;
-    --sky:#84AFFB; --sky-rgb:132,175,251; --cream:#FFE1D7;
-    --m-fg:#0e1420; --m-fg2:#2b3242; --m-mut:#586173;
-    --m-line:rgba(20,30,60,.12); --m-line2:rgba(20,30,60,.08);
-    --m-glass:rgba(255,255,255,.62); --m-glass2:rgba(255,255,255,.8);
-    --m-danger:#e23b2e; --m-danger-rgb:226,59,46;
-    --pin-ac:var(--accent-2); --pin-ac-rgb:var(--accent-2-rgb);
   }
 /* === AUTO-MIRROR:END === */
 /* ↑ 토큰값은 전부 viewer :root에서 옴(--arm·--font-status 포함). base.css에 토큰 인라인 재정의 금지. */
