@@ -16,7 +16,7 @@
 4. 새 버튼·모달·입력칸·아이콘 = **CII 정본 셀렉터 계승**(재설계 금지). 버튼·눌림 패턴 = `구성도/00_가이드북_버튼인터랙션.html`. 눌림 scale = `--press-*` 토큰.
 5. `viewer/tokens.css`·`구성도/base.css` = **build 산출 거울**(직접 수정 금지·다음 build에 덮어씀).
 6. **3층 강제**: ① SessionStart/UI턴 = `.claude/hooks/design_digest.py`가 계약 자동 주입 ② UI 파일 저장 후 = `.claude/hooks/design_gate.py`가 check_refs 디자인 게이트(위반 exit 2) ③ 커밋 = `.githooks/pre-commit`이 `check_refs` 강제(`core.hooksPath=.githooks`는 design_digest가 세션마다 자동 설정). 타 모델 = `AGENTS.md`.
-7. **색은 yeta 팔레트 — 브랜드 = 네온레몬 고정**(`--brand #E7FF2E`·운영자 260704·**이 레포 한정**) + 근흑. nomute 녹색 브랜드와 다름. 구조 토큰(반지름·간격·타이포·모션·눌림)만 계승, 색은 yeta 정체성. 적용 완료(260704): **다크 온리**(운영자 "어두운 메인만") · 메인 = 다크 포스터 히어로 V2(YE·TA 레몬블록 + ZETA 글로우 무대 — `viewer/assets/brand/zeta.png` 삽입 시 자동 표시·그레이스케일 강제) · 챗 = 레몬 버블+잉크(`--m-fg`) · 라이트 V1 팔레트 폐지. 스펙 = 페이지 구성도 01~06(`구성도/01_페이지맵_yeta.html` 색인).
+7. **색은 yeta 팔레트 — 브랜드 = 네온레몬 고정**(`--brand #CFFF40`·운영자 260704·**이 레포 한정**) + 근흑. nomute 녹색 브랜드와 다름. 구조 토큰(반지름·간격·타이포·모션·눌림)만 계승, 색은 yeta 정체성. 적용 완료(260704): **다크 온리**(운영자 "어두운 메인만") · 메인 = 다크 포스터 히어로 V2(YE·TA 레몬블록 + ZETA 글로우 무대 — `viewer/assets/brand/zeta.png` 삽입 시 자동 표시·그레이스케일 강제) · 챗 = 레몬 버블+잉크(`--m-fg`) · 라이트 V1 팔레트 폐지. 스펙 = 페이지 구성도 01~06(`구성도/01_페이지맵_yeta.html` 색인). **CTA 정본 = `.bpill`**(레몬 아웃라인 알약·운영자 260704 레퍼런스) · **타이포 = UI 전반 Pretendard, LEMONMILK는 워드마크 전용**.
 
 ## 🗺 구조
 - `viewer/` = 뷰어. `index.html`(값 SSOT `:root` + yeta UI) · `tokens.css`(구조토큰 거울) · `nm-svg.js`(아이콘 SSOT) · `_headers`(정적 no-cache)

@@ -86,7 +86,7 @@
           <button class="row" type="button"><span class="ava" style="color:#ff8fb3">세</span><span class="col"><span class="nm">세라</span><span class="tg2">지하 연습실의 까칠한 연습생</span></span></button>
           <button class="row" type="button"><span class="ava" style="color:#ffd36b">하</span><span class="col"><span class="nm">하은</span><span class="tg2">퇴근길의 능글맞은 국어교사</span></span></button>
           <button class="row" type="button"><span class="ava" style="color:#c9a2ff">가</span><span class="col"><span class="nm">가을</span><span class="tg2">무음동 상인회장 — 골목의 실권자</span></span></button>
-          <button class="dice" type="button">🎲 랜덤으로 만나기</button>
+          <button class="dice" type="button" style="align-self:center;border:1.5px solid var(--brand);border-radius:var(--r-pill);color:var(--brand);background:none;font:inherit;font-size:var(--fs-label);font-weight:var(--fw-b);padding:9px 18px;cursor:pointer">🎲 랜덤으로 만나기</button>
         </div>
       </div>
       <div class="legend"><table>
@@ -94,7 +94,7 @@
         <tr><td><span class="pinlay">1</span></td><td><b>헤더(리스트 모드)</b></td><td>제목 "무음동 사람들" + 태그 "대화할 상대를 골라" — 🎲·아바타·셰브론·새 대화 <b>전부 숨김</b>(<code>yView('list')</code>) · X만 유지</td></tr>
         <tr><td><span class="pinlay">2</span></td><td><b>주민 행</b></td><td><code>.ypick-row</code>(리스트 변형: pad 11/12) — 아바타 44px + 이름 <code>--fs-h3</code> 800 + 태그라인 <code>--fs-xs --mut</code> · hover 무채 <code>.06</code> · 눌림 <code>--press-l</code></td></tr>
         <tr><td><span class="pinlay">3</span></td><td><b>아바타</b></td><td><code>.yava</code> 원형 — 얼굴 이미지(<code>.has-img</code> cover) 우선 · 폴백 = 이니셜 + <code>roster color</code></td></tr>
-        <tr><td><span class="pinlay">4</span></td><td><b>🎲 랜덤</b></td><td><code>.yl-dice</code> — 대시 보더 <code>--line</code> · <code>--r-m</code> · 전폭 · 유일한 이모지 허용처(콘텐츠 표식 결)</td></tr>
+        <tr><td><span class="pinlay">4</span></td><td><b>🎲 랜덤</b></td><td><code>.yl-dice.bpill</code> — <b>브랜드 알약 CTA 정본 계승</b>(레몬 1.5px 아웃라인+레몬 텍스트·Pretendard·<code>--r-pill</code>·<code>--press-l</code> · 운영자 260704 레퍼런스) · 유일한 이모지 허용처(콘텐츠 표식 결)</td></tr>
       </table></div>
     </div>
     <p class="note"><b>로스터 10인</b>(<code>apps/yeta/characters/roster.json</code> — 뷰어 표시 SSOT): 데스크·카피·무디·세라·하은·가을·백·류·본·윤. 목업은 6인만 표시(스크롤 영역). 리스트는 무대 전체 오버레이(<code>inset:0 · z6</code>)라 뒤 배경·로그를 완전히 덮는다.</p>
