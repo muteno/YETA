@@ -26,15 +26,6 @@
     --z-float:60;
     /* 눌림 scale 사다리 */
     --press-m:.9; --press-l:.95; --press-s:.9;
-    /* ── YETA 메인/라이트 팔레트(강조1 오렌지·강조2 코발트 · 첨부2) — 메인 화면 전용(챗은 위 다크 토큰 유지) ── */
-    --accent-1:#FF6648; --accent-1-rgb:255,102,72;
-    --accent-2:#0259DD; --accent-2-rgb:2,89,221;
-    --sky:#84AFFB; --sky-rgb:132,175,251; --cream:#FFE1D7;
-    --m-fg:#0e1420; --m-fg2:#2b3242; --m-mut:#586173;
-    --m-line:rgba(20,30,60,.12); --m-line2:rgba(20,30,60,.08);
-    --m-glass:rgba(255,255,255,.62); --m-glass2:rgba(255,255,255,.8);
-    --m-danger:#e23b2e; --m-danger-rgb:226,59,46;
-    --pin-ac:var(--accent-2); --pin-ac-rgb:var(--accent-2-rgb);
   }
 /* === AUTO-MIRROR:END === */
 /* ↑ 토큰값은 전부 viewer :root에서 옴(--arm·--font-status 포함). base.css에 토큰 인라인 재정의 금지. */

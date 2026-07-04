@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no">
-<meta name="color-scheme" content="light dark">
-<meta name="theme-color" content="#eef3ff">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0d0b12">
 <title>YETA</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@latest/dist/web/variable/pretendardvariable.min.css">
 <link rel="stylesheet" href="tokens.css">
@@ -38,22 +38,17 @@
     --z-float:60;
     /* 눌림 scale 사다리 */
     --press-m:.9; --press-l:.95; --press-s:.9;
-    /* ── YETA 메인/라이트 팔레트(강조1 오렌지·강조2 코발트 · 첨부2) — 메인 화면 전용(챗은 위 다크 토큰 유지) ── */
-    --accent-1:#FF6648; --accent-1-rgb:255,102,72;
-    --accent-2:#0259DD; --accent-2-rgb:2,89,221;
-    --sky:#84AFFB; --sky-rgb:132,175,251; --cream:#FFE1D7;
-    --m-fg:#0e1420; --m-fg2:#2b3242; --m-mut:#586173;
-    --m-line:rgba(20,30,60,.12); --m-line2:rgba(20,30,60,.08);
-    --m-glass:rgba(255,255,255,.62); --m-glass2:rgba(255,255,255,.8);
-    --m-danger:#e23b2e; --m-danger-rgb:226,59,46;
-    --pin-ac:var(--accent-2); --pin-ac-rgb:var(--accent-2-rgb);
   }
+  /* ↑ V1 라이트 팔레트(accent-1/2·sky·cream·m-*·pin-ac) = V2 다크 전환(260704)으로 전부 미배선 → 정의 회수(고아 토큰 = 드리프트 씨앗·§🎨) */
   /* reduced-motion = 눌림 토큰 전역 무효화(1) — 개별 transform:none 가드 대신 한 블록(분신술10·4뷰어 가드 불균형 해소) */
-  @media (prefers-reduced-motion:reduce){ :root{ --press-m:1; --press-l:1; } }
+  @media (prefers-reduced-motion:reduce){ :root{ --press-m:1; --press-l:1; --press-s:1; } }
 /* ── body 기본(독립 뷰어) ── */
 * { box-sizing:border-box; }
 html,body { margin:0; height:100%; }
-body { background:var(--yeta-bg,#0d0b12); color:var(--fg); font-family:Pretendard,-apple-system,system-ui,sans-serif; -webkit-font-smoothing:antialiased; overscroll-behavior:none; }
+body { background:
+    radial-gradient(circle at 14% 8%, rgba(255,255,255,.09), rgba(255,255,255,.02) 30%, transparent 52%),
+    radial-gradient(circle at 88% 90%, rgba(255,255,255,.04), transparent 42%),
+    var(--yeta-bg,#0d0b12) fixed; color:var(--fg); font-family:Pretendard,-apple-system,system-ui,sans-serif; -webkit-font-smoothing:antialiased; overscroll-behavior:none; }   /* 근흑 + 소프트 오브 글로우(스크린샷 결 · 무채 흰 알파만 = 글래스 어휘) */
 /* ── 공통 컴포넌트(계승): nm-toast · msgUnfold · dialog · tool-x · gdots ── */
   .nm-toast { position:fixed; left:0; right:0; margin-inline:auto; bottom:calc(86px + env(safe-area-inset-bottom)); transform:translateY(18px);
     z-index:var(--z-float); width:min(92vw,430px); display:flex; align-items:center; gap:9px; padding:11px 15px; cursor:pointer;
@@ -88,7 +83,7 @@ body { background:var(--yeta-bg,#0d0b12); color:var(--fg); font-family:Pretendar
 /* ── yeta 전용 CSS(L309-405) ── */
   /* ── yeta 말벗 제타(#yetadlg · 260703 v2 제타결) — 랜덤 페르소나 톡방. 다크 창(--yeta-bg) + 캐릭터 버블(--bubble-ai·아바타+이름) + 내 버블 제타 보라(--bubble-me) + *나레이션* 이탤릭. 페르소나 색 = --yeta-ac(JS가 roster color 주입 = "캐릭터 따라 톤" 운영자 컨셉) ── */
   #yetadlg { width:min(600px,94vw); height:min(88dvh,760px); padding:0; border:1px solid rgba(255,255,255,.10); border-radius:var(--r-modal);
-    background:var(--yeta-bg); color:var(--fg); overflow:hidden; --yeta-ac:var(--bubble-me);
+    background:radial-gradient(circle at 16% 0%, rgba(255,255,255,.06), transparent 46%), var(--yeta-bg); color:var(--fg); overflow:hidden; --yeta-ac:var(--bubble-me);   /* 메인과 같은 소프트 오브 글로우(260704 V2 한 결) */
     backdrop-filter:none; -webkit-backdrop-filter:none; }   /* 불투명 bg → 전역 dialog blur30 상속 낭비 차단(#editdlg 패턴 · 평의회④) */
   #yetadlg::backdrop { background:rgba(0,0,0,.6); }
   @media (max-width:640px) { #yetadlg { margin:auto; } }   /* 전역 dialog{margin:0}(모바일) 좌상단 쏠림 함정 교정 — #tooldlg 전례(평의회④) */
@@ -177,94 +172,68 @@ body { background:var(--yeta-bg,#0d0b12); color:var(--fg); font-family:Pretendar
   .ypick-row .yp-name { font-weight:var(--fw-x); font-size:var(--fs-h3); }
   .ypick-row .yp-tag { font-size:var(--fs-xs); color:var(--mut); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   /* SNS 메뉴식 캐릭터 선택 리스트(첫 진입) — .ypick-row 계승, stage 전체 오버레이 */
-  .yeta-list { position:absolute; inset:0; z-index:6; overflow-y:auto; padding:var(--sp-2) var(--sp-2) 20px; display:flex; flex-direction:column; gap:4px; }
+  .yeta-list { position:absolute; inset:0; z-index:6; overflow-y:auto; padding:var(--sp-2) var(--sp-2) 20px; display:flex; flex-direction:column; gap:8px; }
   .yeta-list[hidden] { display:none; }
-  .yeta-list .ypick-row { padding:11px 12px; border-radius:var(--r-m); }
+  .yeta-list .ypick-row { padding:11px 12px; border-radius:var(--r-l); background:rgba(255,255,255,.03); border:1px solid var(--line2); }   /* 스크린샷 챗 리스트 = 행마다 은은한 글래스 카드(260704 V2) */
   .yeta-list .ypick-row .yava { width:44px; height:44px; font-size:var(--fs-body); }   /* 목록 아바타 = 조금 크게(얼굴 부각) */
   .yeta-list .yl-dice { margin-top:6px; border:1px dashed var(--line); border-radius:var(--r-m); background:none; color:var(--mut); font:inherit; font-size:var(--fs-sm); font-weight:var(--fw-b); padding:12px; cursor:pointer; text-align:center; touch-action:manipulation; }
   .yeta-list .yl-dice:active { transform:scale(var(--press-l,.96)); }
 
-  /* ═══ YETA 메인 화면 (라이트·PIN 게이트 · 260704 재디자인 V1) — 챗 다크 dialog와 공존 ═══ */
-  body { background:
-      radial-gradient(circle at 84% 12%, rgba(var(--sky-rgb),.85), rgba(var(--accent-2-rgb),.24) 13%, transparent 27%),
-      radial-gradient(circle at 6% 46%, rgba(var(--sky-rgb),.7), transparent 15%),
-      radial-gradient(circle at 70% 92%, rgba(var(--sky-rgb),.5), transparent 22%),
-      linear-gradient(160deg,#eef3ff,#f7f9ff 55%,#eef2fb) fixed; color:var(--m-fg); }
+  /* ═══ YETA 메인 화면 (다크 사인인·타이핑 비밀번호 게이트 · 260704 V2 스크린샷 결) — 챗 다크와 한 팔레트(근흑 --yeta-bg + 글래스 .05/.06 + 네온보라) ═══ */
   .ymain { position:fixed; inset:0; display:flex; flex-direction:column; z-index:1; }
-  .ymain-body { flex:1; display:flex; flex-direction:column; align-items:center; overflow:hidden; padding:0 24px; }
-  .ym-hero { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:26px;
-    transition:flex-grow .5s var(--ease), gap .5s var(--ease), padding .5s var(--ease); }
-  .ym-yeta { font-family:'LEMONMILK',sans-serif; font-weight:700; font-size:64px; line-height:1; letter-spacing:.02em;
-    color:var(--accent-2); transition:font-size .5s var(--ease); }
-  .ym-yeta .t { color:var(--accent-1); }
-  .ym-access { width:56px; height:56px; border-radius:50%; border:none; cursor:pointer; display:grid; place-items:center;
-    background:var(--accent-1); color:#fff; box-shadow:0 8px 22px rgba(var(--accent-1-rgb),.36);
-    transition:transform .28s var(--ease), opacity .35s var(--ease); touch-action:manipulation; }
-  .ym-access:active { transform:scale(var(--press-m)); }
-  .ym-access svg { width:24px; height:24px; }
-  .ym-access-lbl { font-size:12px; font-weight:700; color:var(--m-mut); margin-top:-14px; transition:opacity .3s; }
-  .ym-pin { width:100%; max-width:300px; display:flex; flex-direction:column; align-items:center;
-    opacity:0; transform:translateY(24px); pointer-events:none; height:0; overflow:hidden;
-    transition:opacity .45s var(--ease) .1s, transform .45s var(--ease) .1s; }
-  .ymain.pin-mode .ym-hero { flex-grow:0; gap:0; padding-top:52px; }
-  .ymain.pin-mode .ym-yeta { font-size:40px; }
-  .ymain.pin-mode .ym-access, .ymain.pin-mode .ym-access-lbl { opacity:0; pointer-events:none; height:0; margin:0; }
-  .ymain.pin-mode .ym-pin { opacity:1; transform:none; pointer-events:auto; height:auto; overflow:visible; }
-  /* PIN 키패드 = nomute lk- 이식 · 라이트+코발트 리컬러 */
-  .lk-m { font-size:14px; font-weight:800; color:var(--m-fg2); letter-spacing:-.2px; margin-top:6px; }
-  .lk-slots { display:flex; justify-content:center; gap:15px; margin:22px 0 2px; }
-  .lk-slot { width:16px; height:20px; display:grid; place-items:center; font:400 18px/1 Pretendard,sans-serif; color:var(--pin-ac); opacity:.5; transition:opacity .15s, transform .15s; }
-  .lk-slot::before { content:''; grid-area:1/1; width:13px; height:13px; box-sizing:border-box; border-radius:50%; border:2px solid var(--m-mut); transition:border-color .15s; }
-  .lk-slot.on { opacity:1; }
-  .lk-slot.on::before { content:'*'; width:auto; height:auto; border:none; border-radius:0; font:800 24px/1 ui-monospace,SFMono-Regular,Menlo,monospace; color:var(--pin-ac); transform:translateY(3px); }
-  .lk-slots.bad .lk-slot::before { border-color:var(--m-danger); }
-  .lk-slots.bad .lk-slot.on::before { color:var(--m-danger); }
+  .ymain-body { flex:1; display:flex; flex-direction:column; justify-content:center; gap:26px; overflow:hidden; width:min(92vw,430px); margin:0 auto; padding:0 var(--sp-2); }   /* 폭 = nm-toast min(92vw,430px) 계승 · 좌정렬 사인인(스크린샷 결) */
+  .ym-hero { display:flex; flex-direction:column; gap:8px; }
+  .ym-yeta { font-family:'LEMONMILK',sans-serif; font-weight:700; font-size:64px; line-height:1; letter-spacing:.02em; color:var(--fg); }
+  .ym-yeta .t { color:var(--bubble-me); }   /* 로고 포인트 = 제타 보라(yeta 팔레트 §🎨7 — 스크린샷 라임의 자리) */
+  .ym-sub { font-size:var(--fs-label); color:var(--mut); }
+  /* 사인인 카드 — 스크린샷 '폰 넘버 카드'(라벨 위·값 아래) = 챗 입력칸(.yeta-in textarea) 글래스 플레이트·focus 링 계승 */
+  .ym-sign { display:flex; flex-direction:column; gap:var(--sp-2); }
+  .ym-field { display:flex; flex-direction:column; gap:4px; padding:13px 16px; background:rgba(255,255,255,.05); border:1px solid var(--line); border-radius:var(--r-l); cursor:text; transition:border-color .2s, box-shadow .2s; }
+  .ym-field:focus-within { border-color:var(--bubble-me); box-shadow:0 0 0 2px rgba(255,255,255,.06); }
+  .ym-field.bad { border-color:var(--danger); }
+  .ym-field .fl { font-size:var(--fs-xs); color:var(--mut); }
+  .ym-field input { background:none; border:none; outline:none; padding:0; width:100%; color:var(--fg); font-family:inherit; font-size:var(--fs-h2); font-weight:var(--fw-x); letter-spacing:.35em; }
   @keyframes lkShake { 0%,100%{transform:translateX(0)} 12%{transform:translateX(-9px)} 28%{transform:translateX(8px)} 44%{transform:translateX(-6px)} 60%{transform:translateX(4px)} 76%{transform:translateX(-2px)} }
-  .lk-slots.shake { animation:lkShake .45s cubic-bezier(.36,.07,.19,.97); }
-  .lk-err { color:var(--m-danger); font-size:12px; margin-top:12px; min-height:15px; font-weight:700; }
-  .lk-ok { color:var(--accent-1); font-size:12.5px; margin-top:12px; min-height:15px; font-weight:800; }
-  .lk-pad { display:grid; grid-template-columns:repeat(3,1fr); gap:0; width:100%; max-width:270px; margin:20px auto 0;
-    border:1px solid var(--m-line2); border-radius:16px; overflow:hidden; background:var(--m-glass); backdrop-filter:blur(10px); }
-  .lk-key { height:56px; display:grid; place-items:center; font-size:22px; font-weight:700; color:var(--m-fg); background:none; border:none; cursor:pointer;
-    -webkit-tap-highlight-color:transparent; user-select:none; touch-action:manipulation; transition:background .12s, color .15s, transform .07s; }
-  .lk-key:nth-child(3n+2), .lk-key:nth-child(3n) { border-left:1px solid var(--m-line2); }
-  .lk-key:nth-child(n+4) { border-top:1px solid var(--m-line2); }
-  .lk-key:active { background:rgba(20,30,60,.05); transform:scale(.93); }
-  .lk-key.hit { background:rgba(var(--pin-ac-rgb),.14); color:var(--pin-ac); }
-  .lk-key.empty { pointer-events:none; }
-  .lk-key.back svg { width:25px; height:25px; stroke:var(--m-fg2); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; transition:stroke .15s; }
-  .lk-key.back.hit svg { stroke:var(--pin-ac); }
-  @media (prefers-reduced-motion:reduce){ .lk-slots.shake{animation-duration:.01s} .lk-key:active{transform:none} }
-  /* 하단 네비 — PIN 전 = 메인만, 나머지 잠김 */
-  .ynav { flex:none; display:flex; background:var(--m-glass2); border-top:1px solid var(--m-line2); padding-bottom:calc(5px + env(safe-area-inset-bottom)); backdrop-filter:blur(16px); }
-  .ynav button { flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; padding:8px 0 4px; color:var(--m-mut); font-size:10px; font-weight:700; background:none; border:none; cursor:pointer; position:relative; transition:transform .28s var(--ease), color .2s, opacity .3s; touch-action:manipulation; }
+  .ym-field.shake { animation:lkShake .45s cubic-bezier(.36,.07,.19,.97); }
+  .lk-err { color:var(--danger); font-size:var(--fs-sm); font-weight:var(--fw-b); min-height:15px; }
+  .lk-ok { color:var(--bubble-me); font-size:var(--fs-sm); font-weight:var(--fw-x); min-height:15px; }
+  .ym-go { width:100%; padding:12px; background:rgba(255,255,255,.06); border:1px solid var(--line); border-radius:var(--r-l); color:var(--fg); font-family:inherit; font-size:var(--fs-h3); font-weight:var(--fw-b); cursor:pointer; touch-action:manipulation; transition:transform .28s var(--ease), border-color .2s; }   /* 스크린샷 Sign in = 서브틀 다크 글래스(강조색 아님) */
+  .ym-go:active { transform:scale(var(--press-l)); }
+  .ym-go:focus-visible { outline:none; border-color:var(--bubble-me); box-shadow:0 0 0 2px rgba(255,255,255,.06); }
+  .ym-hint { text-align:center; font-size:var(--fs-sm); color:var(--mut); }   /* 스크린샷 'Sign Up' 푸터의 자리 — 안내만(링크 아님) */
+  .ym-hint b { color:var(--bubble-me); font-weight:var(--fw-b); }
+  .ym-sign, .ym-hint { transition:opacity .45s var(--ease), transform .45s var(--ease); }
+  .ymain.unlocked .ym-sign, .ymain.unlocked .ym-hint { opacity:0; transform:translateY(10px); pointer-events:none; }
+  /* 하단 네비 — 플로팅 글래스 알약(스크린샷 하단바 결) · 글래스 = nm-toast blur18 saturate1.3 계승 · 잠금 = lockdot */
+  .ynav { flex:none; align-self:center; width:min(92vw,430px); display:flex; gap:2px; margin-bottom:calc(10px + env(safe-area-inset-bottom)); padding:5px; background:rgba(255,255,255,.05); border:1px solid var(--line); border-radius:var(--r-pill); backdrop-filter:blur(18px) saturate(1.3); -webkit-backdrop-filter:blur(18px) saturate(1.3); }
+  .ynav button { flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; padding:7px 0 5px; color:var(--mut); font-size:var(--fs-xs); font-weight:var(--fw-b); background:none; border:none; border-radius:var(--r-pill); cursor:pointer; position:relative; transition:transform .28s var(--ease), color .2s, opacity .3s; touch-action:manipulation; }
   .ynav button:active { transform:scale(var(--press-s)); }
-  .ynav button.on { color:var(--accent-1); }
+  .ynav button.on { color:var(--fg); background:rgba(255,255,255,.08); }
   .ynav button.locked { opacity:.4; }
-  .ynav button svg { width:21px; height:21px; }
-  .ynav .lockdot { position:absolute; top:5px; right:calc(50% - 18px); width:11px; height:11px; }
-  .ynav .lockdot svg { width:11px; height:11px; stroke:var(--m-mut); fill:none; stroke-width:2.4; }
+  .ynav button svg { width:20px; height:20px; }
+  .ynav .lockdot { position:absolute; top:4px; right:calc(50% - 18px); width:11px; height:11px; }
+  .ynav .lockdot svg { width:11px; height:11px; stroke:var(--mut); fill:none; stroke-width:2.4; }
   .ymain.unlocked .ynav button.locked { opacity:1; }
   .ymain.unlocked .ynav button.locked .lockdot { display:none; }
-  @media (prefers-reduced-motion:reduce){ .ym-hero, .ym-yeta, .ym-pin, .ym-access, .ynav button { transition:none; } }
+  @media (prefers-reduced-motion:reduce){ .ym-sign, .ym-hint, .ynav button { transition:none; } .ym-field.shake { animation-duration:.01s; } }
 </style>
 </head>
 <body>
-<!-- ═══ YETA 메인 화면 (라이트·PIN 게이트 · 260704 재디자인 V1) ═══ -->
+<!-- ═══ YETA 메인 화면 (다크 사인인·타이핑 비밀번호 게이트 · 260704 V2) ═══ -->
 <div class="ymain" id="ymain">
   <div class="ymain-body">
     <div class="ym-hero">
       <div class="ym-yeta">YE<span class="t">T</span>A</div>
-      <button class="ym-access" id="ymAccess" type="button" aria-label="접속">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>
-      </button>
-      <div class="ym-access-lbl">접속</div>
+      <div class="ym-sub" id="ymSub">무음동 말벗 — 비밀번호를 입력해</div>
     </div>
-    <div class="ym-pin">
-      <div class="lk-m">PIN 입력</div>
-      <div class="lk-slots" id="ymSlots"><span class="lk-slot"></span><span class="lk-slot"></span><span class="lk-slot"></span><span class="lk-slot"></span></div>
-      <div class="lk-err" id="ymErr"></div>
-      <div class="lk-pad" id="ymPad"></div>
+    <div class="ym-sign">
+      <label class="ym-field" id="ymField">
+        <span class="fl">비밀번호</span>
+        <input id="ymPass" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="go" aria-label="비밀번호">
+      </label>
+      <div class="lk-err" id="ymErr" role="alert"></div>
+      <button class="ym-go" id="ymGo" type="button">접속</button>
+      <div class="ym-hint">비밀번호를 몰라? <b>운영자에게</b></div>
     </div>
   </div>
   <nav class="ynav" id="ynav">
@@ -575,54 +544,47 @@ window.addEventListener('popstate', () => { if (_composeRecovering) return; if (
 const _yetaBtnEl = $('#yetaBtn'); if (_yetaBtnEl) _yetaBtnEl.addEventListener('click', e => { e.stopPropagation(); hidePmenu(); openYeta(); });   // pmenu 진입(stopPropagation = #msgbtn 패턴)
 try { if (new URLSearchParams(location.search).get('yeta')) setTimeout(() => openYeta(), 400); } catch {}   // 답장 웹푸시 딥링크(/?yeta=main — sw.js notificationclick)
 
-/* ═══ YETA 메인 PIN 게이트 (nomute lk- 이식 · SHA-256·5회=10분 잠금 · 260704 V1) ═══ */
+/* ═══ YETA 메인 게이트 (다크 사인인 · 타이핑 비밀번호 · SHA-256·5회=10분 잠금 · 260704 V2) ═══ */
 (function () {
-  const ymain = $('#ymain'), slotsEl = $('#ymSlots'), padEl = $('#ymPad'), errEl = $('#ymErr'), accessBtn = $('#ymAccess'), nav = $('#ynav');
-  const YM_PIN_H = 'ce019bfca1b22ed8c7dd882b875e65a97048a467f64d717b4ebb76d1cd644b63';                    // sha256('<PIN>:yeta') — V1 기본 PIN, 운영자 변경 예정
-  const YM_LEN = 4, YM_MAX = 5, YM_OUT_MS = 600000;
-  const BSVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 5H9l-6 7 6 7h11a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1z"/><path d="M16 9l-4 4M12 9l4 4"/></svg>';
-  const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', 'back'];
-  let val = '', unlocked = false;
+  const ymain = $('#ymain'), field = $('#ymField'), pass = $('#ymPass'), errEl = $('#ymErr'), goBtn = $('#ymGo'), subEl = $('#ymSub'), nav = $('#ynav');
+  const YM_PIN_H = '3f42c74934af8ac3c8c670059ab5c63d0f4ed072d922d7a86557162d0b3c96b3';                    // sha256('<비밀번호>:yeta') — 현재 0 6개(운영자 260704 "일단"). 변경 = 이 해시·YM_LEN만 교체
+  const YM_LEN = 6, YM_MAX = 5, YM_OUT_MS = 600000;
+  let unlocked = false, busy = false;
   const ymHash = async p => { const d = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(p + ':yeta')); return [...new Uint8Array(d)].map(b => b.toString(16).padStart(2, '0')).join(''); };
-  padEl.innerHTML = KEYS.map(k => k === '' ? '<button class="lk-key empty" tabindex="-1"></button>' : k === 'back' ? `<button class="lk-key back" data-back="1" aria-label="지우기">${BSVG}</button>` : `<button class="lk-key" data-n="${k}">${k}</button>`).join('');
-  const slots = [...slotsEl.children];
-  const fill = () => slots.forEach((s, i) => s.classList.toggle('on', i < val.length));
-  const flash = el => { if (!el) return; el.classList.add('hit'); setTimeout(() => el.classList.remove('hit'), 140); };
   const outLeft = () => { try { const u = +localStorage.getItem('yeta_pin_until') || 0; return Math.max(0, u - Date.now()); } catch { return 0; } };
-  function setUnlocked() { unlocked = true; ymain.classList.add('unlocked'); }
-  accessBtn.onclick = () => ymain.classList.add('pin-mode');
-  padEl.onclick = async e => {
-    const b = e.target.closest('.lk-key'); if (!b || unlocked) return;
-    if (b.dataset.back) { flash(b); val = val.slice(0, -1); errEl.textContent = ''; errEl.className = 'lk-err'; slotsEl.classList.remove('bad'); fill(); return; }
-    if (outLeft()) { errEl.className = 'lk-err'; errEl.textContent = `PIN 오류 ${YM_MAX}회 — ${Math.ceil(outLeft() / 60000)}분 후 다시`; return; }
-    if (b.dataset.n && val.length < YM_LEN) {
-      flash(b); val += b.dataset.n; fill();
-      if (val.length === YM_LEN) {
-        const h = await ymHash(val);
-        if (h === YM_PIN_H) {
-          try { localStorage.setItem('yeta_pin_ok', '1'); localStorage.removeItem('yeta_pin_fails'); localStorage.removeItem('yeta_pin_until'); } catch {}
-          errEl.className = 'lk-ok'; errEl.textContent = '잠금 해제 — 메뉴 활성'; setUnlocked();
-        } else {
-          let n = 0; try { n = (+localStorage.getItem('yeta_pin_fails') || 0) + 1; localStorage.setItem('yeta_pin_fails', String(n)); if (n >= YM_MAX) localStorage.setItem('yeta_pin_until', String(Date.now() + YM_OUT_MS)); } catch {}
-          slotsEl.classList.add('bad', 'shake'); errEl.className = 'lk-err'; errEl.textContent = n >= YM_MAX ? `PIN 오류 ${YM_MAX}회 — 10분 후 다시` : `PIN 번호가 틀립니다 (${n}/${YM_MAX})`;
-          setTimeout(() => { val = ''; fill(); slotsEl.classList.remove('bad', 'shake'); if (!outLeft()) { errEl.textContent = ''; } }, 1400);
-        }
-      }
+  function setUnlocked() { unlocked = true; ymain.classList.add('unlocked'); subEl.textContent = '연결됨 — 대화 탭에서 시작해'; }
+  function shakeErr(msg) { errEl.className = 'lk-err'; errEl.textContent = msg; field.classList.add('bad', 'shake'); setTimeout(() => field.classList.remove('bad', 'shake'), 500); }
+  async function ymTry() {   // 판정 — 6자리 차면 자동(타이핑만으로 끝) · Enter·접속 버튼 공용
+    if (unlocked || busy) return;
+    if (outLeft()) { pass.value = ''; shakeErr(`비밀번호 오류 ${YM_MAX}회 — ${Math.ceil(outLeft() / 60000)}분 후 다시`); return; }
+    const v = pass.value;
+    if (v.length < YM_LEN) { shakeErr('6자리를 채워줘'); return; }
+    busy = true; const h = await ymHash(v); busy = false;
+    if (h === YM_PIN_H) {
+      try { localStorage.setItem('yeta_pin_ok', '1'); localStorage.removeItem('yeta_pin_fails'); localStorage.removeItem('yeta_pin_until'); } catch {}
+      errEl.className = 'lk-ok'; errEl.textContent = '잠금 해제'; pass.blur(); setUnlocked();
+    } else {
+      let n = 0; try { n = (+localStorage.getItem('yeta_pin_fails') || 0) + 1; localStorage.setItem('yeta_pin_fails', String(n)); if (n >= YM_MAX) localStorage.setItem('yeta_pin_until', String(Date.now() + YM_OUT_MS)); } catch {}
+      pass.value = '';
+      shakeErr(n >= YM_MAX ? `비밀번호 오류 ${YM_MAX}회 — 10분 후 다시` : `비밀번호가 틀립니다 (${n}/${YM_MAX})`);
     }
-  };
+  }
+  pass.addEventListener('input', () => { errEl.textContent = ''; errEl.className = 'lk-err'; field.classList.remove('bad'); if (pass.value.length === YM_LEN) ymTry(); });   // 폰넘버 결 = 그냥 타이핑 → 자동 판정(운영자 260704)
+  pass.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); ymTry(); } });
+  goBtn.addEventListener('click', ymTry);
   try { if (localStorage.getItem('yeta_pin_ok') === '1') setUnlocked(); } catch {}   // 재방문 = 이미 해제면 통과(로컬 소프트 게이트)
   nav.onclick = e => {
     const b = e.target.closest('button'); if (!b) return;
     const tab = b.dataset.tab;
     if (tab === 'main') return;
-    if (!unlocked) { ymain.classList.add('pin-mode'); slotsEl.classList.add('shake'); setTimeout(() => slotsEl.classList.remove('shake'), 450); return; }
+    if (!unlocked) { field.classList.add('shake'); setTimeout(() => field.classList.remove('shake'), 500); pass.focus(); return; }
     if (tab === 'chat') { openYeta(); return; }
     miniToast('준비중 — 곧 열려');   // 캐릭터·설정(다음 머지)
   };
 })();
 /* PWA 서비스워커 등록 */
 try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch {}
-/* ── (V1 260704) 진입점 = 메인 화면(YETA + PIN). 챗 자동오픈·재오픈 제거 — 챗은 PIN 해제 후 '대화' 탭에서만 연다.
+/* ── (V2 260704) 진입점 = 메인 화면(다크 사인인 — YETA + 타이핑 비밀번호). 챗 자동오픈·재오픈 없음 — 챗은 해제 후 '대화' 탭에서만 연다.
       챗 닫기 = 메인 복귀(dialog 아래 .ymain 상주). 딥링크(?yeta=)만 예외 진입(위 L576). ── */
 </script>
 </body>
