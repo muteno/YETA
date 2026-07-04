@@ -12,6 +12,10 @@ on:
         description: '1 = 기존 bg 도 재생성·덮어쓰기(기본 = 빈 슬롯만)'
         required: false
         default: ''
+      only:
+        description: '특정 무대 id 하나만(연결·키 테스트 · 예: tea). 비우면 전체'
+        required: false
+        default: ''
 
 permissions:
   contents: write
@@ -36,6 +40,7 @@ jobs:
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           FORCE: ${{ github.event.inputs.force }}
+          YETA_BG_ONLY: ${{ github.event.inputs.only }}
         run: python3 .github/scripts/yeta_bg.py
 
       - name: roster 커밋 (rebase 재시도 = yeta-face 패턴)

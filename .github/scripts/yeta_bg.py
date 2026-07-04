@@ -147,13 +147,17 @@ def main():
     if not KEY:
         print("GEMINI_API_KEY 없음 — 배경 생성 생략(no-op)"); return 0
     force = os.environ.get("FORCE", "") == "1"
+    only = os.environ.get("YETA_BG_ONLY", "").strip()   # 특정 무대 하나만(연결·키 테스트 · 비용 절감)
     try:
         roster = open(ROSTER, encoding="utf-8").read()
     except OSError:
         print("::error::roster.json 없음"); return 1
 
+    stages = [s for s in STAGES if not only or s[0] == only]
+    if only and not stages:
+        print("::warning::YETA_BG_ONLY={} 가 STAGES에 없음".format(only)); return 0
     made, skipped, failed = 0, 0, 0
-    for key, pids, scene in STAGES:
+    for key, pids, scene in stages:
         # 멱등 — 대상 전원 bg 채워져 있으면 skip(FORCE=1 예외)
         if not force and all(re.search(r'"id"\s*:\s*"%s"[^\n]*"bg"\s*:\s*"[^"]+"' % re.escape(p), roster) for p in pids):
             print("· {} — bg 이미 있음, skip".format(key)); skipped += 1; continue
@@ -188,7 +192,7 @@ def main():
         made += 1
 
     # 무드 배리언트 — roster 무관(뷰어가 base URL에서 규약 파생)이라 멱등 키 = R2 존재(git 폴백은 로컬 파일 존재)
-    for key, _pids, scene in STAGES:
+    for key, _pids, scene in stages:
         for mood, mod in MOODS:
             r2key = "yeta_bg/{}_{}.png".format(key, mood)
             local = os.path.join(LOCAL_DIR, "{}_{}.png".format(key, mood))
