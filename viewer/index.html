@@ -187,8 +187,9 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
 
   /* ═══ YETA 메인 화면 (다크·PIN 게이트 · 260704 브랜드 통일 — 스포티파이 블랙+라임 글래스) ═══ */
   body { background:
-      radial-gradient(circle at 84% 10%, rgba(var(--accent-rgb),.10), transparent 32%),
-      radial-gradient(circle at 8% 88%, rgba(var(--cobalt-rgb),.12), transparent 34%),
+      radial-gradient(circle at 50% 54%, rgba(var(--accent-rgb),.15), transparent 30%),
+      radial-gradient(circle at 86% 12%, rgba(var(--accent-rgb),.09), transparent 30%),
+      radial-gradient(circle at 10% 90%, rgba(var(--cobalt-rgb),.14), transparent 34%),
       var(--bg) fixed; color:var(--fg); }
   .ymain { position:fixed; inset:0; display:flex; flex-direction:column; z-index:1; }
   .ymain-body { flex:1; display:flex; flex-direction:column; align-items:center; overflow:hidden; padding:0 24px; }
@@ -202,7 +203,12 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
     transition:transform .28s var(--ease), opacity .35s var(--ease); touch-action:manipulation; }
   .ym-access:active { transform:scale(var(--press-m)); }
   .ym-access svg { width:24px; height:24px; }
-  .ym-access-lbl { font-size:12px; font-weight:700; color:var(--mut); margin-top:-14px; transition:opacity .3s; }
+  .ym-access-lbl { font-size:12px; font-weight:700; color:var(--mut); margin-top:0; transition:opacity .3s; }
+  /* 글래스모피즘 히어로 카드 — 접속 CTA 프로스티드 글래스(레퍼런스 계승 · --glass-2·--glass-line·--blur-l · 260704) */
+  .ym-access-card { display:flex; flex-direction:column; align-items:center; gap:8px; padding:26px 52px 22px; border-radius:var(--r-modal);
+    background:var(--glass-2); border:1px solid var(--glass-line); backdrop-filter:blur(var(--blur-l)); -webkit-backdrop-filter:blur(var(--blur-l));
+    box-shadow:inset 0 1px 0 var(--glass-line), 0 24px 60px rgba(0,0,0,.42); transition:opacity .4s var(--ease), transform .4s var(--ease); }
+  .ymain.pin-mode .ym-access-card { opacity:0; transform:scale(.92); height:0; padding:0; margin:0; overflow:hidden; pointer-events:none; }
   .ym-pin { width:100%; max-width:300px; display:flex; flex-direction:column; align-items:center;
     opacity:0; transform:translateY(24px); pointer-events:none; height:0; overflow:hidden;
     transition:opacity .45s var(--ease) .1s, transform .45s var(--ease) .1s; }
@@ -255,10 +261,12 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   <div class="ymain-body">
     <div class="ym-hero">
       <div class="ym-yeta">YE<span class="t">T</span>A</div>
-      <button class="ym-access" id="ymAccess" type="button" aria-label="접속">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>
-      </button>
-      <div class="ym-access-lbl">접속</div>
+      <div class="ym-access-card">
+        <button class="ym-access" id="ymAccess" type="button" aria-label="접속">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>
+        </button>
+        <div class="ym-access-lbl">접속</div>
+      </div>
     </div>
     <div class="ym-pin">
       <div class="lk-m">PIN 입력</div>
