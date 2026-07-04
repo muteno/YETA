@@ -13,7 +13,7 @@
     /* 강조2 — 코발트 형광(보조강조·링크/정보·대비 · 운영자 260704) */
     --cobalt:#3D6BFF; --cobalt-rgb:61,107,255;
     /* 글래스모피즘 — 프로스티드 표면·엣지 하이라이트(구성도 표면3단 계승·260704) */
-    --glass:rgba(255,255,255,.055); --glass-2:rgba(255,255,255,.09); --glass-line:rgba(255,255,255,.14);
+    --glass:rgba(255,255,255,.04); --glass-2:rgba(255,255,255,.09); --glass-line:rgba(255,255,255,.14);
     /* 그림자·배경 스크림(절대1: raw 금지→토큰 · 260704) */
     --shadow-card:0 24px 60px rgba(0,0,0,.42); --bg-scrim:linear-gradient(transparent 44%,rgba(0,0,0,.5) 76%,rgba(0,0,0,.85));
     /* 의미색 */
@@ -37,6 +37,8 @@
     --press-m:.9; --press-l:.95; --press-s:.9;
     /* PIN·핀 액티브 = 브랜드 라임(옛 라이트/코발트 팔레트 폐지 → 다크·그린 통일 260704) */
     --pin-ac:var(--accent); --pin-ac-rgb:var(--accent-rgb);
+    /* 디스플레이/테크 폰트 토큰(포스터 첨부2 정합 LEMONMILK · 사이버펑크 Chakra Petch · 운영자 260704 승인) */
+    --font-display:'LEMONMILK',system-ui,sans-serif; --font-tech:'Chakra Petch',ui-monospace,monospace;
   }
 /* === AUTO-MIRROR:END === */
 /* ↑ 토큰값은 전부 viewer :root에서 옴(--arm·--font-status 포함). base.css에 토큰 인라인 재정의 금지. */

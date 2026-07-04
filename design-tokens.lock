@@ -50,6 +50,9 @@
 --btn
 
 # ── 타이포 ──
+# 디스플레이/테크 폰트 — 운영자 260704 승인(포스터 첨부2 정합 LEMONMILK · 사이버펑크 HUD Chakra Petch)
+--font-display
+--font-tech
 --fs-h2
 --fs-h3
 --fs-body
