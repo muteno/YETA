@@ -357,7 +357,7 @@ function yView(mode) {   // 'list' ↔ 'chat' 헤더·영역 토글
   if (list) { $('#yetaTitle').textContent = '무음동 사람들'; $('#yetaTag').textContent = '대화할 상대를 골라'; yStopPoll(); yPickToggle(false); }
 }
 function yRenderList() {   // 캐릭터 = SNS 리스트(.ypick-row 계승) + 🎲 랜덤
-  $('#yetaList').innerHTML = YCHARS.map(c => `<button type="button" class="ypick-row" data-id="${esc(c.id)}">${yAva(c)}<span class="yp-col"><span class="yp-name">${esc(c.name)}</span><span class="yp-tag">${esc(c.tagline || '')}</span></span></button>`).join('')
+  $('#yetaList').innerHTML = YCHARS.map(c => `<button type="button" class="ypick-row" data-id="${esc(c.id)}">${yAva(c)}<span class="yp-col"><span class="yp-name">${esc(c.name)}${window.yPremBadge ? yPremBadge(c) : ''}</span><span class="yp-tag">${esc(c.tagline || '')}</span></span></button>`).join('')
     + `<button type="button" class="yl-dice" id="ylDice">🎲 랜덤으로 만나기</button>`;
 }
 function yShowList() { yRenderList(); yView('list'); }
@@ -470,6 +470,7 @@ async function yLoad() {
   if (r.setup) { $('#yetaLog').innerHTML = '<div class="yeta-setup">⚠️ 저장소(R2) 미설정 — 셋업 후 대화가 켜져.</div>'; $('#yetaIn').hidden = true; return; }
   if (!r.ok) { $('#yetaLog').innerHTML = `<div class="yb fail">${esc(r.error || '로드 실패')}</div>`; return; }
   YSESS = r.sess || {};
+  if (window.YCALL) YCALL.onSess(YSESS);   // [call 모듈 훅 ①] 걸려오는 전화·무전 답장 음성 — viewer/call.js(플러그인 · 제거 = 이 줄 + 하단 script 태그)
   if (!YSESS.persona) { if (_yView !== 'list') yShowList(); return; }   // 페르소나 없음 = SNS 선택 리스트(랜덤 자동진입 폐지)
   const c = yPersona(YSESS.persona);
   if (!c) { if (_yView !== 'list') yShowList(); return; }   // 스테일 persona(로스터에 없는 id) → 죽은 대화방(YCUR=null) 대신 리스트 폴백(분신술 A7)
@@ -486,7 +487,7 @@ function yIntroHtml(c) {   // 방 상단 캐릭터 소개 = 아바타(큰) + 이
   if (!c) return '';
   const tag = c.tagline ? `<span class="yintro-tag">${esc(c.tagline)}</span>` : '';
   const desc = c.intro ? `<span class="yintro-desc">${esc(c.intro)}</span>` : '';
-  return `<div class="yintro">${yAva(c, 'yintro-ava')}<span class="yintro-name">${esc(c.name || '')}</span>${tag}${desc}<span class="yintro-sep"></span></div>`;
+  return `<div class="yintro">${yAva(c, 'yintro-ava')}<span class="yintro-name">${esc(c.name || '')}${window.yPremBadge ? yPremBadge(c) : ''}</span>${tag}${desc}<span class="yintro-sep"></span></div>`;
 }
 function yAiMsg(t, fresh, cont) {   // 캐릭터 메시지 = 아바타 + 이름 + 버블(+다이얼 캡션) · fresh=신규만 촤르륵 · cont=직전과 같은 화자(아바타·이름 생략 = 톡방 그룹핑)
   const p = yPersona(t.persona) || YCUR || {};
@@ -632,5 +633,6 @@ try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js'
 /* ── (V1 260704) 진입점 = 메인 화면(YETA + PIN). 챗 자동오픈·재오픈 제거 — 챗은 PIN 해제 후 '대화' 탭에서만 연다.
       챗 닫기 = 메인 복귀(dialog 아래 .ymain 상주). 딥링크(?yeta=)만 예외 진입(위 L576). ── */
 </script>
+<script src="call.js" defer></script>   <!-- [call 모듈 훅 ②] yeta 음성 모듈(걸려오는 전화 + 무전기 PTT + 프리미엄 배지) — 플러그인 · 제거 = 이 태그 + yLoad 훅 ① -->
 </body>
 </html>

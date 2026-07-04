@@ -36,13 +36,18 @@
 7. **색 = yeta 브랜드 팔레트 v2**(260704 운영자 그린 전환): 강조1 브랜드 라임 `--accent:#CFFF40`·강조2 코발트 형광 `--cobalt:#3D6BFF`·뉴트럴 흰(`--fg`)/스포티파이블랙(`--bg:#121212`)·글래스모피즘(`--glass*`·`--blur-*`). 강조는 **이 2색만**, 나머지 흰/근흑. 옛 네온보라(`--bubble-me`)·라이트 코발트/오렌지(`--accent-1/2`·`--m-*`) 폐지 → 전체 다크·그린 통일(챗 버블 포함). 구조 토큰(반지름·간격·타이포·모션·눌림) 계승은 그대로.
 
 ## 🗺 구조
-- `viewer/` = 뷰어. `index.html`(값 SSOT `:root` + yeta UI) · `tokens.css`(구조토큰 거울) · `nm-svg.js`(아이콘 SSOT) · `_headers`(정적 no-cache)
+- `viewer/` = 뷰어. `index.html`(값 SSOT `:root` + yeta UI) · `tokens.css`(구조토큰 거울) · `nm-svg.js`(아이콘 SSOT) · `call.js`(**음성 모듈** — 아래 ☎️) · `_headers`(정적 no-cache)
 - `functions/api/yeta.js` = Cloudflare Pages Function 게이트웨이. 9 op = `chars`(로스터)·`get`(세션)·`send`(유저턴+dispatch)·`draw`(페르소나 뽑기)·`warm`(프리웜)·`retry`(재시도)·`ring`(전화 요청 dispatch — ⚠️유료 TTS 가드 = 일 상한 기본 3 `YETA_CALL_MAX_PER_DAY`)·`voice`(통화 음성 스트림 — 비공개 R2 `voice/`만)·`reset`. `REPO='muteno/yeta'`·`originOk`=`.pages.dev`.
 - `functions/_middleware.js` = pages.dev 우회차단 리다이렉트 **자리(현재 무력화)**. 커스텀 도메인+Access 붙일 때 재활성(⚠️ `yeta.js` originOk도 **동시** 수정 — 안 하면 403 자폭). **현재 = originOk가 `.pages.dev`+`soong.kr`(루트+서브) 허용**(260704 · nomute 도메인 미사용)·**라이브 = `https://yeta.soong.kr`**(+ `soong.kr` 루트 · 둘 다 활성·SSL·실측 통과 260704)·**무인증 공개**(운영자 260704 '공개 유지' — 언제든 Zero Trust Access로 잠금 가능).
 - `.github/workflows/yeta-chat.yml` + `.github/scripts/yeta_chat.sh` = 답장 생성(claude -p·페르소나 카드 주입·웜 루프). `push_send.py` = 실패 웹푸시.
 - `.github/workflows/yeta-face.yml` + `.github/scripts/yeta_face.py` = 캐릭터 얼굴(프로필) 생성 — **수동 dispatch 전용**(OpenAI gpt-image·⚠️유료 종량제·챗 구독OAuth와 별개 축). 10인 1:1 초상 → 공개 R2 `yeta_face/` → `roster.json` `avatar` 주입 커밋. 멱등(채워진 건 skip·`force=1` 재생성)·자립형(thumb_gen 의존 없음). 얼굴 산출물은 이미 roster에 주입됨 = 이건 *재생성* 도구(260703 이식).
 - `.github/workflows/yeta-bg.yml` + `.github/scripts/yeta_bg.py` = 무대 **배경**(bg) 생성 — **수동 dispatch 전용**(Gemini `gemini-3.1-flash-image`·⚠️유료·챗 구독OAuth와 별개 축). 무음동 8무대 9:16(+무드 배리언트 warm/tense/blue = `<<MOOD:x>>` 크로스페이드용) → 공개 R2 `yeta_bg/` → `roster.json` `bg` 주입. 멱등(채워진 건 skip·R2 기존 객체 재과금0·`force=1` 재생성)·자립형(thumb_gen 의존 제거·Gemini 호출·R2 업로드 인라인·260704 이식). 배경도 이미 roster 주입 완료 = *재생성/신규 무드* 도구.
-- `.github/workflows/yeta-call.yml` + `.github/scripts/yeta_call.sh` = **걸려오는 전화 v1**(260704 · 수신 UI 미구현 = 기능부만) — 발신자 선정(입력→세션 페르소나→랜덤) → 첫마디 생성(claude -p·구독 OAuth 폴오버) → OpenAI TTS(⚠️유료 `gpt-4o-mini-tts`·페르소나별 보이스 매핑·실패=무음 전화) → 음성 mp3 = **비공개** 세션 R2 `voice/`(대사=대화 내용 → 공개 버킷·git 커밋 금지 · 서빙=op `voice`) → 세션 `kind:'call'` 턴 + `sess.call` 마커(수신 UI 훅) append + 웹푸시 "전화가 왔어". 트리거 = 수동 dispatch 또는 op `ring` · **cron 자동 트리거 금지**(face/bg 동일 원칙). 대화 중(pending 유저 턴)엔 안 걸림 + 반영 직전 fresh 재-read 재확인(챗 우선·매몰 방지).
+- ☎️ **음성 축**(260704 · 요구사항 정본 = `docs/reports/260704_전화무전기보이스_보고서.html`) — 4조각:
+  - **걸려오는 전화** `.github/workflows/yeta-call.yml`+`yeta_call.sh` — 발신자(입력→세션→랜덤) → 첫마디(claude -p·OAuth 폴오버) → TTS(`yeta_tts.py`) → mp3=**비공개** R2 `voice/`(대사=대화 내용 → 공개 버킷·git 금지 · 서빙=op `voice`) → `kind:'call'` 턴+`sess.call` 마커+웹푸시. 트리거=수동 dispatch/op `ring`(일 상한 기본3) · cron 금지. 대화 중(pending) 생략+반영 직전 fresh 재확인.
+  - **보이스 클로닝(프리미엄)** `yeta-voice.yml`+`yeta_voice_clone.py` — 운영자 1분 샘플(**비공개** R2 `voice_samples/<id>.mp3`) → ElevenLabs IVC → roster `"voice":"el:<id>"` 주입 커밋 = **프리미엄 캐릭터**(전용 음색 · 뷰어 `보이스` 배지). TTS SSOT=`yeta_tts.py`: el: 우선 → oa:/OpenAI 프리셋 폴백 → 둘 다 없으면 무음. 대안 축(비용): Fish($15/M자)·MiniMax($1.5/클론).
+  - **무전기(PTT)** — 뷰어 `call.js`가 입력행에 마이크 주입 → STT 3단(Web Speech ko-KR → op `stt` Workers AI Whisper[⚠️iOS 설치형 PWA는 Web Speech 불가·실측] → 타이핑) → 기존 send 파이프(`ptt:1`·**sonnet-5×low 고정** = 응답속도) → 답장 텍스트 먼저, `ptt_voice()`가 음성 합성 후 턴 `voice` 키 부착 → 뷰어 WebAudio 자동재생. 실시간 아님 = "무전기 수신" 페이스(운영자 판정 260704: 전화 명명은 10초 내 응답만).
+  - **실전화(PSTN) 스캐폴드** op `phone` — Vapi 아웃바운드(등록 번호 `YETA_PHONE_TO` 시크릿 · 페르소나별 Vapi assistant id = roster `"phone"`). env 3종(VAPI_API_KEY·VAPI_PHONE_ID·YETA_PHONE_TO) 전부 있어야 활성 · 일 상한 기본2(`YETA_PHONE_MAX_PER_DAY`) · 실질 ~$0.15~0.35/분(Twilio KR $0.052/분 포함) · 지연 ~1초대 = 전화 판정 통과 축.
+  - **뷰어 모듈 계약**(`viewer/call.js` = 플러그인·제거=훅 삭제): 훅① `yLoad`의 `YCALL.onSess(YSESS)` · 훅② `<script src="call.js" defer>` · 훅③ 이름 옆 `yPremBadge(c)`. 소비 규약 = localStorage `yeta_call_seen`·벨 TTL 120s·타임아웃 45s·자체 폴 20s(챗 폴 비활성 시만).
 - `shared/` = `claude_transient.sh`(폴오버 SSOT)·`claude_meter.sh`·`inject_character.sh`(카드 강제주입) · `check_refs.py`(게이트)·`build_design_mirror.py`(거울 빌드).
 - `apps/yeta/` = 캐릭터 **10인**(`characters/*.md`)·`roster.json`(뷰어 표시 SSOT)·`apps/yeta/00_지침_캐릭터챗.md`·`apps/yeta/10_세계관.md`·`apps/yeta/PEXELS_배경_큐레이션_설계.md`.
 - `구성도/`·`docs/CII_컴포넌트계승인덱스.md` = 디자인 블루프린트·계승 인덱스.
@@ -56,13 +61,15 @@
 - **Cloudflare Pages**: build command **공란**(정적 서빙 · build-viewer 불필요) · output **`viewer`** · `functions/` 자동 인식.
 - **R2 바인딩** `YETA_R2`(비공개 세션 버킷) + Pages env `GH_TOKEN`(actions:write PAT) · `YETA_MAX_PER_DAY`(선택).
 - **GitHub Secrets**: `CLAUDE_CODE_OAUTH_TOKEN_MUTENO`(필수·가장 먼저) · `R2_ACCOUNT_ID`·`R2_ACCESS_KEY_ID`·`R2_SECRET_ACCESS_KEY`·`YETA_R2_BUCKET` · `VAPID_PRIVATE_KEY`/`VAPID_SUBJECT`(푸시). Variable `ACTIVE_ACCOUNT`(기본 MUTENO). **3계정 폴오버** MUTENO→NOMUTEFB→EMS1130G(운영자 260704·⚠️쿼터 nomute 공유).
+- **음성 축 시크릿(선택·⚠️전부 유료)**: `ELEVENLABS_API_KEY`(클로닝+프리미엄 TTS · Starter $5/월=IVC+30k자) · Pages env `YETA_CALL_MAX_PER_DAY`(기본3)/`YETA_PHONE_MAX_PER_DAY`(기본2) · 실전화 3종 `VAPI_API_KEY`·`VAPI_PHONE_ID`·`YETA_PHONE_TO`(등록 번호 — 번호는 시크릿만·코드 박제 금지) · op `stt` = Pages **AI 바인딩**(Workers AI Whisper·무료 티어). 미설정 = 각 기능 조용히 비활성(무음 전화/501 안내).
 - **레포 = public**(roster raw fetch 전제). **첫 실행 순서**: OAuth 토큰을 R2보다 **먼저**(없으면 잡 RED).
 - ⚠️ **보안**: middleware 무력화 = `yeta.pages.dev` 무인증 공개. Access 없이 `YETA_R2` 바인딩하면 **대화 노출** → 커스텀 도메인+Cloudflare Access 후 배포(또는 pages.dev에 Access 직접 부착).
 - **이미지 파이프(선택·수동)** — 얼굴 `yeta-face.yml`(OpenAI `gpt-image` · GH Secret `OPENAI_API_KEY`, 폴백 `OPENAI_API_KEY_nomute`) · 배경 `yeta-bg.yml`(Gemini `gemini-3.1-flash-image` · GH Secret `GEMINI_API_KEY`). 둘 다 **공개** R2 `R2_BUCKET`·`R2_PUBLIC_BASE`(계정키 `R2_ACCOUNT_ID`/`R2_ACCESS_KEY_ID`/`R2_SECRET_ACCESS_KEY`는 챗과 공용)에 올림. ⚠️ **공개 버킷은 비공개 세션 `YETA_R2_BUCKET`과 별도**(하나는 public 접근 켜야 함) — 공개 R2 5개 없으면 git 폴백(`viewer/assets/yeta_face|yeta_bg/` 커밋). ⚠️ **유료 종량제 = 자동 트리거 금지·수동 dispatch만**. 얼굴·배경은 이미 생성·주입 완료(현재 **nomute R2** `pub-83f8…r2.dev` 서빙)라 이 시크릿·공개버킷은 *재생성/신규 무드·완전독립 이전* 시에만 필요.
 
 ## 🤖 모델
-- 답장 생성 = **opus 4.8**(`claude-opus-4-8`) 기본 · sonnet-5 다이얼 선택 · effort는 다이얼.
-- ⚠️ **`--bare` 절대 금지**(OAuth 안 읽어 인증 즉사). `--safe-mode`는 카나리아 통과 후(`YETA_SAFE`).
+- 답장 생성 = **opus 4.8**(`claude-opus-4-8`) 기본 · sonnet-5 다이얼 선택 · effort는 다이얼 · **무전기(PTT) 턴 = sonnet-5×low 고정**(응답속도).
+- 🔒 **런타임은 CLAUDE.md 미참조**(운영자 260704): CLAUDE.md = Claude Code **개발 세션 전용**. 생성 경로(`claude -p`)는 `--safe-mode` **기본**(auto-discovery 스킵 = 턴당 ~37k 토큰 절약 · 회귀 노브 `YETA_SAFE=0`). 파이프라인 코드가 CLAUDE.md 를 읽거나 프롬프트에 싣는 것 금지.
+- ⚠️ **`--bare` 절대 금지**(OAuth 안 읽어 인증 즉사 — `--safe-mode`와 별개 축).
 - 폴오버 = 3계정 로테이션 MUTENO→NOMUTEFB→EMS1130G(⚠️쿼터 nomute 공유·운영자 260704). 세션 작업자·검증은 opus 4.8 유지.
 
 ## ✂️ 수정·검증·커밋

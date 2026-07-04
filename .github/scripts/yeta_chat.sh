@@ -15,7 +15,7 @@ CHAR="${YETA_CHAR:?세션 id 필요(env YETA_CHAR — 단일 스레드 = main)}"
 DEFAULT_MODEL="claude-opus-4-8"   # D1 = 세션급(운영자 확정)
 DEFAULT_EFF="low"                 # 30초 컷 — effort 미지정은 CLI 기본(high)로 돌아 느림 → 기본 low(아이데이션①)
 SAFE=""
-case "${YETA_SAFE:-0}" in 1|true|on) SAFE="--safe-mode" ;; esac   # 카나리아 후 승격(§📰) · ⚠️ --bare 절대 금지(OAuth 즉사)
+case "${YETA_SAFE:-1}" in 1|true|on) SAFE="--safe-mode" ;; esac   # 기본 ON — 런타임은 CLAUDE.md 미주입(개발 세션 전용 · 턴당 ~37k 토큰 절약 · 운영자 260704 · 회귀=YETA_SAFE=0) · ⚠️ --bare 절대 금지(OAuth 즉사)
 export CLAUDE_BARE=0              # 방어 명시 — 공유 기본값이 미래에 ON 회귀해도 챗은 불가(평의회①)
 RECENT_TURNS="${YETA_RECENT_TURNS:-8}"
 INLINE_TRIES=3
@@ -67,6 +67,7 @@ note_me = ((s.get("notes") or {}).get(persona)) or ""
 print(json.dumps({"note_pub": note_pub, "note_me": note_me, "hist": hist, "pending": "\n".join(pending), "ins": ins,
                   "anchor_ts": last_u.get("ts"),   # 마지막 pending 유저 턴 ts = insert 앵커(인덱스 대신 = 400 트림/시프트 면역)
                   "persona": persona,
+                  "ptt": 1 if last_u.get("ptt") else 0,   # 무전기(PTT) 턴 = 답장 반영 후 음성 합성(ptt_voice)
                   "model": last_u.get("model") or pref.get("model") or "",
                   "effort": last_u.get("effort") if isinstance(last_u.get("effort"), str) else (pref.get("effort") or "")},
                  ensure_ascii=False))
@@ -157,6 +158,41 @@ PY
   esac
 }
 
+# 무전기(PTT) 답장 음성 — 텍스트 답장 반영 *후* 합성·부착(텍스트 지연 0 · 음성은 수 초 뒤 폴이 픽업 = "무전기 수신" 페이스).
+# TTS SSOT = yeta_tts.py(클론 보이스 el: 우선 = 프리미엄 · ⚠️유료 = ptt 턴에서만 발동) · 전 단계 fail-soft(텍스트 답장은 이미 확정).
+ptt_voice() {   # $1 = claude 원문 출력(NOTE/MOOD 포함) — env: PERSONA
+  local spoken vkey
+  spoken="$(python3 - "$1" <<'PY'
+import re, sys
+t = sys.argv[1]
+t = re.split(r'<<\s*NOTE(?:\s*:\s*\w+)?\s*>>', t, flags=re.I)[0]
+t = re.sub(r'<<\s*/?\s*(?:NOTE|MOOD)(?:\s*:\s*\w+)?\s*>>', '', t, flags=re.I)
+t = re.sub(r'\*[^*\n]{1,200}\*', '', t)          # *지문* = 소리 아님(finish 턴 텍스트에는 유지 — 화면용)
+t = re.sub(r'[`*_]', '', t)
+t = re.sub(r'\s+', ' ', t).strip()
+print(t[:600])                                     # TTS 비용 가드(답장 상한)
+PY
+)"
+  [ -n "$spoken" ] || return 0
+  rm -f /tmp/yeta_ptt.mp3
+  python3 .github/scripts/yeta_tts.py "$PERSONA" "$spoken" /tmp/yeta_ptt.mp3 || { echo "  PTT TTS 실패/미설정 — 텍스트만"; return 0; }
+  vkey="voice/reply-${PERSONA}-$(date +%s).mp3"
+  aws s3 cp /tmp/yeta_ptt.mp3 "s3://${YETA_R2_BUCKET}/${vkey}" --endpoint-url "$EP" --content-type audio/mpeg --only-show-errors || return 0
+  r2get || return 0   # fresh 재-read — 방금 반영한 답장 턴에 voice 키 부착(끝의 마지막 assistant 턴)
+  VKEY="$vkey" PERSONA="$PERSONA" python3 - "$SESS" <<'PY' || return 0
+import json, os, sys, time
+s = json.load(open(sys.argv[1], encoding="utf-8"))
+for t in reversed(s.get("turns") or []):
+    if t.get("role") == "assistant":
+        if t.get("persona") == os.environ["PERSONA"] and not t.get("voice"):
+            t["voice"] = os.environ["VKEY"]; s["updated"] = int(time.time() * 1000)
+            json.dump(s, open(sys.argv[1], "w", encoding="utf-8"), ensure_ascii=False)
+        break
+PY
+  r2put || true
+  echo "  PTT 음성 부착 — ${vkey}"
+}
+
 # per-reply 웹푸시 — 웜 런은 답장 후에도 살아있으므로 잡끝 푸시는 최대 5분 지연(아이데이션③ g) → 즉시 발송. tag 교체 = 중복 무해.
 push_reply() {
   [ -n "${VAPID_PRIVATE_KEY:-}" ] || return 0
@@ -175,7 +211,7 @@ process_turn() {
   [ "$mat" = "NOPENDING" ] && return 2
   [ -n "$mat" ] || { echo "::error::세션 파싱 실패(malformed) — state 미변경"; return 1; }
   NOTE_PUB="$(matv note_pub)"; NOTE_ME="$(matv note_me)"; HIST="$(matv hist)"; PENDING="$(matv pending)"
-  INS="$(matv ins)"; ANCHOR_TS="$(matv anchor_ts)"; PERSONA="$(matv persona)"
+  INS="$(matv ins)"; ANCHOR_TS="$(matv anchor_ts)"; PERSONA="$(matv persona)"; PTT="$(matv ptt)"
   RAW_MODEL="$(matv model)"; RAW_EFF="$(matv effort)"
   case "$RAW_MODEL" in claude-opus-4-8|claude-sonnet-5) MODEL="$RAW_MODEL" ;; *) MODEL="$DEFAULT_MODEL" ;; esac   # 화이트리스트 재강제(방어 심층 · 아이데이션④)
   case "$RAW_EFF" in low|medium|high|max) EFF="$RAW_EFF" ;; "") EFF="" ;; *) EFF="$DEFAULT_EFF" ;; esac
@@ -246,7 +282,7 @@ ${PENDING}
     finish error "답장 생성 실패(rc=$rc)"; return 1
   fi
   finish ok "$out" || { echo "::error::세션 반영 실패(R2 put)"; return 1; }
-  [ "$_did_reply" = 1 ] && { echo "yeta: 답장 완료(${#out}자 · ${GEN_S}s)"; push_reply; }
+  [ "$_did_reply" = 1 ] && { echo "yeta: 답장 완료(${#out}자 · ${GEN_S}s)"; push_reply; [ "$PTT" = "1" ] && ptt_voice "$out"; }
   return 0
 }
 

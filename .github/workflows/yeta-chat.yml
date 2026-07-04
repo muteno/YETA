@@ -77,11 +77,14 @@ jobs:
           # 웜 루프 내 per-reply 즉시 푸시용(잡끝 푸시는 웜 대기만큼 지연 — 아이데이션③) · 없으면 스크립트가 조용히 생략
           VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
           VAPID_SUBJECT: ${{ secrets.VAPID_SUBJECT }}
-          # YETA_SAFE: '1'  ← --safe-mode 승격 지점(카나리아 rc=0·품질 실측 후 이 줄 활성 · §📰 라이브 플래그 절차 · 기본 OFF)
+          # 무전기(PTT) 답장 음성 — ⚠️유료 TTS·ptt 턴에서만 발동(yeta_tts.py — 클론 el: 우선·OpenAI 폴백 · 없으면 텍스트만)
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY_nomute || secrets.OPENAI_API_KEY }}
+          # YETA_SAFE 기본 ON(스크립트) = 런타임 CLAUDE.md 미주입(개발 세션 전용 · 운영자 260704) · 회귀 = YETA_SAFE: '0'
         run: |
           [ -n "${CLAUDE_CODE_OAUTH_TOKEN}" ] || { echo "::error::OAuth 토큰 없음"; exit 1; }
           [ -n "${YETA_R2_BUCKET}" ] || { echo "YETA_R2_BUCKET 미설정 — 스캐폴드 no-op(운영자 R2 셋업 대기)"; exit 0; }
-          unset ANTHROPIC_API_KEY ANTHROPIC_AUTH_TOKEN GDRIVE_SA_JSON GEMINI_API_KEY   # 유료 자동발사 오염 0(§📰 Lock 정신)
+          unset ANTHROPIC_API_KEY ANTHROPIC_AUTH_TOKEN GDRIVE_SA_JSON GEMINI_API_KEY   # 유료 자동발사 오염 0(§📰 Lock 정신 · OPENAI/ELEVENLABS 는 PTT 음성 의도 사용)
           bash .github/scripts/yeta_chat.sh
 
       # (성공 푸시는 스크립트가 웜 루프 안에서 답장마다 즉시 발송 — push_reply() · 잡끝 스텝은 웜 대기만큼 지연이라 폐지 · 아이데이션③)

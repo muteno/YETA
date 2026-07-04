@@ -9,10 +9,15 @@
 //   retry {}                       : 원탭 재시도 — 실패(state=error) pending 유저 턴 재발사(새 턴 추가 X)
 //   ring  {persona?}               : 걸려오는 전화 요청 → yeta-call.yml dispatch(⚠️ TTS 유료 → 일 상한 기본 3 · YETA_CALL_MAX_PER_DAY)
 //   voice {key}                    : 통화 음성 스트림 — 비공개 버킷 voice/ 만(대사=대화 내용 → 공개 버킷 금지 · 동일출처 게이트)
+//   stt   {audio}                  : 무전기 STT 폴백(base64 webm/ogg → 텍스트) — iOS 설치형 PWA 는 Web Speech 불가(실측 260704)
+//                                    → Workers AI Whisper(env.AI 바인딩 게이트 · 미설정 501 = 뷰어가 타이핑 폴백 안내)
+//   phone {}                       : ☎️ 실전화(PSTN·Vapi) 스캐폴드 — 등록 번호로 실제 발신(⚠️분당 과금 · env 3종 게이트 · 일 상한 기본 2)
 //   reset {}                       : 세션 초기화(페르소나도 비움 → 다음 진입 시 재뽑기)
 // 저장 = R2 비공개 버킷 바인딩 env.YETA_R2 (⚠️ 대화는 public 레포 커밋 절대 금지 — 계획안 D2).
 // 게이트: Cloudflare Access(도메인 전체 자동 계승) + originOk(CSRF) + 일 상한 = D4 무제한(env YETA_MAX_PER_DAY 양수로만 발동).
-// env: GH_TOKEN(Actions write) · YETA_R2(R2 바인딩) · YETA_MAX_PER_DAY(선택) · YETA_CALL_MAX_PER_DAY(선택·기본 3 — 유료 TTS 가드).
+// env: GH_TOKEN(Actions write) · YETA_R2(R2 바인딩) · YETA_MAX_PER_DAY(선택) · YETA_CALL_MAX_PER_DAY(선택·기본 3 — 유료 TTS 가드)
+//      AI(선택 · Workers AI 바인딩 = op stt) · VAPI_API_KEY+VAPI_PHONE_ID+YETA_PHONE_TO(선택 3종 = op phone · 번호는 시크릿 — 코드 박제 금지)
+//      YETA_PHONE_MAX_PER_DAY(선택·기본 2 — 실전화 분당 과금 가드).
 const REPO = 'muteno/yeta';
 const ID_RE = /^[a-z0-9_-]{1,24}$/;
 const KEY = 'sessions/main.json';
@@ -60,6 +65,51 @@ export async function onRequestPost({ request, env }) {
     const o = await env.YETA_R2.get(key);
     if (!o) return json({ error: '음성 없음' }, 404);
     return new Response(o.body, { headers: { 'content-type': 'audio/mpeg', 'cache-control': 'private, max-age=3600' } });   // 같은 통화 재청취 = 재다운로드 방지(비공개 캐시만)
+  }
+
+  if (op === 'stt') {   // 무전기 STT 폴백 — Web Speech 불가 환경(iOS 설치형 PWA). Workers AI Whisper(무료 티어 넉넉 · env.AI 미바인딩 = 501)
+    if (!env.AI) return json({ error: 'STT 미설정 — Pages Functions AI 바인딩(env.AI) 필요', setup: true }, 501);
+    const b64 = String(body.audio || '');
+    if (!b64 || b64.length > 1400000) return json({ error: '음성이 없거나 너무 길어(최대 ~1MB·30초)' }, 400);   // 무전기 = 짧은 발화 전제
+    try {
+      const model = env.YETA_STT_MODEL || '@cf/openai/whisper-large-v3-turbo';   // 입력 규격 변화 대비 env 노브
+      const r = await env.AI.run(model, { audio: b64 });                          // turbo = base64 입력·한국어 지원
+      const text = String((r && (r.text || (r.result && r.result.text))) || '').trim();
+      if (!text) return json({ error: '못 알아들었어 — 다시 말해줘' }, 422);
+      return json({ ok: true, text });
+    } catch (e) {
+      return json({ error: 'STT 실패 — 잠시 후 다시' }, 502);
+    }
+  }
+
+  if (op === 'phone') {   // ☎️ 실전화(PSTN) — Vapi 아웃바운드(등록 번호 발신 · 실시간 대화 ~1초대 = 전화 판정 통과 축).
+    // ⚠️ 분당 과금(실질 $0.15~0.35/분 · Twilio KR 모바일 $0.052/분 포함) + 별도 유료 인프라(구독 OAuth 밖) →
+    //    env 3종(VAPI_API_KEY·VAPI_PHONE_ID·YETA_PHONE_TO) 전부 있어야 활성 · 페르소나별 Vapi assistant id = roster "phone" 필드.
+    if (!env.VAPI_API_KEY || !env.VAPI_PHONE_ID || !env.YETA_PHONE_TO)
+      return json({ error: '실전화 미설정 — VAPI_API_KEY·VAPI_PHONE_ID·YETA_PHONE_TO 시크릿 필요(CLAUDE.md §🗺 yeta-call)', setup: true }, 501);
+    const pcap0 = parseInt(env.YETA_PHONE_MAX_PER_DAY ?? '2', 10);
+    const pcap = Number.isFinite(pcap0) ? pcap0 : 2;   // 빈값·오타 = 보수 기본 2(분당 과금 가드)
+    const pkst = new Date(Date.now() + 9 * 3600e3).toISOString().slice(2, 10).replace(/-/g, '');
+    const pqkey = `quota/phone-${pkst}.json`;
+    let pused = 0;
+    const pqo = await env.YETA_R2.get(pqkey);
+    if (pqo) { try { pused = (await pqo.json()).n || 0; } catch { pused = 0; } }
+    if (pcap > 0 && pused >= pcap) return json({ error: `오늘 전화 상한(${pcap}통) 도달 — 내일 다시`, remain: 0 }, 429);
+    const sessP = await readSess();
+    const persona = String(sessP.persona || '');
+    const rc = await fetch(`https://raw.githubusercontent.com/${REPO}/main/apps/yeta/characters/roster.json`,
+      { headers: { 'user-agent': 'nomute-viewer' }, cf: { cacheTtl: 300, cacheEverything: true } });
+    if (!rc.ok) return json({ error: '로스터 로드 실패' }, 502);
+    const ch = (await rc.json()).find(c => c.id === persona);
+    if (!ch || !ch.phone) return json({ error: '이 캐릭터는 아직 전화 미지원 — 프리미엄(전용 음색+phone 등재) 캐릭터만' }, 409);
+    await env.YETA_R2.put(pqkey, JSON.stringify({ n: pused + 1 }), { httpMetadata: { contentType: 'application/json' } });
+    const vr = await fetch('https://api.vapi.ai/call', {
+      method: 'POST',
+      headers: { authorization: `Bearer ${env.VAPI_API_KEY}`, 'content-type': 'application/json' },
+      body: JSON.stringify({ assistantId: ch.phone, phoneNumberId: env.VAPI_PHONE_ID, customer: { number: env.YETA_PHONE_TO } }),
+    });
+    if (vr.ok) return json({ ok: true, remain: pcap > 0 ? pcap - pused - 1 : -1 });
+    return json({ error: `전화 발신 실패(Vapi ${vr.status})` }, 502);
   }
 
   if (op === 'ring') {   // 전화 걸어달라(수신 UI·테스트 훅) → yeta-call.yml dispatch. ⚠️ TTS 유료 종량제 + 무인증 공개 사이트 → 일 상한 기본 3(보수 기본)
@@ -148,7 +198,9 @@ export async function onRequestPost({ request, env }) {
   const sess = await readSess();
   if (!ID_RE.test(String(sess.persona || ''))) return json({ error: '페르소나가 없어 — 🎲 먼저 뽑아줘' }, 409);
   sess.turns = sess.turns || [];
-  sess.turns.push({ role: 'user', text, ts: Date.now(), model, effort });   // 다이얼 = 턴별 박제(중간 변경 정확 반영 · 아이데이션④⑤)
+  const turn = { role: 'user', text, ts: Date.now(), model, effort };   // 다이얼 = 턴별 박제(중간 변경 정확 반영 · 아이데이션④⑤)
+  if (body.ptt) turn.ptt = 1;   // 무전기(PTT) 턴 박제 — yeta_chat.sh 가 답장 반영 후 음성 합성(ptt_voice)
+  sess.turns.push(turn);
   if (sess.turns.length > 400) sess.turns = sess.turns.slice(-400);
   sess.pref = { model, effort };                                            // 뷰어 재진입 복원용 미러
   sess.state = 'awaiting'; sess.awaiting_since = Date.now(); delete sess.err;
