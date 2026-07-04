@@ -187,17 +187,17 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
 
   /* ═══ YETA 메인 화면 (다크·PIN 게이트 · 260704 브랜드 통일 — 스포티파이 블랙+라임 글래스) ═══ */
   body { background:
-      radial-gradient(circle at 50% 54%, rgba(var(--accent-rgb),.15), transparent 30%),
-      radial-gradient(circle at 86% 12%, rgba(var(--accent-rgb),.09), transparent 30%),
-      radial-gradient(circle at 10% 90%, rgba(var(--cobalt-rgb),.14), transparent 34%),
-      var(--bg) fixed; color:var(--fg); }
+      radial-gradient(circle at 50% 40%, rgba(var(--accent-rgb),.10), transparent 30%),
+      radial-gradient(circle at 10% 92%, rgba(var(--cobalt-rgb),.12), transparent 34%),
+      linear-gradient(rgba(0,0,0,.5), rgba(0,0,0,.8)),
+      url(assets/brand/yeta-bg.webp) center/cover fixed var(--bg); color:var(--fg); }
   .ymain { position:fixed; inset:0; display:flex; flex-direction:column; z-index:1; }
   .ymain-body { flex:1; display:flex; flex-direction:column; align-items:center; overflow:hidden; padding:0 24px; }
   .ym-hero { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:26px;
     transition:flex-grow .5s var(--ease), gap .5s var(--ease), padding .5s var(--ease); }
-  .ym-yeta { font-family:'LEMONMILK',sans-serif; font-weight:700; font-size:64px; line-height:1; letter-spacing:.02em;
-    color:var(--fg); transition:font-size .5s var(--ease); }
-  .ym-yeta .t { color:var(--accent); }
+  /* 메인 히어로 = 운영자 포스터(main.png → yeta-hero.webp) · 워드마크 대체(포스터에 YETA 각인) */
+  .ym-hero-img { display:block; width:auto; height:auto; max-width:84%; max-height:56vh; object-fit:contain;
+    filter:drop-shadow(0 22px 55px rgba(0,0,0,.55)); transition:max-height .5s var(--ease), opacity .4s var(--ease); }
   .ym-access { width:56px; height:56px; border-radius:50%; border:none; cursor:pointer; display:grid; place-items:center;
     background:var(--accent); color:var(--bg); box-shadow:0 8px 22px rgba(var(--accent-rgb),.36);
     transition:transform .28s var(--ease), opacity .35s var(--ease); touch-action:manipulation; }
@@ -213,7 +213,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
     opacity:0; transform:translateY(24px); pointer-events:none; height:0; overflow:hidden;
     transition:opacity .45s var(--ease) .1s, transform .45s var(--ease) .1s; }
   .ymain.pin-mode .ym-hero { flex-grow:0; gap:0; padding-top:52px; }
-  .ymain.pin-mode .ym-yeta { font-size:40px; }
+  .ymain.pin-mode .ym-hero-img { max-height:15vh; opacity:.5; }
   .ymain.pin-mode .ym-access, .ymain.pin-mode .ym-access-lbl { opacity:0; pointer-events:none; height:0; margin:0; }
   .ymain.pin-mode .ym-pin { opacity:1; transform:none; pointer-events:auto; height:auto; overflow:visible; }
   /* PIN 키패드 = nomute lk- 이식 · 다크+라임 리컬러(260704) */
@@ -252,7 +252,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   .ynav .lockdot svg { width:11px; height:11px; stroke:var(--mut); fill:none; stroke-width:2.4; }
   .ymain.unlocked .ynav button.locked { opacity:1; }
   .ymain.unlocked .ynav button.locked .lockdot { display:none; }
-  @media (prefers-reduced-motion:reduce){ .ym-hero, .ym-yeta, .ym-pin, .ym-access, .ynav button { transition:none; } }
+  @media (prefers-reduced-motion:reduce){ .ym-hero, .ym-hero-img, .ym-pin, .ym-access, .ynav button { transition:none; } }
 </style>
 </head>
 <body>
@@ -260,7 +260,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
 <div class="ymain" id="ymain">
   <div class="ymain-body">
     <div class="ym-hero">
-      <div class="ym-yeta">YE<span class="t">T</span>A</div>
+      <img class="ym-hero-img" src="assets/brand/yeta-hero.webp" alt="YETA — PLAY a Episode" />
       <div class="ym-access-card">
         <button class="ym-access" id="ymAccess" type="button" aria-label="접속">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>
