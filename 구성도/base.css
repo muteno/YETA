@@ -11,11 +11,12 @@
     --accent:#0FFD02; --accent-rgb:15,253,2;
     /* 의미색 */
     --danger:#ff5b4a; --danger-rgb:255,91,74; --arm:#ffd93d;
-    /* yeta 정체성 — 네온보라 버블·근흑 창(운영자 260703) */
-    --bubble-me:#b45cff; --bubble-ai:#1e2023; --yeta-bg:#0d0b12;
-    /* yeta 브랜드 — 네온레몬 고정(운영자 260704·이 레포 한정). 값 = 플랫폼 기존 레몬(#e7ff2e·thumb reels) 채택.
-       현행 화면 배선은 구성도/01~06 승인 후 일괄(레몬 채움 위 전경 = 잉크 --m-fg · 라이트 바탕 레몬 단독 텍스트 금지) */
+    /* yeta 브랜드 — 네온레몬 고정(운영자 260704·이 레포 한정). 값 = 플랫폼 기존 레몬(#e7ff2e·thumb reels) 채택. 라이트 바탕 레몬 단독 텍스트 금지(대비 ≈1:1) */
     --brand:#E7FF2E; --brand-rgb:231,255,46;
+    /* yeta 정체성 — 근흑 창 + 네온레몬 버블(브랜드 적용 260704 · 옛 네온보라 폐지) */
+    --bubble-me:var(--brand); --bubble-ai:#1e2023; --yeta-bg:#0d0b12;
+    --m-fg:#0e1420;   /* 잉크 — 레몬 채움 위 전경(내 버블·전송·TA 블록 · 대비 ≈16:1 · 구 라이트 잉크 승계) */
+    --pin-ac:var(--brand); --pin-ac-rgb:var(--brand-rgb);   /* PIN 강조 = 브랜드(다크 V2 · 구 코발트 폐지) */
     /* 반지름 */
     --r-s:9px; --r-m:11px; --r-l:16px; --r-modal:22px; --r-pill:999px;
     /* 간격·버튼 */
@@ -29,15 +30,6 @@
     --z-float:60;
     /* 눌림 scale 사다리 */
     --press-m:.9; --press-l:.95; --press-s:.9;
-    /* ── YETA 메인/라이트 팔레트(강조1 오렌지·강조2 코발트 · 첨부2) — 메인 화면 전용(챗은 위 다크 토큰 유지) ── */
-    --accent-1:#FF6648; --accent-1-rgb:255,102,72;
-    --accent-2:#0259DD; --accent-2-rgb:2,89,221;
-    --sky:#84AFFB; --sky-rgb:132,175,251; --cream:#FFE1D7;
-    --m-fg:#0e1420; --m-fg2:#2b3242; --m-mut:#586173;
-    --m-line:rgba(20,30,60,.12); --m-line2:rgba(20,30,60,.08);
-    --m-glass:rgba(255,255,255,.62); --m-glass2:rgba(255,255,255,.8);
-    --m-danger:#e23b2e; --m-danger-rgb:226,59,46;
-    --pin-ac:var(--accent-2); --pin-ac-rgb:var(--accent-2-rgb);
   }
 /* === AUTO-MIRROR:END === */
 /* ↑ 토큰값은 전부 viewer :root에서 옴(--arm·--font-status 포함). base.css에 토큰 인라인 재정의 금지. */

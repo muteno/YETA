@@ -4,7 +4,7 @@
 
 ## 🎬 앱 개요
 - **말벗 제타** = 무음동 10인 페르소나와의 랜덤 톡방. 세션 = R2 비공개 **단일 스레드**(맥락·관계노트 공유).
-- 페르소나 = **랜덤 뽑기 + 🎲 재뽑기**(고정 선택 없음·화자만 교체·맥락 승계). 내 버블 = 네온보라(`--bubble-me`). *나레이션* = 이탤릭.
+- 페르소나 = **랜덤 뽑기 + 🎲 재뽑기**(고정 선택 없음·화자만 교체·맥락 승계). 내 버블 = 네온레몬(`--bubble-me=var(--brand)`·잉크 글자 · 260704). *나레이션* = 이탤릭.
 - 답장 = `claude -p`(구독 OAuth) · GitHub Actions dispatch · **웜 세션 루프**(답장 후 대기 → 후속 메시지 같은 런 즉답).
 - 다이얼 = model(opus 4.8 / sonnet-5) × effort(low/''/max) — 턴별 박제. 기본 = opus×low(30초 컷).
 
@@ -16,7 +16,7 @@
 4. 새 버튼·모달·입력칸·아이콘 = **CII 정본 셀렉터 계승**(재설계 금지). 버튼·눌림 패턴 = `구성도/00_가이드북_버튼인터랙션.html`. 눌림 scale = `--press-*` 토큰.
 5. `viewer/tokens.css`·`구성도/base.css` = **build 산출 거울**(직접 수정 금지·다음 build에 덮어씀).
 6. **3층 강제**: ① SessionStart/UI턴 = `.claude/hooks/design_digest.py`가 계약 자동 주입 ② UI 파일 저장 후 = `.claude/hooks/design_gate.py`가 check_refs 디자인 게이트(위반 exit 2) ③ 커밋 = `.githooks/pre-commit`이 `check_refs` 강제(`core.hooksPath=.githooks`는 design_digest가 세션마다 자동 설정). 타 모델 = `AGENTS.md`.
-7. **색은 yeta 팔레트 — 브랜드 = 네온레몬 고정**(`--brand #E7FF2E`·운영자 260704·**이 레포 한정**) + 근흑. nomute 녹색 브랜드와 다름. 구조 토큰(반지름·간격·타이포·모션·눌림)만 계승, 색은 yeta 정체성. 화면별 적용 스펙 = 페이지 구성도 01~06(`구성도/01_페이지맵_yeta.html` 색인 — 다크 챗 = 레몬+잉크 확정 · 라이트 메인 = 전략 A/B/C 운영자 결정 대기). 현행 화면색(버블 네온보라·메인 오렌지/코발트) 스왑은 구성도 승인 후 일괄.
+7. **색은 yeta 팔레트 — 브랜드 = 네온레몬 고정**(`--brand #E7FF2E`·운영자 260704·**이 레포 한정**) + 근흑. nomute 녹색 브랜드와 다름. 구조 토큰(반지름·간격·타이포·모션·눌림)만 계승, 색은 yeta 정체성. 적용 완료(260704): **다크 온리**(운영자 "어두운 메인만") · 메인 = 다크 포스터 히어로 V2(YE·TA 레몬블록 + ZETA 글로우 무대 — `viewer/assets/brand/zeta.png` 삽입 시 자동 표시·그레이스케일 강제) · 챗 = 레몬 버블+잉크(`--m-fg`) · 라이트 V1 팔레트 폐지. 스펙 = 페이지 구성도 01~06(`구성도/01_페이지맵_yeta.html` 색인).
 
 ## 🗺 구조
 - `viewer/` = 뷰어. `index.html`(값 SSOT `:root` + yeta UI) · `tokens.css`(구조토큰 거울) · `nm-svg.js`(아이콘 SSOT) · `_headers`(정적 no-cache)
@@ -27,7 +27,7 @@
 - `.github/workflows/yeta-bg.yml` + `.github/scripts/yeta_bg.py` = 무대 **배경**(bg) 생성 — **수동 dispatch 전용**(Gemini `gemini-3.1-flash-image`·⚠️유료·챗 구독OAuth와 별개 축). 무음동 8무대 9:16(+무드 배리언트 warm/tense/blue = `<<MOOD:x>>` 크로스페이드용) → 공개 R2 `yeta_bg/` → `roster.json` `bg` 주입. 멱등(채워진 건 skip·R2 기존 객체 재과금0·`force=1` 재생성)·자립형(thumb_gen 의존 제거·Gemini 호출·R2 업로드 인라인·260704 이식). 배경도 이미 roster 주입 완료 = *재생성/신규 무드* 도구.
 - `shared/` = `claude_transient.sh`(폴오버 SSOT)·`claude_meter.sh`·`inject_character.sh`(카드 강제주입) · `check_refs.py`(게이트)·`build_design_mirror.py`(거울 빌드).
 - `apps/yeta/` = 캐릭터 **10인**(`characters/*.md`)·`roster.json`(뷰어 표시 SSOT)·`apps/yeta/00_지침_캐릭터챗.md`·`apps/yeta/10_세계관.md`·`apps/yeta/PEXELS_배경_큐레이션_설계.md`.
-- `구성도/`·`docs/CII_컴포넌트계승인덱스.md` = 디자인 블루프린트·계승 인덱스. **페이지 구성도 01~06**(260704) = 유저가 클릭하는 전 화면(페이지맵·메인·PIN·캐릭터선택·대화방·대화상태) — 화면 구조·클릭 전이·상태·네온레몬 브랜드 매핑의 SSOT.
+- `구성도/`·`docs/CII_컴포넌트계승인덱스.md` = 디자인 블루프린트·계승 인덱스. **페이지 구성도 01~06**(260704) = 유저가 클릭하는 전 화면(페이지맵·메인·PIN·캐릭터선택·대화방·대화상태) — 화면 구조·클릭 전이·상태·네온레몬 브랜드 매핑의 SSOT. **4메뉴 타깃 흐름**(로그인·캐릭터·채팅방 리스트·설정 + room 모델·op 확장·P0 계획) = `docs/흐름설계_기본채팅_4메뉴.md`(운영자 260704 · P0 착수는 §7 확인 2개 답 후).
 
 ## 📰 파이프라인 (한 답장 = 이 체인)
 뷰어 `send` → `functions/api/yeta.js`(R2 세션 append + `dispatch`) → `yeta-chat.yml` → `yeta_chat.sh`(claude -p · 카드 주입 · 앵커-ts insert) → R2 세션 → 뷰어 폴(적응형 4s).

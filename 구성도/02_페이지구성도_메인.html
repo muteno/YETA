@@ -1,4 +1,4 @@
-<!-- @dsCard group="구성도" viewport="900x1500" name="페이지 구성도 · 메인" subtitle="라이트 진입 화면 — 워드마크·접속 CTA·하단 네비(잠금)" -->
+<!-- @dsCard group="구성도" viewport="900x1500" name="페이지 구성도 · 메인" subtitle="다크 포스터 히어로 — YE·TA 레몬블록 + ZETA 글로우 무대 + 네비" -->
 <!doctype html>
 <html lang="ko">
 <head>
@@ -31,76 +31,60 @@
   table { width:100%; border-collapse:collapse; font-size:12.5px; }
   th,td { text-align:left; padding:9px 11px; border-bottom:1px solid var(--line2); vertical-align:top; }
   th { font-size:10.5px; letter-spacing:.4px; text-transform:uppercase; color:var(--mut); font-weight:var(--fw-b); }
-  td b { color:var(--fg); } td code, p code, .note code { color:var(--brand); font-family:ui-monospace,Menlo,monospace; font-size:11px; }
+  td b { color:var(--fg); } td a { color:var(--brand); text-decoration:none; } td code, p code, .note code { color:var(--brand); font-family:ui-monospace,Menlo,monospace; font-size:11px; }
   .note { margin-top:14px; font-size:12.5px; color:var(--mut); line-height:1.65; padding-left:14px; border-left:2px solid rgba(var(--brand-rgb),.3); }
   .note b { color:var(--fg-2); }
   .sw { display:inline-block; width:13px; height:13px; border-radius:4px; vertical-align:-2px; margin-right:6px; border:1px solid rgba(255,255,255,.15); }
   .k { display:inline-grid; place-items:center; min-width:16px; height:16px; border-radius:var(--r-pill); background:var(--brand); color:var(--yeta-bg); font:800 10px/1 ui-monospace,Menlo,monospace; flex:none; padding:0 3px; }
-  .warnbox { margin-top:16px; padding:13px 16px; border:1px solid rgba(255,217,61,.4); border-radius:var(--r-m); background:rgba(255,217,61,.06); font-size:12.5px; color:var(--fg-2); line-height:1.7; }
-  .warnbox b { color:var(--arm); }
   .foot { margin-top:60px; padding-top:20px; border-top:1px solid var(--line); font-size:var(--fs-label); color:var(--mut); line-height:1.7; } .foot a { color:var(--brand); text-decoration:none; }
 
-  /* ── 와이어 목업(기틀 실값 재현 · viewer §YETA 메인 계승) ── */
+  /* ── 와이어 목업(다크 포스터 히어로 V2 · viewer 실값 재현) ── */
   .stage { display:flex; gap:26px; flex-wrap:wrap; align-items:flex-start; }
-  .ph { width:290px; height:540px; flex:none; border:1px solid var(--line); border-radius:var(--r-modal); overflow:hidden; display:flex; flex-direction:column; position:relative;
-    background:radial-gradient(circle at 84% 12%, rgba(var(--sky-rgb),.85), rgba(var(--accent-2-rgb),.24) 13%, transparent 27%),
-      radial-gradient(circle at 6% 46%, rgba(var(--sky-rgb),.7), transparent 15%),
-      radial-gradient(circle at 70% 92%, rgba(var(--sky-rgb),.5), transparent 22%),
-      linear-gradient(160deg,#eef3ff,#f7f9ff 55%,#eef2fb); color:var(--m-fg); box-shadow:0 30px 80px rgba(0,0,0,.5); }
-  .mk-hero { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:26px; }
-  .mk-yeta { font-family:'LEMONMILK',sans-serif; font-weight:700; font-size:52px; line-height:1; letter-spacing:.02em; color:var(--accent-2); }
-  .mk-yeta .t { color:var(--accent-1); }
-  .mk-access { width:56px; height:56px; border-radius:50%; border:none; cursor:pointer; display:grid; place-items:center;
-    background:var(--accent-1); color:#fff; box-shadow:0 8px 22px rgba(var(--accent-1-rgb),.36); touch-action:manipulation; }
-  .mk-access:active { transform:scale(var(--press-m)); }
-  .mk-access svg { width:24px; height:24px; }
-  .mk-access-lbl { font-size:var(--fs-sm); font-weight:var(--fw-b); color:var(--m-mut); margin-top:-14px; }
-  .mk-nav { flex:none; display:flex; background:var(--m-glass2); border-top:1px solid var(--m-line2); padding-bottom:5px; backdrop-filter:blur(16px); }
-  .mk-nav button { flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; padding:8px 0 4px; color:var(--m-mut); font-size:10px; font-weight:var(--fw-b); background:none; border:none; cursor:pointer; position:relative; touch-action:manipulation; }
+  .ph { width:290px; height:560px; flex:none; border:1px solid var(--line); border-radius:var(--r-modal); overflow:hidden; display:flex; flex-direction:column; position:relative;
+    background:var(--yeta-bg); color:var(--fg); box-shadow:0 30px 80px rgba(0,0,0,.5); }
+  .mk-hero { flex:1; position:relative; display:flex; flex-direction:column; align-items:center; overflow:hidden; padding-top:64px; }
+  .mk-arc { position:absolute; top:-320px; left:-58px; width:406px; height:400px; border-radius:50%; border:1px solid rgba(255,255,255,.13); }
+  .mk-badge { position:absolute; top:12px; right:10px; width:26px; opacity:.92; }
+  .mk-dash { position:absolute; right:6%; bottom:24%; width:54px; height:54px; border-right:1.5px dashed rgba(255,255,255,.45); border-radius:50%; transform:rotate(18deg); }
+  .mk-yeta { position:relative; z-index:2; font-family:'LEMONMILK',sans-serif; font-weight:700; font-size:46px; line-height:1; letter-spacing:.02em; color:var(--fg); display:flex; align-items:baseline; }
+  .mk-yeta .t { color:var(--m-fg); background:var(--brand); padding:.03em .1em .05em .08em; margin-left:.06em; transform:skewX(-6deg); box-shadow:0 0 34px rgba(var(--brand-rgb),.35); }
+  .mk-stage { position:relative; flex:1; align-self:stretch; display:grid; place-items:end center; }
+  .mk-glow { position:absolute; bottom:-70px; width:216px; height:216px; border-radius:50%;
+    background:radial-gradient(closest-side, rgba(var(--brand-rgb),.88) 58%, rgba(var(--brand-rgb),.28) 68%, transparent 76%); }
+  .mk-zslot { position:relative; z-index:1; width:120px; height:150px; margin-bottom:8px; border:1.5px dashed rgba(255,255,255,.3); border-radius:var(--r-m); display:grid; place-items:center; font-size:var(--fs-xs); color:var(--mut); text-align:center; line-height:1.5; }
+  .mk-nav { flex:none; display:flex; background:rgba(255,255,255,.04); border-top:1px solid var(--line2); padding-bottom:5px; backdrop-filter:blur(16px); }
+  .mk-nav button { flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; padding:9px 0 7px; color:var(--mut); font-size:10px; font-weight:var(--fw-b); background:none; border:none; cursor:pointer; position:relative; touch-action:manipulation; }
   .mk-nav button:active { transform:scale(var(--press-s)); }
-  .mk-nav button.on { color:var(--accent-1); }
+  .mk-nav button.on { color:var(--brand); }
+  .mk-nav button.on::after { content:''; position:absolute; bottom:2px; left:50%; transform:translateX(-50%); width:4px; height:4px; border-radius:var(--r-pill); background:var(--brand); }
   .mk-nav button.locked { opacity:.4; }
   .mk-nav button svg { width:21px; height:21px; }
   .mk-nav .lockdot { position:absolute; top:5px; right:calc(50% - 18px); width:11px; height:11px; }
-  .mk-nav .lockdot svg { width:11px; height:11px; stroke:var(--m-mut); fill:none; stroke-width:2.4; }
-  .pinlay { position:absolute; display:grid; place-items:center; width:20px; height:20px; border-radius:var(--r-pill); background:var(--brand); color:var(--yeta-bg); font:800 11px/1 ui-monospace,Menlo,monospace; box-shadow:0 0 0 2px var(--yeta-bg); }
+  .mk-nav .lockdot svg { width:11px; height:11px; stroke:var(--mut); fill:none; stroke-width:2.4; }
   .legend { flex:1 1 300px; min-width:260px; }
-  .legend table td:first-child { white-space:nowrap; }
-  /* 상태 필름 */
-  .strip { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
-  @media (max-width:680px){ .strip { grid-template-columns:1fr; } }
-  .frame { border:1px solid var(--line); border-radius:var(--r-m); background:rgba(255,255,255,.02); padding:16px 12px 14px; text-align:center; }
-  .frame h4 { font-size:var(--fs-sm); margin:12px 0 5px; color:var(--fg); }
-  .frame .spec { font-size:11px; color:var(--mut); line-height:1.5; margin:7px 0 0; text-align:left; }
-  .frame .spec b { color:var(--fg-2); font-weight:600; }
-  .mini { height:120px; border-radius:var(--r-s); border:1px solid var(--m-line2); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px;
-    background:linear-gradient(160deg,#eef3ff,#f7f9ff 55%,#eef2fb); color:var(--m-fg); }
-  .mini .w { font-family:'LEMONMILK',sans-serif; font-weight:700; letter-spacing:.02em; color:var(--accent-2); }
-  .mini .w .t { color:var(--accent-1); }
-  /* 브랜드 적용 strip */
-  .brandrow { display:flex; gap:14px; flex-wrap:wrap; align-items:center; }
-  .b-cta { width:56px; height:56px; border-radius:50%; display:grid; place-items:center; background:var(--brand); color:var(--m-fg); box-shadow:0 8px 22px rgba(var(--brand-rgb),.36); }
-  .b-cta svg { width:24px; height:24px; }
-  .b-chip { display:inline-flex; align-items:center; gap:7px; height:var(--btn); padding:0 14px; border-radius:var(--r-pill); background:var(--brand); color:var(--m-fg); font-size:var(--fs-label); font-weight:var(--fw-x); }
 </style>
 </head>
 <body>
 <div class="wrap">
   <p class="crumb">말벗 제타 · 페이지 구성도 <b>02 메인</b></p>
-  <h1>메인 화면 — 라이트 진입 (<code>.ymain</code>)</h1>
-  <p class="intro">앱 첫 로드가 도착하는 화면. <b>LEMONMILK 워드마크 + 접속(자물쇠) CTA + 하단 네비 4탭</b>의 세로 스택 단일 구조로, 챗 다이얼로그(<code>#yetadlg</code>)가 열리기 전까지 항상 아래에 상주한다(챗 닫기 = 이 화면 복귀). 정본 = <code>viewer/index.html</code> §YETA 메인(마크업 L256~279 · CSS L190~252 · V1 260704).</p>
-  <div class="ssot">📍 값 SSOT = <code>viewer/index.html :root</code> → <code>구성도/base.css</code> AUTO-MIRROR 계승(자체 값 정의 0) · 규칙 = <code>CLAUDE.md §🎨</code> · <b>브랜드 = 네온레몬 <code>--brand #E7FF2E</code></b>(운영자 260704 고정 · 이 레포 한정 — 적용 매핑은 §5).</div>
+  <h1>메인 — 다크 포스터 히어로 (<code>.ymain</code> · V2 260704)</h1>
+  <p class="intro">운영자 레퍼런스("이 느낌 그대로")를 계승한 진입 화면: <b>근흑 바탕 + YE·TA 레몬 하이라이트 블록 워드마크 + 하단 레몬 글로우 서클(ZETA 무대) + 미니 크롬(스우시 아크·뱃지·대시 아크)</b>. 접속 CTA는 폐지 — 진입은 잠긴 탭 탭. 라이트 V1은 폐지(운영자 260704 "어두운 메인만"). 정본 = <code>viewer/index.html</code> §YETA 메인 V2.</p>
+  <div class="ssot">📍 값 SSOT = <code>viewer/index.html :root</code> → <code>base.css</code> 거울 계승 · <b>브랜드 = 네온레몬 <code>--brand #E7FF2E</code> 적용 완료</b> · 이미지리 규칙 = <b>그레이스케일 + 레몬 1색</b>(포스터 계승 · <code>.ym-zeta filter:grayscale</code>).</div>
   <nav class="docnav"><a href="01_페이지맵_yeta.html">01 페이지맵</a><a class="cur" href="02_페이지구성도_메인.html">02 메인</a><a href="03_페이지구성도_PIN게이트.html">03 PIN 게이트</a><a href="04_페이지구성도_캐릭터선택.html">04 캐릭터 선택</a><a href="05_페이지구성도_대화방.html">05 대화방</a><a href="06_페이지구성도_대화상태.html">06 대화 상태</a><a href="index.html">허브 ↗</a></nav>
 
   <!-- 1 와이어 -->
-  <div class="sec"><h2><span class="n">1</span> 화면 와이어 (현행 기틀 실값)</h2>
-    <p class="lead">목업은 스케일 축소 없이 기틀 실값(56px CTA·네비 21px 아이콘·글래스 네비)을 그대로 렌더한다. 워드마크만 폭 맞춤(64→52px).</p>
+  <div class="sec"><h2><span class="n">1</span> 화면 와이어 (기틀 실값)</h2>
     <div class="stage">
       <div class="ph">
         <div class="mk-hero">
-          <div class="mk-yeta">YE<span class="t">T</span>A</div>
-          <button class="mk-access" type="button" aria-label="접속"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg></button>
-          <div class="mk-access-lbl">접속</div>
+          <span class="mk-arc" aria-hidden="true"></span>
+          <img class="mk-badge" src="../viewer/assets/brand/yeta-badge.png" alt="" aria-hidden="true">
+          <div class="mk-yeta">YE<span class="t">TA</span></div>
+          <div class="mk-stage" aria-hidden="true">
+            <span class="mk-glow"></span>
+            <span class="mk-zslot">ZETA 캐릭터 슬롯<br>assets/brand/zeta.png<br>(운영자 삽입 예정)</span>
+          </div>
+          <span class="mk-dash" aria-hidden="true"></span>
         </div>
         <nav class="mk-nav">
           <button class="on" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8M5 10v10h14V10"/></svg>메인</button>
@@ -108,82 +92,53 @@
           <button class="locked" type="button"><span class="lockdot"><svg viewBox="0 0 24 24" stroke-linecap="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 01-12 7.7L3 21l1.8-6A8.5 8.5 0 1121 11.5z"/></svg>대화</button>
           <button class="locked" type="button"><span class="lockdot"><svg viewBox="0 0 24 24" stroke-linecap="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.9M4.6 9A1.7 1.7 0 004.3 7"/></svg>설정</button>
         </nav>
-        <span class="pinlay" style="top:34%;left:12%">1</span>
-        <span class="pinlay" style="top:56%;left:12%">2</span>
-        <span class="pinlay" style="bottom:64px;left:12%">3</span>
-        <span class="pinlay" style="bottom:14px;left:4px">4</span>
       </div>
       <div class="legend"><table>
-        <tr><th></th><th>요소</th><th>정본 셀렉터 · 값</th></tr>
-        <tr><td><span class="k">1</span></td><td><b>워드마크</b></td><td><code>.ym-yeta</code> — LEMONMILK Bold 64px(PIN 모드 40px) · 코발트 <code>--accent-2</code> + T 오렌지 <code>--accent-1</code></td></tr>
-        <tr><td><span class="k">2</span></td><td><b>접속 CTA</b></td><td><code>.ym-access</code> — 56px 원형 · 채움 <code>--accent-1</code> + 흰 자물쇠 24px · 눌림 <code>--press-m</code></td></tr>
-        <tr><td><span class="k">3</span></td><td><b>접속 라벨</b></td><td><code>.ym-access-lbl</code> — 12px 700 <code>--m-mut</code></td></tr>
-        <tr><td><span class="k">4</span></td><td><b>하단 네비</b></td><td><code>.ynav</code> — 글래스 <code>--m-glass2</code>+blur16 · 탭 아이콘 21px+10px 라벨 · 활성 <code>--accent-1</code> · 잠김 <code>.locked</code>(투명도 .4 + 자물쇠 도트 11px)</td></tr>
+        <tr><th>요소</th><th>정본 셀렉터 · 값</th></tr>
+        <tr><td><b>워드마크 락업</b></td><td><code>.ym-yeta</code> — LEMONMILK Bold <code>clamp(46px,15vw,64px)</code> · YE = <code>--fg</code> / <b>TA = <code>--brand</code> 블록 + 잉크(<code>--m-fg</code>) + skewX(-6°) + 레몬 글로우</b>(포스터 하이라이트 바 문법)</td></tr>
+        <tr><td><b>ZETA 무대</b></td><td><code>.ym-stage</code> — 하단 정렬 · <code>.ym-glow</code> 레몬 글로우 서클(radial · 정적·펄스 없음) + <code>.ym-zeta</code> 캐릭터 이미지(<code>grayscale(1)</code> 강제 · <code>zeta.png</code> 없으면 <code>onerror</code> 제거 = 서클만)</td></tr>
+        <tr><td><b>미니 크롬</b></td><td><code>.ym-arc</code> 상단 스우시(헤어라인 원호) · <code>.ym-badge</code> 우상단 뱃지 30px(<code>yeta-badge.png</code>) · <code>.ym-dash</code> 우하단 대시 원호 — 전부 <code>aria-hidden</code> 장식</td></tr>
+        <tr><td><b>하단 네비</b></td><td><code>.ynav</code> — 다크 글래스(<code>rgba(255,255,255,.04)</code>+blur16) · 활성 = <b><code>--brand</code> + 도트 4px</b>(색+형태 이중 부호화) · 잠김 = .4 + 자물쇠 도트 · 히트영역 ≥48px · <code>:focus-visible</code> 레몬 링</td></tr>
       </table></div>
     </div>
-    <p class="note"><b>바탕</b> = 스카이 라디얼 3점(<code>--sky-rgb</code> .85/.7/.5 + <code>--accent-2-rgb</code> .24) 위 라이트 그라데(<code>#eef3ff→#f7f9ff→#eef2fb</code>) 고정(fixed). 텍스트는 잉크 팔레트 <code>--m-fg/--m-fg2/--m-mut</code>.</p>
+    <p class="note"><b>ZETA 슬롯 규격(운영자 삽입용)</b>: <code>viewer/assets/brand/zeta.png</code> — 투명 배경 PNG · 상반신~3/4신 세로형 권장 · 렌더 최대 <code>min(40vh,300px)</code> · <b>색은 신경 안 써도 됨</b>(CSS가 그레이스케일 강제 → 포스터 규칙 자동 준수). 파일이 레포에 떨어지는 순간 자동 표시.</p>
   </div>
 
   <!-- 2 클릭 맵 -->
   <div class="sec"><h2><span class="n">2</span> 클릭 → 전이</h2>
     <div class="card"><table>
       <tr><th>클릭 대상</th><th>잠금 전</th><th>잠금 해제 후(<code>.unlocked</code>)</th></tr>
-      <tr><td><b>접속 CTA</b> <code>#ymAccess</code></td><td><code>.pin-mode</code> 진입 → <a href="03_페이지구성도_PIN게이트.html">03 PIN 게이트</a></td><td>(숨김 — 해제 후 opacity 0·height 0)</td></tr>
       <tr><td><b>네비 · 메인</b></td><td colspan="2">no-op(현재 탭)</td></tr>
-      <tr><td><b>네비 · 대화</b></td><td><code>.pin-mode</code> 진입 + 슬롯 shake(빈 PIN 흔들어 유도)</td><td><code>openYeta()</code> → 챗 모달(<a href="04_페이지구성도_캐릭터선택.html">04</a>/<a href="05_페이지구성도_대화방.html">05</a>)</td></tr>
-      <tr><td><b>네비 · 캐릭터 / 설정</b></td><td>동상(PIN 유도)</td><td><code>miniToast('준비중 — 곧 열려')</code> — 예약 화면(다음 머지)</td></tr>
+      <tr><td><b>네비 · 대화</b></td><td><code>.pin-mode</code> 진입 + 슬롯 shake → <a href="03_페이지구성도_PIN게이트.html">03 PIN</a></td><td><code>openYeta()</code> → 챗(<a href="04_페이지구성도_캐릭터선택.html">04</a>/<a href="05_페이지구성도_대화방.html">05</a>)</td></tr>
+      <tr><td><b>네비 · 캐릭터 / 설정</b></td><td>동상(PIN 유도)</td><td>준비중 토스트 — 4메뉴 흐름 설계 = <code>docs/흐름설계_기본채팅_4메뉴.md</code></td></tr>
     </table>
-    <p class="note"><b>진입 예외</b> = 웹푸시 딥링크 <code>/?yeta=</code>만 챗 모달 직행(L579) · 그 외 자동 오픈 없음(챗 자동오픈·재오픈 제거 — 0a04a22). 챗 닫기(X·폰 뒤로가기)는 항상 이 화면으로 복귀.</p></div>
+    <p class="note"><b>접속 CTA 폐지(V2)</b> — 진입 어포던스는 잠긴 탭 자체(탭 → PIN 유도 shake가 안내 역할). 딥링크 <code>?yeta=</code>만 챗 직행 예외. 챗 닫기 = 이 화면 복귀.</p></div>
   </div>
 
   <!-- 3 상태 -->
   <div class="sec"><h2><span class="n">3</span> 화면 상태 3종</h2>
-    <div class="strip">
-      <div class="frame"><div class="mini"><span class="w" style="font-size:34px">YE<span class="t">T</span>A</span><span style="width:34px;height:34px;border-radius:50%;background:var(--accent-1);display:grid;place-items:center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg></span></div><h4>① 히어로(기본)</h4><p class="spec">워드마크 64px 중앙 · 접속 CTA · 네비 3탭 잠김. <b>첫 로드 정지 상태</b>.</p></div>
-      <div class="frame"><div class="mini"><span class="w" style="font-size:22px">YE<span class="t">T</span>A</span><span style="display:flex;gap:9px">●●○○</span><span style="font-size:10px;color:var(--m-mut)">키패드 3×4</span></div><h4>② <code>.pin-mode</code></h4><p class="spec">접속/잠긴탭 클릭 시. 히어로 상단 고정(flex 0·pad-top 52) + 워드마크 40px 축소 + CTA 소멸 + 키패드 등장(전이 .45s <code>--ease</code>). → <a href="03_페이지구성도_PIN게이트.html">03</a></p></div>
-      <div class="frame"><div class="mini"><span class="w" style="font-size:34px">YE<span class="t">T</span>A</span><span style="font-size:10px;color:var(--m-mut)">네비 4탭 전부 활성</span></div><h4>③ <code>.unlocked</code></h4><p class="spec">PIN 성공/재방문(<code>yeta_pin_ok</code>). 잠김 탭 불투명 복원·자물쇠 도트 제거. 대화탭 = 챗 진입.</p></div>
-    </div>
-  </div>
-
-  <!-- 4 컴포넌트 스펙 -->
-  <div class="sec"><h2><span class="n">4</span> 컴포넌트 스펙 (계승용)</h2>
     <div class="card"><table>
-      <tr><th>항목</th><th>규칙</th></tr>
-      <tr><td><b>구조</b></td><td><code>.ymain</code> fixed inset0 세로 flex — 본문(<code>.ymain-body</code> 중앙정렬) + 네비(<code>.ynav</code> flex:none). 모달과 공존(z 1).</td></tr>
-      <tr><td><b>전이</b></td><td>히어로 축소/키패드 등장 = <code>.5s var(--ease)</code> · reduced-motion 시 전이 무효(:root 가드 블록).</td></tr>
-      <tr><td><b>눌림</b></td><td>CTA <code>--press-m</code>(.9) · 네비 탭 <code>--press-s</code>(.9) — raw scale 금지.</td></tr>
-      <tr><td><b>아이콘</b></td><td>라인 SVG 24×24 sw2 round(자물쇠·홈·사람·말풍선·톱니) — 이모지 금지. 잠금 도트 = 11px sw2.4.</td></tr>
-      <tr><td><b>a11y</b></td><td>CTA <code>aria-label="접속"</code> · 탭 = 텍스트 라벨 동반 · <code>touch-action:manipulation</code>.</td></tr>
+      <tr><th>상태</th><th>화면</th></tr>
+      <tr><td><b>① 기본(포스터)</b></td><td>워드마크 + ZETA 무대 + 크롬 + 네비(3탭 잠김)</td></tr>
+      <tr><td><b>② <code>.pin-mode</code></b></td><td>히어로 상단 고정(<code>flex:0 0 auto</code>·pad-top 52) · 워드마크 40px · <b>무대/아크/대시 제거</b>(집중 모드) · 키패드 등장 — ⚠️ <code>flex:1</code>(basis 0) 잔존 시 워드마크 클리핑(실측 260704)</td></tr>
+      <tr><td><b>③ <code>.unlocked</code></b></td><td>네비 전탭 활성·자물쇠 도트 제거 · 대화 탭 = 챗 진입</td></tr>
     </table></div>
   </div>
 
-  <!-- 5 브랜드 적용 -->
-  <div class="sec"><h2><span class="n">5</span> 🍋 브랜드 적용 — 네온레몬 (운영자 260704 고정)</h2>
-    <p class="lead">브랜드 색 = <code>--brand #E7FF2E</code>(이 레포 한정). 레몬은 <b>근흑 위 최강</b>(대비 ≈17:1)·<b>라이트 위 단독 텍스트 불가</b>(≈1:1)라, 라이트 메인에선 "레몬 채움 + 잉크 전경" 패턴만 성립한다.</p>
-    <div class="card">
-      <div class="brandrow">
-        <span><span class="sw" style="background:var(--brand)"></span><code>--brand #E7FF2E</code></span>
-        <span><span class="sw" style="background:var(--accent-1)"></span><code>--accent-1</code> 현행 오렌지</span>
-        <span><span class="sw" style="background:var(--accent-2)"></span><code>--accent-2</code> 현행 코발트</span>
-        <span class="b-cta" title="브랜드 적용안 — 레몬 채움+잉크 아이콘"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg></span>
-        <span class="b-chip">레몬 채움 + 잉크 <code style="color:inherit">--m-fg</code></span>
-      </div>
-      <table style="margin-top:16px">
-        <tr><th>요소</th><th>현행</th><th>브랜드 적용안</th><th>판정</th></tr>
-        <tr><td><b>접속 CTA</b></td><td><code>--accent-1</code> 채움 + 흰 아이콘</td><td><code>--brand</code> 채움 + 잉크 아이콘(<code>--m-fg</code>) · 그림자 <code>rgba(var(--brand-rgb),.36)</code></td><td>✓ 대비 ≈16:1</td></tr>
-        <tr><td><b>워드마크</b></td><td>코발트 + T 오렌지</td><td>잉크(<code>--m-fg</code>) + T <code>--brand</code>는 <b>라이트 위 불가</b>(≈1:1)</td><td>⚠️ 결정 대기</td></tr>
-        <tr><td><b>네비 활성</b></td><td><code>--accent-1</code> 텍스트</td><td>레몬 텍스트 단독 불가 — 채움 알약 또는 다크화 필요</td><td>⚠️ 결정 대기</td></tr>
-        <tr><td><b>PIN 강조 <code>--pin-ac</code></b></td><td><code>var(--accent-2)</code></td><td>동상(03 §5 참조)</td><td>⚠️ 결정 대기</td></tr>
-      </table>
-      <div class="warnbox"><b>운영자 결정 대기 — 라이트 메인의 레몬 전략</b> (기틀에 없는 형태 창작 금지 → 질문 · §🎨-3):<br>
-      <b>A.</b> 라이트 유지 + 레몬은 <b>채움+잉크</b> 표면에만(CTA·칩·인디케이터) — 텍스트 강조는 잉크 유지<br>
-      <b>B.</b> 메인도 <b>근흑 다크화</b>(<code>--yeta-bg</code>) — 레몬 자유 사용(챗과 동일 문법·대비 ≈17:1)<br>
-      <b>C.</b> 메인 현행 오렌지/코발트 유지 — 레몬은 챗·브랜드 자산에만<br>
-      승인 시 <code>:root</code> 스왑 한 커밋으로 일괄 적용(구성도 01~06 매핑표 기준).</div>
-    </div>
+  <!-- 4 BEST UI/UX 근거 -->
+  <div class="sec"><h2><span class="n">4</span> BEST UI/UX 적용 근거 (운영자 260704 "검색해서 적용")</h2>
+    <div class="card"><table>
+      <tr><th>원칙(출처)</th><th>이 화면 적용</th></tr>
+      <tr><td>다크 = 순흑 대신 근흑·본문은 소프트 화이트(WCAG 4.5:1)</td><td><code>--yeta-bg #0d0b12</code> + <code>--fg #eef7f0</code> — 기틀 그대로 ✓</td></tr>
+      <tr><td>네온은 강조 전용·고채도 면적 절제("calm interface")</td><td>레몬 = TA 블록·글로우·활성 도트만 · 이미지리 그레이스케일 → 고채도 면적 최소 ✓</td></tr>
+      <tr><td>상태를 색만으로 전달 금지(색각 안전)</td><td>네비 활성 = 레몬 <b>+ 도트</b> · 잠김 = 투명도 <b>+ 자물쇠 도트</b> ✓</td></tr>
+      <tr><td>터치 타깃 ≥24px(WCAG 2.5.8) · 권장 44~48px</td><td>네비 탭 세로 패딩 9/7 = ≥48px · 키패드 키 56px ✓</td></tr>
+      <tr><td>키보드 포커스 가시화(WCAG 2.4.7)</td><td>네비·키패드 <code>:focus-visible</code> 레몬 인셋 링 신설 ✓</td></tr>
+      <tr><td><code>prefers-reduced-motion</code> 존중·모션 ≤300ms·장식 모션 제거 가능</td><td>전이 가드 블록 유지 · 글로우 = 정적(펄스 없음) ✓</td></tr>
+    </table></div>
   </div>
 
-  <div class="foot">정본 = <a href="../viewer/index.html">viewer/index.html</a> §YETA 메인(V1 260704) · 규칙 = CLAUDE.md §🎨 · 계승 인덱스 = docs/CII_컴포넌트계승인덱스.md · 다음 → <a href="03_페이지구성도_PIN게이트.html">03 PIN 게이트</a> · <a href="index.html">허브</a></div>
+  <div class="foot">정본 = <a href="../viewer/index.html">viewer/index.html</a> §YETA 메인 V2(260704) · 규칙 = CLAUDE.md §🎨 · 이전 ← <a href="01_페이지맵_yeta.html">01 페이지맵</a> · 다음 → <a href="03_페이지구성도_PIN게이트.html">03 PIN 게이트</a> · <a href="index.html">허브</a></div>
 </div>
 </body>
 </html>

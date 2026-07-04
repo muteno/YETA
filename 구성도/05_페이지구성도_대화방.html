@@ -69,14 +69,14 @@
   .yb { padding:10px 13px; border-radius:var(--r-l); font-size:var(--fs-body); line-height:var(--lh-base); white-space:pre-wrap; word-break:break-word; }
   .yb i.yn { font-style:italic; color:var(--fg-2); opacity:.75; }
   .yb.ai { background:var(--bubble-ai); border:1px solid rgba(255,255,255,.05); border-top-left-radius:var(--r-s); }
-  .yb.me { align-self:flex-end; max-width:78%; background:var(--bubble-me); color:#fff; border-top-right-radius:var(--r-s); }
+  .yb.me { align-self:flex-end; max-width:78%; background:var(--bubble-me); color:var(--m-fg); border-top-right-radius:var(--r-s); }
   .yb.sys { align-self:center; background:none; border:none; color:var(--mut); font-size:var(--fs-sm); padding:2px 4px; }
   .cap { display:block; margin-top:5px; font-size:var(--fs-xs); color:var(--mut); opacity:.8; font-variant-numeric:tabular-nums; font-style:normal; }
   .yin { flex:none; display:flex; gap:8px; padding:10px 12px; }
   .yin .ta { flex:1; background:rgba(255,255,255,.05); border:1px solid var(--line); border-radius:var(--r-l); color:var(--fg);
     font-size:var(--fs-body); line-height:1.4; padding:10px 13px; text-align:center; font-family:inherit; }
   .send { flex:none; width:var(--btn); height:var(--btn); align-self:flex-end; border-radius:50%; border:none;
-    background:var(--bubble-me); color:#fff; display:grid; place-items:center; cursor:pointer; touch-action:manipulation; }
+    background:var(--bubble-me); color:var(--m-fg); display:grid; place-items:center; cursor:pointer; touch-action:manipulation; }
   .send:active { transform:scale(var(--press-m,.9)); }
   .legend { flex:1 1 300px; min-width:260px; }
   .pinlay { display:inline-grid; place-items:center; min-width:16px; height:16px; border-radius:var(--r-pill); background:var(--brand); color:var(--yeta-bg); font:800 10px/1 ui-monospace,Menlo,monospace; padding:0 3px; }
@@ -91,7 +91,7 @@
   <p class="crumb">말벗 제타 · 페이지 구성도 <b>05 대화방</b></p>
   <h1>대화방 — 챗뷰 (<code>#yetadlg</code>)</h1>
   <p class="intro">앱의 본체. <b>헤더(재뽑기·상주 프로필·새 대화·닫기) + 무대(배경 크로스페이드) + 로그(소개 배너·버블) + 입력행</b>의 4단 구조. 페르소나 강조색 <code>--yeta-ac</code>가 아바타 이니셜·소개 태그·입력 포커스에 흐른다(현재 기본값 = <code>var(--bubble-me)</code>). 정본 = <code>viewer/index.html</code> CSS L91~188 · 마크업 L282~303 · JS <code>yRender/yApply</code>.</p>
-  <div class="ssot">📍 값 SSOT = <code>viewer/index.html :root</code> → <code>base.css</code> 거울 계승 · 버블 = <code>--bubble-me/--bubble-ai</code> · 창 = <code>--yeta-bg</code> · <b>브랜드 = 네온레몬 <code>--brand</code></b>(내 버블·전송 CTA 스왑안 §5).</div>
+  <div class="ssot">📍 값 SSOT = <code>viewer/index.html :root</code> → <code>base.css</code> 거울 계승 · 버블 = <code>--bubble-me/--bubble-ai</code> · 창 = <code>--yeta-bg</code> · <b>브랜드 = 네온레몬 <code>--brand</code> 적용 완료</b>(§5).</div>
   <nav class="docnav"><a href="01_페이지맵_yeta.html">01 페이지맵</a><a href="02_페이지구성도_메인.html">02 메인</a><a href="03_페이지구성도_PIN게이트.html">03 PIN 게이트</a><a href="04_페이지구성도_캐릭터선택.html">04 캐릭터 선택</a><a class="cur" href="05_페이지구성도_대화방.html">05 대화방</a><a href="06_페이지구성도_대화상태.html">06 대화 상태</a><a href="index.html">허브 ↗</a></nav>
 
   <!-- 1 와이어 -->
@@ -139,7 +139,7 @@
     <div class="card"><table>
       <tr><th>버블</th><th>정본</th><th>규칙</th></tr>
       <tr><td><b>캐릭터</b></td><td><code>.ymsg</code> + <code>.yb.ai</code></td><td>아바타 32px + 이름 <code>--fs-xs</code> + 버블 <code>--bubble-ai</code> · 좌상단 모서리만 <code>--r-s</code>(말꼬리) · 폭 ≤86%</td></tr>
-      <tr><td><b>나</b></td><td><code>.yb.me</code></td><td><span class="sw" style="background:var(--bubble-me)"></span><code>--bubble-me</code>(현행 네온보라) + 흰 글자 · 우측 정렬 · 우상단 <code>--r-s</code> · 폭 ≤78%</td></tr>
+      <tr><td><b>나</b></td><td><code>.yb.me</code></td><td><span class="sw" style="background:var(--bubble-me)"></span><code>--bubble-me(=var(--brand) 네온레몬 · 260704 적용)</code> + 잉크 글자 · 우측 정렬 · 우상단 <code>--r-s</code> · 폭 ≤78%</td></tr>
       <tr><td><b>나레이션</b></td><td><code>i.yn</code></td><td><code>*지문*</code> → 이탤릭 톤다운(<code>--fg-2</code> .75) — 대화 폰트 결(제타)</td></tr>
       <tr><td><b>시스템</b></td><td><code>.yb.sys</code></td><td>중앙 무배경 <code>--mut --fs-sm</code> — 페르소나 합류 등(그룹 끊음)</td></tr>
       <tr><td><b>캡션</b></td><td><code>.yb-cap</code></td><td>소요초(tabular-nums) — 답장 버블 하단</td></tr>
@@ -174,23 +174,23 @@
   </div>
 
   <!-- 5 브랜드 적용 -->
-  <div class="sec"><h2><span class="n">5</span> 🍋 브랜드 적용 — 네온레몬 (다크 챗 = 본진)</h2>
-    <p class="lead">근흑 위 레몬 대비 ≈17:1 · 레몬 위 잉크(<code>--m-fg</code>) ≈16:1 — 다크 챗은 결정 대기 없이 전부 성립. <b>내 버블이 곧 브랜드 순간</b>.</p>
+  <div class="sec"><h2><span class="n">5</span> 🍋 브랜드 적용 — 완료 (다크 챗 = 본진 · 260704)</h2>
+    <p class="lead">근흑 위 레몬 ≈17:1 · 레몬 위 잉크(<code>--m-fg</code>) ≈16:1. <b>내 버블이 곧 브랜드 순간</b> — 아래 매핑 전부 :root 배선 완료.</p>
     <div class="card">
       <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-bottom:6px">
         <span class="b-me">오늘 좀 길었어. <i>*가방을 내려놓는다*</i></span>
         <button class="b-send" type="button" aria-label="전송(브랜드 적용안)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2 15 22 11 13 2 9z"/></svg></button>
-        <span style="font-size:12px;color:var(--mut)">← 적용안 미리보기: <code>--brand</code> 채움 + 잉크 <code>--m-fg</code></span>
+        <span style="font-size:12px;color:var(--mut)">← 적용 결과: <code>--brand</code> 채움 + 잉크 <code>--m-fg</code></span>
       </div>
       <table>
-        <tr><th>요소</th><th>현행</th><th>브랜드 적용안</th><th>동반 수정</th></tr>
+        <tr><th>요소</th><th>이전(보라 시절)</th><th>적용값(260704)</th><th>동반 수정(완료)</th></tr>
         <tr><td><b>내 버블</b> <code>.yb.me</code></td><td><span class="sw" style="background:var(--bubble-me)"></span><code>--bubble-me #b45cff</code> + 흰 글자</td><td><span class="sw" style="background:var(--brand)"></span><code>--bubble-me → #E7FF2E(--brand 값)</code> + 잉크 글자</td><td><code>color:#fff → var(--m-fg)</code> · 나레이션 <code>rgba(255,255,255,.82) → 잉크 .72</code></td></tr>
         <tr><td><b>전송 버튼</b> <code>.yeta-send</code></td><td><code>--bubble-me</code> + 흰 아이콘</td><td><code>--brand</code> + 잉크 아이콘</td><td><code>color:#fff → var(--m-fg)</code></td></tr>
         <tr><td><b>강조 훅</b> <code>--yeta-ac</code></td><td><code>var(--bubble-me)</code></td><td><code>var(--brand)</code> — 이니셜·소개 태그·입력 포커스가 일괄 레몬</td><td>없음(변수 1곳)</td></tr>
         <tr><td><b>무대 틴트 폴백</b></td><td><code>#7c5cfc</code>(보라 리터럴)</td><td><code>var(--brand)</code> 틴트(8~12%)</td><td>JS <code>yStage</code> 1곳</td></tr>
         <tr><td><b>버블 <code>--bubble-ai</code>·창 <code>--yeta-bg</code></b></td><td>근흑 계열</td><td>유지 — 근흑은 브랜드 짝 색</td><td>—</td></tr>
       </table>
-      <p class="note"><b>승인 시 실행 순서</b>(§🎨 2-2): <code>:root</code> 값 스왑 → <code>python3 shared/build_design_mirror.py build</code> → CII "채팅 버블(yeta)" 행 갱신 → check_refs 통과. 코드 산점 수정은 위 "동반 수정" 3곳뿐.</p>
+      <p class="note"><b>적용 절차 이행 완료</b>(§🎨 2-2 · 260704): <code>:root</code> 스왑 → 거울 재생성 → CII "채팅 버블(yeta)" 행 갱신 → check_refs rc=0. 코드 산점 수정 3곳(버블 글자·전송 아이콘·무대 틴트)도 완료.</p>
     </div>
   </div>
 
