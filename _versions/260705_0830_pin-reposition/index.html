@@ -203,16 +203,10 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
     background:var(--bg-scrim), url(assets/brand/yeta-hero.webp) center/cover no-repeat var(--bg); }
   /* PIN 모드 전면 글래스 딤 — 포스터 타이포(PLAY a Episode/YETA) 위에 PIN 라벨·슬롯이 겹쳐 뒤죽박죽 되던 것 차단(운영자 스샷 260704).
      딤 값 = dialog ::backdrop 동값 계승 · blur = --blur-m · z = 로컬(절대1 예외축) */
-  /* PIN 모드 딤 = 이미지를 덮지 않음(운영자 260705 "기존 이미지 안 덮고") — 풀블러 폐지, 키패드 있는 하단만 은은한 그라데 스크림(가독). 얼굴·헤드라인은 그대로 노출. */
-  .ymain::before { content:''; position:absolute; inset:0; z-index:1; background:linear-gradient(transparent 44%, rgba(0,0,0,0) 86%); pointer-events:none; transition:background .5s var(--ease); }
-  .ymain.pin-mode::before { background:linear-gradient(transparent 44%, rgba(0,0,0,.52) 86%); }
+  .ymain::before { content:''; position:absolute; inset:0; z-index:1; background:rgba(0,0,0,0); pointer-events:none; transition:background .45s var(--ease); }
+  .ymain.pin-mode::before { background:rgba(0,0,0,.6); backdrop-filter:blur(var(--blur-m)); -webkit-backdrop-filter:blur(var(--blur-m)); }
   .ymain-body { flex:1; display:flex; flex-direction:column; align-items:center; overflow:hidden; padding:0 24px; position:relative; z-index:2; }
-  /* PIN 블록은 절대배치(배 위치)로 오버랩 — body 정렬 불필요(옛 center 규칙 폐지) */
-  /* 캐릭터 뒤 라임 원 발광 펄스 — 중심 48%/69%·반경≈35%w(main.png 실측) · screen=밝히기만(캐릭터 중앙은 링 투명으로 보존) · 디밍↔발광 반복(운영자 260705) */
-  .ym-glow { position:absolute; inset:0; z-index:1; pointer-events:none; mix-blend-mode:screen;
-    background:radial-gradient(circle closest-side at 48% 69%, transparent 56%, rgba(var(--accent-rgb),.46) 77%, transparent 98%);
-    animation:ymGlowPulse 3.4s ease-in-out infinite; }   /* 링 반경 = 원 테두리(closest-side 74~78%≈35%w) · 중앙 투명 = 캐릭터 보존 · 은은한 호흡 */
-  @keyframes ymGlowPulse { 0%,100% { opacity:.12; } 50% { opacity:.58; } }
+  .ymain.pin-mode .ymain-body { justify-content:center; }   /* PIN 블록 = 딤 위 세로 중앙(포스터 헤드라인 영역 회피) */
   .ym-hero { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; gap:26px; padding-bottom:8vh;
     transition:flex-grow .5s var(--ease), gap .5s var(--ease), padding .5s var(--ease); }
   .ym-access { width:72px; height:72px; border-radius:50%; border:1px solid var(--glass-line); cursor:pointer; display:grid; place-items:center;
@@ -221,25 +215,22 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
     transition:transform .28s var(--ease), box-shadow .3s var(--ease); touch-action:manipulation; }
   .ym-access:active { transform:scale(var(--press-m)); }
   .ym-access svg { width:24px; height:24px; }
-  /* 텍스트 라벨 대신 자물쇠가 숨쉬듯 커졌다 작아지며(작을 때 약하게 디밍) "눌러" 신호 = 접속 어포던스(운영자 260705) */
-  @keyframes ymLockBreathe { 0%,100% { transform:scale(.96); opacity:.78; } 50% { transform:scale(1.08); opacity:1; } }
-  .ym-access { animation:ymLockBreathe 2.6s var(--ease) infinite; }
-  .ym-access.unlocking { animation:none; }   /* 누르면 펄스 멈추고 락 열림 모션으로 전환 */
   /* 접속 누름 = 잠금해제 액티브 — 고리가 힌지 축으로 들려 열리고 라임 글로우 점등(운영자 260704 "락이 풀리는 모션") · 고리 회전=기하 raw 예외축 */
   .ym-shackle { transform-box:fill-box; transform-origin:86% 100%; transition:transform .5s var(--ease); }
   .ym-access.unlocking .ym-shackle { transform:translateY(-2px) rotate(-28deg); }
   .ym-access.unlocking { color:var(--accent); border-color:rgba(var(--accent-rgb),.55);
     box-shadow:inset 0 1px 0 var(--glass-line), var(--shadow-card), 0 0 40px rgba(var(--accent-rgb),.42); }
+  .ym-access-lbl { font-size:12px; font-weight:700; color:var(--mut); margin-top:0; transition:opacity .3s; }
   /* 접속 = 캐릭터 가슴팍 위 글래스 잠금해제 버튼(무채색 글래스 + 강조 라임 디밍 · 운영자 260704) · 누르면 pin-mode */
   .ym-access-card { position:absolute; top:55%; left:50%; transform:translate(-50%,-50%); z-index:2;
     display:flex; flex-direction:column; align-items:center; gap:10px; transition:opacity .4s var(--ease); }
   .ymain.pin-mode .ym-access-card { opacity:0; pointer-events:none; }
-  /* PIN 블록 = 캐릭터 '배' 높이(≈66%)에 이미지 오버랩 절대배치 · 접속 후 아래에서 위로 올라오며 페이드인(운영자 260705) */
-  .ym-pin { position:absolute; left:50%; top:69%; z-index:3; width:100%; max-width:300px; display:flex; flex-direction:column; align-items:center;
-    opacity:0; transform:translate(-50%, calc(-50% + 46px)); pointer-events:none;
-    transition:opacity .5s var(--ease) .12s, transform .5s var(--ease) .12s; }
-  .ymain.pin-mode .ym-access { opacity:0; pointer-events:none; }   /* 접속 자물쇠 퇴장(라벨 없음) */
-  .ymain.pin-mode .ym-pin { opacity:1; transform:translate(-50%,-50%); pointer-events:auto; }
+  .ym-pin { width:100%; max-width:300px; display:flex; flex-direction:column; align-items:center;
+    opacity:0; transform:translateY(24px); pointer-events:none; height:0; overflow:hidden;
+    transition:opacity .45s var(--ease) .1s, transform .45s var(--ease) .1s; }
+  .ymain.pin-mode .ym-hero { flex-grow:0; gap:0; padding:0; }   /* 중앙 정렬은 body justify-content가 담당(옛 padding-top 52px = 헤드라인 겹침 원인) */
+  .ymain.pin-mode .ym-access, .ymain.pin-mode .ym-access-lbl { opacity:0; pointer-events:none; height:0; margin:0; }
+  .ymain.pin-mode .ym-pin { opacity:1; transform:none; pointer-events:auto; height:auto; overflow:visible; }
   /* PIN 키패드 = nomute lk- 이식 · 다크+라임 리컬러(260704) */
   .lk-m { font-size:14px; font-weight:800; color:var(--fg-2); letter-spacing:-.2px; margin-top:6px; }
   .lk-slots { display:flex; justify-content:center; gap:15px; margin:22px 0 2px; }
@@ -288,19 +279,19 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
       border-inline:1px solid var(--glass-line); box-shadow:var(--shadow-card); overflow:hidden; }
     #yetadlg { height:min(94dvh,820px); width:auto; aspect-ratio:9/16; max-width:96vw; }
   }
-  @media (prefers-reduced-motion:reduce){ .ym-hero, .ym-pin, .ym-access, .ym-shackle, .ynav button { transition:none; } .ym-access, .ym-glow { animation:none; } }
+  @media (prefers-reduced-motion:reduce){ .ym-hero, .ym-pin, .ym-access, .ym-shackle, .ynav button { transition:none; } }
 </style>
 </head>
 <body>
 <!-- ═══ YETA 메인 화면 (라이트·PIN 게이트 · 260704 재디자인 V1) ═══ -->
 <div class="ymain" id="ymain">
-  <div class="ym-glow" aria-hidden="true"></div>   <!-- 캐릭터 뒤 라임 원 발광 펄스(포스터 원에 오버랩 · screen 블렌드) -->
   <div class="ymain-body">
     <div class="ym-hero">
       <div class="ym-access-card">
         <button class="ym-access" id="ymAccess" type="button" aria-label="접속">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path class="ym-shackle" d="M8 11V7a4 4 0 018 0v4"/></svg>
         </button>
+        <div class="ym-access-lbl">접속</div>
       </div>
     </div>
     <div class="ym-pin">
