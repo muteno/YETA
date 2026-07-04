@@ -622,9 +622,8 @@ try { if (new URLSearchParams(location.search).get('yeta')) setTimeout(() => ope
 })();
 /* PWA 서비스워커 등록 */
 try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch {}
-/* ── [독립 뷰어] 진입점 = 로드 시 자동 오픈(pmenu 대체) · 닫혀도 재오픈(yeta가 메인) ── */
-yetadlg.addEventListener('close', () => setTimeout(() => { if (!yetadlg.open) openYeta(); }, 60));
-openYeta();
+/* ── (V1 260704) 진입점 = 메인 화면(YETA + PIN). 챗 자동오픈·재오픈 제거 — 챗은 PIN 해제 후 '대화' 탭에서만 연다.
+      챗 닫기 = 메인 복귀(dialog 아래 .ymain 상주). 딥링크(?yeta=)만 예외 진입(위 L576). ── */
 </script>
 </body>
 </html>
