@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no">
 <meta name="color-scheme" content="light dark">
-<meta name="theme-color" content="#eef3ff">
+<meta name="theme-color" content="#0d0b12">
 <title>YETA</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@latest/dist/web/variable/pretendardvariable.min.css">
 <link rel="stylesheet" href="tokens.css">
@@ -48,7 +48,7 @@
     --m-line:rgba(20,30,60,.12); --m-line2:rgba(20,30,60,.08);
     --m-glass:rgba(255,255,255,.62); --m-glass2:rgba(255,255,255,.8);
     --m-danger:#e23b2e; --m-danger-rgb:226,59,46;
-    --pin-ac:var(--accent-2); --pin-ac-rgb:var(--accent-2-rgb);
+    --pin-ac:var(--brand); --pin-ac-rgb:var(--brand-rgb);   /* PIN 강조 = 브랜드 네온레몬 스왑(메인 다크 글래스 전환 · 운영자 260704 "브랜드 메인색만") */
   }
   /* reduced-motion = 눌림 토큰 전역 무효화(1) — 개별 transform:none 가드 대신 한 블록(분신술10·4뷰어 가드 불균형 해소) */
   @media (prefers-reduced-motion:reduce){ :root{ --press-m:1; --press-l:1; } }
@@ -186,25 +186,25 @@ body { background:var(--yeta-bg,#0d0b12); color:var(--fg); font-family:Pretendar
   .yeta-list .yl-dice { margin-top:6px; border:1px dashed var(--line); border-radius:var(--r-m); background:none; color:var(--mut); font:inherit; font-size:var(--fs-sm); font-weight:var(--fw-b); padding:12px; cursor:pointer; text-align:center; touch-action:manipulation; }
   .yeta-list .yl-dice:active { transform:scale(var(--press-l,.96)); }
 
-  /* ═══ YETA 메인 화면 (라이트·PIN 게이트 · 260704 재디자인 V1) — 챗 다크 dialog와 공존 ═══ */
+  /* ═══ YETA 메인 화면 (다크 글래스모피즘·PIN 게이트 · 260704 V2) — 루트 글래스 시안 이식: 근흑(--yeta-bg) + 브랜드 네온레몬 글로우 오브 + 글래스 카드. 색은 --brand 단색(운영자 260704 "브랜드 메인색만") · 라디얼 구조·알파는 V1 그대로(색 스왑만) ═══ */
   body { background:
-      radial-gradient(circle at 84% 12%, rgba(var(--sky-rgb),.85), rgba(var(--accent-2-rgb),.24) 13%, transparent 27%),
-      radial-gradient(circle at 6% 46%, rgba(var(--sky-rgb),.7), transparent 15%),
-      radial-gradient(circle at 70% 92%, rgba(var(--sky-rgb),.5), transparent 22%),
-      linear-gradient(160deg,#eef3ff,#f7f9ff 55%,#eef2fb) fixed; color:var(--m-fg); }
+      radial-gradient(circle at 84% 12%, rgba(var(--brand-rgb),.85), rgba(var(--brand-rgb),.24) 13%, transparent 27%),
+      radial-gradient(circle at 6% 46%, rgba(var(--brand-rgb),.7), transparent 15%),
+      radial-gradient(circle at 70% 92%, rgba(var(--brand-rgb),.5), transparent 22%),
+      var(--yeta-bg) fixed; color:var(--fg); }
   .ymain { position:fixed; inset:0; display:flex; flex-direction:column; z-index:1; }
   .ymain-body { flex:1; display:flex; flex-direction:column; align-items:center; overflow:hidden; padding:0 24px; }
   .ym-hero { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:26px;
     transition:flex-grow .5s var(--ease), gap .5s var(--ease), padding .5s var(--ease); }
   .ym-yeta { font-family:'LEMONMILK',sans-serif; font-weight:700; font-size:64px; line-height:1; letter-spacing:.02em;
-    color:var(--accent-2); transition:font-size .5s var(--ease); }
-  .ym-yeta .t { color:var(--accent-1); }
+    color:var(--fg); transition:font-size .5s var(--ease); }   /* 로고 = 흰 바탕글자 + T만 브랜드(메인 히어로 시안 결) */
+  .ym-yeta .t { color:var(--brand); }
   .ym-access { width:56px; height:56px; border-radius:50%; border:none; cursor:pointer; display:grid; place-items:center;
-    background:var(--accent-1); color:#fff; box-shadow:0 8px 22px rgba(var(--accent-1-rgb),.36);
-    transition:transform .28s var(--ease), opacity .35s var(--ease); touch-action:manipulation; }
+    background:var(--brand); color:var(--yeta-bg); box-shadow:0 8px 22px rgba(var(--brand-rgb),.36);
+    transition:transform .28s var(--ease), opacity .35s var(--ease); touch-action:manipulation; }   /* 브랜드 채움 = 아이콘 근흑(레몬 위 흰색 불가독) */
   .ym-access:active { transform:scale(var(--press-m)); }
   .ym-access svg { width:24px; height:24px; }
-  .ym-access-lbl { font-size:12px; font-weight:700; color:var(--m-mut); margin-top:-14px; transition:opacity .3s; }
+  .ym-access-lbl { font-size:var(--fs-sm); font-weight:var(--fw-b); color:var(--mut); margin-top:-14px; transition:opacity .3s; }
   .ym-pin { width:100%; max-width:300px; display:flex; flex-direction:column; align-items:center;
     opacity:0; transform:translateY(24px); pointer-events:none; height:0; overflow:hidden;
     transition:opacity .45s var(--ease) .1s, transform .45s var(--ease) .1s; }
@@ -212,47 +212,44 @@ body { background:var(--yeta-bg,#0d0b12); color:var(--fg); font-family:Pretendar
   .ymain.pin-mode .ym-yeta { font-size:40px; }
   .ymain.pin-mode .ym-access, .ymain.pin-mode .ym-access-lbl { opacity:0; pointer-events:none; height:0; margin:0; }
   .ymain.pin-mode .ym-pin { opacity:1; transform:none; pointer-events:auto; height:auto; overflow:visible; }
-  /* PIN 키패드 = nomute lk- 이식 · 라이트+코발트 리컬러 */
-  .lk-m { font-size:14px; font-weight:800; color:var(--m-fg2); letter-spacing:-.2px; margin-top:6px; }
-  .lk-slots { display:flex; justify-content:center; gap:15px; margin:22px 0 2px; }
-  .lk-slot { width:16px; height:20px; display:grid; place-items:center; font:400 18px/1 Pretendard,sans-serif; color:var(--pin-ac); opacity:.5; transition:opacity .15s, transform .15s; }
-  .lk-slot::before { content:''; grid-area:1/1; width:13px; height:13px; box-sizing:border-box; border-radius:50%; border:2px solid var(--m-mut); transition:border-color .15s; }
-  .lk-slot.on { opacity:1; }
-  .lk-slot.on::before { content:'*'; width:auto; height:auto; border:none; border-radius:0; font:800 24px/1 ui-monospace,SFMono-Regular,Menlo,monospace; color:var(--pin-ac); transform:translateY(3px); }
-  .lk-slots.bad .lk-slot::before { border-color:var(--m-danger); }
-  .lk-slots.bad .lk-slot.on::before { color:var(--m-danger); }
+  /* PIN 글래스 카드 = dialog 정본 표면 계승(그라데 165deg·blur30·선 .13·inset 하이라이트 그대로 — 시안 '글래스 카드' = 기존 dialog 어휘·260704). 커스텀 키패드(lk-pad) 폐지 → 데모 정본(투명 입력=OS 숫자키패드) 이식 */
+  .ym-card { width:100%; padding:26px 22px 22px; text-align:center;
+    background:linear-gradient(165deg, rgba(27,44,32,.60), rgba(11,19,14,.70));
+    backdrop-filter:blur(30px) saturate(1.6); -webkit-backdrop-filter:blur(30px) saturate(1.6);
+    border:1px solid rgba(255,255,255,.13); border-radius:var(--r-modal);
+    box-shadow:0 30px 80px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.14); }
+  .lk-m { font-size:var(--fs-h3); font-weight:var(--fw-x); color:var(--fg); letter-spacing:-.2px; }
+  .pin-sub { margin:8px 0 18px; font-size:var(--fs-sm); line-height:1.5; color:var(--mut); }
+  /* PIN 슬롯·투명 입력 = 업로드 데모 정본 이식(260704) — 탭=OS 숫자키패드 · 방금 자리=숫자 노출(브랜드) · 이전/미입력=--mut 동그라미 */
+  .pin-boxwrap { position:relative; }
+  .pin-slots { display:flex; justify-content:center; gap:5%; padding:6px 4.5% 4px; }
+  .pin-slot { width:12px; height:18px; display:grid; place-items:center; position:relative; font-weight:var(--fw-x); font-size:var(--fs-body); line-height:1; color:var(--pin-ac); }   /* 폰트=본문 상속(모노 아님) · 방금 자리 숫자 = PIN 강조 토큰(=브랜드 스왑) */
+  .pin-slot::before { content:''; grid-area:1/1; width:56%; aspect-ratio:1; border-radius:50%; background:var(--mut); transition:background .15s; }
+  .pin-slot.cur::before { content:none; }
+  .pin-slots.bad .pin-slot::before { background:var(--danger); }
+  .pin-slots.bad .pin-slot.cur { color:var(--danger); }
   @keyframes lkShake { 0%,100%{transform:translateX(0)} 12%{transform:translateX(-9px)} 28%{transform:translateX(8px)} 44%{transform:translateX(-6px)} 60%{transform:translateX(4px)} 76%{transform:translateX(-2px)} }
-  .lk-slots.shake { animation:lkShake .45s cubic-bezier(.36,.07,.19,.97); }
-  .lk-err { color:var(--m-danger); font-size:12px; margin-top:12px; min-height:15px; font-weight:700; }
-  .lk-ok { color:var(--accent-1); font-size:12.5px; margin-top:12px; min-height:15px; font-weight:800; }
-  .lk-pad { display:grid; grid-template-columns:repeat(3,1fr); gap:0; width:100%; max-width:270px; margin:20px auto 0;
-    border:1px solid var(--m-line2); border-radius:16px; overflow:hidden; background:var(--m-glass); backdrop-filter:blur(10px); }
-  .lk-key { height:56px; display:grid; place-items:center; font-size:22px; font-weight:700; color:var(--m-fg); background:none; border:none; cursor:pointer;
-    -webkit-tap-highlight-color:transparent; user-select:none; touch-action:manipulation; transition:background .12s, color .15s, transform .07s; }
-  .lk-key:nth-child(3n+2), .lk-key:nth-child(3n) { border-left:1px solid var(--m-line2); }
-  .lk-key:nth-child(n+4) { border-top:1px solid var(--m-line2); }
-  .lk-key:active { background:rgba(20,30,60,.05); transform:scale(.93); }
-  .lk-key.hit { background:rgba(var(--pin-ac-rgb),.14); color:var(--pin-ac); }
-  .lk-key.empty { pointer-events:none; }
-  .lk-key.back svg { width:25px; height:25px; stroke:var(--m-fg2); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; transition:stroke .15s; }
-  .lk-key.back.hit svg { stroke:var(--pin-ac); }
-  @media (prefers-reduced-motion:reduce){ .lk-slots.shake{animation-duration:.01s} .lk-key:active{transform:none} }
+  .pin-slots.shake { animation:lkShake .45s cubic-bezier(.36,.07,.19,.97); }
+  .pin-in-h { position:absolute; inset:0; width:100%; height:100%; opacity:0; border:none; background:none; cursor:pointer; outline:none; -webkit-tap-highlight-color:transparent; font-size:16px; }   /* 투명 오버레이 = 탭 시 OS 숫자키패드(16px = iOS 자동확대 가드) */
+  .lk-err { color:var(--danger); font-size:var(--fs-sm); margin-top:12px; min-height:15px; font-weight:var(--fw-b); }
+  .lk-ok { color:var(--pin-ac); font-size:var(--fs-sm); margin-top:12px; min-height:15px; font-weight:var(--fw-x); }
+  @media (prefers-reduced-motion:reduce){ .pin-slots.shake{animation-duration:.01s} }
   /* 하단 네비 — PIN 전 = 메인만, 나머지 잠김 */
-  .ynav { flex:none; display:flex; background:var(--m-glass2); border-top:1px solid var(--m-line2); padding-bottom:calc(5px + env(safe-area-inset-bottom)); backdrop-filter:blur(16px); }
-  .ynav button { flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; padding:8px 0 4px; color:var(--m-mut); font-size:10px; font-weight:700; background:none; border:none; cursor:pointer; position:relative; transition:transform .28s var(--ease), color .2s, opacity .3s; touch-action:manipulation; }
+  .ynav { flex:none; display:flex; background:rgba(255,255,255,.06); border-top:1px solid var(--line2); padding-bottom:calc(5px + env(safe-area-inset-bottom)); backdrop-filter:blur(16px); }   /* 다크 글래스 = .tool-x 플레이트(.06)+--line2 계승 · 활성=브랜드 */
+  .ynav button { flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; padding:8px 0 4px; color:var(--mut); font-size:10px; font-weight:700; background:none; border:none; cursor:pointer; position:relative; transition:transform .28s var(--ease), color .2s, opacity .3s; touch-action:manipulation; }
   .ynav button:active { transform:scale(var(--press-s)); }
-  .ynav button.on { color:var(--accent-1); }
+  .ynav button.on { color:var(--brand); }
   .ynav button.locked { opacity:.4; }
   .ynav button svg { width:21px; height:21px; }
   .ynav .lockdot { position:absolute; top:5px; right:calc(50% - 18px); width:11px; height:11px; }
-  .ynav .lockdot svg { width:11px; height:11px; stroke:var(--m-mut); fill:none; stroke-width:2.4; }
+  .ynav .lockdot svg { width:11px; height:11px; stroke:var(--mut); fill:none; stroke-width:2.4; }
   .ymain.unlocked .ynav button.locked { opacity:1; }
   .ymain.unlocked .ynav button.locked .lockdot { display:none; }
   @media (prefers-reduced-motion:reduce){ .ym-hero, .ym-yeta, .ym-pin, .ym-access, .ynav button { transition:none; } }
 </style>
 </head>
 <body>
-<!-- ═══ YETA 메인 화면 (라이트·PIN 게이트 · 260704 재디자인 V1) ═══ -->
+<!-- ═══ YETA 메인 화면 (다크 글래스모피즘·PIN 게이트 · 브랜드 단색 · 260704 V2) ═══ -->
 <div class="ymain" id="ymain">
   <div class="ymain-body">
     <div class="ym-hero">
@@ -263,10 +260,15 @@ body { background:var(--yeta-bg,#0d0b12); color:var(--fg); font-family:Pretendar
       <div class="ym-access-lbl">접속</div>
     </div>
     <div class="ym-pin">
-      <div class="lk-m">PIN 입력</div>
-      <div class="lk-slots" id="ymSlots"><span class="lk-slot"></span><span class="lk-slot"></span><span class="lk-slot"></span><span class="lk-slot"></span></div>
-      <div class="lk-err" id="ymErr"></div>
-      <div class="lk-pad" id="ymPad"></div>
+      <div class="ym-card">
+        <div class="lk-m">PIN 입력</div>
+        <div class="pin-sub">아래를 탭해서 PIN 4자리 입력</div>
+        <div class="pin-boxwrap">
+          <div class="pin-slots" id="ymSlots"><span class="pin-slot"></span><span class="pin-slot"></span><span class="pin-slot"></span><span class="pin-slot"></span></div>
+          <input class="pin-in-h" id="ymPinIn" type="text" inputmode="numeric" maxlength="4" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="PIN 4자리 입력">
+        </div>
+        <div class="lk-err" id="ymErr"></div>
+      </div>
     </div>
   </div>
   <nav class="ynav" id="ynav">
@@ -577,47 +579,51 @@ window.addEventListener('popstate', () => { if (_composeRecovering) return; if (
 const _yetaBtnEl = $('#yetaBtn'); if (_yetaBtnEl) _yetaBtnEl.addEventListener('click', e => { e.stopPropagation(); hidePmenu(); openYeta(); });   // pmenu 진입(stopPropagation = #msgbtn 패턴)
 try { if (new URLSearchParams(location.search).get('yeta')) setTimeout(() => openYeta(), 400); } catch {}   // 답장 웹푸시 딥링크(/?yeta=main — sw.js notificationclick)
 
-/* ═══ YETA 메인 PIN 게이트 (nomute lk- 이식 · SHA-256·5회=10분 잠금 · 260704 V1) ═══ */
+/* ═══ YETA 메인 PIN 게이트 (데모 정본 이식 — 투명 입력=OS 숫자키패드·커스텀 키패드 폐지 · SHA-256·5회=10분 잠금 · 260704 V2) ═══ */
 (function () {
-  const ymain = $('#ymain'), slotsEl = $('#ymSlots'), padEl = $('#ymPad'), errEl = $('#ymErr'), accessBtn = $('#ymAccess'), nav = $('#ynav');
+  const ymain = $('#ymain'), slotsEl = $('#ymSlots'), inEl = $('#ymPinIn'), errEl = $('#ymErr'), accessBtn = $('#ymAccess'), nav = $('#ynav');
   const YM_PIN_H = 'ce019bfca1b22ed8c7dd882b875e65a97048a467f64d717b4ebb76d1cd644b63';                    // sha256('<PIN>:yeta') — V1 기본 PIN, 운영자 변경 예정
   const YM_LEN = 4, YM_MAX = 5, YM_OUT_MS = 600000;
-  const BSVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 5H9l-6 7 6 7h11a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1z"/><path d="M16 9l-4 4M12 9l4 4"/></svg>';
-  const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', 'back'];
-  let val = '', unlocked = false;
-  const ymHash = async p => { const d = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(p + ':yeta')); return [...new Uint8Array(d)].map(b => b.toString(16).padStart(2, '0')).join(''); };
-  padEl.innerHTML = KEYS.map(k => k === '' ? '<button class="lk-key empty" tabindex="-1"></button>' : k === 'back' ? `<button class="lk-key back" data-back="1" aria-label="지우기">${BSVG}</button>` : `<button class="lk-key" data-n="${k}">${k}</button>`).join('');
+  let unlocked = false;
   const slots = [...slotsEl.children];
-  const fill = () => slots.forEach((s, i) => s.classList.toggle('on', i < val.length));
-  const flash = el => { if (!el) return; el.classList.add('hit'); setTimeout(() => el.classList.remove('hit'), 140); };
+  const ymHash = async p => { const d = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(p + ':yeta')); return [...new Uint8Array(d)].map(b => b.toString(16).padStart(2, '0')).join(''); };
+  // 정본 renderPinSlots(데모 그대로) — 방금 자리 = 숫자 노출(브랜드), 이전·미입력 = 동그라미
+  function renderPinSlots(v) {
+    const last = v.length - 1;
+    slots.forEach((s, i) => {
+      const cur = (i === last && last >= 0);
+      s.classList.toggle('cur', cur);
+      s.classList.toggle('on', i < v.length && !cur);
+      s.textContent = cur ? v[i] : '';
+    });
+  }
   const outLeft = () => { try { const u = +localStorage.getItem('yeta_pin_until') || 0; return Math.max(0, u - Date.now()); } catch { return 0; } };
-  function setUnlocked() { unlocked = true; ymain.classList.add('unlocked'); }
-  accessBtn.onclick = () => ymain.classList.add('pin-mode');
-  padEl.onclick = async e => {
-    const b = e.target.closest('.lk-key'); if (!b || unlocked) return;
-    if (b.dataset.back) { flash(b); val = val.slice(0, -1); errEl.textContent = ''; errEl.className = 'lk-err'; slotsEl.classList.remove('bad'); fill(); return; }
-    if (outLeft()) { errEl.className = 'lk-err'; errEl.textContent = `PIN 오류 ${YM_MAX}회 — ${Math.ceil(outLeft() / 60000)}분 후 다시`; return; }
-    if (b.dataset.n && val.length < YM_LEN) {
-      flash(b); val += b.dataset.n; fill();
-      if (val.length === YM_LEN) {
-        const h = await ymHash(val);
-        if (h === YM_PIN_H) {
-          try { localStorage.setItem('yeta_pin_ok', '1'); localStorage.removeItem('yeta_pin_fails'); localStorage.removeItem('yeta_pin_until'); } catch {}
-          errEl.className = 'lk-ok'; errEl.textContent = '잠금 해제 — 메뉴 활성'; setUnlocked();
-        } else {
-          let n = 0; try { n = (+localStorage.getItem('yeta_pin_fails') || 0) + 1; localStorage.setItem('yeta_pin_fails', String(n)); if (n >= YM_MAX) localStorage.setItem('yeta_pin_until', String(Date.now() + YM_OUT_MS)); } catch {}
-          slotsEl.classList.add('bad', 'shake'); errEl.className = 'lk-err'; errEl.textContent = n >= YM_MAX ? `PIN 오류 ${YM_MAX}회 — 10분 후 다시` : `PIN 번호가 틀립니다 (${n}/${YM_MAX})`;
-          setTimeout(() => { val = ''; fill(); slotsEl.classList.remove('bad', 'shake'); if (!outLeft()) { errEl.textContent = ''; } }, 1400);
-        }
+  function setUnlocked() { unlocked = true; ymain.classList.add('unlocked'); inEl.disabled = true; inEl.blur(); }
+  accessBtn.onclick = () => { ymain.classList.add('pin-mode'); inEl.focus(); };
+  inEl.addEventListener('input', async () => {
+    const clean = inEl.value.replace(/\D/g, '').slice(0, YM_LEN);
+    if (clean !== inEl.value) inEl.value = clean;
+    if (outLeft()) { inEl.value = ''; renderPinSlots(''); errEl.className = 'lk-err'; errEl.textContent = `PIN 오류 ${YM_MAX}회 — ${Math.ceil(outLeft() / 60000)}분 후 다시`; return; }
+    slotsEl.classList.remove('bad', 'shake'); errEl.className = 'lk-err'; errEl.textContent = '';
+    renderPinSlots(clean);
+    if (clean.length === YM_LEN) {
+      const h = await ymHash(clean);
+      if (h === YM_PIN_H) {
+        try { localStorage.setItem('yeta_pin_ok', '1'); localStorage.removeItem('yeta_pin_fails'); localStorage.removeItem('yeta_pin_until'); } catch {}
+        errEl.className = 'lk-ok'; errEl.textContent = '잠금 해제 — 메뉴 활성'; setUnlocked();
+      } else {
+        let n = 0; try { n = (+localStorage.getItem('yeta_pin_fails') || 0) + 1; localStorage.setItem('yeta_pin_fails', String(n)); if (n >= YM_MAX) localStorage.setItem('yeta_pin_until', String(Date.now() + YM_OUT_MS)); } catch {}
+        slotsEl.classList.add('bad', 'shake'); errEl.className = 'lk-err'; errEl.textContent = n >= YM_MAX ? `PIN 오류 ${YM_MAX}회 — 10분 후 다시` : `PIN 번호가 틀립니다 (${n}/${YM_MAX})`;
+        setTimeout(() => { inEl.value = ''; renderPinSlots(''); slotsEl.classList.remove('bad', 'shake'); if (!outLeft()) { errEl.textContent = ''; } }, 1400);
       }
     }
-  };
+  });
   try { if (localStorage.getItem('yeta_pin_ok') === '1') setUnlocked(); } catch {}   // 재방문 = 이미 해제면 통과(로컬 소프트 게이트)
   nav.onclick = e => {
     const b = e.target.closest('button'); if (!b) return;
     const tab = b.dataset.tab;
     if (tab === 'main') return;
-    if (!unlocked) { ymain.classList.add('pin-mode'); slotsEl.classList.add('shake'); setTimeout(() => slotsEl.classList.remove('shake'), 450); return; }
+    if (!unlocked) { ymain.classList.add('pin-mode'); inEl.focus(); slotsEl.classList.add('shake'); setTimeout(() => slotsEl.classList.remove('shake'), 450); return; }
     if (tab === 'chat') { openYeta(); return; }
     miniToast('준비중 — 곧 열려');   // 캐릭터·설정(다음 머지)
   };
