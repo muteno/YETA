@@ -96,7 +96,7 @@ def check_versions():
 # raw를 토큰으로 줄였으면 baseline도 그만큼 낮춰 재발 방지(드리프트는 늘 때만 잡힘).
 # baseline = `:root` SSOT 블록 제외한 현재 raw 카운트(=드리프트는 *늘 때만* 잡힘). 260620 실측.
 _DESIGN_BASELINE = {
-    'viewer/index.html': {'accent_raw': 0, 'blur': 11, 'hex': 8, 'accent_hex': 0},   # yeta 실측 재기준(260704) — nomute 이관치(97/129/173/32) 폐기·§🎨 ratchet "raw 줄이면 baseline도 낮춰". accent_raw 1→0 = .tool-x:hover rgba 리터럴 → var(--accent-rgb) 토큰화. 강조 패턴 = 네온 레몬 #d8ff3d/rgba(216,255,61(운영자 260704 브랜드 확정 — 구 그린 #0FFD02 폐기). blur 11 = 전부 토큰 아닌 고정 글래스(토스트·다이얼로그·픽커·네비) 잔존치·hex 8 = 의미 고정색(--bubble-ai 등 :root 제외 잔존).
+    'viewer/index.html': {'accent_raw': 0, 'blur': 11, 'hex': 8, 'accent_hex': 0},   # yeta 실측 재기준(260704) — nomute 이관치(97/129/173/32) 폐기·§🎨 ratchet "raw 줄이면 baseline도 낮춰". accent_raw 1→0 = .tool-x:hover rgba 리터럴 → var(--accent-rgb) 토큰화. 강조 패턴 = 브랜드 네온레몬 #CFFF40/rgba(207,255,64(운영자 260704 최종 고정 "cfff40" — 구 그린 #0FFD02 폐기). blur 11 = 전부 토큰 아닌 고정 글래스(토스트·다이얼로그·픽커·네비) 잔존치·hex 8 = 의미 고정색(--bubble-ai 등 :root 제외 잔존).
     'viewer/thumb.html': {'accent_raw': 0, 'blur': 43, 'hex': 34, 'accent_hex': 0},   # STAGE1: hex 35→34 실측조임.   # blur39→41 = 빠른메뉴 코어 위 '-' 최소화(#rfab .rmin) 글래스 backdrop blur+webkit = 형제 .rc 코어 외형 계승(blur14 saturate1.3·thumb엔 blur토큰 없어 raw·창 최소화 엄지존·260627). accent rgba 토큰화 완료(--accent-rgb·260621). blur41→43 = 이미지 슬롯(.covimg) 글래스모피즘 backdrop blur+webkit(플레이트 색 제거·픽토 accent 50% · thumb엔 blur토큰 없어 raw·260626). blur43→39 = .covimg 글래스 제거(전경 완전 제거→픽토만·−2) + 상단 3탭 글자화(.tab 글래스 제거·−2)(운영자 260626). blur/hex는 thumb 독자팔레트라 잔존(후속). hex…→28 = .go.err 미입력 빨강(#ff7a7a·#ff5d5d) · hex28→27 = 흰 체크 #fff 제거. hex29→30 = 개별 변형 다운로드(.jvar-dl.dlbtn) 도형제거·픽토그램 흰색 #fff = 좌측 라벨(.jvar #fff)과 색 일치 목적(--fg #e9eaec≠#fff라 토큰화 불가·의도적 raw·260626). hex27→29 = 썸네일 통합 오버레이 포맷색(.ovfmt.post 시안 #1fd6ee · .ovfmt.reels 레몬 #e7ff2e · 후속 토큰화·260624). hex31→29 = /3 저작권 단일토글 전환으로 중복 .cpfmt 시안/레몬 hex 2개 제거(.ovfmt 계승=중복 회수 · §🎨 "raw 줄이면 baseline도 낮춰라" · 분신술7·8·260625). blur32→34 = 저작권 복사칩(.cref-kw 글래스) · blur34→36 = 축약 체크 = 수집함 확인토글(.sc-tg.ack) 글래스 박스 계승(backdrop blur·−→✓ 모프·accent는 var(--accent-rgb) 토큰·260622). blur36→38 = #rfab .rc 빠른메뉴 코어를 수정 연필 FAB(.rev-fab) 글래스 외형 계승(backdrop blur+webkit·thumb엔 blur토큰 없어 raw·260622). blur38→40 = 통합모드 OPA 롤러(260624) → blur40→38 = OPA 롤러 제거·섹션 헤더 인라인 조절 전환(글래스 팝업 폐지·blur 2개 감소·260624). blur38→39 = 축약어 등록 다이얼로그(.abdlg) cfm 글래스 계승(thumb엔 blur토큰 없어 raw·260624). blur39→41 = .iobtn-edge G1 글래스모피즘 backdrop blur13+saturate(복붙버튼 통일·thumb엔 blur토큰 없어 raw·260625). blur41→43·hex30→35 = 붙여넣기 폴백 모달(.pastefb dialog) 신설 — backdrop blur(4px) webkit+표준 +2(thumb엔 blur토큰 없어 raw) + 박스 배경 그라데이션·메시지/입력/버튼 색(#14160f·#0c0f0c·#cfd2d7·#e8eaed = 기존 모달 배경·보조텍스트 패턴 복제·적합 토큰 부재) +5(통일 기틀·readText 막힌 환경 폴백·운영자 260628).
     # ▼ 도구 3파일 게이트 편입(분신술 9·10 P0 — 옛 사각지대: 닫기/최소화 버그가 난 파일군이 무방비였음). accent_raw=0 = ly/k 토큰화 완료(--accent-rgb·260628), 늘면 즉시 잡힘. comp 7은 후속 토큰화 대상.
     'viewer/ly.html': {'accent_raw': 0, 'blur': 14, 'hex': 16, 'accent_hex': 0},   # blur12→14·hex14→16 = 붙여넣기 폴백 모달(.pastefb) 신설 — backdrop blur(4px) webkit+표준 +2(ly엔 blur토큰 없어 raw) + 박스 배경 그라데이션 #14160f·#0c0f0c +2(기존 모달 배경 패턴·통일 기틀·운영자 260628)
@@ -115,6 +115,7 @@ _FWD_UNUSED = {
     '--fw-b', '--fw-x', '--lh-base', '--on-arm', '--r-l', '--r-m', '--r-pill', '--sp-1', '--sp-2',
     '--sp-3', '--sp-4', '--warn',
     '--press-pico',   # 픽토온리 눌림 = thumb/ly/k의 rmin/file가 씀(index엔 .55 픽토 버튼 없음) = forward-declared(260628)
+    '--brand', '--brand-rgb',   # 네온레몬 #CFFF40(운영자 260704 최종 고정) — 배선 완료(:root 안 --accent:var(--brand) 체인). 소비처가 :root 내부라 본문 var() 스캔(:root 제외)의 사각 = 오탐 방지 등재(260704)
 }
 # --on-arm(arm 채움 위 글자색) = .revsend.confirm 채움 그라데 → 표준 플랫 arm 전환(260622)으로 현재 미배선.
 # 정의는 보존(--arm/--arm-rgb 짝 · 향후 채움형 arm 컴포넌트용 어휘) → forward-unused 처리(§🎨).
@@ -210,9 +211,9 @@ def check_design():
         except Exception:
             continue
         s = _ROOT_BLOCK.sub('', s, count=1)   # :root = 토큰 SSOT 정의 자리 → 카운트 제외(D5 화이트리스트)
-        cnt = {'accent_raw': s.count('rgba(216,255,61'), 'blur': s.count('blur('),
+        cnt = {'accent_raw': s.count('rgba(207,255,64'), 'blur': s.count('blur('),
                'hex': len(re.findall(r'#[0-9a-fA-F]{3,8}\b', s)),
-               'accent_hex': s.lower().count('#d8ff3d')}   # 강조색 hex 표기 우회 봉합(rgba만 세던 구멍·분신술 감사·260702) · 패턴 = 네온 레몬(브랜드 260704·구 그린 rgba(15,253,2/#0ffd02 폐기)
+               'accent_hex': s.lower().count('#cfff40')}   # 강조색 hex 표기 우회 봉합(rgba만 세던 구멍·분신술 감사·260702) · 패턴 = 브랜드 네온레몬 #CFFF40(운영자 최종 고정 260704·구 그린 rgba(15,253,2/#0ffd02 폐기)
         for k, b in base.items():
             if cnt[k] > b:
                 msg = '%s: raw %s %d > baseline %d → var() 토큰으로(§🎨)' % (rel, k, cnt[k], b)
@@ -220,7 +221,7 @@ def check_design():
     for n in _new_dead_tokens():   # 새로 추가됐는데 var() 미배선인 토큰(죽은 토큰) — 배선하거나 정의 삭제
         warns.append('viewer/index.html: 토큰 %s 정의됐으나 var() 미사용 → 배선하거나 정의 삭제(§🎨)' % n)
     if hard:
-        print('❌ 디자인 토큰 게이트(차단) — raw 강조색(rgba(216,255,61)·#d8ff3d) 증가 = var(--accent)/var(--accent-rgb) 토큰으로(의도적 raw는 baseline 사유 기록 후 조정):')
+        print('❌ 디자인 토큰 게이트(차단) — raw 강조색(rgba(207,255,64)·#CFFF40) 증가 = var(--accent)/var(--accent-rgb) 토큰으로(의도적 raw는 baseline 사유 기록 후 조정):')
         for w in hard:
             print('  -', w)
     if warns:

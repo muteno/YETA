@@ -4,7 +4,7 @@
 
 ## 🎬 앱 개요
 - **말벗 제타** = 무음동 10인 페르소나와의 랜덤 톡방. 세션 = R2 비공개 **단일 스레드**(맥락·관계노트 공유).
-- 페르소나 = **랜덤 뽑기 + 🎲 재뽑기**(고정 선택 없음·화자만 교체·맥락 승계). 내 버블 = 네온레몬(`--bubble-me`=`--accent` #d8ff3d · 운영자 260704 확정 — "라임" 표기 정정 = 레몬·그린 #0FFD02 폐기). *나레이션* = 이탤릭.
+- 페르소나 = **랜덤 뽑기 + 🎲 재뽑기**(고정 선택 없음·화자만 교체·맥락 승계). 내 버블 = 네온레몬(`--bubble-me`=`--accent`=`--brand` #CFFF40 · 운영자 260704 최종 고정 "cfff40" — 그린 #0FFD02 폐기). *나레이션* = 이탤릭.
 - 답장 = `claude -p`(구독 OAuth) · GitHub Actions dispatch · **웜 세션 루프**(답장 후 대기 → 후속 메시지 같은 런 즉답).
 - 다이얼 = model(opus 4.8 / sonnet-5) × effort(low/''/max) — 턴별 박제. 기본 = opus×low(30초 컷).
 
@@ -16,7 +16,7 @@
 4. 새 버튼·모달·입력칸·아이콘 = **CII 정본 셀렉터 계승**(재설계 금지). 버튼·눌림 패턴 = `구성도/00_가이드북_버튼인터랙션.html`. 눌림 scale = `--press-*` 토큰.
 5. `viewer/tokens.css`·`구성도/base.css` = **build 산출 거울**(직접 수정 금지·다음 build에 덮어씀).
 6. **3층 강제**: ① SessionStart/UI턴 = `.claude/hooks/design_digest.py`가 계약 자동 주입 ② UI 파일 저장 후 = `.claude/hooks/design_gate.py`가 check_refs 디자인 게이트(위반 exit 2) ③ 커밋 = `.githooks/pre-commit`이 `check_refs` 강제(`core.hooksPath=.githooks`는 design_digest가 세션마다 자동 설정). 타 모델 = `AGENTS.md`.
-7. **색은 yeta 팔레트**(네온레몬 `--accent` #d8ff3d·근흑) — 운영자 260704 네온 레몬 확정(`--bubble-me`=`--accent` 합류 · 브랜드 교체 = 이 토큰만 · 레몬 위 글자 = `--yeta-bg` 근흑 · 구 그린 #0FFD02 폐기 = check_refs 강조 패턴도 레몬). 구조 토큰(반지름·간격·타이포·모션·눌림)만 계승.
+7. **색은 yeta 팔레트**(네온레몬 `--brand` #CFFF40·근흑) — 운영자 260704 최종 고정("cfff40"). 배선 = `--accent:var(--brand)`·`--bubble-me:var(--accent)` 체인(브랜드 교체 = `--brand` 두 줄만 · 레몬 위 글자 = `--yeta-bg` 근흑 · 구 그린 #0FFD02 폐기 = check_refs 강조 패턴도 #CFFF40). 구조 토큰(반지름·간격·타이포·모션·눌림)만 계승.
 
 ## 🗺 구조
 - `viewer/` = 뷰어. `index.html`(값 SSOT `:root` + yeta UI) · `tokens.css`(구조토큰 거울) · `nm-svg.js`(아이콘 SSOT) · `_headers`(정적 no-cache)

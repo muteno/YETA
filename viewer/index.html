@@ -19,11 +19,13 @@
     /* 중립 표면·텍스트 */
     --fg:#eef7f0; --fg-2:#cfd8d0; --mut:#8fa697;
     --line:rgba(255,255,255,.08); --line2:rgba(255,255,255,.06);
-    /* 강조 = 브랜드 네온 레몬(운영자 260704 — 그린 #0FFD02 폐기·가이드북 --accent-bright 값 승격) · 공통 컴포넌트(.tool-x hover·focus ring)와 브랜드(--bubble-me) 공용 */
-    --accent:#d8ff3d; --accent-rgb:216,255,61;
+    /* yeta 브랜드 = 네온레몬 최종 고정(운영자 260704 "메인 브랜드 컬러는 이거로 고정: cfff40" · 이 레포 한정). 값 교체 = 이 두 줄만 */
+    --brand:#CFFF40; --brand-rgb:207,255,64;
+    /* 강조 = --brand 합류(배선 완료 260704 — 공통 컴포넌트(.tool-x hover·focus ring)·로고 T·활성 탭·버블이 전부 브랜드 추종 · 구 그린 #0FFD02 폐기) */
+    --accent:var(--brand); --accent-rgb:var(--brand-rgb);
     /* 의미색 */
     --danger:#ff5b4a; --danger-rgb:255,91,74; --arm:#ffd93d;
-    /* yeta 정체성 — 네온레몬 버블·근흑 창(운영자 260704 브랜드 확정 — 공통 --accent 합류·레몬 위 글자 = --yeta-bg) */
+    /* yeta 정체성 — 네온레몬 버블·근흑 창(운영자 260704 브랜드 확정 — --accent 합류·레몬 위 글자 = --yeta-bg) */
     --bubble-me:var(--accent); --bubble-ai:#1e2023; --yeta-bg:#0d0b12;
     /* 반지름 */
     --r-s:9px; --r-m:11px; --r-l:16px; --r-modal:22px; --r-pill:999px;
