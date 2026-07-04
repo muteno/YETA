@@ -45,6 +45,7 @@
 | 수신 콜 화면(yeta) | `#calldlg`(dialog)+`.ycall-btn`(.take/.drop) | 버튼 `--btn`+`--sp-3`×2 원형 | 페르소나 bg+`--bg-scrim` · 자막 `--glass`+`--blur-m` · dialog=`#yetadlg` 결(글래스 엣지·`::backdrop`·모바일 margin:auto) | `--press-m` | 수화기 SVG 단일 path(거절=회전135°) · 파동 링=키프레임(안무 예외) | top-layer(dialog) | pad `--sp-3` | `aria-label` 받기/거절 · Esc=거절 · 뒤로가기=거절 | viewer/call.js(플러그인 · CLAUDE.md §🗺 ☎️) |
 | 무전 마이크(yeta) | `#yetaMic`(`.ycall-mic`) | `--btn` 원형 | 무채 글래스 `--glass`+`--glass-line`(CTA 아님) · 녹음=`--danger` 점멸 | `--press-m` | 마이크 SVG 단일 path | `.yeta-in` 좌측(모듈 주입) | — | `aria-label` 무전 · 녹음중 placeholder 교체 | viewer/call.js `initPtt` |
 | 프리미엄 보이스 배지(yeta) | `.yprem` | `--fs-xs`·`--fw-b` | accent 12% 플레이트+40% 테두리(`.dlbtn` 결) | — | 파형 SVG 단일 path | 캐릭터 이름 우측(`yPremBadge(c)` 훅) | ml 6 | `title="전용 음색(프리미엄)"` · roster `voice` 존재 시만 | viewer/call.js `yPremBadge` |
+| 통화 헤더 버튼(yeta) | `#yetaCallBtn`(`.tool-x` 계승) | `.tool-x` 스펙 | glass(.tool-x) · **2탭 재확인 armed=`--arm`**(.yh-reset 패턴 — 유료 발동 가드) | `.tool-x` 계승 | 수화기 SVG 단일 path(call.js 공용) | `.yh-r` 첫 자리(모듈 주입·본체 무수정) | — | `aria-label="통화"` · phone 배선=보이스톡 / 미배선=op ring 폴백 | viewer/call.js `initCallBtn` |
 
 ⚠ = 현 드리프트(후속 교정). 별칭 셀렉터(`.ed-x` 등)는 `.tool-x` 스펙을 *복제*가 아니라 *계승*해야 함 — 단일화 후속.
 
