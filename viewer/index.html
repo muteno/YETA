@@ -198,17 +198,17 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   .ymain-body { flex:1; display:flex; flex-direction:column; align-items:center; overflow:hidden; padding:0 24px; }
   .ym-hero { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; gap:26px; padding-bottom:8vh;
     transition:flex-grow .5s var(--ease), gap .5s var(--ease), padding .5s var(--ease); }
-  .ym-access { width:56px; height:56px; border-radius:50%; border:none; cursor:pointer; display:grid; place-items:center;
-    background:var(--accent); color:var(--bg); box-shadow:0 8px 22px rgba(var(--accent-rgb),.36);
-    transition:transform .28s var(--ease), opacity .35s var(--ease); touch-action:manipulation; }
+  .ym-access { width:72px; height:72px; border-radius:50%; border:1px solid var(--glass-line); cursor:pointer; display:grid; place-items:center;
+    background:var(--glass-2); backdrop-filter:blur(var(--blur-l)) saturate(1.05); -webkit-backdrop-filter:blur(var(--blur-l)) saturate(1.05);
+    color:var(--accent); box-shadow:inset 0 1px 0 var(--glass-line), var(--shadow-card), 0 0 26px rgba(var(--accent-rgb),.16);
+    transition:transform .28s var(--ease), box-shadow .3s var(--ease); touch-action:manipulation; }
   .ym-access:active { transform:scale(var(--press-m)); }
   .ym-access svg { width:24px; height:24px; }
   .ym-access-lbl { font-size:12px; font-weight:700; color:var(--mut); margin-top:0; transition:opacity .3s; }
-  /* 글래스모피즘 히어로 카드 — 접속 CTA 프로스티드 글래스(레퍼런스 계승 · --glass-2·--glass-line·--blur-l · 260704) */
-  .ym-access-card { display:flex; flex-direction:column; align-items:center; gap:8px; padding:26px 52px 22px; border-radius:var(--r-modal);
-    background:var(--glass-2); border:1px solid var(--glass-line); backdrop-filter:blur(var(--blur-l)); -webkit-backdrop-filter:blur(var(--blur-l));
-    box-shadow:inset 0 1px 0 var(--glass-line), var(--shadow-card); transition:opacity .4s var(--ease), transform .4s var(--ease); }
-  .ymain.pin-mode .ym-access-card { opacity:0; transform:scale(.92); height:0; padding:0; margin:0; overflow:hidden; pointer-events:none; }
+  /* 접속 = 캐릭터 가슴팍 위 글래스 잠금해제 버튼(무채색 글래스 + 강조 라임 디밍 · 운영자 260704) · 누르면 pin-mode */
+  .ym-access-card { position:absolute; top:55%; left:50%; transform:translate(-50%,-50%); z-index:2;
+    display:flex; flex-direction:column; align-items:center; gap:10px; transition:opacity .4s var(--ease); }
+  .ymain.pin-mode .ym-access-card { opacity:0; pointer-events:none; }
   .ym-pin { width:100%; max-width:300px; display:flex; flex-direction:column; align-items:center;
     opacity:0; transform:translateY(24px); pointer-events:none; height:0; overflow:hidden;
     transition:opacity .45s var(--ease) .1s, transform .45s var(--ease) .1s; }
