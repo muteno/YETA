@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no">
 <meta name="color-scheme" content="light dark">
-<meta name="theme-color" content="#eef3ff">
+<meta name="theme-color" content="#121212">
 <title>YETA</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@latest/dist/web/variable/pretendardvariable.min.css">
 <link rel="stylesheet" href="tokens.css">
@@ -16,17 +16,22 @@
   @font-face{font-family:'LEMONMILK';font-weight:300;font-style:normal;src:url('fonts/LEMONMILK-Light.otf') format('opentype');font-display:swap}
 /* ── :root 토큰(색+구조) — 원본 viewer :root 계승(L19-80) ── */
   :root {
-    /* 중립 표면·텍스트 */
-    --fg:#eef7f0; --fg-2:#cfd8d0; --mut:#8fa697;
+    /* 중립 표면·텍스트 — 흰색 + 스포티파이 블랙(운영자 260704 브랜드 통일) */
+    --fg:#FFFFFF; --fg-2:#C4C9C4; --mut:#8B8F8A;
+    --bg:#121212;   /* 앱 캔버스 = 스포티파이 블랙 */
     --line:rgba(255,255,255,.08); --line2:rgba(255,255,255,.06);
-    /* 강조 — 공통 컴포넌트(.tool-x hover·focus ring) */
-    --accent:#0FFD02; --accent-rgb:15,253,2;
+    /* 강조1 — 브랜드 라임(공통 컴포넌트·버튼·링·액티브·챗버블 · 운영자 260704 #CFFF40) */
+    --accent:#CFFF40; --accent-rgb:207,255,64;
+    /* 강조2 — 코발트 형광(보조강조·링크/정보·대비 · 운영자 260704) */
+    --cobalt:#3D6BFF; --cobalt-rgb:61,107,255;
+    /* 글래스모피즘 — 프로스티드 표면·엣지 하이라이트(구성도 표면3단 계승·260704) */
+    --glass:rgba(255,255,255,.055); --glass-2:rgba(255,255,255,.09); --glass-line:rgba(255,255,255,.14);
+    /* 그림자·배경 스크림(절대1: raw 금지→토큰 · 260704) */
+    --shadow-card:0 24px 60px rgba(0,0,0,.42); --bg-scrim:linear-gradient(transparent 44%,rgba(0,0,0,.5) 76%,rgba(0,0,0,.85));
     /* 의미색 */
     --danger:#ff5b4a; --danger-rgb:255,91,74; --arm:#ffd93d;
-    /* yeta 정체성 — 네온보라 버블·근흑 창(운영자 260703) */
-    --bubble-me:#b45cff; --bubble-ai:#1e2023; --yeta-bg:#0d0b12;
-    /* yeta 브랜드 = 네온레몬 최종 고정(운영자 260704 "메인 브랜드 컬러는 이거로 고정: cfff40" · 이 레포 한정). 배선(버블·CTA·강조 스왑)은 후속 = forward-declared */
-    --brand:#CFFF40; --brand-rgb:207,255,64;
+    /* yeta 챗 — 내 버블=브랜드 라임(보라 폐지·전체 그린 통일 260704) · 캐릭터 버블=근흑 · 창=스포티파이 블랙 */
+    --bubble-me:var(--accent); --bubble-ai:#1e2023; --yeta-bg:#141416;
     /* 반지름 */
     --r-s:9px; --r-m:11px; --r-l:16px; --r-modal:22px; --r-pill:999px;
     /* 간격·버튼 */
@@ -36,26 +41,22 @@
     --fw-x:800; --fw-b:700; --lh-base:1.6;
     /* 모션 */
     --ease:cubic-bezier(.2,.7,.3,1);
+    /* 글래스 blur(구조토큰 — tokens.css 거울) */
+    --blur-m:16px; --blur-l:24px;
     /* z (dialog=top-layer라 nm-toast만) */
     --z-float:60;
     /* 눌림 scale 사다리 */
     --press-m:.9; --press-l:.95; --press-s:.9;
-    /* ── YETA 메인/라이트 팔레트(강조1 오렌지·강조2 코발트 · 첨부2) — 메인 화면 전용(챗은 위 다크 토큰 유지) ── */
-    --accent-1:#FF6648; --accent-1-rgb:255,102,72;
-    --accent-2:#0259DD; --accent-2-rgb:2,89,221;
-    --sky:#84AFFB; --sky-rgb:132,175,251; --cream:#FFE1D7;
-    --m-fg:#0e1420; --m-fg2:#2b3242; --m-mut:#586173;
-    --m-line:rgba(20,30,60,.12); --m-line2:rgba(20,30,60,.08);
-    --m-glass:rgba(255,255,255,.62); --m-glass2:rgba(255,255,255,.8);
-    --m-danger:#e23b2e; --m-danger-rgb:226,59,46;
-    --pin-ac:var(--accent-2); --pin-ac-rgb:var(--accent-2-rgb);
+    /* PIN·핀 액티브 = 브랜드 라임(옛 라이트/코발트 팔레트 폐지 → 다크·그린 통일 260704) */
+    --pin-ac:var(--accent); --pin-ac-rgb:var(--accent-rgb);
   }
   /* reduced-motion = 눌림 토큰 전역 무효화(1) — 개별 transform:none 가드 대신 한 블록(분신술10·4뷰어 가드 불균형 해소) */
   @media (prefers-reduced-motion:reduce){ :root{ --press-m:1; --press-l:1; } }
 /* ── body 기본(독립 뷰어) ── */
 * { box-sizing:border-box; }
 html,body { margin:0; height:100%; }
-body { background:var(--yeta-bg,#0d0b12); color:var(--fg); font-family:Pretendard,-apple-system,system-ui,sans-serif; -webkit-font-smoothing:antialiased; overscroll-behavior:none; }
+body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendard,-apple-system,system-ui,sans-serif; -webkit-font-smoothing:antialiased; overscroll-behavior:none; }
+::selection { background:var(--cobalt); color:var(--fg); }   /* 2차 강조 코발트 — 텍스트 선택(브랜드 통일 260704) */
 /* ── 공통 컴포넌트(계승): nm-toast · msgUnfold · dialog · tool-x · gdots ── */
   .nm-toast { position:fixed; left:0; right:0; margin-inline:auto; bottom:calc(86px + env(safe-area-inset-bottom)); transform:translateY(18px);
     z-index:var(--z-float); width:min(92vw,430px); display:flex; align-items:center; gap:9px; padding:11px 15px; cursor:pointer;
@@ -79,7 +80,7 @@ body { background:var(--yeta-bg,#0d0b12); color:var(--fg); font-family:Pretendar
   dialog::backdrop { background:rgba(4,8,5,.46); backdrop-filter:blur(7px); -webkit-backdrop-filter:blur(7px); }
   .tool-x { width:30px; height:30px; flex:none; display:grid; place-items:center; background:rgba(255,255,255,.06);
     color:var(--fg); border:1px solid var(--line); border-radius:9px; cursor:pointer; }
-  .tool-x:hover { color:var(--accent); border-color:rgba(15,253,2,.4); }
+  .tool-x:hover { color:var(--accent); border-color:rgba(var(--accent-rgb),.4); }
   .tool-x:focus-visible { outline:none; box-shadow:0 0 0 2px rgba(var(--accent-rgb),.5); }   /* 키보드 포커스 링 */
   .tool-x, .dlg-x, .mx, .ed-x, .askx, .qh-x, .fb-x, .sc-rsn-x, .askimg-x, .pin-x { transition:transform .3s var(--ease); }
   .tool-x:active, .dlg-x:active, .mx:active, .ed-x:active, .askx:active, .qh-x:active, .fb-x:active, .sc-rsn-x:active, .askimg-x:active, .pin-x:active { transform:rotate(180deg) scale(var(--press-m,.92)); }
@@ -115,8 +116,8 @@ body { background:var(--yeta-bg,#0d0b12); color:var(--fg); font-family:Pretendar
   .yb { padding:10px 13px; border-radius:var(--r-l); font-size:var(--fs-body); line-height:var(--lh-base); white-space:pre-wrap; word-break:break-word; }
   .yb i.yn { font-style:italic; color:var(--fg-2); opacity:.75; }   /* *나레이션* = 이탤릭 톤다운("대화 폰트 이런식" — 제타 결) */
   .yb.ai { background:var(--bubble-ai); border:1px solid rgba(255,255,255,.05); border-top-left-radius:var(--r-s); }
-  .yb.me { align-self:flex-end; max-width:78%; background:var(--bubble-me); color:#fff; border-top-right-radius:var(--r-s); }
-  .yb.me i.yn { color:rgba(255,255,255,.82); }
+  .yb.me { align-self:flex-end; max-width:78%; background:var(--bubble-me); color:var(--bg); border-top-right-radius:var(--r-s); }
+  .yb.me i.yn { color:rgba(0,0,0,.6); }
   .yb.sys { align-self:center; background:none; border:none; color:var(--mut); font-size:var(--fs-sm); padding:2px 4px; }
   .yb.fail { align-self:flex-start; background:rgba(var(--danger-rgb),.08); border:1px solid rgba(var(--danger-rgb),.4); color:var(--danger); font-size:var(--fs-sm); }
   .yfail-retry { display:block; margin-top:7px; padding:5px 12px; border:1px solid rgba(var(--danger-rgb),.5); border-radius:var(--r-pill); background:none; color:var(--danger); font:inherit; font-size:var(--fs-xs); font-weight:var(--fw-b); cursor:pointer; }   /* 원탭 재시도(재타이핑 0) */
@@ -155,7 +156,7 @@ body { background:var(--yeta-bg,#0d0b12); color:var(--fg); font-family:Pretendar
     font-size:var(--fs-body); line-height:1.4; padding:10px 13px; max-height:120px; font-family:inherit; text-align:center; }   /* 메시지칸 중앙정렬(운영자 260703) */
   .yeta-in textarea:focus-visible { outline:none; border-color:var(--yeta-ac); box-shadow:0 0 0 2px rgba(255,255,255,.06); }
   .yeta-send { flex:none; width:var(--btn); height:var(--btn); align-self:flex-end; border-radius:50%; border:none;
-    background:var(--bubble-me); color:#fff; display:grid; place-items:center; cursor:pointer; touch-action:manipulation; }   /* 제타 보라 원형 전송(CTA 결) · touch-action=폰 탭 신뢰성(스크롤 팬에 안 먹힘 · 레포 관례) */
+    background:var(--bubble-me); color:var(--bg); display:grid; place-items:center; cursor:pointer; touch-action:manipulation; }   /* 브랜드 라임 원형 전송(CTA · 보라 폐지 260704) · touch-action=폰 탭 신뢰성(스크롤 팬에 안 먹힘 · 레포 관례) */
   .yeta-send:active { transform:scale(var(--press-m,.9)); }
   .yeta-send:disabled { opacity:.4; pointer-events:none; }
   /* 페르소나 픽커 — 헤더 이름 탭 → 주민 직접 선택(msgpop 무채 글래스 계승 · saturate(0)=뒤 색 비침 차단 · §🎨 무채 크롬) */
@@ -186,69 +187,72 @@ body { background:var(--yeta-bg,#0d0b12); color:var(--fg); font-family:Pretendar
   .yeta-list .yl-dice { margin-top:6px; border:1px dashed var(--line); border-radius:var(--r-m); background:none; color:var(--mut); font:inherit; font-size:var(--fs-sm); font-weight:var(--fw-b); padding:12px; cursor:pointer; text-align:center; touch-action:manipulation; }
   .yeta-list .yl-dice:active { transform:scale(var(--press-l,.96)); }
 
-  /* ═══ YETA 메인 화면 (라이트·PIN 게이트 · 260704 재디자인 V1) — 챗 다크 dialog와 공존 ═══ */
+  /* ═══ YETA 메인 화면 (다크·PIN 게이트 · 260704 브랜드 통일 — 스포티파이 블랙+라임 글래스) ═══ */
   body { background:
-      radial-gradient(circle at 84% 12%, rgba(var(--sky-rgb),.85), rgba(var(--accent-2-rgb),.24) 13%, transparent 27%),
-      radial-gradient(circle at 6% 46%, rgba(var(--sky-rgb),.7), transparent 15%),
-      radial-gradient(circle at 70% 92%, rgba(var(--sky-rgb),.5), transparent 22%),
-      linear-gradient(160deg,#eef3ff,#f7f9ff 55%,#eef2fb) fixed; color:var(--m-fg); }
-  .ymain { position:fixed; inset:0; display:flex; flex-direction:column; z-index:1; }
+      radial-gradient(circle at 50% 40%, rgba(var(--accent-rgb),.08), transparent 34%),
+      radial-gradient(circle at 12% 90%, rgba(var(--cobalt-rgb),.10), transparent 36%),
+      var(--bg); color:var(--fg); }
+  /* step1 로그인창 = 운영자 포스터(main.png → yeta-hero.webp) 전면 full-bleed. 하단 --bg-scrim 딤(로그인·네비 가독) */
+  .ymain { position:fixed; inset:0; display:flex; flex-direction:column; z-index:1;
+    background:var(--bg-scrim), url(assets/brand/yeta-hero.webp) center/cover no-repeat var(--bg); }
   .ymain-body { flex:1; display:flex; flex-direction:column; align-items:center; overflow:hidden; padding:0 24px; }
-  .ym-hero { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:26px;
+  .ym-hero { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; gap:26px; padding-bottom:8vh;
     transition:flex-grow .5s var(--ease), gap .5s var(--ease), padding .5s var(--ease); }
-  .ym-yeta { font-family:'LEMONMILK',sans-serif; font-weight:700; font-size:64px; line-height:1; letter-spacing:.02em;
-    color:var(--accent-2); transition:font-size .5s var(--ease); }
-  .ym-yeta .t { color:var(--accent-1); }
-  .ym-access { width:56px; height:56px; border-radius:50%; border:none; cursor:pointer; display:grid; place-items:center;
-    background:var(--accent-1); color:#fff; box-shadow:0 8px 22px rgba(var(--accent-1-rgb),.36);
-    transition:transform .28s var(--ease), opacity .35s var(--ease); touch-action:manipulation; }
+  .ym-access { width:72px; height:72px; border-radius:50%; border:1px solid var(--glass-line); cursor:pointer; display:grid; place-items:center;
+    background:var(--glass-2); backdrop-filter:blur(var(--blur-l)) saturate(1.05); -webkit-backdrop-filter:blur(var(--blur-l)) saturate(1.05);
+    color:var(--accent); box-shadow:inset 0 1px 0 var(--glass-line), var(--shadow-card), 0 0 26px rgba(var(--accent-rgb),.16);
+    transition:transform .28s var(--ease), box-shadow .3s var(--ease); touch-action:manipulation; }
   .ym-access:active { transform:scale(var(--press-m)); }
   .ym-access svg { width:24px; height:24px; }
-  .ym-access-lbl { font-size:12px; font-weight:700; color:var(--m-mut); margin-top:-14px; transition:opacity .3s; }
+  .ym-access-lbl { font-size:12px; font-weight:700; color:var(--mut); margin-top:0; transition:opacity .3s; }
+  /* 접속 = 캐릭터 가슴팍 위 글래스 잠금해제 버튼(무채색 글래스 + 강조 라임 디밍 · 운영자 260704) · 누르면 pin-mode */
+  .ym-access-card { position:absolute; top:55%; left:50%; transform:translate(-50%,-50%); z-index:2;
+    display:flex; flex-direction:column; align-items:center; gap:10px; transition:opacity .4s var(--ease); }
+  .ymain.pin-mode .ym-access-card { opacity:0; pointer-events:none; }
   .ym-pin { width:100%; max-width:300px; display:flex; flex-direction:column; align-items:center;
     opacity:0; transform:translateY(24px); pointer-events:none; height:0; overflow:hidden;
     transition:opacity .45s var(--ease) .1s, transform .45s var(--ease) .1s; }
   .ymain.pin-mode .ym-hero { flex-grow:0; gap:0; padding-top:52px; }
-  .ymain.pin-mode .ym-yeta { font-size:40px; }
   .ymain.pin-mode .ym-access, .ymain.pin-mode .ym-access-lbl { opacity:0; pointer-events:none; height:0; margin:0; }
   .ymain.pin-mode .ym-pin { opacity:1; transform:none; pointer-events:auto; height:auto; overflow:visible; }
-  /* PIN 키패드 = nomute lk- 이식 · 라이트+코발트 리컬러 */
-  .lk-m { font-size:14px; font-weight:800; color:var(--m-fg2); letter-spacing:-.2px; margin-top:6px; }
+  /* PIN 키패드 = nomute lk- 이식 · 다크+라임 리컬러(260704) */
+  .lk-m { font-size:14px; font-weight:800; color:var(--fg-2); letter-spacing:-.2px; margin-top:6px; }
   .lk-slots { display:flex; justify-content:center; gap:15px; margin:22px 0 2px; }
   .lk-slot { width:16px; height:20px; display:grid; place-items:center; font:400 18px/1 Pretendard,sans-serif; color:var(--pin-ac); opacity:.5; transition:opacity .15s, transform .15s; }
-  .lk-slot::before { content:''; grid-area:1/1; width:13px; height:13px; box-sizing:border-box; border-radius:50%; border:2px solid var(--m-mut); transition:border-color .15s; }
+  .lk-slot::before { content:''; grid-area:1/1; width:13px; height:13px; box-sizing:border-box; border-radius:50%; border:2px solid var(--mut); transition:border-color .15s; }
   .lk-slot.on { opacity:1; }
   .lk-slot.on::before { content:'*'; width:auto; height:auto; border:none; border-radius:0; font:800 24px/1 ui-monospace,SFMono-Regular,Menlo,monospace; color:var(--pin-ac); transform:translateY(3px); }
-  .lk-slots.bad .lk-slot::before { border-color:var(--m-danger); }
-  .lk-slots.bad .lk-slot.on::before { color:var(--m-danger); }
+  .lk-slots.bad .lk-slot::before { border-color:var(--danger); }
+  .lk-slots.bad .lk-slot.on::before { color:var(--danger); }
   @keyframes lkShake { 0%,100%{transform:translateX(0)} 12%{transform:translateX(-9px)} 28%{transform:translateX(8px)} 44%{transform:translateX(-6px)} 60%{transform:translateX(4px)} 76%{transform:translateX(-2px)} }
   .lk-slots.shake { animation:lkShake .45s cubic-bezier(.36,.07,.19,.97); }
-  .lk-err { color:var(--m-danger); font-size:12px; margin-top:12px; min-height:15px; font-weight:700; }
-  .lk-ok { color:var(--accent-1); font-size:12.5px; margin-top:12px; min-height:15px; font-weight:800; }
+  .lk-err { color:var(--danger); font-size:12px; margin-top:12px; min-height:15px; font-weight:700; }
+  .lk-ok { color:var(--accent); font-size:12.5px; margin-top:12px; min-height:15px; font-weight:800; }
   .lk-pad { display:grid; grid-template-columns:repeat(3,1fr); gap:0; width:100%; max-width:270px; margin:20px auto 0;
-    border:1px solid var(--m-line2); border-radius:16px; overflow:hidden; background:var(--m-glass); backdrop-filter:blur(10px); }
-  .lk-key { height:56px; display:grid; place-items:center; font-size:22px; font-weight:700; color:var(--m-fg); background:none; border:none; cursor:pointer;
+    border:1px solid var(--glass-line); border-radius:16px; overflow:hidden; background:var(--glass); backdrop-filter:blur(var(--blur-m)); -webkit-backdrop-filter:blur(var(--blur-m)); }
+  .lk-key { height:56px; display:grid; place-items:center; font-size:22px; font-weight:700; color:var(--fg); background:none; border:none; cursor:pointer;
     -webkit-tap-highlight-color:transparent; user-select:none; touch-action:manipulation; transition:background .12s, color .15s, transform .07s; }
-  .lk-key:nth-child(3n+2), .lk-key:nth-child(3n) { border-left:1px solid var(--m-line2); }
-  .lk-key:nth-child(n+4) { border-top:1px solid var(--m-line2); }
-  .lk-key:active { background:rgba(20,30,60,.05); transform:scale(.93); }
+  .lk-key:nth-child(3n+2), .lk-key:nth-child(3n) { border-left:1px solid var(--line2); }
+  .lk-key:nth-child(n+4) { border-top:1px solid var(--line2); }
+  .lk-key:active { background:rgba(255,255,255,.05); transform:scale(.93); }
   .lk-key.hit { background:rgba(var(--pin-ac-rgb),.14); color:var(--pin-ac); }
   .lk-key.empty { pointer-events:none; }
-  .lk-key.back svg { width:25px; height:25px; stroke:var(--m-fg2); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; transition:stroke .15s; }
+  .lk-key.back svg { width:25px; height:25px; stroke:var(--fg-2); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; transition:stroke .15s; }
   .lk-key.back.hit svg { stroke:var(--pin-ac); }
   @media (prefers-reduced-motion:reduce){ .lk-slots.shake{animation-duration:.01s} .lk-key:active{transform:none} }
-  /* 하단 네비 — PIN 전 = 메인만, 나머지 잠김 */
-  .ynav { flex:none; display:flex; background:var(--m-glass2); border-top:1px solid var(--m-line2); padding-bottom:calc(5px + env(safe-area-inset-bottom)); backdrop-filter:blur(16px); }
-  .ynav button { flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; padding:8px 0 4px; color:var(--m-mut); font-size:10px; font-weight:700; background:none; border:none; cursor:pointer; position:relative; transition:transform .28s var(--ease), color .2s, opacity .3s; touch-action:manipulation; }
+  /* 하단 네비 — PIN 전 = 메인만, 나머지 잠김 · 액티브 픽토그램=브랜드 라임(260704) */
+  .ynav { flex:none; display:none; background:var(--glass-2); border-top:1px solid var(--glass-line); padding-bottom:calc(5px + env(safe-area-inset-bottom)); backdrop-filter:blur(var(--blur-l)); -webkit-backdrop-filter:blur(var(--blur-l)); }
+  .ynav button { flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; padding:8px 0 4px; color:var(--mut); font-size:10px; font-weight:700; background:none; border:none; cursor:pointer; position:relative; transition:transform .28s var(--ease), color .2s, opacity .3s; touch-action:manipulation; }
   .ynav button:active { transform:scale(var(--press-s)); }
-  .ynav button.on { color:var(--accent-1); }
+  .ynav button.on { color:var(--accent); }
   .ynav button.locked { opacity:.4; }
   .ynav button svg { width:21px; height:21px; }
   .ynav .lockdot { position:absolute; top:5px; right:calc(50% - 18px); width:11px; height:11px; }
-  .ynav .lockdot svg { width:11px; height:11px; stroke:var(--m-mut); fill:none; stroke-width:2.4; }
+  .ynav .lockdot svg { width:11px; height:11px; stroke:var(--mut); fill:none; stroke-width:2.4; }
   .ymain.unlocked .ynav button.locked { opacity:1; }
   .ymain.unlocked .ynav button.locked .lockdot { display:none; }
-  @media (prefers-reduced-motion:reduce){ .ym-hero, .ym-yeta, .ym-pin, .ym-access, .ynav button { transition:none; } }
+  .ymain.unlocked .ynav { display:flex; }   /* 네비 = step2(로그인 언락 후)만 · step1 로그인창엔 없음(운영자 260704 · 네비는 step2) */
+  @media (prefers-reduced-motion:reduce){ .ym-hero, .ym-pin, .ym-access, .ynav button { transition:none; } }
 </style>
 </head>
 <body>
@@ -256,11 +260,12 @@ body { background:var(--yeta-bg,#0d0b12); color:var(--fg); font-family:Pretendar
 <div class="ymain" id="ymain">
   <div class="ymain-body">
     <div class="ym-hero">
-      <div class="ym-yeta">YE<span class="t">T</span>A</div>
-      <button class="ym-access" id="ymAccess" type="button" aria-label="접속">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>
-      </button>
-      <div class="ym-access-lbl">접속</div>
+      <div class="ym-access-card">
+        <button class="ym-access" id="ymAccess" type="button" aria-label="접속">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>
+        </button>
+        <div class="ym-access-lbl">접속</div>
+      </div>
     </div>
     <div class="ym-pin">
       <div class="lk-m">PIN 입력</div>

@@ -1,0 +1,78 @@
+# design-tokens.lock — 운영자 승인 루트 디자인 토큰 원장 (절대명령#1 · yeta)
+#
+# 규칙: viewer/index.html :root 의 모든 토큰명은 이 파일에 등재돼야 한다.
+#   · 미등재 신규 토큰 = check_refs rc=1 (커밋 차단·pre-commit 강제).
+#   · 등재 = 운영자 승인. 새 토큰은 PR 에서 이 파일의 diff 를 운영자가 리뷰·승인한다.
+#   · "승인 없이 조용히 :root 에 토큰 추가"를 기계가 봉쇄 = §🔒 절대명령#1 진짜 강제 지렛대.
+# 형식: 한 줄에 토큰명 하나(뒤/앞 주석 = 사유). 그룹·순서 무관, 이름만 매칭.
+
+# ── 뉴트럴 (흰 / 스포티파이 블랙) ──
+--fg
+--fg-2
+--mut
+--bg
+--line
+--line2
+
+# ── 강조 (브랜드 라임 · 코발트 형광) ──
+--accent
+--accent-rgb
+--cobalt
+--cobalt-rgb
+
+# ── 글래스모피즘 ──
+--glass
+--glass-2
+--glass-line
+--shadow-card
+--bg-scrim
+
+# ── 의미색 ──
+--danger
+--danger-rgb
+--arm
+
+# ── yeta 챗 ──
+--bubble-me
+--bubble-ai
+--yeta-bg
+
+# ── 반지름 ──
+--r-s
+--r-m
+--r-l
+--r-modal
+--r-pill
+
+# ── 간격 · 버튼 ──
+--sp-2
+--sp-3
+--btn
+
+# ── 타이포 ──
+--fs-h2
+--fs-h3
+--fs-body
+--fs-label
+--fs-sm
+--fs-xs
+--fw-x
+--fw-b
+--lh-base
+
+# ── 모션 · blur (구조토큰) ──
+--ease
+--blur-m
+--blur-l
+
+# ── z ──
+--z-float
+
+# ── 눌림 scale ──
+--press-m
+--press-l
+--press-s
+
+# ── PIN ──
+--pin-ac
+--pin-ac-rgb
