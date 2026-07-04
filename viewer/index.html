@@ -50,8 +50,9 @@ html,body { margin:0; height:100%; }
 body { background:
     radial-gradient(circle at 14% 8%, rgba(255,255,255,.09), rgba(255,255,255,.02) 30%, transparent 52%),
     radial-gradient(circle at 82% 16%, rgba(var(--accent-rgb),.05), transparent 34%),
-    radial-gradient(circle at 88% 90%, rgba(255,255,255,.04), transparent 42%),
-    var(--yeta-bg,#0d0b12) fixed; color:var(--fg); font-family:Pretendard,-apple-system,system-ui,sans-serif; -webkit-font-smoothing:antialiased; overscroll-behavior:none; }   /* 근흑 + 소프트 오브 글로우 + 레몬 숨결 한 겹(브랜드 공기 · 260704) */
+    linear-gradient(rgba(10,10,14,.72), rgba(10,10,14,.86)),
+    url('assets/brand/yeta-page-bg.webp') center/cover no-repeat var(--yeta-bg,#0d0b12);
+  color:var(--fg); font-family:Pretendard,-apple-system,system-ui,sans-serif; -webkit-font-smoothing:antialiased; overscroll-behavior:none; }   /* 운영자 업로드 page_background(네온레몬 유리 계단·260704) = 웹용 44KB webp + 어둠 스크림(yPaintBg .72/.86 계승) + 오브·레몬 숨결 */
 /* ── 공통 컴포넌트(계승): nm-toast · msgUnfold · dialog · tool-x · gdots ── */
   .nm-toast { position:fixed; left:0; right:0; margin-inline:auto; bottom:calc(86px + env(safe-area-inset-bottom)); transform:translateY(18px);
     z-index:var(--z-float); width:min(92vw,430px); display:flex; align-items:center; gap:9px; padding:11px 15px; cursor:pointer;
