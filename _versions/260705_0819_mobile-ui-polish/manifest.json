@@ -4,10 +4,7 @@
   "description": "YETA — 캐릭터 챗",
   "id": "/",
   "start_url": ".",
-  "scope": "/",
   "display": "standalone",
-  "display_override": ["standalone"],
-  "orientation": "portrait",
   "background_color": "#121212",
   "theme_color": "#121212",
   "icons": [

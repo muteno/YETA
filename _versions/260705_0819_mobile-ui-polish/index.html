@@ -10,12 +10,6 @@
 <link rel="stylesheet" href="tokens.css">
 <link rel="apple-touch-icon" href="assets/brand/yeta-icon-192.png">
 <link rel="manifest" href="manifest.json">
-<!-- PWA 웹앱(홈화면 설치·전체화면) — 안드로이드=manifest, iOS=아래 apple 메타(운영자 260704 "웹앱 형태로 여는것") -->
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="YETA">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="application-name" content="YETA">
 <style>
   /* ── LEMONMILK (YETA 디스플레이 · 로컬 호스팅) ── */
   @font-face{font-family:'LEMONMILK';font-weight:700;font-style:normal;src:url('fonts/LEMONMILK-Bold.otf') format('opentype');font-display:swap}
@@ -215,11 +209,6 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
     transition:transform .28s var(--ease), box-shadow .3s var(--ease); touch-action:manipulation; }
   .ym-access:active { transform:scale(var(--press-m)); }
   .ym-access svg { width:24px; height:24px; }
-  /* 접속 누름 = 잠금해제 액티브 — 고리가 힌지 축으로 들려 열리고 라임 글로우 점등(운영자 260704 "락이 풀리는 모션") · 고리 회전=기하 raw 예외축 */
-  .ym-shackle { transform-box:fill-box; transform-origin:86% 100%; transition:transform .5s var(--ease); }
-  .ym-access.unlocking .ym-shackle { transform:translateY(-2px) rotate(-28deg); }
-  .ym-access.unlocking { color:var(--accent); border-color:rgba(var(--accent-rgb),.55);
-    box-shadow:inset 0 1px 0 var(--glass-line), var(--shadow-card), 0 0 40px rgba(var(--accent-rgb),.42); }
   .ym-access-lbl { font-size:12px; font-weight:700; color:var(--mut); margin-top:0; transition:opacity .3s; }
   /* 접속 = 캐릭터 가슴팍 위 글래스 잠금해제 버튼(무채색 글래스 + 강조 라임 디밍 · 운영자 260704) · 누르면 pin-mode */
   .ym-access-card { position:absolute; top:55%; left:50%; transform:translate(-50%,-50%); z-index:2;
@@ -268,18 +257,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   .ymain.unlocked .ynav button.locked { opacity:1; }
   .ymain.unlocked .ynav button.locked .lockdot { display:none; }
   .ymain.unlocked .ynav { display:flex; }   /* 네비 = step2(로그인 언락 후)만 · step1 로그인창엔 없음(운영자 260704 · 네비는 step2) */
-  .ymain.unlocked .ym-access-card { opacity:0; pointer-events:none; }   /* 언락 = 접속 버튼 퇴장(pin-mode에서 이미 opacity0 → 배너 없이 자연 유지) */
-  /* PIN 통과 = "메뉴 활성" 배너 없이 네비가 아래서 촤르륵 슬라이드업(운영자 260704) · reveal은 라이브 언락 1회만(재방문 복원은 무애니) */
-  @keyframes ynavRise { from { opacity:0; transform:translateY(100%); } to { opacity:1; transform:none; } }
-  .ymain.reveal .ynav { animation:ynavRise .5s var(--ease) both; }
-  /* ═══ 9:16 폰 프레임 — PC/와이드에서 앱을 세로 폰 비율로 레터박스(운영자 260704 "메인 이미지가 PC서 늘어져 보임 → 항상 9:16 최적화") ═══
-     세로 좁은 폰(뷰포트가 9:16보다 좁음)=풀블리드 유지. 뷰포트가 9:16보다 넓으면(가로·데스크톱·태블릿) 중앙 9:16 프레임+측면 딤. 비율=기하 raw 예외축. */
-  @media (min-aspect-ratio:9/16) {
-    .ymain { inset:0; margin:auto; height:100dvh; width:auto; aspect-ratio:9/16; max-width:100vw;
-      border-inline:1px solid var(--glass-line); box-shadow:var(--shadow-card); overflow:hidden; }
-    #yetadlg { height:min(94dvh,820px); width:auto; aspect-ratio:9/16; max-width:96vw; }
-  }
-  @media (prefers-reduced-motion:reduce){ .ym-hero, .ym-pin, .ym-access, .ym-shackle, .ynav button { transition:none; } }
+  @media (prefers-reduced-motion:reduce){ .ym-hero, .ym-pin, .ym-access, .ynav button { transition:none; } }
 </style>
 </head>
 <body>
@@ -289,7 +267,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
     <div class="ym-hero">
       <div class="ym-access-card">
         <button class="ym-access" id="ymAccess" type="button" aria-label="접속">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path class="ym-shackle" d="M8 11V7a4 4 0 018 0v4"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>
         </button>
         <div class="ym-access-lbl">접속</div>
       </div>
@@ -624,14 +602,8 @@ try { if (new URLSearchParams(location.search).get('yeta')) setTimeout(() => ope
   const fill = () => slots.forEach((s, i) => s.classList.toggle('on', i < val.length));
   const flash = el => { if (!el) return; el.classList.add('hit'); setTimeout(() => el.classList.remove('hit'), 140); };
   const outLeft = () => { try { const u = +localStorage.getItem('yeta_pin_until') || 0; return Math.max(0, u - Date.now()); } catch { return 0; } };
-  function setUnlocked(animate) {   // 언락 = PIN 창 촤르륵 닫고(pin-mode 해제) 네비 등장 · animate=라이브 언락만 슬라이드업(재방문 복원은 무애니)
-    unlocked = true; ymain.classList.remove('pin-mode'); ymain.classList.add('unlocked');
-    if (animate) ymain.classList.add('reveal');
-  }
-  accessBtn.onclick = () => {   // 접속 = 락 열림 모션(고리 들림+라임 글로우) 후 PIN 모드 진입(운영자 260704)
-    accessBtn.classList.add('unlocking');
-    setTimeout(() => ymain.classList.add('pin-mode'), 420);
-  };
+  function setUnlocked() { unlocked = true; ymain.classList.add('unlocked'); }
+  accessBtn.onclick = () => ymain.classList.add('pin-mode');
   padEl.onclick = async e => {
     const b = e.target.closest('.lk-key'); if (!b || unlocked) return;
     if (b.dataset.back) { flash(b); val = val.slice(0, -1); errEl.textContent = ''; errEl.className = 'lk-err'; slotsEl.classList.remove('bad'); fill(); return; }
@@ -642,8 +614,7 @@ try { if (new URLSearchParams(location.search).get('yeta')) setTimeout(() => ope
         const h = await ymHash(val);
         if (h === YM_PIN_H) {
           try { localStorage.setItem('yeta_pin_ok', '1'); localStorage.removeItem('yeta_pin_fails'); localStorage.removeItem('yeta_pin_until'); } catch {}
-          errEl.textContent = ''; errEl.className = 'lk-err';   // "메뉴 활성" 배너 제거 — 대신 PIN 창 촤르륵 닫히고 네비 슬라이드업(운영자 260704)
-          setTimeout(() => setUnlocked(true), 240);   // 마지막 슬롯 채워진 뒤 자연 전환
+          errEl.className = 'lk-ok'; errEl.textContent = '잠금 해제 — 메뉴 활성'; setUnlocked();
         } else {
           let n = 0; try { n = (+localStorage.getItem('yeta_pin_fails') || 0) + 1; localStorage.setItem('yeta_pin_fails', String(n)); if (n >= YM_MAX) localStorage.setItem('yeta_pin_until', String(Date.now() + YM_OUT_MS)); } catch {}
           slotsEl.classList.add('bad', 'shake'); errEl.className = 'lk-err'; errEl.textContent = n >= YM_MAX ? `PIN 오류 ${YM_MAX}회 — 10분 후 다시` : `PIN 번호가 틀립니다 (${n}/${YM_MAX})`;
@@ -652,7 +623,7 @@ try { if (new URLSearchParams(location.search).get('yeta')) setTimeout(() => ope
       }
     }
   };
-  try { if (localStorage.getItem('yeta_pin_ok') === '1') setUnlocked(false); } catch {}   // 재방문 = 이미 해제면 무애니 통과(로컬 소프트 게이트)
+  try { if (localStorage.getItem('yeta_pin_ok') === '1') setUnlocked(); } catch {}   // 재방문 = 이미 해제면 통과(로컬 소프트 게이트)
   nav.onclick = e => {
     const b = e.target.closest('button'); if (!b) return;
     const tab = b.dataset.tab;
