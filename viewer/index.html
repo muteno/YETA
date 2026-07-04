@@ -19,11 +19,11 @@
     /* 중립 표면·텍스트 */
     --fg:#eef7f0; --fg-2:#cfd8d0; --mut:#8fa697;
     --line:rgba(255,255,255,.08); --line2:rgba(255,255,255,.06);
-    /* 강조 — 공통 컴포넌트(.tool-x hover·focus ring) */
-    --accent:#0FFD02; --accent-rgb:15,253,2;
+    /* 강조 = 브랜드 네온 레몬(운영자 260704 — 그린 #0FFD02 폐기·가이드북 --accent-bright 값 승격) · 공통 컴포넌트(.tool-x hover·focus ring)와 브랜드(--bubble-me) 공용 */
+    --accent:#d8ff3d; --accent-rgb:216,255,61;
     /* 의미색 */
     --danger:#ff5b4a; --danger-rgb:255,91,74; --arm:#ffd93d;
-    /* yeta 정체성 — 네온라임 버블·근흑 창(운영자 260704 브랜드 확정 — 공통 --accent 합류·라임 위 글자 = --yeta-bg) */
+    /* yeta 정체성 — 네온레몬 버블·근흑 창(운영자 260704 브랜드 확정 — 공통 --accent 합류·레몬 위 글자 = --yeta-bg) */
     --bubble-me:var(--accent); --bubble-ai:#1e2023; --yeta-bg:#0d0b12;
     /* 반지름 */
     --r-s:9px; --r-m:11px; --r-l:16px; --r-modal:22px; --r-pill:999px;
@@ -47,8 +47,9 @@
 html,body { margin:0; height:100%; }
 body { background:
     radial-gradient(circle at 14% 8%, rgba(255,255,255,.09), rgba(255,255,255,.02) 30%, transparent 52%),
+    radial-gradient(circle at 82% 16%, rgba(var(--accent-rgb),.05), transparent 34%),
     radial-gradient(circle at 88% 90%, rgba(255,255,255,.04), transparent 42%),
-    var(--yeta-bg,#0d0b12) fixed; color:var(--fg); font-family:Pretendard,-apple-system,system-ui,sans-serif; -webkit-font-smoothing:antialiased; overscroll-behavior:none; }   /* 근흑 + 소프트 오브 글로우(스크린샷 결 · 무채 흰 알파만 = 글래스 어휘) */
+    var(--yeta-bg,#0d0b12) fixed; color:var(--fg); font-family:Pretendard,-apple-system,system-ui,sans-serif; -webkit-font-smoothing:antialiased; overscroll-behavior:none; }   /* 근흑 + 소프트 오브 글로우 + 레몬 숨결 한 겹(브랜드 공기 · 260704) */
 /* ── 공통 컴포넌트(계승): nm-toast · msgUnfold · dialog · tool-x · gdots ── */
   .nm-toast { position:fixed; left:0; right:0; margin-inline:auto; bottom:calc(86px + env(safe-area-inset-bottom)); transform:translateY(18px);
     z-index:var(--z-float); width:min(92vw,430px); display:flex; align-items:center; gap:9px; padding:11px 15px; cursor:pointer;
@@ -72,7 +73,7 @@ body { background:
   dialog::backdrop { background:rgba(4,8,5,.46); backdrop-filter:blur(7px); -webkit-backdrop-filter:blur(7px); }
   .tool-x { width:30px; height:30px; flex:none; display:grid; place-items:center; background:rgba(255,255,255,.06);
     color:var(--fg); border:1px solid var(--line); border-radius:9px; cursor:pointer; }
-  .tool-x:hover { color:var(--accent); border-color:rgba(15,253,2,.4); }
+  .tool-x:hover { color:var(--accent); border-color:rgba(var(--accent-rgb),.4); }   /* raw 강조 리터럴 → 토큰(레몬 전환에 자동 추종·260704) */
   .tool-x:focus-visible { outline:none; box-shadow:0 0 0 2px rgba(var(--accent-rgb),.5); }   /* 키보드 포커스 링 */
   .tool-x, .dlg-x, .mx, .ed-x, .askx, .qh-x, .fb-x, .sc-rsn-x, .askimg-x, .pin-x { transition:transform .3s var(--ease); }
   .tool-x:active, .dlg-x:active, .mx:active, .ed-x:active, .askx:active, .qh-x:active, .fb-x:active, .sc-rsn-x:active, .askimg-x:active, .pin-x:active { transform:rotate(180deg) scale(var(--press-m,.92)); }
@@ -81,7 +82,7 @@ body { background:
   .gdots i:nth-child(2) { animation-delay:.22s; } .gdots i:nth-child(3) { animation-delay:.44s; }
   @keyframes gdots { 0% { opacity:0; } 25%,70% { opacity:1; } 95%,100% { opacity:0; } }
 /* ── yeta 전용 CSS(L309-405) ── */
-  /* ── yeta 말벗 제타(#yetadlg · 260703 v2 제타결) — 랜덤 페르소나 톡방. 다크 창(--yeta-bg) + 캐릭터 버블(--bubble-ai·아바타+이름) + 내 버블 네온 라임(--bubble-me=--accent · 260704) + *나레이션* 이탤릭. 페르소나 색 = --yeta-ac(JS가 roster color 주입 = "캐릭터 따라 톤" 운영자 컨셉) ── */
+  /* ── yeta 말벗 제타(#yetadlg · 260703 v2 제타결) — 랜덤 페르소나 톡방. 다크 창(--yeta-bg) + 캐릭터 버블(--bubble-ai·아바타+이름) + 내 버블 네온 레몬(--bubble-me=--accent · 260704) + *나레이션* 이탤릭. 페르소나 색 = --yeta-ac(JS가 roster color 주입 = "캐릭터 따라 톤" 운영자 컨셉) ── */
   #yetadlg { width:min(600px,94vw); height:min(88dvh,760px); padding:0; border:1px solid rgba(255,255,255,.10); border-radius:var(--r-modal);
     background:radial-gradient(circle at 16% 0%, rgba(255,255,255,.06), transparent 46%), var(--yeta-bg); color:var(--fg); overflow:hidden; --yeta-ac:var(--bubble-me);   /* 메인과 같은 소프트 오브 글로우(260704 V2 한 결) */
     backdrop-filter:none; -webkit-backdrop-filter:none; }   /* 불투명 bg → 전역 dialog blur30 상속 낭비 차단(#editdlg 패턴 · 평의회④) */
@@ -108,7 +109,7 @@ body { background:
   .yb { padding:10px 13px; border-radius:var(--r-l); font-size:var(--fs-body); line-height:var(--lh-base); white-space:pre-wrap; word-break:break-word; }
   .yb i.yn { font-style:italic; color:var(--fg-2); opacity:.75; }   /* *나레이션* = 이탤릭 톤다운("대화 폰트 이런식" — 제타 결) */
   .yb.ai { background:var(--bubble-ai); border:1px solid rgba(255,255,255,.05); border-top-left-radius:var(--r-s); }
-  .yb.me { align-self:flex-end; max-width:78%; background:var(--bubble-me); color:var(--yeta-bg); border-top-right-radius:var(--r-s); }   /* 라임 위 글자 = 근흑(브랜드 라임 전환 260704) */
+  .yb.me { align-self:flex-end; max-width:78%; background:var(--bubble-me); color:var(--yeta-bg); border-top-right-radius:var(--r-s); }   /* 레몬 위 글자 = 근흑(브랜드 레몬 전환 260704) */
   .yb.me i.yn { color:var(--yeta-bg); opacity:.82; }
   .yb.sys { align-self:center; background:none; border:none; color:var(--mut); font-size:var(--fs-sm); padding:2px 4px; }
   .yb.fail { align-self:flex-start; background:rgba(var(--danger-rgb),.08); border:1px solid rgba(var(--danger-rgb),.4); color:var(--danger); font-size:var(--fs-sm); }
@@ -148,7 +149,7 @@ body { background:
     font-size:var(--fs-body); line-height:1.4; padding:10px 13px; max-height:120px; font-family:inherit; text-align:center; }   /* 메시지칸 중앙정렬(운영자 260703) */
   .yeta-in textarea:focus-visible { outline:none; border-color:var(--yeta-ac); box-shadow:0 0 0 2px rgba(255,255,255,.06); }
   .yeta-send { flex:none; width:var(--btn); height:var(--btn); align-self:flex-end; border-radius:50%; border:none;
-    background:var(--bubble-me); color:var(--yeta-bg); display:grid; place-items:center; cursor:pointer; touch-action:manipulation; }   /* 네온 라임 원형 전송(CTA 결·아이콘 근흑) · touch-action=폰 탭 신뢰성(스크롤 팬에 안 먹힘 · 레포 관례) */
+    background:var(--bubble-me); color:var(--yeta-bg); display:grid; place-items:center; cursor:pointer; touch-action:manipulation; }   /* 네온 레몬 원형 전송(CTA 결·아이콘 근흑) · touch-action=폰 탭 신뢰성(스크롤 팬에 안 먹힘 · 레포 관례) */
   .yeta-send:active { transform:scale(var(--press-m,.9)); }
   .yeta-send:disabled { opacity:.4; pointer-events:none; }
   /* 페르소나 픽커 — 헤더 이름 탭 → 주민 직접 선택(msgpop 무채 글래스 계승 · saturate(0)=뒤 색 비침 차단 · §🎨 무채 크롬) */
@@ -179,19 +180,20 @@ body { background:
   .yeta-list .yl-dice { margin-top:6px; border:1px dashed var(--line); border-radius:var(--r-m); background:none; color:var(--mut); font:inherit; font-size:var(--fs-sm); font-weight:var(--fw-b); padding:12px; cursor:pointer; text-align:center; touch-action:manipulation; }
   .yeta-list .yl-dice:active { transform:scale(var(--press-l,.96)); }
 
-  /* ═══ YETA 메인 화면 (다크 글래스·PIN 단독 · 260704 V2.1) — 이름 정중앙 + 바로 아래 PIN·설명글 0(운영자 260704) · 브랜드 = 네온 라임(--accent) ═══ */
+  /* ═══ YETA 메인 화면 (다크 글래스·PIN 단독 · 260704 V2.1) — 이름 정중앙 + 바로 아래 PIN·설명글 0(운영자 260704) · 브랜드 = 네온 레몬(--accent) ═══ */
   .ymain { position:fixed; inset:0; display:flex; flex-direction:column; z-index:1; }
   .ymain-body { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:var(--sp-3); overflow:hidden; width:min(92vw,430px); margin:0 auto; padding:0 var(--sp-2); }   /* 폭 = nm-toast min(92vw,430px) 계승 */
   .ym-yeta { font-family:'LEMONMILK',sans-serif; font-weight:700; font-size:64px; line-height:1; letter-spacing:.02em;
     background:linear-gradient(165deg, rgba(255,255,255,.92), rgba(255,255,255,.38)); -webkit-background-clip:text; background-clip:text; color:transparent;
-    filter:drop-shadow(0 12px 34px rgba(0,0,0,.5)); }   /* 로고 = 글래스 레터(반투명 그라데 잉크·운영자 260704 "예타도 글래스모피즘") · 그림자 = nm-toast 값 계승 */
-  .ym-yeta .t { background:linear-gradient(165deg, rgba(var(--accent-rgb),.95), rgba(var(--accent-rgb),.45)); -webkit-background-clip:text; background-clip:text; }   /* 포인트 = 네온 라임 글래스(브랜드 확정 · 운영자 260704) */
+    filter:drop-shadow(0 12px 34px rgba(0,0,0,.5)); animation:ybIn .5s cubic-bezier(.22,.61,.36,1) both; }   /* 로고 = 글래스 레터(반투명 그라데 잉크·운영자 260704 "예타도 글래스모피즘") · 그림자 = nm-toast 값·입장 = ybIn 촤르륵 계승 */
+  .ym-yeta .t { background:linear-gradient(165deg, rgba(var(--accent-rgb),1), rgba(var(--accent-rgb),.72)); -webkit-background-clip:text; background-clip:text;
+    text-shadow:0 0 16px rgba(var(--accent-rgb),.3); }   /* 포인트 = 네온 레몬 꽉 찬 잉크 + 은은한 글로우(운영자 260704 "T 색 덜 들어갔음" 보강 · 글로우 값 = 가이드북 §7 계승) */
   /* PIN — 입력하는 곳이 바로 PIN(라벨·버튼·설명글 없음·6자리 차면 자동 판정 · 운영자 260704) · 플레이트·중앙정렬 = 챗 입력칸(.yeta-in textarea) 계승 */
-  .ym-sign { display:flex; flex-direction:column; align-items:center; gap:10px; transition:opacity .45s var(--ease), transform .45s var(--ease); }
+  .ym-sign { display:flex; flex-direction:column; align-items:center; gap:10px; transition:opacity .45s var(--ease), transform .45s var(--ease); animation:ybIn .5s cubic-bezier(.22,.61,.36,1) .08s both; }   /* 로고 뒤따라 반박자 늦게(스태거 입장) */
   .ym-field { width:min(220px,70vw); padding:13px 16px; background:rgba(255,255,255,.05); border:1px solid var(--line); border-radius:var(--r-l); cursor:text; transition:border-color .2s, box-shadow .2s; }
-  .ym-field:focus-within { border-color:var(--accent); box-shadow:0 0 0 2px rgba(255,255,255,.06); }
+  .ym-field:focus-within { border-color:var(--accent); box-shadow:0 0 0 2px rgba(var(--accent-rgb),.35); }   /* focus 링 = CII 입력칸 정본(.35 accent 링) */
   .ym-field.bad { border-color:var(--danger); }
-  .ym-field input { background:none; border:none; outline:none; padding:0; width:100%; color:var(--fg); font-family:inherit; font-size:var(--fs-h2); font-weight:var(--fw-x); letter-spacing:.45em; text-align:center; }
+  .ym-field input { background:none; border:none; outline:none; padding:0; width:100%; color:var(--fg); caret-color:var(--accent); font-family:inherit; font-size:var(--fs-h2); font-weight:var(--fw-x); letter-spacing:.45em; text-align:center; }
   .ym-field input::placeholder { color:var(--mut); letter-spacing:.2em; font-weight:var(--fw-b); }
   @keyframes lkShake { 0%,100%{transform:translateX(0)} 12%{transform:translateX(-9px)} 28%{transform:translateX(8px)} 44%{transform:translateX(-6px)} 60%{transform:translateX(4px)} 76%{transform:translateX(-2px)} }
   .ym-field.shake { animation:lkShake .45s cubic-bezier(.36,.07,.19,.97); }
@@ -202,14 +204,14 @@ body { background:
   .ynav { flex:none; align-self:center; width:min(92vw,430px); display:flex; gap:2px; margin-bottom:calc(10px + env(safe-area-inset-bottom)); padding:5px; background:rgba(255,255,255,.05); border:1px solid var(--line); border-radius:var(--r-pill); backdrop-filter:blur(18px) saturate(1.3); -webkit-backdrop-filter:blur(18px) saturate(1.3); }
   .ynav button { flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; padding:7px 0 5px; color:var(--mut); font-size:var(--fs-xs); font-weight:var(--fw-b); background:none; border:none; border-radius:var(--r-pill); cursor:pointer; position:relative; transition:transform .28s var(--ease), color .2s, opacity .3s; touch-action:manipulation; }
   .ynav button:active { transform:scale(var(--press-s)); }
-  .ynav button.on { color:var(--accent); background:rgba(255,255,255,.08); }   /* 활성 탭 = 브랜드 라임(스크린샷 활성 탭 결) */
+  .ynav button.on { color:var(--accent); background:rgba(255,255,255,.08); }   /* 활성 탭 = 브랜드 레몬(스크린샷 활성 탭 결) */
   .ynav button.locked { opacity:.4; }
   .ynav button svg { width:20px; height:20px; }
   .ynav .lockdot { position:absolute; top:4px; right:calc(50% - 18px); width:11px; height:11px; }
   .ynav .lockdot svg { width:11px; height:11px; stroke:var(--mut); fill:none; stroke-width:2.4; }
   .ymain.unlocked .ynav button.locked { opacity:1; }
   .ymain.unlocked .ynav button.locked .lockdot { display:none; }
-  @media (prefers-reduced-motion:reduce){ .ym-sign, .ynav button { transition:none; } .ym-field.shake { animation-duration:.01s; } }
+  @media (prefers-reduced-motion:reduce){ .ym-sign, .ynav button { transition:none; } .ym-yeta, .ym-sign { animation:none; } .ym-field.shake { animation-duration:.01s; } }
 </style>
 </head>
 <body>
@@ -378,7 +380,7 @@ function yApply(c) {   // 페르소나 적용 — 이름·태그·포인트색·
   const _av = $('#yetaAva');   // 헤더 상주 프로필 — avatar(얼굴) 있으면 이미지, 없으면 이니셜(색은 --yeta-ac 자동)
   if (c.avatar) { _av.textContent = ''; _av.classList.add('has-img'); _av.style.backgroundImage = `url('${c.avatar}')`; }
   else { _av.textContent = c.initial || (c.name || '?')[0]; _av.classList.remove('has-img'); _av.style.backgroundImage = ''; }
-  // 강조색(--yeta-ac)은 네온 라임 고정(--bubble-me=--accent · 260704) — 페르소나 구분은 아바타 이니셜색·배경으로만(운영자 260703). CSS 기본값(#yetadlg --yeta-ac) 사용, 런타임 주입 제거.
+  // 강조색(--yeta-ac)은 네온 레몬 고정(--bubble-me=--accent · 260704) — 페르소나 구분은 아바타 이니셜색·배경으로만(운영자 260703). CSS 기본값(#yetadlg --yeta-ac) 사용, 런타임 주입 제거.
   yStage(yLastMood());   // 무대 전환 — 대화의 공기(마지막 답장 무드)는 화자 바뀌어도 이어짐(같은 방)
 }
 function yLastMood() {   // 마지막 답장의 장면 공기(없으면 base)
