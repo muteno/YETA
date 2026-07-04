@@ -26,10 +26,7 @@ const EFFORTS = new Set(['', 'low', 'medium', 'high', 'max']);           // '' =
 
 export async function onRequestPost({ request, env }) {
   const json = (o, s = 200) =>
-    new Response(JSON.stringify(o), { status: s >= 500 ? 424 : s, headers: { 'content-type': 'application/json', 'cache-control': 'no-store' } });
-  // ⚠️ 5xx → 424 강등: 커스텀 도메인(soong.kr 존)이 5xx 응답을 자체 에러 페이지("error code: 502")로 덮어
-  //    게이트웨이 JSON 에러 사유가 유저에게 소실됨(실측 — pages.dev는 JSON 통과·soong.kr은 생 502).
-  //    뷰어(yApi)는 HTTP 코드가 아니라 JSON error/ok/setup 필드만 판독 = 코드 강등 무영향(4xx는 존이 안 덮음).
+    new Response(JSON.stringify(o), { status: s, headers: { 'content-type': 'application/json', 'cache-control': 'no-store' } });
 
   if (!originOk(request)) return json({ error: '허용되지 않은 출처' }, 403);
   let body;
