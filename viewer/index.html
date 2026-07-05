@@ -16,6 +16,7 @@
 <meta name="apple-mobile-web-app-title" content="예타">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="application-name" content="예타">
+<link rel="preload" as="image" href="assets/brand/yeta-main-boy.webp" fetchpriority="high"><!-- 잠금 화면 히어로 = 촤르륵-인과 로드 레이스 차단(평의회5) -->
 <style>
   /* ── LEMONMILK (YETA 디스플레이 · 로컬 호스팅) ── */
   @font-face{font-family:'LEMONMILK';font-weight:700;font-style:normal;src:url('fonts/LEMONMILK-Bold.otf') format('opentype');font-display:swap}
@@ -309,13 +310,13 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   @keyframes ymBandIn { from { transform:rotate(-6.2deg) translateX(-260%); } to { transform:rotate(-6.2deg) translateX(0); } }
   .ymain.go .ym-band { animation:ymBandOut .42s var(--ease) both; }   /* 잠금 터치 = 각도 유지한 채 싹 퇴장 */
   @keyframes ymBandOut { from { transform:rotate(-6.2deg) translateX(0); } to { transform:rotate(-6.2deg) translateX(260%); } }
-  .ymain.bye .ym-band { animation:ymBandWipe .65s var(--ease) both; }   /* PIN 통과 = 라벨이 다시 쭉 가로지르며 메뉴 전환 */
+  .ymain.bye.go .ym-band { animation:ymBandWipe .65s var(--ease) both; }   /* PIN 통과 = 라벨이 다시 쭉 가로지르며 메뉴 전환 · .go 병기 = .go 규칙과의 소스순서 타이 제거(평의회1 · bye는 항상 go 뒤) */
   @keyframes ymBandWipe { from { transform:rotate(-6.2deg) translateX(-260%); } to { transform:rotate(-6.2deg) translateX(260%); } }
   .ymain.go .ym-stage { animation:ymZoom .75s var(--ease) both; }   /* 줌했다가 정면 복귀 */
-  @keyframes ymZoom { 0% { transform:translateX(-50%) scale(1); } 45% { transform:translateX(-50%) scale(1.07); } 100% { transform:translateX(-50%) scale(1); } }
+  @keyframes ymZoom { 0% { transform:translateX(-50%) scale(1); } 45% { transform:translateX(-50%) scale(1.09); } 100% { transform:translateX(-50%) scale(1); } }
   /* 잠금 화면 대형 YETA 로고 — 확정 워드마크(#ywm 6겹) 재사용 · 포스터 YETA 위치(폭 63.66% · 상단 19.7% · 머리카락 뒤 z) · 번개 스트라이크 등장
      ⚠ 셀렉터 = .ym-stage .ym-wm 특이도 승격(베이스 .ywm이 소스 뒤라 단일 클래스는 패배 — 실측 260706) */
-  .ym-stage .ym-wm { display:none; top:19.7%; left:50%; right:auto; z-index:auto; --w:63.66%; width:var(--w); transform:translateX(-50%); animation:none; }   /* z-index:auto = DOM 순서 층위(소년 레이어 뒤 = 포스터처럼 머리카락이 로고를 가림) */
+  .ym-stage .ym-wm { display:none; top:19.7%; left:50%; right:auto; z-index:auto; --w:63.66%; width:var(--w); transform:translateX(-50%); animation:none; }   /* z-index:auto = DOM 순서 층위(소년 레이어 뒤 = 포스터처럼 머리카락이 로고를 가림) · --w=%라 내부 오프셋 calc(자간·판 이동)는 자기폭 비례 해석 = 대형 로고에 의도된 스케일링(평의회1 F3) */
   .ymain.strike .ym-stage .ym-wm { display:block; animation:ymStrike .48s cubic-bezier(.22,.61,.36,1) both, ywmFlick 4s steps(1) .6s infinite; }
   @keyframes ymStrike { 0% { opacity:0; transform:translateX(-50%) translateY(-130%) scale(1.45); } 34% { opacity:1; } 55% { transform:translateX(-50%) translateY(1.6%) scale(.985); } 74% { transform:translateX(-50%) translateY(-.8%) scale(1.006); } 100% { opacity:1; transform:translateX(-50%); } }
   .ym-flash { position:absolute; inset:0; opacity:0; background:radial-gradient(circle at 50% 24%, rgba(255,255,255,.85), rgba(var(--accent-rgb),.22) 42%, transparent 68%); }   /* 번개 플래시(전뇌 엣지) */
@@ -326,9 +327,9 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   .ymain.strike .ymb.main { animation:ymbHolo calc(3.1s/var(--st-amp)) linear infinite, ymHit .2s var(--ease) .3s; }   /* 착지 반동 */
   @keyframes ymHit { 30% { transform:translateY(.9%); } 65% { transform:translateY(-.4%); } 100% { transform:none; } }
   /* 로고 착지 후 = 사람 효과 정지(.calm · 원 디밍만 유지) + 한번씩 캐릭터+로고 전체 지지직 VHS 버스트(동일 5.6s 창 = 동기) */
-  .ymain.calm .ymb.main { animation:ymBurst 5.6s linear infinite; }
+  .ymain.calm.strike .ymb.main { animation:ymBurst 5.6s linear infinite; }   /* .strike 병기 = ymHit 규칙과의 소스순서 타이 제거(평의회1 · calm은 항상 strike 뒤) */
   .ymain.calm .ymb.g1 { animation:ymBurstG 5.6s linear infinite; }
-  .ymain.calm .ymb.g2 { animation:ymBurstG 5.6s linear -2.7s infinite; }
+  .ymain.calm .ymb.g2 { animation:ymBurstG 5.6s linear -.08s infinite; }   /* 미세 어긋남만(유기감) — 큰 디싱크는 "전체 지지직" 의도 위반(평의회10) */
   .ymain.calm.strike .ym-stage .ym-wm { animation:ywmFlick 4s steps(1) infinite, ymBurstWm 5.6s linear infinite; }
   @keyframes ymBurst { 0%,93.4%,100% { transform:none; } 94% { transform:translate(-8px,2px) skewX(-1.4deg); } 95.2% { transform:translate(6px,-2px); } 96.4% { transform:translate(-3px,1px) skewX(.7deg); } 97.6% { transform:none; } }
   @keyframes ymBurstWm { 0%,93.4%,100% { transform:translateX(-50%); } 94% { transform:translateX(-50%) translate(-8px,2px) skewX(-1.4deg); } 95.2% { transform:translateX(-50%) translate(6px,-2px); } 96.4% { transform:translateX(-50%) translate(-3px,1px) skewX(.7deg); } 97.6% { transform:translateX(-50%); } }
@@ -353,16 +354,18 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
     box-shadow:inset 0 1px 0 var(--glass-line), var(--shadow-card), 0 0 40px rgba(var(--accent-rgb),.42); }
   /* 접속 = 캐릭터 가슴팍 위 글래스 잠금해제 버튼(무채색 글래스 + 강조 라임 디밍 · 운영자 260704) · 누르면 진입 시퀀스(.go→.strike→.calm+pin-mode) · 위치 = 포스터 가슴(60% · 9:16 앵커) */
   .ym-access-card { position:absolute; top:60%; left:50%; transform:translate(-50%,-50%); pointer-events:auto;
-    display:flex; flex-direction:column; align-items:center; gap:10px; transition:opacity .4s var(--ease); }
+    display:flex; flex-direction:column; align-items:center; gap:10px; transition:opacity .4s var(--ease), visibility 0s .4s; }   /* visibility 지연 = 페이드 끝난 뒤 포커스 트리서 제거 */
   .ym-access { animation:ymFadeIn .4s var(--ease) 1.2s both, ymLockBreathe 2.6s var(--ease) 1.6s infinite; }   /* 라벨 스윕 후 등장 → 숨쉬기 */
   @keyframes ymFadeIn { from { opacity:0; } to { opacity:.78; } }
   .ymain.pin-mode .ym-access-card { opacity:0; pointer-events:none; }
   /* PIN 블록 = 캐릭터 '배' 높이(≈66%)에 이미지 오버랩 절대배치 · 접속 후 아래에서 위로 올라오며 페이드인(운영자 260705) */
   .ym-pin { position:absolute; left:50%; top:69%; z-index:3; width:100%; max-width:300px; display:flex; flex-direction:column; align-items:center;
-    opacity:0; transform:translate(-50%, calc(-50% + 46px)); pointer-events:none;
-    transition:opacity .5s var(--ease) .12s, transform .5s var(--ease) .12s; }
+    opacity:0; visibility:hidden; transform:translate(-50%, calc(-50% + 46px)); pointer-events:none;
+    transition:opacity .5s var(--ease) .12s, transform .5s var(--ease) .12s, visibility 0s .62s; }   /* visibility = 비활성 시 탭 순서·AT에서 제거(비가시 조작가능 창 차단 · 평의회8) */
   .ymain.pin-mode .ym-access { opacity:0; pointer-events:none; }   /* 접속 자물쇠 퇴장(라벨 없음) */
-  .ymain.pin-mode .ym-pin { opacity:1; transform:translate(-50%,-50%); pointer-events:auto; }
+  .ymain.pin-mode .ym-access-card { visibility:hidden; }   /* 페이드 후 포커스 대상에서도 제거(transition-delay가 페이드 시간 벌어줌) */
+  .ymain.pin-mode .ym-pin { opacity:1; visibility:visible; transform:translate(-50%,-50%); pointer-events:auto;
+    transition:opacity .5s var(--ease) .12s, transform .5s var(--ease) .12s, visibility 0s; }
   /* PIN 키패드 = nomute lk- 이식 · 다크+라임 리컬러(260704) */
   .lk-m { font-size:14px; font-weight:800; color:var(--fg-2); letter-spacing:-.2px; margin-top:6px; }
   .lk-slots { display:flex; justify-content:center; gap:15px; margin:22px 0 2px; }
@@ -385,9 +388,12 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   .lk-key:active { background:rgba(255,255,255,.05); transform:scale(.93); }
   .lk-key.hit { background:rgba(var(--pin-ac-rgb),.14); color:var(--pin-ac); }
   .lk-key.empty { pointer-events:none; }
+  .lk-key:focus:not(:focus-visible) { outline:none; }   /* 프로그램 포커스(pin-mode 진입 이동)는 링 없음 · 키보드 탐색은 UA 링 유지 */
   .lk-key.back svg { width:25px; height:25px; stroke:var(--fg-2); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; transition:stroke .15s; }
   .lk-key.back.hit svg { stroke:var(--pin-ac); }
   @media (prefers-reduced-motion:reduce){ .lk-slots.shake{animation-duration:.01s} .lk-key:active{transform:none} }
+  /* 짧은 세로 프레임(가로모드 폰·분할창) = PIN 블록 압축 — '0'·백스페이스가 프레임 밖으로 잘려 언락 불가하던 사전존재 결함 방어(평의회3 H-1 · 임계 Hf<~550px) · lk- 베이스 뒤 선언 = 캐스케이드 승리 보장 */
+  @media (max-height:560px) { .ym-pin { top:58%; } .lk-m { margin-top:0; } .lk-key { height:38px; font-size:18px; } .lk-slots { margin:6px 0 0; } .lk-err { margin-top:4px; min-height:12px; } .lk-pad { margin-top:6px; max-width:216px; } }
   /* 하단 네비 = 플로팅 알약(운영자 260705 레퍼런스 결) — 활성 탭 = 라임 확장 필(GIF 레퍼런스 260705: 아이콘만 → 탭하면 필이 늘어나며 라벨 등장 · 비활성 = 픽토-온리) · 투명도 아주 높게(--glass = 뒤 비침) · PIN 전 = 메인만 */
   .ynav { display:none; position:absolute; left:50%; bottom:calc(14px + env(safe-area-inset-bottom)); transform:translateX(-50%); z-index:4;
     background:var(--glass); background:color-mix(in srgb, var(--glass) 50%, transparent); border:1px solid var(--glass-line); border-radius:var(--r-pill); padding:6px 10px; gap:8px;
@@ -421,23 +427,23 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   /* ═══ YETA 워드마크 로고(운영자 260705 확정: 오프셋×전뇌 반반 — 코발트+라임 반전판 · 코발트 글로우 · 글래스 80% · 모션 6종 · 자간 -22%·엇갈림) ═══
      레터링 = 메인 포스터(main_v2) 원본 추출 4장(assets/brand/yeta-wm-*.png · 마스크) · 색 전부 토큰 · 오프셋/자간 = --w 비례 기하 · 겹층은 JS 조립(#ywm) */
   /* 좌상단 상시 로고(운영자 260705 "계단 배경 타이틀 말고 좌상단에 항상 박히는 로고") — 언락 후 전 탭 상주 · 우상단 = 프로필(.yprof) 쌍 · 130% 확대+모서리 여백 확장(운영자 260706 "쏠린 느낌" 해소 · 24px = --sp-2 x2 기하) */
-  .ywm { display:none; position:absolute; top:calc(24px + env(safe-area-inset-top)); left:24px; z-index:4;
+  .ywm { display:none; position:absolute; top:calc(calc(var(--sp-2) * 2) + env(safe-area-inset-top)); left:calc(var(--sp-2) * 2); z-index:4;
     --w:112px; width:var(--w); aspect-ratio:3.6356/1;
     filter:drop-shadow(0 6px 14px rgba(0,0,0,.45)) drop-shadow(0 0 14px rgba(var(--cobalt-rgb),.4));
     animation:ywmFlick 4s steps(1) infinite; }
-  .ymain.unlocked .ywm { display:block; }
-  .ymain.reveal .ywm { animation:ywmIn .5s var(--ease) both, ywmFlick 4s steps(1) .6s infinite; }   /* 언락 = 네비 rise와 짝(위에서 스르륵) · 플리커 병행 유지 */
+  .ymain.unlocked > .ywm { display:block; }   /* > 자식 결합자 = 좌상단 #ywm 전용(스테이지 손자 #ywmLock 부수 매칭 차단 · 평의회1 F2) */
+  .ymain.reveal > .ywm { animation:ywmIn .5s var(--ease) both, ywmFlick 4s steps(1) .6s infinite; }   /* 언락 = 네비 rise와 짝(위에서 스르륵) · 플리커 병행 유지 */
   .ymain.reveal .yprof { animation:ywmIn .5s var(--ease) both; }
   @keyframes ywmIn { from { opacity:0; transform:translateY(-130%); } to { opacity:1; transform:none; } }
-  .yprof { display:none; position:absolute; top:calc(24px + env(safe-area-inset-top)); right:24px; z-index:4; width:var(--btn); height:var(--btn);
-    place-items:center; background:var(--glass-2); border:1px solid rgba(var(--accent-rgb),.22); border-radius:50%; color:var(--fg-2); cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent;
+  .yprof { display:none; position:absolute; top:calc(calc(var(--sp-2) * 2) + env(safe-area-inset-top)); right:calc(var(--sp-2) * 2); z-index:4; width:var(--btn); height:var(--btn);
+    place-items:center; background:var(--glass-2); border:1px solid var(--glass-line); border-radius:50%; color:var(--fg-2); cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent;
     backdrop-filter:blur(var(--blur-m)) saturate(1.2); -webkit-backdrop-filter:blur(var(--blur-m)) saturate(1.2);
     box-shadow:inset 0 1px 0 var(--glass-line); background-size:cover; background-position:center;
     background-image:url('assets/brand/yeta-face.webp');
-    transition:transform .28s var(--ease); }   /* 기본 프로필 = 기본 캐릭터 얼굴(포스터 소년 · 운영자 260706 "따로 설정 안 하면 기본 캐릭터") · 사용자 커스텀 이미지 = background-image 주입 축(후속) · 모서리 여백 24(로고 쌍) */
+    transition:transform .28s var(--ease); }   /* 기본 프로필 = 기본 캐릭터 얼굴(포스터 소년 · 운영자 260706 "따로 설정 안 하면 기본 캐릭터") — 이미지 상태축 = has-img 단일 기제(기본 얼굴도 마크업 has-img 경유 · 커스텀 = style.backgroundImage 주입+has-img 유지 · 평의회4) · 모서리 여백 = --sp-2×2(로고 쌍) */
   .ymain.unlocked .yprof { display:grid; }
   .yprof:active { transform:scale(var(--press-s)); }
-  .yprof svg { display:none; width:17px; height:17px; }   /* 픽토 폴백 = 기본 얼굴 이미지로 대체(마크업 보존 · 이미지 로드 실패 대비 DOM 유지) */
+  .yprof svg { width:17px; height:17px; }   /* 픽토 = has-img 아닐 때만 보이는 폴백 */
   .yprof.has-img svg { display:none; }
   .yprof.has-img { border-color:rgba(var(--accent-rgb),.22); }   /* 얼굴 아바타 = 은은한 라임 테(.yava.has-img 결 계승) */
   .ywm .wl { position:absolute; inset:0; display:flex; justify-content:center; align-items:stretch; pointer-events:none; }
@@ -548,12 +554,12 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
     <div class="ym-pin">
       <div class="lk-m">PIN 입력</div>
       <div class="lk-slots" id="ymSlots"><span class="lk-slot"></span><span class="lk-slot"></span><span class="lk-slot"></span><span class="lk-slot"></span></div>
-      <div class="lk-err" id="ymErr"></div>
+      <div class="lk-err" id="ymErr" role="alert"></div>   <!-- 오류 = 스크린리더 즉시 낭독(평의회8) -->
       <div class="lk-pad" id="ymPad"></div>
     </div>
   </div>
   <div class="ywm" id="ywm" role="img" aria-label="YETA"></div>   <!-- 좌상단 상시 로고(운영자 260705 확정 조합 · 겹층 JS 조립 · 언락 후 표시) -->
-  <button class="yprof" id="yprof" type="button" aria-label="내 프로필"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0112 0v1"/></svg></button>   <!-- 우상단 개인 프로필(이미지 주입 예정 축 · 현재 픽토) -->
+  <button class="yprof has-img" id="yprof" type="button" aria-label="내 프로필"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0112 0v1"/></svg></button>   <!-- 우상단 개인 프로필 = 기본 캐릭터 얼굴(has-img 기본 · 커스텀 이미지 주입 축 후속) -->
   <nav class="ynav" id="ynav">   <!-- 메뉴 재편(운영자 260705): 1=캐릭터 · 2=대화 목록 · 3=지금 대화(임시·2와 통합 예정) · 4=설정 · 메인 화면 폐지(언락=바로 캐릭터) · lockdot 폐지(네비 = 언락 후에만 표시) -->
     <button class="on" data-tab="char" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0112 0v1"/></svg><span>캐릭터</span></button>
     <button data-tab="list" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 01-12 7.7L3 21l1.8-6A8.5 8.5 0 1121 11.5z"/></svg><span>대화</span></button>
@@ -989,23 +995,28 @@ try { if (new URLSearchParams(location.search).get('yeta')) setTimeout(() => ope
   }
   const yVib = p => { try { navigator.vibrate && navigator.vibrate(p); } catch {} };   // 폰 진동(미지원 = 무해 no-op · iOS Safari 미지원)
   let entered = false;
+  const ymPinFocus = () => { const k = padEl.querySelector('.lk-key'); if (k) try { k.focus({ preventScroll: true }); } catch {} };   // pin-mode 전환 통지 = 첫 키로 포커스 이동(평의회8)
   function ymEnterPin() {   // 잠금 터치 = 진입 시퀀스(운영자 260706): 락 열림 → 라벨 각도 유지 퇴장+줌 복귀(.go) → 로고 번개 스트라이크(.strike) → 사람 효과 정지·원 디밍만(.calm)+PIN 부상
-    if (entered || unlocked) return; entered = true;
+    if (unlocked) return;
+    if (entered) { ymain.classList.add('go', 'strike', 'calm', 'pin-mode'); ymPinFocus(); return; }   // 시퀀스 중 재탭 = 세리머니 스킵(최종 상태 직행 · 평의회10)
+    entered = true;
     accessBtn.classList.add('unlocking');
-    if (matchMedia('(prefers-reduced-motion: reduce)').matches) { ymain.classList.add('go', 'strike', 'calm', 'pin-mode'); return; }   // 모션 최소화 = 최종 상태 직행
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) { ymain.classList.add('go', 'strike', 'calm', 'pin-mode'); ymPinFocus(); return; }   // 모션 최소화 = 최종 상태 직행
     setTimeout(() => ymain.classList.add('go'), 140);
     setTimeout(() => ymain.classList.add('strike'), 840);
-    setTimeout(() => ymain.classList.add('calm', 'pin-mode'), 1330);
+    setTimeout(() => { ymain.classList.add('calm', 'pin-mode'); ymPinFocus(); }, 1330);
   }
   accessBtn.onclick = ymEnterPin;
   padEl.onclick = async e => {
-    const b = e.target.closest('.lk-key'); if (!b || unlocked) return;
+    const b = e.target.closest('.lk-key'); if (!b || unlocked || !ymain.classList.contains('pin-mode')) return;   // pin-mode 게이트 = 비가시 패드 입력 차단(평의회8)
     if (b.dataset.back) { flash(b); yVib(8); val = val.slice(0, -1); errEl.textContent = ''; errEl.className = 'lk-err'; slotsEl.classList.remove('bad'); fill(); return; }
     if (outLeft()) { errEl.className = 'lk-err'; errEl.textContent = `PIN 오류 ${YM_MAX}회 — ${Math.ceil(outLeft() / 60000)}분 후 다시`; return; }
     if (b.dataset.n && val.length < YM_LEN) {
       flash(b); yVib(8); val += b.dataset.n; fill();   // 키 입력 = 짧은 진동(운영자 260706 "핀 입력하면 진동 + 기존 입력 그대로")
       if (val.length === YM_LEN) {
-        const h = await ymHash(val);
+        const attempt = val;
+        const h = await ymHash(attempt);
+        if (val !== attempt) return;   // 해시 대기 중 입력 변경 = 낡은 판정 폐기(평의회2 레이스 가드)
         if (h === YM_PIN_H) {
           try { localStorage.removeItem('yeta_pin_fails'); localStorage.removeItem('yeta_pin_until'); } catch {}   // 언락 기억 안 함(yeta_pin_ok 미저장 = 매번 PIN · 운영자 260705) · 실패/잠금 카운터만 리셋
           errEl.textContent = ''; errEl.className = 'lk-err'; yVib(18);
