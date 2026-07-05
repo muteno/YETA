@@ -115,6 +115,7 @@ _FWD_UNUSED = {
     '--fw-b', '--fw-x', '--lh-base', '--on-arm', '--r-l', '--r-m', '--r-pill', '--sp-1', '--sp-2',
     '--sp-3', '--sp-4', '--warn',
     '--press-pico',   # 픽토온리 눌림 = thumb/ly/k의 rmin/file가 씀(index엔 .55 픽토 버튼 없음) = forward-declared(260628)
+    '--arm',   # 2탭 재확인 경고색 = viewer/call.js #yetaCallBtn.armed가 씀(스캐너는 index만 봄 · "새 대화" 제거로 index 내 사용 0 · 260705)
 }   # (main #4 --brand/--brand-rgb 는 이 브랜치 v2에서 --accent:#CFFF40 로 통일·배선 → 중복 제거·260704 머지)
 # --on-arm(arm 채움 위 글자색) = .revsend.confirm 채움 그라데 → 표준 플랫 arm 전환(260622)으로 현재 미배선.
 # 정의는 보존(--arm/--arm-rgb 짝 · 향후 채움형 arm 컴포넌트용 어휘) → forward-unused 처리(§🎨).
