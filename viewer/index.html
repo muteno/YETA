@@ -198,7 +198,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
       radial-gradient(circle at 50% 40%, rgba(var(--accent-rgb),.08), transparent 34%),
       radial-gradient(circle at 12% 90%, rgba(var(--cobalt-rgb),.10), transparent 36%),
       var(--bg); color:var(--fg); }
-  /* step1 로그인창 = 운영자 포스터(main.png → yeta-hero.webp) 전면 full-bleed. 하단 --bg-scrim 딤(로그인·네비 가독) */
+  /* step1 로그인창 = 운영자 포스터(구성도/소스이미지/main_v2.png → yeta-hero.webp) 전면 full-bleed. 하단 --bg-scrim 딤(로그인·네비 가독) */
   .ymain { position:fixed; inset:0; display:flex; flex-direction:column; z-index:1;
     background:var(--bg-scrim), url(assets/brand/yeta-hero.webp) center/cover no-repeat var(--bg); }
   /* PIN 모드 전면 글래스 딤 — 포스터 타이포(PLAY a Episode/YETA) 위에 PIN 라벨·슬롯이 겹쳐 뒤죽박죽 되던 것 차단(운영자 스샷 260704).
@@ -208,7 +208,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   .ymain.pin-mode::before { background:linear-gradient(transparent 44%, rgba(0,0,0,.52) 86%); }
   .ymain-body { flex:1; display:flex; flex-direction:column; align-items:center; overflow:hidden; padding:0 24px; position:relative; z-index:2; }
   /* PIN 블록은 절대배치(배 위치)로 오버랩 — body 정렬 불필요(옛 center 규칙 폐지) */
-  /* 캐릭터 뒤 라임 원 발광 펄스 — 중심 48%/69%·반경≈35%w(main.png 실측) · screen=밝히기만(캐릭터 중앙은 링 투명으로 보존) · 디밍↔발광 반복(운영자 260705) */
+  /* 캐릭터 뒤 라임 원 발광 펄스 — 중심 48%/69%·반경≈35%w(소스이미지/main_v2.png 실측) · screen=밝히기만(캐릭터 중앙은 링 투명으로 보존) · 디밍↔발광 반복(운영자 260705) */
   .ym-glow { position:absolute; inset:0; z-index:1; pointer-events:none; mix-blend-mode:screen;
     background:radial-gradient(circle closest-side at 48% 69%, transparent 56%, rgba(var(--accent-rgb),.46) 77%, transparent 98%);
     animation:ymGlowPulse 3.4s ease-in-out infinite; }   /* 링 반경 = 원 테두리(closest-side 74~78%≈35%w) · 중앙 투명 = 캐릭터 보존 · 은은한 호흡 */
