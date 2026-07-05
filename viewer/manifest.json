@@ -1,12 +1,14 @@
 {
-  "name": "YETA",
-  "short_name": "YETA",
-  "description": "YETA — 캐릭터 챗",
+  "name": "예타 : 가상현실 대화 섹션",
+  "short_name": "예타",
+  "description": "예타 — 가상현실 대화 섹션(무음동 캐릭터 챗)",
   "id": "/",
   "start_url": ".",
   "scope": "/",
   "display": "standalone",
-  "display_override": ["standalone"],
+  "display_override": [
+    "standalone"
+  ],
   "orientation": "portrait",
   "background_color": "#121212",
   "theme_color": "#121212",
