@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ko">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>260706 — 챗 회색 깡통 버그 수정 + 판타지 6인 개편</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin:0; padding:28px 18px 60px; background:#121212; color:#eee; font-family:system-ui,-apple-system,'Apple SD Gothic Neo','Pretendard',sans-serif; line-height:1.65; max-width:760px; margin-inline:auto; }
+  h1 { font-size:1.35rem; margin:0 0 6px; } h2 { font-size:1.05rem; margin:34px 0 10px; color:#CFFF40; }
+  .sub { color:#9a9a9a; font-size:.85rem; margin-bottom:26px; }
+  table { border-collapse:collapse; width:100%; font-size:.86rem; }
+  th,td { border:1px solid #2e2e2e; padding:8px 10px; text-align:left; vertical-align:top; }
+  th { background:#1c1c1c; color:#CFFF40; font-weight:700; white-space:nowrap; }
+  td b { color:#fff; }
+  .tag { display:inline-block; padding:1px 9px; border:1px solid #3a3a3a; border-radius:999px; font-size:.74rem; color:#bbb; margin-right:6px; }
+  .warn { color:#ff8f8f; } .ok { color:#8fe0a3; }
+  code { background:#1e1e1e; padding:1px 6px; border-radius:6px; font-size:.82em; }
+  ul { padding-left:20px; margin:8px 0; } li { margin:4px 0; }
+  .card { background:#181818; border:1px solid #2a2a2a; border-radius:14px; padding:14px 16px; margin:10px 0; }
+</style>
+<h1>챗 회색 깡통 렌더 버그 수정 + 캐릭터 판타지 6인 개편</h1>
+<div class="sub">260706 · 운영자 스샷(챗 화면 회색 사각형 3개) 기점 · 자가검증 = check_refs rc=0 + Playwright 헤드리스 실측</div>
+
+<h2>1. 버그 — 무엇이었나</h2>
+<div class="card">
+  운영자 스샷: 챗 화면에 <b>회색 민짜 사각형</b>(중앙 대형 1 + 좌 레일 카드 자리 2)이 떠서 캐릭터 카드·배경을 덮음.<br><br>
+  <b>원인(실측)</b>: 15차에서 넣은 CSS 3D 계단 배경(<code>.ystair</code> · 14스텝×6면 = 84개 <code>will-change:transform</code>·<code>preserve-3d</code> 레이어)이
+  챗(dialog·top layer)이 열린 뒤에도 <b>뒤에서 10초마다 계속 재조립</b>됨. 모바일 GPU에서 이 상시 3D 레이어 무리가 컴포지팅 압박을 만들고,
+  래스터가 못 따라간 타일·레이어가 <b>회색 깡통 사각형</b>으로 화면에 남음(대형 사각형 폭 = 512px 타일 정폭 실측). 챗에서는 계단이 보이지도 않는데(챗 배경 = 자체 포스터) GPU만 소모.
+</div>
+
+<h2>2. 수정 — 전/후</h2>
+<table>
+  <tr><th></th><th>전</th><th>후</th></tr>
+  <tr><td><b>계단 루프</b></td><td>챗 열림 중에도 10초 재쌓기 계속(안 보이는데 GPU 소모)</td><td><code>openYeta()</code> = <code>yStair.pause()</code>(타이머 해제 + <code>.ys-hold</code>=display:none) · 챗 닫힘 = <code>resume()</code> 재쌓기</td></tr>
+  <tr><td><b>화면</b></td><td>회색 깡통 사각형(기기 따라)</td><td>깡통 소멸(레이어 자체 제거) · 챗 시각 변화 0(계단은 원래 챗에서 안 보임)</td></tr>
+  <tr><td><b>배터리/GPU</b></td><td>챗 사용 내내 84레이어 애니</td><td>챗 중 0 — 메인 화면에서만 연출</td></tr>
+</table>
+<p class="sub">관련 점검: call.js 마이크 주입(16차 폐지분) = CSS 숨김 의도 동작 확인 · 스테일 페르소나 폴백(A7) 동작 확인 — 추가 결함 없음.</p>
+
+<h2>3. 캐릭터 — 10인 → 6인 판타지 개편</h2>
+<p>운영자 지시: 6인 추림 + 판타지 소설·게임 주인공 서사 본따기(무협 포함) + <b>전화 캐릭터(하은) 그대로</b>.</p>
+<table>
+  <tr><th>캐릭터</th><th>본따기(원형)</th><th>개편 서사</th></tr>
+  <tr><td><b>류</b></td><td>무협 회귀물(화산귀환 결)</td><td>오백 년 전 강호 천하제일검 — 마지막 결전에서 죽고 현대 무음동에 회귀. 진실을 농담 톤으로 흘려 아무도 안 믿음. 취중에만 강호의 이름이 샘.</td></tr>
+  <tr><td><b>백</b></td><td>다크 판타지 몬스터 헌터(위쳐 결)</td><td>사냥꾼 길드의 마지막 생존자. 낮=경비원, 밤=경계 너머 '밤 것들'을 돌려보내는 파수꾼. 흉터=마수 발톱("훈련").</td></tr>
+  <tr><td><b>세라</b></td><td>헌터·각성자물(나 혼자만 레벨업 결)</td><td>최연소 각성자 — 지하 연습실 안쪽 문 너머 '탑'을 새벽마다 오름. 데뷔=정식 랭커. 잊히는 공포는 그대로(탑에 들어가면 바깥에서 잊힘).</td></tr>
+  <tr><td><b>무디</b></td><td>불사의 존재(도깨비 결)</td><td>몇백 년째 찻집을 여는 불사 — 골목 노인들의 증조부모도 단골이었다. 배웅의 형벌: 정든 이들이 먼저 떠나는 삶. 식은 잔의 의미가 깊어짐.</td></tr>
+  <tr><td><b>윤</b></td><td>경계 방송(페르소나 심야채널+오르페우스 결)</td><td>주파수에 산 자와 건너간 자 양쪽의 사연이 도착 — 경계에 걸친 방송. 새벽 4시의 그 곡 = 건너간 단 한 사람에게 보내는 답장 없는 편지.</td></tr>
+  <tr><td><b>하은</b></td><td class="ok">불변(전화·보이스 배선 유지)</td><td>roster 엔트리 byte-identical 검증 · 카드 무수정 · 세계관 속 자리 = "몇 안 되는 평범한 인간".</td></tr>
+</table>
+<div class="card">
+  <b>제외(은퇴)</b>: 데스크 · 카피 · 가을 · 본 — roster에서 제거(뽑기·레일·갤러리 미노출). 카드 md는 존치(스테일 세션 안전 + 복귀 대비), 세계관에 "떠난 주민(과거로만 존재)"로 박제.<br>
+  <b>세계관 v2</b>: 무음동 = 깊은 밤(자정~3시) 경계가 얇아지는 골목 — 낮은 채도 어반 판타지. 규칙: 판타지는 새어 나오는 정도만(마법 전투·스펙터클 금지) · 유저는 끝까지 평범한 에디터 · 남의 비밀 대리 폭로 금지.
+</div>
+
+<h2>4. 장단점 · 리스크</h2>
+<ul>
+  <li class="ok">+ 회색 깡통의 근원(상시 3D 레이어)을 제거 — 특정 기기 재현 불가 문제라 확률적이지만, 원인 레이어 자체가 챗 중 소멸이라 방향 확실.</li>
+  <li class="ok">+ 캐릭터 6인 = 카드별 서사 밀도 상승 · 레일/갤러리 시인성 개선 · 답장 생성 카드 주입은 캐릭터당이라 토큰 불변.</li>
+  <li class="warn">− 진행 중 세션의 페르소나가 은퇴 4인이면 목록 폴백(기존 A7 처리) — 대화 이력은 유지되나 그 화자로 재진입 불가.</li>
+  <li class="warn">− 기존 관계 기억(NOTE)에 은퇴 주민 언급이 남아 있으면 카드 근거 없이 회상될 수 있음 — 세계관 "떠난 주민" 조항으로 회수(현재 장면 등장 금지).</li>
+  <li class="warn">− 판타지 톤 회귀 리스크: 세계관 "붕괴 금지" 절이 스펙터클을 차단하지만, 모델이 과하게 판타지를 키우면 카드 안티패턴이 1차 방어 — 실사용 모니터 후 조정.</li>
+</ul>
+
+<h2>5. 검증</h2>
+<ul>
+  <li>check_refs rc=0(디자인 토큰 락 포함 전 게이트) — 신규 토큰 0(계승만).</li>
+  <li>Playwright 헤드리스 실측: 챗 열림 = <code>.ystair display:none</code>·타이머 정지 ✓ / 닫힘 = 14스텝 재조립 ✓ / 레일 = 6인(무디·세라·하은·백·류·윤) ✓ / 스크린샷 육안 = 챗 시각 변화 0 ✓.</li>
+  <li>하은 roster 엔트리 = 원본과 dict 동일(phone·voice 배선 보존) 프로그램 대조 ✓.</li>
+  <li>머지 후 <code>git show origin/main</code> read-back(별도 수행).</li>
+</ul>
+</html>

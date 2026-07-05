@@ -157,7 +157,7 @@
 ---
 
 ## 🎬 앱 개요
-- **말벗 제타** = 무음동 6인 페르소나와의 랜덤 톡방(260706 판타지 개편 — 각 카드 = 판타지·무협 주인공 서사 본따기 · 하은 = 전화 배선 유지 원본). 세션 = R2 비공개 **단일 스레드**(맥락·관계노트 공유).
+- **말벗 제타** = 무음동 10인 페르소나와의 랜덤 톡방. 세션 = R2 비공개 **단일 스레드**(맥락·관계노트 공유).
 - 페르소나 = **랜덤 뽑기 + 🎲 재뽑기**(고정 선택 없음·화자만 교체·맥락 승계). 내 버블 = 브랜드 라임(`--bubble-me`=`--accent`). *나레이션* = 이탤릭.
 - 답장 = `claude -p`(구독 OAuth) · GitHub Actions dispatch · **웜 세션 루프**(답장 후 대기 → 후속 메시지 같은 런 즉답).
 - 다이얼 = model(opus 4.8 / sonnet-5) × effort(low/''/max) — 턴별 박제. 기본 = opus×low(30초 컷).
@@ -178,7 +178,7 @@
 - `functions/api/yeta.js` = Cloudflare Pages Function 게이트웨이. 13 op = `chars`(로스터)·`get`(세션)·`send`(유저턴+dispatch)·`draw`(페르소나 뽑기)·`warm`(프리웜)·`retry`(재시도)·`ring`(인앱 전화 dispatch — ⚠️유료 TTS 가드 = 일 상한 기본 3 `YETA_CALL_MAX_PER_DAY`)·`voice`(통화 음성 스트림 — 비공개 R2 `voice/`만)·`stt`(무전 STT 폴백 · Workers AI Whisper)·`phone`(실전화 PSTN·Vapi 아웃바운드 · env 3종 · 일 상한 2)·`vapikey`(보이스톡 공개키)·`calllog`(🩺 통화 진단 — 메타데이터만·transcript 반환 금지 §운영 태도 g))·`reset`. ⚠️ 무인증 공개(originOk=CSRF만) → 조회 op는 민감필드 반환 금지. `REPO='muteno/yeta'`·`originOk`=`.pages.dev`+`soong.kr`.
 - `functions/_middleware.js` = pages.dev 우회차단 리다이렉트 **자리(현재 무력화)**. 커스텀 도메인+Access 붙일 때 재활성(⚠️ `yeta.js` originOk도 **동시** 수정 — 안 하면 403 자폭). **현재 = originOk가 `.pages.dev`+`soong.kr`(루트+서브) 허용**(260704 · nomute 도메인 미사용)·**라이브 = `https://yeta.soong.kr`**(+ `soong.kr` 루트 · 둘 다 활성·SSL·실측 통과 260704)·**무인증 공개**(운영자 260704 '공개 유지' — 언제든 Zero Trust Access로 잠금 가능).
 - `.github/workflows/yeta-chat.yml` + `.github/scripts/yeta_chat.sh` = 답장 생성(claude -p·페르소나 카드 주입·웜 루프). `push_send.py` = 실패 웹푸시.
-- `.github/workflows/yeta-face.yml` + `.github/scripts/yeta_face.py` = 캐릭터 얼굴(프로필) 생성 — **수동 dispatch 전용**(OpenAI gpt-image·⚠️유료 종량제·챗 구독OAuth와 별개 축). 로스터 전원 1:1 초상 → 공개 R2 `yeta_face/` → `roster.json` `avatar` 주입 커밋. 멱등(채워진 건 skip·`force=1` 재생성)·자립형(thumb_gen 의존 없음). 얼굴 산출물은 이미 roster에 주입됨 = 이건 *재생성* 도구(260703 이식).
+- `.github/workflows/yeta-face.yml` + `.github/scripts/yeta_face.py` = 캐릭터 얼굴(프로필) 생성 — **수동 dispatch 전용**(OpenAI gpt-image·⚠️유료 종량제·챗 구독OAuth와 별개 축). 10인 1:1 초상 → 공개 R2 `yeta_face/` → `roster.json` `avatar` 주입 커밋. 멱등(채워진 건 skip·`force=1` 재생성)·자립형(thumb_gen 의존 없음). 얼굴 산출물은 이미 roster에 주입됨 = 이건 *재생성* 도구(260703 이식).
 - `.github/workflows/yeta-bg.yml` + `.github/scripts/yeta_bg.py` = 무대 **배경**(bg) 생성 — **수동 dispatch 전용**(Gemini `gemini-3.1-flash-image`·⚠️유료·챗 구독OAuth와 별개 축). 무음동 8무대 9:16(+무드 배리언트 warm/tense/blue = `<<MOOD:x>>` 크로스페이드용) → 공개 R2 `yeta_bg/` → `roster.json` `bg` 주입. 멱등(채워진 건 skip·R2 기존 객체 재과금0·`force=1` 재생성)·자립형(thumb_gen 의존 제거·Gemini 호출·R2 업로드 인라인·260704 이식). 배경도 이미 roster 주입 완료 = *재생성/신규 무드* 도구.
 - ☎️ **음성 축**(260704 · 요구사항 정본 = `docs/reports/260704_전화무전기보이스_보고서.html`) — 4조각:
   - **걸려오는 전화** `.github/workflows/yeta-call.yml`+`yeta_call.sh` — 발신자(입력→세션→랜덤) → 첫마디(claude -p·OAuth 폴오버) → TTS(`yeta_tts.py`) → mp3=**비공개** R2 `voice/`(대사=대화 내용 → 공개 버킷·git 금지 · 서빙=op `voice`) → `kind:'call'` 턴+`sess.call` 마커+웹푸시. 트리거=수동 dispatch/op `ring`(일 상한 기본3) · cron 금지. 대화 중(pending) 생략+반영 직전 fresh 재확인.
@@ -188,7 +188,7 @@
   - **보이스톡(브라우저 실시간 통화)** — 챗 헤더 수화기(모듈 주입·2탭 재확인=유료 가드) → 벨 연출 → 받기 → **Vapi Web SDK**(esm.sh 동적 import·받기 후에만 로드) 실시간 대화(타이머·말하는 중 표시·끊기). assistant = roster `"phone"` 재사용 · 공개키 = op `vapikey`(Pages env `VAPI_PUBLIC_KEY` — 공개 축이지만 **Vapi 대시보드 Origins 를 yeta.soong.kr 로 제한 권장**) · 전화망 불요 = iOS 설치형 PWA 도 마이크 OK. phone 미배선 캐릭터 = op `ring` 폴백(인앱 걸려오는 전화).
   - **뷰어 모듈 계약**(`viewer/call.js` = 플러그인·제거=훅 삭제): 훅① `yLoad`의 `YCALL.onSess(YSESS)` · 훅② `<script src="call.js" defer>` · 훅③ 이름 옆 `yPremBadge(c)` · 주입 2종(본체 무수정) = 입력행 마이크(`#yetaMic`)+헤더 수화기(`#yetaCallBtn`). 소비 규약 = localStorage `yeta_call_seen`·벨 TTL 120s·타임아웃 45s·자체 폴 20s(챗 폴 비활성 시만).
 - `shared/` = `claude_transient.sh`(폴오버 SSOT)·`claude_meter.sh`·`inject_character.sh`(카드 강제주입) · `check_refs.py`(게이트)·`build_design_mirror.py`(거울 빌드).
-- `apps/yeta/` = 캐릭터 **6인 로스터**(`characters/*.md` — roster.json 등재분만 활성 · 데스크/카피/가을/본 카드 = 은퇴 존치)·`roster.json`(뷰어 표시 SSOT)·`apps/yeta/00_지침_캐릭터챗.md`·`apps/yeta/10_세계관.md`·`apps/yeta/PEXELS_배경_큐레이션_설계.md`.
+- `apps/yeta/` = 캐릭터 **10인**(`characters/*.md`)·`roster.json`(뷰어 표시 SSOT)·`apps/yeta/00_지침_캐릭터챗.md`·`apps/yeta/10_세계관.md`·`apps/yeta/PEXELS_배경_큐레이션_설계.md`.
 - `구성도/`·`docs/CII_컴포넌트계승인덱스.md` = 디자인 블루프린트·계승 인덱스.
 - `docs/작업이력.md`(원장·append-only)·`docs/reports/`(보고서)·`_versions/`(백업) = §기록SSOT.
 
