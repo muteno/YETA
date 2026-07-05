@@ -631,7 +631,7 @@ def check_claude_failover():
         print('❌ claude 폴오버 게이트 — Claude 호출인데 폴오버 SSOT(claude_failover/claude_py) 미경유: %s · 자체 쿼터처리 금지(계정 로테이션 통일·§📰)' % ', '.join(miss))
         rc = 1
     else:
-        print('✅ claude 폴오버 게이트 — 전 Claude 호출처(.github/scripts+scraper)가 폴오버 SSOT 경유(주간한도 시 3계정 자동 로테이션 통일·§📰).')
+        print('✅ claude 폴오버 게이트 — 전 Claude 호출처(.github/scripts+scraper)가 폴오버 SSOT 경유(주간한도 시 4계정 자동 로테이션 통일·§📰).')
     return rc
 
 
