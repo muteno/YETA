@@ -1,0 +1,66 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>모바일 반응형 UI 폴리시 — 9:16 프레임·PWA·PIN 언락·락 모션</title>
+<style>
+:root{color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;padding:28px 18px 60px;background:#121212;color:#e9ece8;font:15px/1.6 -apple-system,system-ui,"Pretendard",sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:860px;margin:0 auto}
+h1{font-size:22px;font-weight:800;margin:0 0 4px;letter-spacing:-.3px}
+.sub{color:#8b8f8a;font-size:13px;margin-bottom:26px}
+h2{font-size:16px;font-weight:800;margin:30px 0 10px;padding-left:10px;border-left:3px solid #CFFF40}
+p{margin:6px 0}
+table{width:100%;border-collapse:collapse;margin:8px 0 4px;font-size:13.5px}
+th,td{text-align:left;padding:9px 11px;border:1px solid rgba(255,255,255,.09);vertical-align:top}
+th{background:rgba(255,255,255,.04);font-weight:700;color:#c4c9c4;white-space:nowrap}
+td.b{color:#8b8f8a}td.a{color:#dfffa0}
+code{background:rgba(255,255,255,.06);padding:1px 6px;border-radius:6px;font:12.5px ui-monospace,Menlo,monospace;color:#CFFF40}
+.pill{display:inline-block;font-size:11px;font-weight:800;color:#121212;background:#CFFF40;border-radius:999px;padding:2px 9px;margin-left:6px}
+.note{background:rgba(207,255,64,.06);border:1px solid rgba(207,255,64,.22);border-radius:12px;padding:13px 15px;margin-top:14px;font-size:13px;color:#c4c9c4}
+ul{margin:6px 0;padding-left:20px}li{margin:3px 0}
+</style></head><body><div class="wrap">
+<h1>모바일 반응형 UI 폴리시 <span class="pill">4건</span></h1>
+<div class="sub">viewer/index.html · viewer/manifest.json — 260705 · check_refs rc=0 · Playwright 실측</div>
+
+<h2>1. 메인 9:16 폰 프레임 (PC 늘어짐 해소)</h2>
+<p>PC 등 가로 화면에서 포스터가 좌우로 늘어져 보이던 문제 → 앱 전체를 세로 폰 비율로 레터박스.</p>
+<table><tr><th>구분</th><th>전</th><th>후</th></tr>
+<tr><td>PC·와이드</td><td class="b">포스터 full-bleed → 가로로 늘어짐(cover 크롭 왜곡)</td><td class="a">중앙 9:16 프레임 + 측면 딤 · 늘어짐 0</td></tr>
+<tr><td>모바일(세로)</td><td class="b">풀블리드</td><td class="a">풀블리드 유지(무영향)</td></tr>
+<tr><td>챗 모달</td><td class="b">600×760 근사 정사각</td><td class="a">데스크톱서 9:16 카드로 통일</td></tr></table>
+<p>구현 = <code>@media (min-aspect-ratio:9/16)</code>에서 <code>.ymain</code>·<code>#yetadlg</code>에 <code>aspect-ratio:9/16</code>+중앙정렬. 비율=기하 raw 예외축, 프레임선·그림자는 <code>--glass-line</code>·<code>--shadow-card</code> 계승.</p>
+
+<h2>2. 웹앱(PWA) 형태로 열기 — 가능 ✓</h2>
+<p>이미 <code>manifest.json</code>+<code>sw.js</code> 등록 상태 = <b>안드로이드/데스크톱은 이미 홈화면 설치 가능</b>. iOS 설치형 지원을 보강.</p>
+<ul>
+<li>추가 메타: <code>apple-mobile-web-app-capable</code>·<code>status-bar-style</code>·<code>title</code>, <code>mobile-web-app-capable</code>·<code>application-name</code></li>
+<li>manifest 보강: <code>scope</code>·<code>display_override</code>·<code>orientation:portrait</code>(설치 앱이 9:16 세로로 열림)</li>
+</ul>
+<div class="note">설치법 — <b>iOS Safari</b>: 공유 → "홈 화면에 추가". <b>안드로이드 Chrome</b>: 메뉴(⋮) → "앱 설치/홈 화면에 추가". <b>데스크톱 Chrome</b>: 주소창 우측 설치 아이콘.</div>
+
+<h2>3. PIN 언락 전환 자연화</h2>
+<table><tr><th>구분</th><th>전</th><th>후</th></tr>
+<tr><td>언락 표시</td><td class="b">"잠금 해제 — 메뉴 활성" 텍스트 배너</td><td class="a">배너 제거 — 상태로 말함</td></tr>
+<tr><td>PIN 창</td><td class="b">언락 후에도 키패드 잔류</td><td class="a">pin-mode 해제 = 촤르륵 닫힘</td></tr>
+<tr><td>하단 네비</td><td class="b"><code>display:none→flex</code> 툭 등장</td><td class="a">아래서 슬라이드업(<code>ynavRise</code>)</td></tr></table>
+<p>reveal 애니는 라이브 언락 1회만 — 재방문 복원(<code>localStorage</code>)은 무애니로 즉시 표시.</p>
+
+<h2>4. 접속 버튼 락 열림 모션 (액티브)</h2>
+<p><code>#ymAccess</code> 누름 = 자물쇠 고리(<code>.ym-shackle</code>)가 힌지 축으로 들려 열리고 라임 글로우 점등 → 420ms 후 PIN 모드 진입. 잠금이 풀리는 체감.</p>
+<p>고리 회전=기하 raw 예외축(<code>transform-origin:86% 100%</code>), 글로우 색=<code>rgba(var(--accent-rgb),…)</code> 토큰.</p>
+
+<h2>리스크·품질</h2>
+<ul>
+<li>리터럴 hex·<code>blur()</code> 추가 0 → design-tokens.lock·check_refs 무변경(디자인 게이트 green).</li>
+<li>reduced-motion 가드에 <code>.ym-shackle</code> 포함 = 모션 민감 사용자 무애니.</li>
+<li>신규 토큰 0 = 기틀 변경 아님(계승만).</li>
+<li>실측 5샷: 데스크톱 9:16·락 열림 액티브·PIN 딤/키패드·언락 네비 슬라이드업(배너無)·모바일 풀블리드.</li>
+</ul>
+
+<h2>2차 (260705) — hero 교체 · PIN 오버랩 · 자물쇠/원 펄스 <span class="pill">5건</span></h2>
+<table><tr><th>항목</th><th>전</th><th>후</th></tr>
+<tr><td>hero 이미지</td><td class="b">구 yeta-hero.webp</td><td class="a">업로드 main.png → webp(1280×2276) 교체</td></tr>
+<tr><td>PIN 모드</td><td class="b">풀스크린 딤+블러로 이미지 가림</td><td class="a">이미지 노출 · 하단 스크림만 · 배 위치 오버랩 · 아래→위 페이드인</td></tr>
+<tr><td>접속 라벨</td><td class="b">"접속" 텍스트</td><td class="a">제거 — 자물쇠 펄스가 어포던스</td></tr>
+<tr><td>자물쇠</td><td class="b">정적</td><td class="a">커졌다 작아지며(작을 때 약하게 디밍) 호흡 = 눌러 신호</td></tr>
+<tr><td>캐릭터 뒤 원</td><td class="b">정적</td><td class="a">테두리 발광 펄스 반복(screen 블렌드·중앙 투명=캐릭터 보존)</td></tr></table>
+<p>디자인: <code>blur</code> 2개 제거(baseline 129→127 ratchet) · 리터럴 hex·accent_raw 추가 0 · reduced-motion 펄스 정지 가드.</p>
+</div></body></html>
