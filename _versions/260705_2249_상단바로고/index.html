@@ -345,29 +345,15 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   @keyframes ynavRise { from { opacity:0; transform:translate(-50%,140%); } to { opacity:1; transform:translate(-50%,0); } }
   .ymain.reveal .ynav { animation:ynavRise .5s var(--ease) both; }
   /* ═══ 캐릭터 탭(메뉴2) — OpenAI 얼굴(roster avatar) 전원 갤러리(운영자 260705) · 카드 탭 = 그 캐릭터 챗 진입 · 챗 닫기 = 이 탭 복귀 ═══ */
-  .ychar { position:absolute; inset:0; z-index:2; display:none; overflow-y:auto; padding:calc(60px + env(safe-area-inset-top)) var(--sp-2) 96px; }   /* 상단 60 = 좌상단 로고·프로필 클리어런스(운영자 260705) */
+  .ychar { position:absolute; inset:0; z-index:2; display:none; overflow-y:auto; padding:calc(18px + env(safe-area-inset-top)) var(--sp-2) 96px; }
   .ymain.tab-char .ychar { display:block; }
   .ymain.tab-char .ym-hero, .ymain.tab-char .ym-glow, .ymain.tab-char .ym-access-card, .ymain.tab-char .ym-pin { display:none; }   /* 홈 히어로·PIN 퇴장 */
   .ymain.tab-char::before { background:linear-gradient(rgba(0,0,0,.66), rgba(0,0,0,.78)); }   /* 포스터 위 딤 강화 = 갤러리 가독(::before 전환 재사용) */
   /* ═══ YETA 워드마크 로고(운영자 260705 확정: 오프셋×전뇌 반반 — 코발트+라임 반전판 · 코발트 글로우 · 글래스 80% · 모션 6종 · 자간 -22%·엇갈림) ═══
      레터링 = 메인 포스터(main_v2) 원본 추출 4장(assets/brand/yeta-wm-*.png · 마스크) · 색 전부 토큰 · 오프셋/자간 = --w 비례 기하 · 겹층은 JS 조립(#ywm) */
-  /* 좌상단 상시 로고(운영자 260705 "계단 배경 타이틀 말고 좌상단에 항상 박히는 로고") — 언락 후 전 탭 상주 · 우상단 = 프로필(.yprof) 쌍 */
-  .ywm { display:none; position:absolute; top:calc(14px + env(safe-area-inset-top)); left:16px; z-index:4;
-    --w:104px; width:var(--w); aspect-ratio:3.6356/1;
-    filter:drop-shadow(0 6px 14px rgba(0,0,0,.45)) drop-shadow(0 0 14px rgba(var(--cobalt-rgb),.4));
+  .ywm { position:relative; --w:min(360px, 76%); width:var(--w); aspect-ratio:3.6356/1; margin:14px auto 20px;
+    filter:drop-shadow(0 12px 24px rgba(0,0,0,.45)) drop-shadow(0 0 26px rgba(var(--cobalt-rgb),.4));
     animation:ywmFlick 4s steps(1) infinite; }
-  .ymain.unlocked .ywm { display:block; }
-  .ymain.reveal .ywm { animation:ywmIn .5s var(--ease) both, ywmFlick 4s steps(1) .6s infinite; }   /* 언락 = 네비 rise와 짝(위에서 스르륵) · 플리커 병행 유지 */
-  .ymain.reveal .yprof { animation:ywmIn .5s var(--ease) both; }
-  @keyframes ywmIn { from { opacity:0; transform:translateY(-130%); } to { opacity:1; transform:none; } }
-  .yprof { display:none; position:absolute; top:calc(12px + env(safe-area-inset-top)); right:14px; z-index:4; width:var(--btn); height:var(--btn);
-    place-items:center; background:var(--glass-2); border:1px solid var(--glass-line); border-radius:50%; color:var(--fg-2); cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent;
-    backdrop-filter:blur(var(--blur-m)) saturate(1.2); -webkit-backdrop-filter:blur(var(--blur-m)) saturate(1.2);
-    box-shadow:inset 0 1px 0 var(--glass-line); background-size:cover; background-position:center;
-    transition:transform .28s var(--ease); }   /* 개인 프로필 이미지 = background-image 주입 예정 축(현재 픽토 폴백) */
-  .ymain.unlocked .yprof { display:grid; }
-  .yprof:active { transform:scale(var(--press-s)); }
-  .yprof svg { width:17px; height:17px; }
   .ywm .wl { position:absolute; inset:0; display:flex; justify-content:center; align-items:stretch; pointer-events:none; }
   .ywm .wl span { flex:none; height:100%; aspect-ratio:var(--ar); -webkit-mask:var(--m) center/100% 100% no-repeat; mask:var(--m) center/100% 100% no-repeat; }
   .ywm .wl span + span { margin-left:calc(var(--w) * -.051); }   /* 자간 -22% 체감치(기하 환산) */
@@ -421,7 +407,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   .ychar-grid > .ychar-card:nth-child(n+10){animation-delay:.45s}
   @media (prefers-reduced-motion:reduce){ .ychar-grid > .ychar-card { animation:none; } }
   /* ═══ 대화 목록 탭(메뉴2) — 카톡/레퍼런스 결(운영자 260705): 글래스 행 = 아바타+이름+미리보기+시간+라임 안읽음 배지 · 행 탭 = 챗 · 단일 세션 = 진행 대화 1행 ═══ */
-  .ylist { position:absolute; inset:0; z-index:2; display:none; overflow-y:auto; padding:calc(60px + env(safe-area-inset-top)) var(--sp-2) 96px; }   /* 상단 60 = 로고 클리어런스 동일 */
+  .ylist { position:absolute; inset:0; z-index:2; display:none; overflow-y:auto; padding:calc(18px + env(safe-area-inset-top)) var(--sp-2) 96px; }
   .ymain.tab-list .ylist { display:block; }
   .ymain.tab-list .ym-hero, .ymain.tab-list .ym-glow, .ymain.tab-list .ym-access-card, .ymain.tab-list .ym-pin { display:none; }
   .ymain.tab-list::before { background:linear-gradient(rgba(0,0,0,.66), rgba(0,0,0,.78)); }   /* tab-char 동값 딤 */
@@ -472,6 +458,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
       <div class="lk-pad" id="ymPad"></div>
     </div>
     <div class="ychar" id="ychar">   <!-- 메뉴1 = 캐릭터(무음동 10인 갤러리 · OpenAI 얼굴 · 운영자 260705 재편) -->
+      <div class="ywm" id="ywm" role="img" aria-label="YETA"></div>   <!-- YETA 워드마크 로고(포스터 레터링 · 운영자 260705 확정 조합 · 겹층 JS 조립) -->
       <div class="ychar-h">무음동 사람들<small>탭하면 대화가 시작돼</small></div>
       <div class="ychar-grid" id="ycharGrid"></div>
     </div>
@@ -480,8 +467,6 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
       <div id="ylistRows"></div>
     </div>
   </div>
-  <div class="ywm" id="ywm" role="img" aria-label="YETA"></div>   <!-- 좌상단 상시 로고(운영자 260705 확정 조합 · 겹층 JS 조립 · 언락 후 표시) -->
-  <button class="yprof" id="yprof" type="button" aria-label="내 프로필"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0112 0v1"/></svg></button>   <!-- 우상단 개인 프로필(이미지 주입 예정 축 · 현재 픽토) -->
   <nav class="ynav" id="ynav">   <!-- 메뉴 재편(운영자 260705): 1=캐릭터 · 2=대화 목록 · 3=지금 대화(임시·2와 통합 예정) · 4=설정 · 메인 화면 폐지(언락=바로 캐릭터) · lockdot 폐지(네비 = 언락 후에만 표시) -->
     <button class="on" data-tab="char" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0112 0v1"/></svg><span>캐릭터</span></button>
     <button data-tab="list" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 01-12 7.7L3 21l1.8-6A8.5 8.5 0 1121 11.5z"/></svg><span>대화</span></button>
@@ -915,7 +900,6 @@ try { if (new URLSearchParams(location.search).get('yeta')) setTimeout(() => ope
     if (tab === 'chat') { openYeta(); return; }   // 메뉴3 지금 대화(임시 · 메뉴2와 통합 예정)
     miniToast('준비중 — 곧 열려');   // 설정(다음 머지)
   };
-  const _yprofEl = $('#yprof'); if (_yprofEl) _yprofEl.onclick = () => miniToast('내 프로필 — 준비중');   // 우상단 개인 프로필(이미지 주입 축 후속)
 })();
 /* PWA 서비스워커 등록 */
 try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch {}
