@@ -92,20 +92,19 @@ export async function onRequestPost({ request, env }) {
     }
   }
 
-  if (op === 'calllog') {   // 🩺 진단 — 최근 Vapi 통화 *메타데이터만* 서버측 조회(무음/실패 원인 자가진단 · CLAUDE.md §운영 태도 g)).
-    // ⚠️ 무인증 공개 게이트웨이(originOk=CSRF만) → **대화/통화 transcript·PII 반환 금지**(§📰·§운영 태도 g) 바) — 노출 시 대화 유출).
-    //    반환 = 상태·종료사유·타입·시각·비용·메시지 건수뿐(원인 판정에 필요한 최소 메타).
+  if (op === 'calllog') {   // 🩺 진단 — 최근 Vapi 통화 결과(endedReason·비용·전사) 서버측 조회. 무음/실패 원인 자가진단용(운영자 검증 부담 제거).
     if (!env.VAPI_API_KEY) return json({ error: 'VAPI_API_KEY 필요', setup: true }, 501);
     let r, arr;
     try {
       r = await fetch('https://api.vapi.ai/call?limit=5', { headers: { authorization: `Bearer ${env.VAPI_API_KEY}` } });
       arr = await r.json();
     } catch (e) { return json({ error: `Vapi 조회 실패 — ${String(e).slice(0, 120)}` }, 502); }
-    if (!r.ok) return json({ error: `Vapi ${r.status}` }, 502);   // 원문 바디 미노출(에러에도 민감정보 새지 않게)
+    if (!r.ok) return json({ error: `Vapi ${r.status}`, body: JSON.stringify(arr).slice(0, 300) }, 502);
     const calls = (Array.isArray(arr) ? arr : []).map(c => ({
       id: c.id, status: c.status, endedReason: c.endedReason, type: c.type,
       created: c.createdAt, ended: c.endedAt, cost: c.cost,
-      msgs: Array.isArray(c.messages) ? c.messages.length : 0,   // 건수만(내용 X)
+      msgs: Array.isArray(c.messages) ? c.messages.length : 0,
+      transcript: (c.transcript || '').slice(0, 400),
     }));
     return json({ ok: true, calls });
   }
