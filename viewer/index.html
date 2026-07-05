@@ -254,6 +254,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   /* step1 로그인창 = 운영자 포스터(구성도/소스이미지/main_v2.png → yeta-hero.webp) 전면 full-bleed. 하단 --bg-scrim 딤(로그인·네비 가독) */
   .ymain { position:fixed; inset:0; display:flex; flex-direction:column; z-index:1;
     background:var(--bg-scrim), url(assets/brand/yeta-hero.webp) center/cover no-repeat var(--bg); }
+  .ymain.unlocked { background:var(--bg-scrim), url(assets/brand/yeta-bg.webp) center/cover no-repeat var(--bg); }   /* 언락 후 = 앱 기본 배경 계단(라임 글래스)으로 통일(운영자 260705 "배경은 계단으로 통일") · 포스터 = PIN 잠금 화면 전용 */
   /* PIN 모드 전면 글래스 딤 — 포스터 타이포(PLAY a Episode/YETA) 위에 PIN 라벨·슬롯이 겹쳐 뒤죽박죽 되던 것 차단(운영자 스샷 260704).
      딤 값 = dialog ::backdrop 동값 계승 · blur = --blur-m · z = 로컬(절대1 예외축) */
   /* PIN 모드 딤 = 이미지를 덮지 않음(운영자 260705 "기존 이미지 안 덮고") — 풀블러 폐지, 키패드 있는 하단만 은은한 그라데 스크림(가독). 얼굴·헤드라인은 그대로 노출. */
