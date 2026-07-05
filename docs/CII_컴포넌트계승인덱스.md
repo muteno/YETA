@@ -71,7 +71,7 @@
 - **강조 2색만**: `--accent:#CFFF40`(브랜드 라임 · 1차 · 버튼·링·PIN·챗버블·픽토 액티브) · `--cobalt:#3D6BFF`(2차 · 링크/정보/대비 · `::selection`). 그 외 = 흰(`--fg`)·스포티파이 블랙(`--bg:#121212`).
 - **글래스모피즘**: `--glass`/`--glass-2`(프로스티드 표면) · `--glass-line`(엣지 하이라이트) · `--blur-m:16`/`--blur-l:24`(구조토큰). 계승 적용처 = PIN 패드(`.lk-pad`)·하단 네비(`.ynav`)·히어로 카드(`.ym-access-card`).
 - **그림자·스크림**(절대1: raw 금지→토큰): `--shadow-card`(글래스 카드·히어로 포스터 그림자) · `--bg-scrim`(step1 포스터 전면 하단 딤·가독).
-- **픽토그램 액티브** = 브랜드 라임(`.ynav button.on{color:var(--accent)}`) — nomute 하단바 계승, **색만 브랜드**(재설계 금지). 비활성 픽토 = `--mut`.
+- **하단 네비 = 플로팅 알약**(운영자 260705 레퍼런스 전환): 중앙 알약 `--r-pill`+`--glass`(고투명)+`--blur-l`+글래스 엣지 · **전부 무채** — 활성 `--fg`(흰)·비활성 `--mut`(옛 라임 액티브 폐지) · 챗 입력행·헤더 픽토(전송 제외)도 무채 통일. 강조 라임 = CTA(전송·PIN·내 버블)에만.
 - 폐지: `--bubble-me` 보라→`var(--accent)` · `--accent-1/2`(오렌지/코발트)·`--m-*`(라이트)·`--sky`·`--cream` 제거 · 메인 화면 라이트→다크.
 - 강제: `check_refs.check_design()` accent 패턴 = `rgba(207,255,64)`/`#cfff40`·baseline 0(새 브랜드 raw = var() 강제). 미러 = base.css/tokens.css(`build_design_mirror.py build`).
 - **절대명령#1 기계강제(260704 · 15인 교차검증 v2)**: `design-tokens.lock`(승인 원장) — `:root` 새 토큰이 락 미등재면 `check_refs.check_token_lock()` rc=1(커밋 차단·승인=락 등재). 계승 3티어(정확→근접 자동→갱신) · 갱신 2티어(값=승인+check / 구조 토큰 신설=기틀=교차검증) · raw 예외축(기하·안무·광학·OS·로컬z·box-shadow). 포터블 이식판 = `docs/절대명령1_포터블.md`.
