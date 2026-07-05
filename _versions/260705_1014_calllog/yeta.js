@@ -92,23 +92,6 @@ export async function onRequestPost({ request, env }) {
     }
   }
 
-  if (op === 'calllog') {   // 🩺 진단 — 최근 Vapi 통화 결과(endedReason·비용·전사) 서버측 조회. 무음/실패 원인 자가진단용(운영자 검증 부담 제거).
-    if (!env.VAPI_API_KEY) return json({ error: 'VAPI_API_KEY 필요', setup: true }, 501);
-    let r, arr;
-    try {
-      r = await fetch('https://api.vapi.ai/call?limit=5', { headers: { authorization: `Bearer ${env.VAPI_API_KEY}` } });
-      arr = await r.json();
-    } catch (e) { return json({ error: `Vapi 조회 실패 — ${String(e).slice(0, 120)}` }, 502); }
-    if (!r.ok) return json({ error: `Vapi ${r.status}`, body: JSON.stringify(arr).slice(0, 300) }, 502);
-    const calls = (Array.isArray(arr) ? arr : []).map(c => ({
-      id: c.id, status: c.status, endedReason: c.endedReason, type: c.type,
-      created: c.createdAt, ended: c.endedAt, cost: c.cost,
-      msgs: Array.isArray(c.messages) ? c.messages.length : 0,
-      transcript: (c.transcript || '').slice(0, 400),
-    }));
-    return json({ ok: true, calls });
-  }
-
   if (op === 'phone') {   // ☎️ 실전화(PSTN) — Vapi 아웃바운드(등록 번호 발신 · 실시간 대화 ~1초대 = 전화 판정 통과 축).
     // ⚠️ 분당 과금(실질 $0.15~0.35/분 · Twilio KR 모바일 $0.052/분 포함) + 별도 유료 인프라(구독 OAuth 밖) →
     //    env 3종(VAPI_API_KEY·VAPI_PHONE_ID·YETA_PHONE_TO) 전부 있어야 활성 · 페르소나별 Vapi assistant id = roster "phone" 필드.
