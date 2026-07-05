@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>260705 네비바 확장 필 애니메이션 — 전/후 보고</title>
+<style>
+  /* 보고서 전용 스냅샷 — 정본 = viewer/index.html :root (이 파일은 박제본) */
+  :root { --accent:#CFFF40; --bg:#121212; --fg:#FFFFFF; --mut:rgba(255,255,255,.52);
+    --glass:rgba(255,255,255,.055); --glass-line:rgba(255,255,255,.14);
+    --r-pill:999px; --ease:cubic-bezier(.2,.7,.3,1); --fs-xs:11px; }
+  * { box-sizing:border-box; margin:0; }
+  body { background:var(--bg); color:var(--fg); font-family:system-ui,-apple-system,sans-serif; line-height:1.6; padding:28px 18px 60px; max-width:760px; margin:0 auto; }
+  h1 { font-size:20px; font-weight:800; }
+  h2 { font-size:15px; font-weight:800; margin:30px 0 10px; color:var(--accent); }
+  p, li { font-size:14px; color:rgba(255,255,255,.8); }
+  small.d { color:var(--mut); }
+  table { width:100%; border-collapse:collapse; font-size:13px; margin-top:8px; }
+  th, td { text-align:left; padding:7px 9px; border-bottom:1px solid rgba(255,255,255,.09); vertical-align:top; }
+  th { color:var(--mut); font-weight:700; white-space:nowrap; }
+  code { background:rgba(255,255,255,.07); border-radius:5px; padding:1px 5px; font-size:12px; }
+  /* ── 라이브 데모(실제 이식 CSS 동일 구조) ── */
+  .demo { display:grid; place-items:center; padding:34px 10px; background:radial-gradient(circle at 50% 0%, rgba(255,255,255,.05), transparent 60%); border:1px solid rgba(255,255,255,.09); border-radius:16px; margin-top:10px; }
+  .ynav { display:flex; background:var(--glass); border:1px solid var(--glass-line); border-radius:var(--r-pill); padding:6px; gap:4px;
+    backdrop-filter:blur(28px) saturate(1.15); box-shadow:inset 0 1px 0 var(--glass-line), 0 10px 30px rgba(0,0,0,.4); }
+  .ynav button { flex:none; display:flex; align-items:center; height:40px; padding:0 13px; border-radius:var(--r-pill); color:var(--mut); font-size:var(--fs-xs); font-weight:700; background:transparent; border:none; cursor:pointer; -webkit-tap-highlight-color:transparent;
+    transition:transform .28s var(--ease), color .2s, background-color .34s var(--ease); touch-action:manipulation; }
+  .ynav button:active { transform:scale(.9); }
+  .ynav button span { max-width:0; opacity:0; overflow:hidden; white-space:nowrap; transform:translateX(-6px);
+    transition:max-width .34s var(--ease), margin-left .34s var(--ease), transform .34s var(--ease), opacity .16s var(--ease); }
+  .ynav button.on { background:var(--accent); color:var(--bg); }
+  .ynav button.on span { max-width:4.5em; margin-left:6px; transform:none; opacity:1;
+    transition:max-width .34s var(--ease), margin-left .34s var(--ease), transform .34s var(--ease), opacity .22s .1s var(--ease); }
+  .ynav button svg { width:20px; height:20px; flex:none; }
+</style>
+</head>
+<body>
+<h1>하단 네비바 — 활성 탭 확장 필 애니메이션</h1>
+<p><small class="d">260705 · 운영자 GIF 레퍼런스(활성 탭 = 색 필 + 아이콘·라벨, 비활성 = 아이콘만) 이식 · viewer/index.html 단일 파일 변경</small></p>
+
+<h2>1. 라이브 데모 (탭 눌러봐 — 실제 이식 CSS와 동일 구조)</h2>
+<div class="demo">
+  <nav class="ynav" id="nav">
+    <button class="on" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0112 0v1"/></svg><span>캐릭터</span></button>
+    <button type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 01-12 7.7L3 21l1.8-6A8.5 8.5 0 1121 11.5z"/></svg><span>대화</span></button>
+    <button type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 01-12 7.7L3 21l1.8-6A8.5 8.5 0 1121 11.5z"/><circle cx="8.6" cy="11.5" r=".9" fill="currentColor" stroke="none"/><circle cx="12" cy="11.5" r=".9" fill="currentColor" stroke="none"/><circle cx="15.4" cy="11.5" r=".9" fill="currentColor" stroke="none"/></svg><span>지금</span></button>
+    <button type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.11-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.55-1.11 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h.02a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v.02a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1z"/></svg><span>설정</span></button>
+  </nav>
+</div>
+<script>
+  document.getElementById('nav').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    document.querySelectorAll('#nav button').forEach(x => x.classList.toggle('on', x === b));
+  });
+</script>
+
+<h2>2. 전/후 비교</h2>
+<table>
+  <tr><th></th><th>전</th><th>후</th></tr>
+  <tr><td>레이아웃</td><td>세로 스택(아이콘 위 · 10px 라벨 아래) 4탭 상시 라벨</td><td>가로 필 — 활성 탭만 아이콘+라벨, 비활성 = 아이콘만(픽토-온리)</td></tr>
+  <tr><td>활성 표시</td><td>글자색 흰(무채)</td><td>브랜드 라임 필(<code>--accent</code> 배경 + <code>--bg</code> 글자 — 안읽음 배지 <code>.ylist-badge</code> 결 계승)</td></tr>
+  <tr><td>전환 모션</td><td>색만 .2s 전환</td><td>필 배경 .34s + 라벨 <code>max-width</code> 슬라이드 확장 · 등장 라벨은 .1s 늦게 페이드인(스태거) · 퇴장 라벨 먼저 사라짐</td></tr>
+  <tr><td>히트 영역</td><td>~44×46</td><td>높이 40px 고정 + 좌우 13px = 46×40 이상 유지</td></tr>
+</table>
+
+<h2>3. 계승 근거 (절대명령 1)</h2>
+<ul>
+  <li>색·반지름·모션·타이포 전부 기존 토큰 <code>var()</code> 계승: <code>--accent</code>·<code>--bg</code>·<code>--mut</code>·<code>--r-pill</code>·<code>--ease</code>·<code>--fs-xs</code>·<code>--fw-b</code>·<code>--press-s</code>. 신규 토큰 0.</li>
+  <li>라임 필 = 강조 CTA축(대화 목록 안읽음 배지와 동일 조합) — 팔레트 v2 2색 규칙 내.</li>
+  <li>라벨 <code>max-width:4.5em</code>·<code>translateX(-6px)</code> = 기하 계산(raw 허용 예외축).</li>
+  <li><code>transition</code> 속성 명시(all 금지) · <code>prefers-reduced-motion</code>이면 라벨 전환 즉시.</li>
+</ul>
+
+<h2>4. 리스크 · 트레이드오프</h2>
+<ul>
+  <li>기존 "활성 = 흰 무채 통일(260705)" 결정을 라임 필로 대체 — GIF 레퍼런스가 색 필 형태라 운영자 최신 지시 우선. 무채 필(글래스 흰 필)로 되돌리려면 <code>.ynav button.on</code> 배경만 교체하면 됨.</li>
+  <li>비활성 탭 라벨이 사라져 첫 사용 학습 비용 소폭 ↑ (아이콘 4종이 직관적이라 낮음 — 레퍼런스 앱들 공통 패턴).</li>
+  <li>탭 전환 시 네비 전체 폭이 살짝 변함(필 확장분) — 컨테이너가 <code>translateX(-50%)</code> 중앙 고정이라 좌우 대칭으로 자연 흡수.</li>
+</ul>
+
+<h2>5. 검증</h2>
+<ul>
+  <li><code>python3 shared/check_refs.py</code> rc=0 (raw 강조색 0 · 토큰 락 47개 정합 · JS 구문 OK).</li>
+  <li>머지 후 <code>git show origin/main:viewer/index.html</code> read-back 실측.</li>
+</ul>
+</body>
+</html>
