@@ -349,44 +349,6 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   .ymain.tab-char .ychar { display:block; }
   .ymain.tab-char .ym-hero, .ymain.tab-char .ym-glow, .ymain.tab-char .ym-access-card, .ymain.tab-char .ym-pin { display:none; }   /* 홈 히어로·PIN 퇴장 */
   .ymain.tab-char::before { background:linear-gradient(rgba(0,0,0,.66), rgba(0,0,0,.78)); }   /* 포스터 위 딤 강화 = 갤러리 가독(::before 전환 재사용) */
-  /* ═══ YETA 워드마크 로고(운영자 260705 확정: 오프셋×전뇌 반반 — 코발트+라임 반전판 · 코발트 글로우 · 글래스 80% · 모션 6종 · 자간 -22%·엇갈림) ═══
-     레터링 = 메인 포스터(main_v2) 원본 추출 4장(assets/brand/yeta-wm-*.png · 마스크) · 색 전부 토큰 · 오프셋/자간 = --w 비례 기하 · 겹층은 JS 조립(#ywm) */
-  .ywm { position:relative; --w:min(360px, 76%); width:var(--w); aspect-ratio:3.6356/1; margin:14px auto 20px;
-    filter:drop-shadow(0 12px 24px rgba(0,0,0,.45)) drop-shadow(0 0 26px rgba(var(--cobalt-rgb),.4));
-    animation:ywmFlick 4s steps(1) infinite; }
-  .ywm .wl { position:absolute; inset:0; display:flex; justify-content:center; align-items:stretch; pointer-events:none; }
-  .ywm .wl span { flex:none; height:100%; aspect-ratio:var(--ar); -webkit-mask:var(--m) center/100% 100% no-repeat; mask:var(--m) center/100% 100% no-repeat; }
-  .ywm .wl span + span { margin-left:calc(var(--w) * -.051); }   /* 자간 -22% 체감치(기하 환산) */
-  .ywm .wl span:nth-child(even) { transform:translateY(4.5%); }   /* 엇갈림 배치 */
-  .ywm .wl span:nth-child(odd) { transform:translateY(-2.5%); }
-  .ywm .w-halo { z-index:-1; filter:blur(var(--blur-m)); animation:ywmPulse 3.4s ease-in-out infinite alternate; }
-  .ywm .w-halo span { background:rgba(var(--accent-rgb),.4); }
-  .ywm .w-cb { mix-blend-mode:screen; transform:translate(calc(var(--w)/64), calc(var(--w)/90)); animation:ywmGlB 3.4s steps(1) infinite; }
-  .ywm .w-cb span { background:rgba(var(--accent-rgb),.85); }   /* 반전판 B = 라임 */
-  .ywm .w-body { animation:ywmVhs .9s steps(2) infinite; }
-  .ywm .w-body span { background:linear-gradient(168deg, rgba(255,255,255,.592) 0%, rgba(255,255,255,.282) 38%, rgba(255,255,255,.228) 62%, rgba(var(--accent-rgb),.336) 100%);
-    background-size:180% 180%; animation:ywmGlint 5.5s var(--ease) infinite; }   /* 글래스 80% 보간 알파(확정 스냅샷) */
-  .ywm .w-ca { mix-blend-mode:screen; transform:translate(calc(var(--w)/-64), calc(var(--w)/-90)); animation:ywmGlA 3.4s steps(1) infinite; }
-  .ywm .w-ca span { background:rgba(var(--cobalt-rgb),.85); }   /* 반전판 A = 코발트 */
-  .ywm .w-scan { mix-blend-mode:screen; }
-  .ywm .w-scan span { background:repeating-linear-gradient(0deg, transparent 0 4px, rgba(255,255,255,.26) 4px 5px); background-size:100% 240%; animation:ywmScan 3s linear infinite; }
-  .ywm .w-flash { opacity:0; animation:ywmSnap 3.4s steps(1) infinite; }
-  .ywm .w-flash span { background:rgba(255,255,255,.9); }
-  @keyframes ywmGlA { 0%,86% { transform:translate(calc(var(--w)/-64), calc(var(--w)/-90)); clip-path:none; }
-    88% { transform:translate(calc(var(--w)/-38), calc(var(--w)/180)); clip-path:inset(14% 0 58% 0); }
-    90% { transform:translate(calc(var(--w)/-64), calc(var(--w)/-90)) skewX(-4deg); clip-path:inset(62% 0 8% 0); }
-    92%,100% { transform:translate(calc(var(--w)/-64), calc(var(--w)/-90)); clip-path:none; } }
-  @keyframes ywmGlB { 0%,88% { transform:translate(calc(var(--w)/64), calc(var(--w)/90)); clip-path:none; }
-    90% { transform:translate(calc(var(--w)/34), calc(var(--w)/-160)); clip-path:inset(52% 0 18% 0); }
-    92% { transform:translate(calc(var(--w)/64), calc(var(--w)/90)) skewX(3deg); clip-path:inset(6% 0 70% 0); }
-    94%,100% { transform:translate(calc(var(--w)/64), calc(var(--w)/90)); clip-path:none; } }
-  @keyframes ywmSnap { 0%,87% { opacity:0; } 88% { opacity:.45; } 89% { opacity:0; } 91% { opacity:.25; } 92%,100% { opacity:0; } }
-  @keyframes ywmGlint { 0%,55% { background-position:0% 0%; } 85%,100% { background-position:100% 100%; } }
-  @keyframes ywmVhs { 0%,100% { transform:translateY(0); } 50% { transform:translateY(1.5px); } }
-  @keyframes ywmScan { to { background-position:0 240%; } }
-  @keyframes ywmPulse { from { opacity:.2; } to { opacity:.75; } }
-  @keyframes ywmFlick { 0%,91% { opacity:1; } 92% { opacity:.6; } 93% { opacity:1; } 96% { opacity:.82; } 97%,100% { opacity:1; } }
-  @media (prefers-reduced-motion:reduce){ .ywm, .ywm .wl, .ywm .wl span { animation:none !important; } }
   .ychar-h { font-size:var(--fs-h2); font-weight:var(--fw-x); padding:2px 4px 12px; }
   .ychar-h small { display:block; font-size:var(--fs-xs); color:var(--mut); font-weight:var(--fw-b); margin-top:2px; }
   .ychar-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
@@ -458,7 +420,6 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
       <div class="lk-pad" id="ymPad"></div>
     </div>
     <div class="ychar" id="ychar">   <!-- 메뉴1 = 캐릭터(무음동 10인 갤러리 · OpenAI 얼굴 · 운영자 260705 재편) -->
-      <div class="ywm" id="ywm" role="img" aria-label="YETA"></div>   <!-- YETA 워드마크 로고(포스터 레터링 · 운영자 260705 확정 조합 · 겹층 JS 조립) -->
       <div class="ychar-h">무음동 사람들<small>탭하면 대화가 시작돼</small></div>
       <div class="ychar-grid" id="ycharGrid"></div>
     </div>
@@ -535,13 +496,6 @@ function yTab(tab) {   // 'char' | 'list' — 네비 활성·패널 토글(chat=
   if (tab === 'list') yListRender();
 }
 const yNavName = n => { const s = document.querySelector('#ynav button[data-tab="chat"] span'); if (s) s.textContent = n || '지금'; };   // 메뉴3 라벨 = 항상 지금 대화 상대 이름(운영자 260705 · 상대 미정 = '지금' 폴백)
-// YETA 워드마크 조립(운영자 260705 확정 로고) — 레터 4장(포스터 추출) × 레이어 6겹(halo·판B·몸체·판A·스캔·플래시)
-(() => {
-  const el = document.getElementById('ywm'); if (!el) return;
-  const spans = [['y', 1.11502], ['e', 0.90096], ['t', 1.02236], ['a', 1.15335]]
-    .map(([n, ar]) => `<span style="--m:url('assets/brand/yeta-wm-${n}.png');--ar:${ar}"></span>`).join('');
-  el.innerHTML = ['w-halo', 'w-cb', 'w-body', 'w-ca', 'w-scan', 'w-flash'].map(c => `<div class="wl ${c}">${spans}</div>`).join('');
-})();
 // ── 대화 목록(메뉴2 · 카톡 결) — 단일 세션 = 진행 대화 1행(아바타·이름·미리보기·시간·라임 안읽음 배지) ──
 const yReadN = () => { try { return +localStorage.getItem('yeta_read_n') || 0; } catch { return 0; } };
 const yMarkRead = n => { try { localStorage.setItem('yeta_read_n', String(n)); } catch {} };
