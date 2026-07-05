@@ -1,0 +1,156 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>픽토그램 액티브 모션 시안 — 260705</title>
+<style>
+:root{--bg:#121212;--fg:#fff;--fg2:#c4c9c4;--mut:#8b8f8a;--accent:#CFFF40;--accent-rgb:207,255,64;
+--arm:#ffd93d;--danger:#ff5b4a;--glass:rgba(255,255,255,.055);--glass-line:rgba(255,255,255,.14);
+--r:16px;--ease:cubic-bezier(.2,.7,.3,1)}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at 50% 0%,rgba(207,255,64,.05),transparent 40%),var(--bg);
+color:var(--fg);font:15px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Pretendard,system-ui,sans-serif;
+-webkit-font-smoothing:antialiased;padding:28px 18px 80px}
+.wrap{max-width:900px;margin:0 auto}
+h1{font-size:21px;font-weight:800;letter-spacing:-.4px;margin:0 0 4px}
+h1 .k{color:var(--accent)}
+.sub{color:var(--mut);font-size:13px;margin-bottom:8px}
+.hint{display:inline-block;background:rgba(var(--accent-rgb),.1);border:1px solid rgba(var(--accent-rgb),.3);
+color:var(--accent);border-radius:999px;padding:3px 14px;font-size:12.5px;font-weight:700;margin-bottom:24px}
+h2{font-size:16px;font-weight:800;margin:38px 0 4px;display:flex;align-items:center;gap:10px}
+h2 .role{font-size:11.5px;color:var(--mut);font-weight:700;background:var(--glass);border:1px solid var(--glass-line);border-radius:999px;padding:2px 10px}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:12px}
+.card{background:var(--glass);border:1px solid var(--glass-line);border-radius:var(--r);padding:18px 16px 14px;
+backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);display:flex;flex-direction:column;align-items:center;gap:10px;
+cursor:pointer;transition:border-color .2s;user-select:none;-webkit-tap-highlight-color:transparent}
+.card:hover{border-color:rgba(var(--accent-rgb),.35)}
+.card .tag{font-size:12px;font-weight:800;color:var(--fg)}
+.card .tag b{color:var(--accent);margin-right:6px}
+.card .desc{font-size:11.5px;color:var(--mut);text-align:center;line-height:1.55;min-height:3.2em}
+.stage{width:96px;height:96px;display:grid;place-items:center;background:rgba(0,0,0,.35);border:1px solid var(--glass-line);border-radius:14px;position:relative;overflow:visible}
+.pic{width:34px;height:34px;display:grid;place-items:center;position:relative;color:var(--fg2)}
+.pic svg{width:24px;height:24px;overflow:visible}
+.pic.lime{color:var(--accent)}
+.replay{font-size:10.5px;color:var(--mut);font-weight:700;letter-spacing:.4px}
+/* ══ 마이크 ══ */
+@keyframes micRing{0%{transform:scale(.5);opacity:.9}100%{transform:scale(1.9);opacity:0}}
+.m1.play::after{content:'';position:absolute;inset:-6px;border:1.5px solid currentColor;border-radius:50%;animation:micRing .55s var(--ease) both}
+@keyframes micSquish{0%{transform:none}35%{transform:scale(.78) rotate(-9deg)}70%{transform:scale(1.08) rotate(3deg)}100%{transform:none}}
+.m2.play svg{animation:micSquish .5s var(--ease) both}
+@keyframes micFadeOut{0%{opacity:1;transform:none}100%{opacity:0;transform:scale(.6)}}
+@keyframes micBarsIn{0%{opacity:0}15%{opacity:1}85%{opacity:1}100%{opacity:0}}
+@keyframes micBar{0%,100%{transform:scaleY(.35)}50%{transform:scaleY(1)}}
+.m3 .bars{position:absolute;inset:0;display:flex;gap:3px;align-items:center;justify-content:center;opacity:0}
+.m3 .bars i{width:3px;height:16px;border-radius:2px;background:currentColor;transform-origin:center}
+.m3.play svg{animation:micFadeOut .18s ease both, micFadeOut .18s ease .62s reverse both}
+.m3.play .bars{animation:micBarsIn .8s ease both}
+.m3.play .bars i{animation:micBar .3s ease-in-out 2 both}
+.m3.play .bars i:nth-child(2){animation-delay:.07s}.m3.play .bars i:nth-child(3){animation-delay:.14s}
+/* ══ + 더보기 ══ */
+@keyframes plusSpin{0%{transform:none}60%{transform:rotate(50deg) scale(1.06)}100%{transform:rotate(45deg)}}
+.p1.play svg{animation:plusSpin .4s var(--ease) both}
+@keyframes plusPop{0%{transform:none}40%{transform:scale(1.3)}70%{transform:scale(.92)}100%{transform:none}}
+.p2.play svg{animation:plusPop .42s var(--ease) both}
+@keyframes plusDot{0%{transform:translate(0,0);opacity:.95}100%{transform:translate(var(--dx),var(--dy));opacity:0}}
+.p3 .dots i{position:absolute;left:50%;top:50%;width:4px;height:4px;margin:-2px;border-radius:50%;background:currentColor;opacity:0}
+.p3.play .dots i{animation:plusDot .5s var(--ease) both}
+.p3 .dots i:nth-child(1){--dx:0px;--dy:-22px}.p3 .dots i:nth-child(2){--dx:22px;--dy:0px}
+.p3 .dots i:nth-child(3){--dx:0px;--dy:22px}.p3 .dots i:nth-child(4){--dx:-22px;--dy:0px}
+@keyframes plusBreath{0%{transform:none}50%{transform:scale(.86)}100%{transform:none}}
+.p3.play svg{animation:plusBreath .5s var(--ease) both}
+/* ══ 전송 ══ */
+@keyframes sendFly{0%{transform:none;opacity:1}55%{transform:translate(26px,-26px);opacity:0}56%{transform:translate(-18px,18px);opacity:0}100%{transform:none;opacity:1}}
+.s1.play svg{animation:sendFly .6s var(--ease) both}
+@keyframes sendWind{0%{transform:none}30%{transform:rotate(-16deg) translateX(-2px)}65%{transform:rotate(9deg) translateX(2px)}100%{transform:none}}
+.s2.play svg{animation:sendWind .5s var(--ease) both}
+@keyframes sendTrail{0%{transform:translate(0,0);opacity:0}25%{opacity:.9}100%{transform:translate(-20px,20px);opacity:0}}
+.s3 .trail i{position:absolute;left:50%;top:50%;width:9px;height:1.5px;margin:-1px 0 0 -5px;border-radius:2px;background:currentColor;opacity:0;transform-origin:center;rotate:-45deg}
+.s3.play .trail i{animation:sendTrail .55s ease-out both}
+.s3 .trail i:nth-child(2){animation-delay:.09s;width:6px}
+@keyframes sendNudge{0%{transform:none}40%{transform:translate(3px,-3px)}100%{transform:none}}
+.s3.play svg{animation:sendNudge .55s var(--ease) both}
+/* ══ 전화 ══ */
+@keyframes phoneRing{0%,100%{transform:none}15%{transform:rotate(-13deg)}30%{transform:rotate(11deg)}45%{transform:rotate(-9deg)}60%{transform:rotate(7deg)}75%{transform:rotate(-4deg)}}
+.c1.play svg{animation:phoneRing .6s ease-in-out both}
+@keyframes phoneLift{0%{transform:none}40%{transform:translateY(-4px) rotate(-14deg)}70%{transform:translateY(-2px) rotate(-10deg)}100%{transform:none}}
+.c2.play svg{animation:phoneLift .55s var(--ease) both}
+@keyframes callRing{0%{transform:scale(.55);opacity:.85}100%{transform:scale(2);opacity:0}}
+.c3.play::before,.c3.play::after{content:'';position:absolute;inset:-4px;border:1.5px solid currentColor;border-radius:50%;animation:callRing .7s var(--ease) both}
+.c3.play::after{animation-delay:.18s}
+/* 접근성 노트 */
+.note{margin-top:34px;background:var(--glass);border:1px solid var(--glass-line);border-radius:var(--r);padding:14px 18px;font-size:12.5px;color:var(--fg2);line-height:1.7}
+.note b{color:var(--accent)}
+code{background:rgba(255,255,255,.07);padding:1px 6px;border-radius:6px;font-size:11.5px;font-family:ui-monospace,Menlo,monospace;color:var(--accent)}
+@media (prefers-reduced-motion:reduce){.play svg,.play::before,.play::after,.play .bars,.play .bars i,.play .dots i,.play .trail i{animation:none !important}}
+</style></head><body><div class="wrap">
+
+<h1>픽토그램 <span class="k">액티브 모션</span> 시안</h1>
+<div class="sub">260705 · 챗 입력행·헤더 픽토 4종 × 각 3안 — 실제 CSS 애니(값·커브는 본 적용 시 <code>var(--ease)</code>·press 토큰 계승)</div>
+<div class="hint">👆 카드를 탭/클릭하면 모션이 재생돼 — 마음에 드는 번호를 골라줘 (예: "마이크 A, 전송 C")</div>
+
+<h2>🎙 마이크 <span class="role">무전 · 무채 픽토</span></h2>
+<div class="row">
+  <div class="card" data-m><div class="tag"><b>A</b>방송 펄스</div>
+    <div class="stage"><span class="pic m1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 1 3 3v6a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z"/><path d="M19 11a7 7 0 0 1-14 0"/><path d="M12 18v4"/></svg></span></div>
+    <div class="desc">누르면 픽토 뒤로 링이 1회 확산 — "송출 시작" 신호. 수신콜 파동 링(ycallPulse) 계승 결.</div><span class="replay">TAP TO PLAY</span></div>
+  <div class="card" data-m><div class="tag"><b>B</b>쏙 눌림+틸트</div>
+    <div class="stage"><span class="pic m2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 1 3 3v6a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z"/><path d="M19 11a7 7 0 0 1-14 0"/><path d="M12 18v4"/></svg></span></div>
+    <div class="desc">스퀴시 — 잡고 말하는 손맛(78%로 쏙 + 살짝 기울었다 오버슛 복귀). press 토큰 결의 유희 버전.</div><span class="replay">TAP TO PLAY</span></div>
+  <div class="card" data-m><div class="tag"><b>C</b>음파 변신</div>
+    <div class="stage"><span class="pic m3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 1 3 3v6a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z"/><path d="M19 11a7 7 0 0 1-14 0"/><path d="M12 18v4"/></svg><span class="bars" aria-hidden="true"><i></i><i></i><i></i></span></span></div>
+    <div class="desc">마이크가 잠깐 파형 3바로 크로스페이드 후 복귀 — "듣고 있다" 스토리텔링(아이콘 전환 원칙 7).</div><span class="replay">TAP TO PLAY</span></div>
+</div>
+
+<h2>➕ 더보기 <span class="role">기능 진입 · 무채 픽토</span></h2>
+<div class="row">
+  <div class="card" data-m><div class="tag"><b>A</b>45° 회전</div>
+    <div class="stage"><span class="pic p1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></div>
+    <div class="desc">+가 ×로 스냅 회전(오버슛 후 45° 안착) — "열림/닫힘" 어포던스의 정석. 메뉴 토글에 최적.</div><span class="replay">TAP TO PLAY</span></div>
+  <div class="card" data-m><div class="tag"><b>B</b>팝</div>
+    <div class="stage"><span class="pic p2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></div>
+    <div class="desc">130% 오버슛 → 92% → 복귀 팝. 탄성 있는 "눌렀다" 피드백(popIn 커브 결).</div><span class="replay">TAP TO PLAY</span></div>
+  <div class="card" data-m><div class="tag"><b>C</b>방사 점</div>
+    <div class="stage"><span class="pic p3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg><span class="dots" aria-hidden="true"><i></i><i></i><i></i><i></i></span></span></div>
+    <div class="desc">누르면 상하좌우로 점 4개가 짧게 방사 — "여기서 기능이 나온다" 예고. 픽토는 숨쉬듯 눌림.</div><span class="replay">TAP TO PLAY</span></div>
+</div>
+
+<h2>✈️ 전송 <span class="role">CTA · 강조색 라임</span></h2>
+<div class="row">
+  <div class="card" data-m><div class="tag"><b>A</b>발사</div>
+    <div class="stage"><span class="pic lime s1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2 15 22 11 13 2 9z"/></svg></span></div>
+    <div class="desc">종이비행기가 우상향으로 날아가 사라졌다가 좌하단에서 새 비행기가 들어옴 — "보냈다"를 그대로 연기.</div><span class="replay">TAP TO PLAY</span></div>
+  <div class="card" data-m><div class="tag"><b>B</b>와인드업</div>
+    <div class="stage"><span class="pic lime s2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2 15 22 11 13 2 9z"/></svg></span></div>
+    <div class="desc">뒤로 -16° 젖혔다가 +9° 스냅 — 활시위 당김. 자리를 안 떠나 촘촘한 연타 전송에도 안정적.</div><span class="replay">TAP TO PLAY</span></div>
+  <div class="card" data-m><div class="tag"><b>C</b>부스터 트레일</div>
+    <div class="stage"><span class="pic lime s3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2 15 22 11 13 2 9z"/></svg><span class="trail" aria-hidden="true"><i></i><i></i></span></span></div>
+    <div class="desc">비행기는 살짝 앞으로 넛지, 꽁무니로 궤적 대시 2개가 스침 — 속도감. 은은하고 반복 피로 낮음.</div><span class="replay">TAP TO PLAY</span></div>
+</div>
+
+<h2>📞 전화 <span class="role">헤더 · 무채 픽토(armed=경고색)</span></h2>
+<div class="row">
+  <div class="card" data-m><div class="tag"><b>A</b>벨 셰이크</div>
+    <div class="stage"><span class="pic c1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span></div>
+    <div class="desc">수화기가 따르릉 흔들림(±13° 감쇠 5회) — "전화가 간다" 직관 신호. 유료 발동 경고와도 결이 맞음.</div><span class="replay">TAP TO PLAY</span></div>
+  <div class="card" data-m><div class="tag"><b>B</b>수화기 들기</div>
+    <div class="stage"><span class="pic c2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span></div>
+    <div class="desc">위로 4px 들리며 -14° 기울었다 내려놓음 — "받아 든다" 제스처. 차분하고 품위 있는 톤.</div><span class="replay">TAP TO PLAY</span></div>
+  <div class="card" data-m><div class="tag"><b>C</b>발신 펄스</div>
+    <div class="stage"><span class="pic c3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span></div>
+    <div class="desc">동심원 링 2개가 시차로 확산 — "신호 나감". 마이크 A와 같은 어휘라 앱 전체 일관성 좋음.</div><span class="replay">TAP TO PLAY</span></div>
+</div>
+
+<div class="note">
+<b>본 적용 시 원칙</b>(yeta-design 스킬): 커브·시간 = <code>var(--ease)</code> 토큰 계승 · 1회 연출 = <code>@keyframes</code>(중단 가능한 상태 전환은 transition) · <code>prefers-reduced-motion</code> = 전부 무효화 · 누름 scale 병행 시 <code>--press-m</code> 토큰 · 시안의 raw 값(각도·px)은 키프레임 안무 = 절대1 예외축.<br>
+<b>고르는 법</b>: 픽토별 A/B/C 하나씩(믹스 가능 — 예: "마이크 A · + A · 전송 C · 전화 B"). 원하면 강도(각도·거리)만 줄이거나 키운 변형도 가능.
+</div>
+
+</div>
+<script>
+document.querySelectorAll('.card').forEach(c => {
+  c.addEventListener('click', () => {
+    const pic = c.querySelector('.pic');
+    pic.classList.remove('play'); void pic.offsetWidth;   // 리플로 = 재생 리셋
+    pic.classList.add('play');
+  });
+});
+</script>
+</body></html>

@@ -88,7 +88,11 @@ const css = `
 .yprem { display:inline-flex; align-items:center; gap:4px; margin-left:6px; padding:1px 8px; border-radius:var(--r-pill);
   background:rgba(var(--accent-rgb),.12); border:1px solid rgba(var(--accent-rgb),.4); color:var(--accent);
   font-size:var(--fs-xs); font-weight:var(--fw-b); vertical-align:middle; white-space:nowrap; }   /* 프리미엄(전용 음색) 배지 = accent 10%대 플레이트(.dlbtn 결) */
-#yetaCallBtn.armed { color:var(--arm); }   /* 2탭 재확인(통화 = 유료 발동) — .yh-reset.armed 패턴 계승 */
+#yetaCallBtn { width:var(--btn); height:var(--btn); flex:none; display:grid; place-items:center; background:none; border:none; color:var(--fg-2); cursor:pointer; touch-action:manipulation; transition:transform .3s var(--ease), color .2s; }   /* 전화 = 픽토그램-온리(감싸는 도형 제거 · 운영자 260705) · 무채 — 마이크/+ 결 · 히트영역 --btn 유지 */
+#yetaCallBtn svg { width:19px; height:19px; }
+#yetaCallBtn:active { transform:scale(var(--press-m,.9)); }
+#yetaCallBtn:focus-visible { outline:none; box-shadow:0 0 0 2px rgba(var(--accent-rgb),.5); border-radius:50%; }   /* 포커스 링 = .tool-x 계승(라임) — UA 흰 사각 아웃라인 차단 */
+#yetaCallBtn.armed { color:var(--arm); }   /* 2탭 재확인(통화 = 유료 발동) — armed = 경고색 픽토 */
 #calldlg.talk .ycall-status { font-variant-numeric:tabular-nums; }   /* 보이스톡 타이머 = tabular(.yb-cap 결) */`;
 
 // ── 상태 ──
@@ -373,9 +377,9 @@ function initCallBtn() {
   const hr = document.querySelector('#yetadlg .yh-r');
   if (!hr || document.querySelector('#yetaCallBtn')) return;
   const b = document.createElement('button');
-  b.type = 'button'; b.id = 'yetaCallBtn'; b.className = 'tool-x';   // 헤더 아이콘 버튼 = .tool-x 정본 계승(CII)
+  b.type = 'button'; b.id = 'yetaCallBtn';   // 픽토그램-온리(도형 제거 · 운영자 260705) — 스타일 = css의 #yetaCallBtn
   b.setAttribute('aria-label', '통화'); b.title = '통화';
-  b.innerHTML = `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${PHONE}"/></svg>`;
+  b.innerHTML = `<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${PHONE}"/></svg>`;
   hr.insertBefore(b, hr.firstChild);
   b.addEventListener('click', async () => {
     const pid = (typeof YSESS !== 'undefined' && YSESS && YSESS.persona) || '';
