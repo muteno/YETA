@@ -4,7 +4,7 @@
 #       → 음성 mp3 = **비공개** 세션 버킷 voice/ (대사=대화 내용 → 공개 버킷 금지·서빙=yeta.js op voice)
 #       → 세션 append(call 턴 + sess.call 마커 = 미래 수신 UI 훅) → 웹푸시 "전화가 왔어"(fail-soft).
 # 규율: 대화 중(pending 유저 턴)엔 전화 안 걸림(챗 우선·매몰 방지) — 반영 직전 fresh 재-read로 재확인.
-#       ⚠️ --bare 절대 금지(OAuth 즉사) · 폴오버 SSOT 3계정 로테이션(yeta_chat.sh 동형).
+#       ⚠️ --bare 절대 금지(OAuth 즉사) · 폴오버 SSOT 4계정 체인(yeta_chat.sh 동형 · 로테이션 3 + MUTENONA 고정 꼬리).
 # env: YETA_CALL_PERSONA(발신자 강제·선택) · YETA_CALL_LINE(수동 대사=테스트·claude 생략) · YETA_CALL_VOICE(TTS 보이스 강제)
 #      OPENAI_API_KEY(TTS — 없으면 무음 전화) · OPENAI_TTS_MODEL(기본 gpt-4o-mini-tts)
 set -uo pipefail
@@ -20,7 +20,7 @@ SAFE=""
 case "${YETA_SAFE:-1}" in 1|true|on) SAFE="--safe-mode" ;; esac   # 기본 ON — 런타임은 CLAUDE.md 미주입(개발 세션 전용 · 턴당 ~37k 토큰 절약 · 운영자 260704) · ⚠️ --bare 는 여전히 절대 금지(OAuth 즉사)
 export CLAUDE_BARE=0              # 방어 명시(yeta_chat.sh 평의회① 동형)
 RECENT_TURNS="${YETA_RECENT_TURNS:-8}"
-INLINE_TRIES=3
+INLINE_TRIES=4   # 4계정 폴오버 체인 깊이(서브3 MUTENONA까지 실호출) + 일시 과부하 흡수 — 4계정 확장 3→4
 ROSTER="apps/yeta/characters/roster.json"
 
 source "$ROOT/shared/claude_transient.sh"   # is_transient/is_quota/claude_failover SSOT
