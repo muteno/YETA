@@ -139,11 +139,12 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
     background:var(--glass); border:1px solid var(--glass-line); border-radius:var(--r-modal);
     backdrop-filter:blur(var(--blur-l)) saturate(1.3); -webkit-backdrop-filter:blur(var(--blur-l)) saturate(1.3);
     box-shadow:inset 0 1px 0 var(--glass-line), var(--shadow-card); }   /* 소개 = 글래스 히어로 카드(레퍼런스 중앙 카드 결 · .ycall-line 표면 계승) */
-  .yintro-ava { width:66px; height:66px; border-radius:50%; display:grid; place-items:center; font-size:var(--fs-h2); font-weight:var(--fw-x); background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); color:var(--yeta-ac); background-size:cover; background-position:center; }
-  .yintro-ava.has-img { color:transparent; border-color:rgba(255,255,255,.18); }
-  .yintro-name { font-size:var(--fs-h2); font-weight:var(--fw-x); color:var(--fg); margin-top:2px; }
+  .yintro-ava { width:88px; height:88px; border-radius:50%; display:grid; place-items:center; font-size:var(--fs-h3); font-weight:var(--fw-x); background:rgba(255,255,255,.06); border:1px solid var(--glass-line); color:var(--yeta-ac); background-size:cover; background-position:center;
+    box-shadow:inset 0 1px 0 var(--glass-line), 0 10px 28px rgba(0,0,0,.4); }   /* 캐릭터 초상 히어로(운영자 260705 이미지 부각) — 글래스 링+깊이 */
+  .yintro-ava.has-img { color:transparent; border-color:rgba(var(--accent-rgb),.28); box-shadow:inset 0 1px 0 var(--glass-line), 0 10px 28px rgba(0,0,0,.4), 0 0 22px rgba(var(--accent-rgb),.12); }   /* 얼굴 채우면 은은한 라임 후광(브랜드 통일) */
+  .yintro-name { font-size:var(--fs-h2); font-weight:var(--fw-x); color:var(--fg); margin-top:4px; text-wrap:balance; }
   .yintro-tag { font-size:var(--fs-sm); font-weight:var(--fw-b); color:var(--yeta-ac); }
-  .yintro-desc { font-size:var(--fs-sm); color:var(--mut); line-height:var(--lh-base); max-width:36ch; }
+  .yintro-desc { font-size:var(--fs-sm); color:var(--fg-2); line-height:var(--lh-base); max-width:34ch; text-wrap:pretty; }   /* 소개 본문 = fg-2로 살짝 밝게(글래스 카드 위 가독) · 고아줄 방지 */
   .yintro-sep { display:none; }   /* 글래스 카드가 구분 대신 → 카드 하단 라인 불필요(yIntroHtml 마크업은 유지) */
   /* 연속 메시지 그룹핑 — 직전과 같은 화자면 아바타·이름 생략(카톡/제타 톡방 결 · 운영자 260703) */
   .ymsg.cont { margin-top:-6px; }   /* .yeta-log gap 10 상쇄 = 바짝 붙임 */
@@ -201,7 +202,18 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   .yeta-list[hidden] { display:none; }
   .yeta-list .ypick-row { padding:12px; border-radius:var(--r-l); background:var(--glass); border:1px solid var(--glass-line);
     backdrop-filter:blur(var(--blur-m)) saturate(1.2); -webkit-backdrop-filter:blur(var(--blur-m)) saturate(1.2); box-shadow:inset 0 1px 0 var(--glass-line); }   /* 캐릭터 선택 = 글래스 카드 스택(레퍼런스 결 · 배경 비침) */
-  .yeta-list .ypick-row .yava { width:44px; height:44px; font-size:var(--fs-body); }   /* 목록 아바타 = 조금 크게(얼굴 부각) */
+  .yeta-list .ypick-row .yava { width:58px; height:58px; font-size:var(--fs-h3); border:1px solid var(--glass-line); box-shadow:inset 0 1px 0 var(--glass-line); }   /* 목록 아바타 = 캐릭터 초상 부각(운영자 260705 이미지 적용) */
+  .yeta-list .ypick-row .yava.has-img { border-color:rgba(var(--accent-rgb),.22); }   /* 얼굴 채우면 은은한 라임 테 */
+  /* 캐릭터 선택 = 촤르륵 stagger 등장(nomute-design 원칙5 · 기존 ybIn 커브 재사용 · 유려함) */
+  @keyframes ypickIn { from { opacity:0; transform:translateY(12px) scale(.985); } }
+  .yeta-list > button { animation:ypickIn .42s cubic-bezier(.22,.61,.36,1) both; }
+  .yeta-list > button:nth-child(1){animation-delay:.02s} .yeta-list > button:nth-child(2){animation-delay:.06s}
+  .yeta-list > button:nth-child(3){animation-delay:.1s} .yeta-list > button:nth-child(4){animation-delay:.14s}
+  .yeta-list > button:nth-child(5){animation-delay:.18s} .yeta-list > button:nth-child(6){animation-delay:.22s}
+  .yeta-list > button:nth-child(7){animation-delay:.26s} .yeta-list > button:nth-child(8){animation-delay:.3s}
+  .yeta-list > button:nth-child(9){animation-delay:.34s} .yeta-list > button:nth-child(10){animation-delay:.38s}
+  .yeta-list > button:nth-child(11){animation-delay:.42s} .yeta-list > button:nth-child(n+12){animation-delay:.46s}
+  @media (prefers-reduced-motion:reduce){ .yeta-list > button { animation:none; } }
   .yeta-list .yl-dice { margin-top:6px; border:1px dashed var(--line); border-radius:var(--r-m); background:none; color:var(--mut); font:inherit; font-size:var(--fs-sm); font-weight:var(--fw-b); padding:12px; cursor:pointer; text-align:center; touch-action:manipulation; }
   .yeta-list .yl-dice:active { transform:scale(var(--press-l,.96)); }
 
