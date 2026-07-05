@@ -201,15 +201,6 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   .yeta-send svg { width:22px; height:22px; }   /* 마이크와 동일 크기(#5) */
   .yeta-send:active { transform:scale(var(--press-m,.9)); }
   .yeta-send:disabled { opacity:.4; pointer-events:none; }
-  /* 안2 도킹 네비(운영자 260705 확정): 챗 입력행 좌측 = 컴팩트 네비 [캐릭터][현재챗 활성 라임] 아이콘-온리 · 타이핑(focus-within) = 접혀 입력 전폭 */
-  .ydock { flex:none; display:flex; align-items:center; gap:2px; max-width:110px; overflow:hidden;
-    transition:max-width .34s var(--ease), opacity .25s var(--ease); }
-  .ydock button { flex:none; width:38px; height:var(--btn); display:grid; place-items:center; background:transparent; border:1px solid transparent; border-radius:var(--r-pill); color:var(--mut); cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent; transition:transform .28s var(--ease); }
-  .ydock button:active { transform:scale(var(--press-s)); }
-  .ydock button svg { width:19px; height:19px; }
-  .ydock button.on { background:rgba(var(--accent-rgb),.16); border-color:rgba(var(--accent-rgb),.38); color:var(--accent); box-shadow:inset 0 1px 0 var(--glass-line), 0 0 18px rgba(var(--accent-rgb),.14); }   /* 네비 활성 필 결 계승 */
-  .yeta-in:focus-within .ydock { max-width:0; opacity:0; }
-  #yetaMic { display:none !important; }   /* 마이크 일단 폐지 = 그 자리 채팅(운영자 260705) — PTT 코드(call.js)는 존치 · 복구 = 이 줄 삭제 */
   /* + 더보기 — 전송 좌측(운영자 260705 #13) · 향후 다양한 기능 진입점 · 무채 픽토(마이크 결) */
   .yeta-plus { flex:none; width:var(--btn); height:var(--btn); align-self:center; border:none; background:none; color:var(--fg-2);
     display:grid; place-items:center; cursor:pointer; touch-action:manipulation; }
@@ -554,10 +545,6 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
       <div class="yeta-list" id="yetaList" hidden></div>   <!-- SNS 메뉴식 캐릭터 선택 리스트(첫 진입 · 운영자 260703) -->
     </div>
     <div class="yeta-in" id="yetaIn" hidden>
-      <nav class="ydock" id="ydock" aria-label="메뉴 이동">   <!-- 안2 도킹(운영자 260705): 탭 = 챗 닫고 그 메뉴로 -->
-        <button type="button" data-go="char" aria-label="캐릭터"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0112 0v1"/></svg></button>
-        <button type="button" class="on" aria-label="지금 대화 — 현재 화면"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 01-12 7.7L3 21l1.8-6A8.5 8.5 0 1121 11.5z"/><circle cx="8.6" cy="11.5" r=".9" fill="currentColor" stroke="none"/><circle cx="12" cy="11.5" r=".9" fill="currentColor" stroke="none"/><circle cx="15.4" cy="11.5" r=".9" fill="currentColor" stroke="none"/></svg></button>
-      </nav>
       <textarea id="yetaText" rows="1" placeholder="메시지" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="send"></textarea>
       <button class="yeta-plus" id="yetaPlus" type="button" aria-label="더보기"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></button>   <!-- + 더보기 = 향후 기능 진입점(운영자 260705 #13) -->
       <button class="yeta-send" id="yetaSend" type="button" aria-label="전송" data-motion="rise"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2 15 22 11 13 2 9z"/></svg></button>   <!-- 종이비행기 픽토(강조색 · 운영자 260703·260705) -->
@@ -942,11 +929,8 @@ $('#yetaText').addEventListener('input', e => { const t = e.target; t.style.heig
 // 🎲 재뽑기(주사위) 버튼 제거(운영자 260705 #8) · yDraw는 보존(향후 재도입 대비)
 // "새 대화"(reset) 버튼 제거(운영자 260705) — op reset 백엔드는 보존(향후 진입점 재배선 대비)
 $('#yetaBack').addEventListener('click', () => yetadlg.close());   // ← 뒤로가기(X 폐지 · 운영자 260705) = close → 메뉴2(대화 목록) 복귀
-let _yCloseTo = null;   // 도킹 네비 목적지(닫힘 핸들러가 소비 · 기본 = 대화 목록)
-$('#ydock').addEventListener('click', e => { const b = e.target.closest('button[data-go]'); if (!b) return; _yCloseTo = b.dataset.go; yetadlg.close(); });
 yetadlg.addEventListener('close', () => { document.documentElement.style.overflow = ''; yStopPoll(); yPickToggle(false);
-  if (document.getElementById('ymain').classList.contains('unlocked')) yTab(_yCloseTo || 'list');   // 뒤로 = 대화 목록 · 도킹 네비 = 그 메뉴로(운영자 260705 안2)
-  _yCloseTo = null;
+  if (document.getElementById('ymain').classList.contains('unlocked')) yTab('list');   // 챗 = 메뉴2(대화 목록)에서 들어가는 화면 → ←뒤로/폰 뒤로가기 = 대화 목록 복귀(운영자 260705 재편)
   if (_yetaPop) { _yetaPop = false; } else if (history.state && history.state.ydlg) { try { history.back(); } catch {} } });   // X·백드롭 닫힘 = push 칸 회수(#dlg 패턴)
 window.addEventListener('popstate', () => { if (_composeRecovering) return; if (yetadlg.open) { _yetaPop = true; yetadlg.close(); } });   // 폰 뒤로가기 = 닫기(컴포즈 회수 가드 계승)
 const _yetaBtnEl = $('#yetaBtn'); if (_yetaBtnEl) _yetaBtnEl.addEventListener('click', e => { e.stopPropagation(); hidePmenu(); openYeta(); });   // pmenu 진입(stopPropagation = #msgbtn 패턴)
