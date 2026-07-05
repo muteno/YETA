@@ -77,11 +77,11 @@ const css = `
 .ycall-btn.drop { background:var(--danger); color:var(--fg); }
 .ycall-btn.drop svg { transform:rotate(135deg); }   /* 거절 = 같은 path 회전(같은 의미 = 같은 path) */
 .ycall-act[hidden] { display:none; }
-.ycall-mic { flex:none; width:var(--btn); height:var(--btn); align-self:flex-end; border-radius:50%;
-  border:none; background:none; color:var(--accent);
-  display:grid; place-items:center; cursor:pointer; touch-action:manipulation; }   /* 무전 마이크 = 픽토그램-온리·강조색 라임(운영자 260705 · 도형[글래스 원] 제거) */
+.ycall-mic { flex:none; width:var(--btn); height:var(--btn); align-self:center; border-radius:50%;
+  border:none; background:none; color:var(--fg-2);
+  display:grid; place-items:center; cursor:pointer; touch-action:manipulation; }   /* 무전 마이크 = 픽토그램-온리·무채(운영자 260705 #9 강조색 빼기) · 도형 제거 · 입력행 좌측 · 중앙정렬 */
 .ycall-mic:active { transform:scale(var(--press-m,.9)); }
-.ycall-mic svg { width:21px; height:21px; }   /* 픽토 온리라 약간 키움(도형 없는 만큼 존재감) */
+.ycall-mic svg { width:22px; height:22px; }   /* 전송 버튼과 동일 크기(#5) */
 .ycall-mic.rec { color:var(--danger); animation:ycallRec 1.2s ease-in-out infinite; }   /* 녹음 = 픽토 danger 점멸(도형 없음) */
 @keyframes ycallRec { 0%,100% { opacity:1; } 50% { opacity:.55; } }
 @media (prefers-reduced-motion:reduce) { .ycall-mic.rec { animation:none; } }
