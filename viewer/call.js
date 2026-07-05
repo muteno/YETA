@@ -78,10 +78,11 @@ const css = `
 .ycall-btn.drop svg { transform:rotate(135deg); }   /* 거절 = 같은 path 회전(같은 의미 = 같은 path) */
 .ycall-act[hidden] { display:none; }
 .ycall-mic { flex:none; width:var(--btn); height:var(--btn); align-self:flex-end; border-radius:50%;
-  border:1px solid var(--glass-line); background:var(--glass); color:var(--fg);
-  display:grid; place-items:center; cursor:pointer; touch-action:manipulation; }   /* 무전 마이크 = .yeta-send 스펙 계승·무채 글래스(CTA 아님) */
+  border:none; background:none; color:var(--accent);
+  display:grid; place-items:center; cursor:pointer; touch-action:manipulation; }   /* 무전 마이크 = 픽토그램-온리·강조색 라임(운영자 260705 · 도형[글래스 원] 제거) */
 .ycall-mic:active { transform:scale(var(--press-m,.9)); }
-.ycall-mic.rec { background:var(--danger); color:var(--fg); border-color:transparent; animation:ycallRec 1.2s ease-in-out infinite; }
+.ycall-mic svg { width:21px; height:21px; }   /* 픽토 온리라 약간 키움(도형 없는 만큼 존재감) */
+.ycall-mic.rec { color:var(--danger); animation:ycallRec 1.2s ease-in-out infinite; }   /* 녹음 = 픽토 danger 점멸(도형 없음) */
 @keyframes ycallRec { 0%,100% { opacity:1; } 50% { opacity:.55; } }
 @media (prefers-reduced-motion:reduce) { .ycall-mic.rec { animation:none; } }
 .yprem { display:inline-flex; align-items:center; gap:4px; margin-left:6px; padding:1px 8px; border-radius:var(--r-pill);
@@ -99,9 +100,13 @@ const seen = () => { try { return +localStorage.getItem(SEEN_KEY) || 0; } catch 
 const markSeen = ts => { try { localStorage.setItem(SEEN_KEY, String(Math.max(seen(), +ts || 0))); } catch {} };
 const alive = () => typeof yApi === 'function' && typeof esc === 'function';   // 본체 전역 부재 = 모듈 비활성
 
+function ensureCss() {   // 스타일 주입 = 로드 시(입력행 마이크 즉시 스타일) + 콜 생성 시 공용 · 멱등(id 가드) — 옛 버그: ensureDom(콜 때만)에만 있어 마이크가 전화 전까지 기본 버튼(흰 박스)로 렌더됐음(운영자 260705)
+  if (document.getElementById('ycallCss')) return;
+  const st = document.createElement('style'); st.id = 'ycallCss'; st.textContent = css; document.head.appendChild(st);
+}
 function ensureDom() {
   if (dlg) return;
-  const st = document.createElement('style'); st.id = 'ycallCss'; st.textContent = css; document.head.appendChild(st);
+  ensureCss();
   dlg = document.createElement('dialog'); dlg.id = 'calldlg'; dlg.setAttribute('aria-label', '걸려오는 전화');
   dlg.innerHTML = `<div class="ycall-wrap">
   <div class="ycall-bg" id="ycallBg" aria-hidden="true"></div>
@@ -413,7 +418,7 @@ async function check() {
 setInterval(check, POLL_MS);
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') setTimeout(check, 600); });   // 푸시 탭 복귀 = 즉시 픽업
 setTimeout(check, 1500);   // 첫 로드(딥링크 /?yeta=main&call=1 포함) — 기존 ?yeta= 오픈에 편승 + 벨은 여기서
-const initInject = () => { initPtt(); initCallBtn(); };   // 입력행 마이크 + 헤더 수화기(둘 다 모듈 주입 = 본체 무수정)
+const initInject = () => { ensureCss(); initPtt(); initCallBtn(); };   // 스타일 주입 먼저(마이크 즉시 스타일) + 입력행 마이크 + 헤더 수화기(둘 다 모듈 주입 = 본체 무수정)
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initInject); else initInject();
 
 window.YCALL = { onSess, open, playVoice };   // open/playVoice = 테스트 훅 · onSess = 본체 yLoad 훅 계약
