@@ -167,6 +167,7 @@ async function open(call) {
   dlg.classList.remove('talk');
   if (!dlg.open) dlg.showModal();
   stopFx(); ringFx();
+  if (call.web) vapiPreload();   // 보이스톡 = 벨 우는 동안 키+SDK 미리 로드(받기 탭 순간 iOS 제스처 소실 회피 = 핵심)
   ringT = setTimeout(() => { if (dlg.open && !dlg.classList.contains('talk')) decline(); }, RING_TIMEOUT);   // 부재중
 }
 // ── 음성 재생 유틸(공용) — WebAudio 우선(제스처로 unlock 된 actx = 무전 답장 *자동*재생 허용) · <audio> 폴백 ──
@@ -211,30 +212,44 @@ function closeDlg() {
 }
 function decline() { if (cur && cur.ts && !cur.web) markSeen(cur.ts); closeDlg(); }
 
-// ── 보이스톡(브라우저 실시간 통화) — Vapi Web SDK · 받기 탭 이후에만 로드(평시 0바이트) · 운영자 목업 이식 ──
-async function vapiKey() {
-  if (vapiPub) return vapiPub;
-  const r = await yApi('vapikey').catch(() => null);
-  if (r && r.ok && r.pub) vapiPub = r.pub;
-  return vapiPub;
+// ── 보이스톡(브라우저 실시간 통화) — Vapi Web SDK · 벨 우는 동안 프리로드(iOS 제스처 소실 회피) · 운영자 목업 이식 ──
+let vapiPreloading = null;
+function vapiPreload() {   // 벨 시점 = 키 fetch + SDK import 백그라운드 완료(받기 탭 땐 await 0 = 제스처 안에서 마이크 즉시)
+  if (vapiPreloading) return vapiPreloading;
+  vapiPreloading = (async () => {
+    try {
+      if (!vapiPub) { const r = await yApi('vapikey').catch(() => null); if (r && r.ok && r.pub) vapiPub = r.pub; }
+      if (!vapiSdk) vapiSdk = (await import('https://esm.sh/@vapi-ai/web')).default;
+    } catch {}
+  })();
+  return vapiPreloading;
 }
 async function webAccept(call) {
   const st = dlg.querySelector('#ycallStatus');
-  st.textContent = '연결 중…';
+  let stage = 'load', ended = false;
+  const fail = m => { if (ended) return; ended = true; st.textContent = '연결 실패 — ' + m; setTimeout(closeDlg, 3000); };
+  const guard = setTimeout(() => fail(stage === 'mic' ? '마이크 권한을 확인해줘' : '응답 없음(네트워크·권한 확인)'), 20000);   // 무한 '연결 중' 차단
   try {
-    const pub = await vapiKey();
-    if (!pub) throw new Error('보이스톡 미설정(VAPI_PUBLIC_KEY)');
-    if (!vapiSdk) vapiSdk = (await import('https://esm.sh/@vapi-ai/web')).default;
-    vapiInst = new vapiSdk(pub);
-    vapiInst.on('call-start', () => { webSec = 0; clearInterval(webTick); webTick = setInterval(() => { st.textContent = fmtSec(++webSec); }, 1000); });
-    vapiInst.on('speech-start', () => { st.textContent = fmtSec(webSec) + ' · 말하는 중…'; });
-    vapiInst.on('speech-end', () => { st.textContent = fmtSec(webSec); });
+    // ① 마이크 먼저 — 받기 탭 제스처 안에서 동기적으로 잡아야 iOS 가 hang 안 함(제스처 소실 방지의 핵심)
+    stage = 'mic'; st.textContent = '마이크 여는 중…';
+    try { const ms = await navigator.mediaDevices.getUserMedia({ audio: true }); ms.getTracks().forEach(t => t.stop()); }
+    catch { clearTimeout(guard); return fail('마이크 권한이 필요해 — 브라우저 설정에서 허용'); }
+    // ② 키·SDK — 벨 때 프리로드됐으면 즉시 완료
+    stage = 'sdk'; st.textContent = '연결 중…';
+    await vapiPreload();
+    if (!vapiPub) { clearTimeout(guard); return fail('보이스톡 미설정(VAPI_PUBLIC_KEY)'); }
+    if (!vapiSdk) { clearTimeout(guard); return fail('음성 모듈 로드 실패'); }
+    // ③ 통화 시작
+    stage = 'start';
+    vapiInst = new vapiSdk(vapiPub);
+    vapiInst.on('call-start', () => { clearTimeout(guard); ended = true; webSec = 0; clearInterval(webTick); webTick = setInterval(() => { st.textContent = fmtSec(++webSec); }, 1000); });
+    vapiInst.on('speech-start', () => { if (webTick) st.textContent = fmtSec(webSec) + ' · 말하는 중…'; });
+    vapiInst.on('speech-end', () => { if (webTick) st.textContent = fmtSec(webSec); });
     vapiInst.on('call-end', () => closeDlg());
-    vapiInst.on('error', e => { st.textContent = '오류 — ' + ((e && (e.errorMsg || e.message)) || '연결 실패'); setTimeout(closeDlg, 2500); });
-    await vapiInst.start(call.assistant);   // 마이크 권한 요청 = 받기 탭 제스처 직후(허용률 최적)
+    vapiInst.on('error', e => { clearTimeout(guard); fail((e && (e.errorMsg || e.error || e.message)) || '연결 오류'); });
+    await vapiInst.start(call.assistant);
   } catch (e) {
-    st.textContent = '연결 실패 — ' + ((e && e.message) || '');
-    setTimeout(closeDlg, 2500);
+    clearTimeout(guard); fail((e && e.message) || '알 수 없는 오류');
   }
 }
 
