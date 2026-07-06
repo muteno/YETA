@@ -42,13 +42,7 @@ export async function onRequestPost({ request, env }) {
     const r = await fetch(`https://raw.githubusercontent.com/${REPO}/main/apps/yeta/characters/roster.json`,
       { headers: { 'user-agent': 'nomute-viewer' }, cf: { cacheTtl: 60, cacheEverything: true } });
     if (!r.ok) return json({ error: `로스터 로드 실패(${r.status})` }, 502);
-    let world = null;   // 시즌제 세계관(운영자 260706 롤토체스식 — 성격 불변·역할군 리스킨) — 실패는 비치명(헤더만 생략)
-    try {
-      const w = await fetch(`https://raw.githubusercontent.com/${REPO}/main/apps/yeta/worlds.json`,
-        { headers: { 'user-agent': 'nomute-viewer' }, cf: { cacheTtl: 60, cacheEverything: true } });
-      if (w.ok) { const j = await w.json(); world = (j.seasons || []).find(s => s.id === j.active) || null; }
-    } catch {}
-    return json({ ok: true, chars: await r.json(), world, ready: !!env.YETA_R2 });
+    return json({ ok: true, chars: await r.json(), ready: !!env.YETA_R2 });
   }
 
   if (op === 'vapikey') {   // 보이스톡(브라우저 실시간 통화 · Vapi Web SDK) 공개키 — PUBLIC key = 클라이언트 설계상 공개 가능 축.
