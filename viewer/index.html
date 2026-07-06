@@ -705,10 +705,9 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   </div>
   <div class="ywm" id="ywm" role="img" aria-label="YETA"></div>   <!-- 좌상단 상시 로고(운영자 260705 확정 조합 · 겹층 JS 조립 · 언락 후 표시) -->
   <button class="yprof has-img" id="yprof" type="button" aria-label="내 프로필"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0112 0v1"/></svg></button>   <!-- 우상단 개인 프로필 = 기본 캐릭터 얼굴(has-img 기본 · 커스텀 이미지 주입 축 후속) -->
-  <nav class="ynav" id="ynav">   <!-- 메뉴 재편(운영자 260705): 1=캐릭터 · 2=대화 목록 · 3=지금 대화(임시·2와 통합 예정) · 4=설정 · 메인 화면 폐지(언락=바로 캐릭터) · lockdot 폐지(네비 = 언락 후에만 표시) -->
+  <nav class="ynav" id="ynav">   <!-- 메뉴(운영자 260706 재편): 1=캐릭터 · 2=대화(목록 — 대화 탭이 곧 진입점, 행 눌러 챗) · 3=설정. 옛 '지금' 탭 폐지 = 챗은 메뉴2 대화 목록으로 편입(진입 = 대화 행 탭) · lockdot 폐지(네비 = 언락 후에만 표시) -->
     <button class="on" data-tab="char" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0112 0v1"/></svg><span>캐릭터</span></button>
     <button data-tab="list" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 01-12 7.7L3 21l1.8-6A8.5 8.5 0 1121 11.5z"/></svg><span>대화</span></button>
-    <button data-tab="chat" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 01-12 7.7L3 21l1.8-6A8.5 8.5 0 1121 11.5z"/><circle cx="8.6" cy="11.5" r=".9" fill="currentColor" stroke="none"/><circle cx="12" cy="11.5" r=".9" fill="currentColor" stroke="none"/><circle cx="15.4" cy="11.5" r=".9" fill="currentColor" stroke="none"/></svg><span>지금</span></button>
     <button data-tab="settings" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.11-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.55-1.11 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h.02a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v.02a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1z"/></svg><span>설정</span></button>   <!-- 기어 = 표준 풀패스(옛 조각 패스가 'о.'처럼 깨져 보이던 것 교체 · 운영자 260705 재량 위임) -->
   </nav>
 </div>
@@ -1334,9 +1333,8 @@ try { if (new URLSearchParams(location.search).get('yeta')) setTimeout(() => ope
     const b = e.target.closest('button'); if (!b) return;
     const tab = b.dataset.tab;
     if (!unlocked) { ymEnterPin(); slotsEl.classList.add('shake'); setTimeout(() => slotsEl.classList.remove('shake'), 450); return; }
-    if (tab === 'char' || tab === 'list') { yTab(tab); return; }   // 메뉴1 캐릭터 · 메뉴2 대화 목록(운영자 260705 재편)
-    if (tab === 'chat') { openYeta(); return; }   // 메뉴3 지금 대화(임시 · 메뉴2와 통합 예정)
-    miniToast('준비중 — 곧 열려');   // 설정(다음 머지)
+    if (tab === 'char' || tab === 'list') { yTab(tab); return; }   // 메뉴1 캐릭터 · 메뉴2 대화(목록 — 행 눌러 챗 진입 · 운영자 260706 재편)
+    miniToast('준비중 — 곧 열려');   // 설정(다음 머지) · 옛 'chat' 탭 폐지 = 챗은 메뉴2 대화 목록으로만 진입
   };
   const _yprofEl = $('#yprof'); if (_yprofEl) _yprofEl.onclick = () => miniToast('내 프로필 — 준비중');   // 우상단 개인 프로필(이미지 주입 축 후속)
 })();
