@@ -9,7 +9,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@latest/dist/web/variable/pretendardvariable.min.css">
 <link rel="stylesheet" href="tokens.css">
 <link rel="icon" href="favicon.ico" sizes="32x32"><!-- PC 브라우저 탭 파비콘(운영자 260706 · 데스크톱 누락 보강) -->
-<link rel="icon" type="image/png" href="assets/brand/yeta-icon-192.png" sizes="192x192">
+<link rel="icon" type="image/png" href="assets/brand/yeta-face-icon-192.png" sizes="192x192"><!-- PC 파비콘 = 영상 캐릭터 얼굴(운영자 260706) -->
 <link rel="apple-touch-icon" href="assets/brand/yeta-icon-192.png">
 <link rel="manifest" href="manifest.json">
 <!-- PWA 웹앱(홈화면 설치·전체화면) — 안드로이드=manifest, iOS=아래 apple 메타(운영자 260704 "웹앱 형태로 여는것") -->
@@ -17,9 +17,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="예타">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="application-name" content="예타">
-<link rel="preload" as="image" href="assets/brand/yeta-main-boy.webp" fetchpriority="high"><!-- 잠금 화면 히어로 = 촤르륵-인과 로드 레이스 차단(평의회5) -->
-<style>
+<meta name="application-name" content="예타"><style>
   /* ── LEMONMILK (YETA 디스플레이 · 로컬 호스팅) ── */
   @font-face{font-family:'LEMONMILK';font-weight:700;font-style:normal;src:url('fonts/LEMONMILK-Bold.otf') format('opentype');font-display:swap}
   @font-face{font-family:'LEMONMILK';font-weight:300;font-style:normal;src:url('fonts/LEMONMILK-Light.otf') format('opentype');font-display:swap}
@@ -317,34 +315,11 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   /* ═══ 영상 히어로 잠금(운영자 260706 교체) — 영상 베이스 + 처음 스포티파이 블랙 스크림(.ym-ovl) 흐림 → 잠금 터치 시 스크림 걷혀 원본 선명 → 그 위에 PIN · 로고 내리치기·다이브·zap·크랙 유지 · 라벨(밴드) 제거 ═══ */
   .ym-video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:none; }
   .ymain.video-lock .ym-video { display:block; }
-  .ymain.video-lock .ymc, .ymain.video-lock .ymb, .ymain.video-lock .ym-band { display:none; }   /* 원·소년·라벨 = 영상 모드서 폐지(라벨 들어오고 나가는 것 제거 · 운영자 260706) */
   /* 로고 글래스모피즘 = 백플레이트 판 폐지(운영자 260706 "옆에 저거 지우고") → 로고 글자 자체를 반투명+살짝 블러+네온라임 글로우(불투명도 60% · filter opacity()는 flicker 애니 opacity와 곱 = 애니 안 깨고 60% 감쇠 · drop-shadow = 라임 네온 조금) */
   .ymain.video-lock .ym-stage .ym-wm { top:31%; filter:blur(.8px) opacity(.7) drop-shadow(0 0 5px rgba(var(--accent-rgb),.6)); }   /* 위치 19.7→31%(얼굴/눈 벗어나 가슴께로 · 운영자 260706 "낮춰서") · 불투명도 .6→.7 */
   /* 배경 화려 → 로고 전격 자주(운영자 260706): 정지 상태 flicker 4s→1.8s · 지지직 버스트 5.6s→3.2s (video-lock 한정 승격) */
   .ymain.video-lock.calm.strike .ym-stage .ym-wm { animation:ywmFlick 1.8s steps(1) infinite, ymBurstWm 3.2s linear infinite; }
-  .ymc { position:absolute; left:48.8%; top:69.5%; width:97.7%; aspect-ratio:1; border-radius:50%; translate:-50% -50%; opacity:var(--st-glowop);
-    background:radial-gradient(circle closest-side, #8fce01 0 76%, rgba(143,206,1,.34) 77.5%, rgba(143,206,1,.16) 82%, rgba(105,150,10,.08) 88%, transparent 96%);   /* 색·스톱 = main_v2 원 실측 프로파일(코어 rgb(143,206,1) 플랫 · 급락 엣지+얇은 글로우 · 피크 불투명 1) · closest-side = 스톱%가 반지름 기준(farthest-corner 디폴트 = √2 과대 실측 260706) */
-    animation:ymcIn 1.5s var(--ease) both, ymcPulse calc(3.2s/var(--st-amp)) ease-in-out 1.5s infinite; }   /* 배경 원 선등장(1.5s 그윽하게 · 잠금 안무 플그 운영자 확정) → 글로우 펄스(등장 완료 후 시작) */
-  @keyframes ymcIn { from { opacity:0; } }
-  @keyframes ymcPulse { 0%,100% { opacity:calc((1 - .25*var(--st-amp))*var(--st-glowop)); } 50% { opacity:var(--st-glowop); } }   /* 폭 = amp 연동(2.0x = .5~1 · 운영자 260706) */
-  .ymb { position:absolute; inset:0; background:url(assets/brand/yeta-main-boy.webp) center/contain no-repeat; }   /* 전신 소년(포스터 추출 · 밴드 온-헤드 박제·머리 좌우 튜프트 온전 = 잘림 복구 260706) */
-  .ymb.main { animation:ymbIn 1.2s cubic-bezier(.22,.61,.36,1) .25s both, ymbHolo calc(3.1s/var(--st-amp)) linear 1.15s infinite, ymbVhs calc(.9s/var(--st-amp)) steps(4,jump-none) 1.15s infinite; }   /* 촤르륵 인 1.2s@.25(잠금 안무 플그 운영자 확정) → 홀로 플리커+VHS 지터(픽 계승) */
-  @keyframes ymbIn { 0% { opacity:0; transform:translateY(2.4%); } 42% { opacity:.9; } 55% { opacity:.45; } 68% { opacity:1; } 80% { opacity:.65; } 100% { opacity:1; transform:none; } }
-  @keyframes ymbHolo { 0%,92%,100% { opacity:1; } 94% { opacity:.74; } 95% { opacity:.95; } 97% { opacity:.82; } }
-  @keyframes ymbVhs { 0%,70%,100% { transform:none; } 75% { transform:translateY(2px); } 85% { transform:translateY(-2px) skewX(.5deg); } }
-  .ymb.g1, .ymb.g2 { mix-blend-mode:screen; opacity:.5; }   /* 글리치 RGB 스플릿(픽) — 클론 2장 · 순간 어긋남 */
-  .ymb.g1 { filter:drop-shadow(0 0 0 rgba(255,0,80,.85)) saturate(0); animation:ymbInG 1.2s steps(3,jump-none) .25s both, ymbGlA calc(2.2s/var(--st-amp)) steps(2,jump-none) 1.15s infinite; }
-  .ymb.g2 { filter:drop-shadow(0 0 0 rgba(0,220,255,.85)) saturate(0); animation:ymbInG 1.2s steps(4,jump-none) .33s both, ymbGlB calc(1.7s/var(--st-amp)) steps(3,jump-none) 1.15s infinite; }
-  @keyframes ymbInG { 0% { opacity:0; transform:translate(-14px,3px); } 40% { opacity:.5; transform:translate(10px,-2px); } 70% { opacity:.2; transform:translate(-6px,1px); } 100% { opacity:0; transform:none; } }
-  @keyframes ymbGlA { 0%,84%,100% { transform:none; } 86% { transform:translate(8px,0); } 92% { transform:translate(-7px,2px); } }
-  @keyframes ymbGlB { 0%,78%,100% { transform:none; } 82% { transform:translate(-9px,0); } 88% { transform:translate(6px,-2px); } }
-  .ym-band { position:absolute; left:25.7%; top:33.1%; width:43.8%; height:6.43%; transform:rotate(-6.2deg); border-radius:2px;
-    background:rgb(99,137,4); animation:ymBandIn .4s var(--ease) .5s both; }   /* 라벨 = 포스터 유한 밴드(끝단 보임 · 색 = 밴드-온-블랙 실측) · 소년 뒤 z(머리카락 튜프트가 밴드 앞 = 포스터 층위) · 쏵 스윕인 */
-  @keyframes ymBandIn { from { transform:rotate(-6.2deg) translateX(-260%); } to { transform:rotate(-6.2deg) translateX(0); } }
-  .ymain.go .ym-band { animation:ymBandOut .34s var(--ease) both; }   /* 잠금 터치 = 각도 유지한 채 싹 퇴장(.34s · 잠금 안무 플그 운영자 확정) */
-  @keyframes ymBandOut { from { transform:rotate(-6.2deg) translateX(0); } to { transform:rotate(-6.2deg) translateX(260%); } }
-  /* PIN 통과 라벨 재등장 폐지(운영자 260706 "우측으로 나가는 건 없앨게") — 라벨은 go 퇴장 상태 유지 · ymBandWipe 키프레임은 존치(연출 복원 대비) */
-  @keyframes ymBandWipe { from { transform:rotate(-6.2deg) translateX(0); } to { transform:rotate(-6.2deg) translateX(260%); } }   /* 가운데(원위치)에서 우측 퇴장(운영자 260706 — 왼쪽 화면 밖 재진입 폐지) */
+  /* 소년 잠금(원 .ymc·소년 .ymb·라벨 .ym-band) 코드 폐지(운영자 260706 "소년 코드는 없애고") — 영상 히어로로 정본 전환 · 공유 잠금 기계(strike 로고·flash·ymZoom·dive·zap·matrix)만 존치 */
   .ymain.go .ym-stage { animation:ymZoom .45s var(--ease) both; }   /* 줌했다가 정면 복귀(.45s · 잠금 안무 플그 운영자 확정) */
   @keyframes ymZoom { 0% { transform:translateX(-50%) scale(1); } 45% { transform:translateX(-50%) scale(1.11); } 100% { transform:translateX(-50%) scale(1); } }
   /* 잠금 화면 대형 YETA 로고 — 확정 워드마크(#ywm 6겹) 재사용 · 포스터 YETA 위치(폭 63.66% · 상단 19.7% · 머리카락 뒤 z) · 번개 스트라이크 등장
@@ -355,39 +330,23 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   .ym-flash { position:absolute; inset:0; opacity:0; background:radial-gradient(circle at 50% 24%, rgba(255,255,255,.85), rgba(var(--accent-rgb),.22) 42%, transparent 68%); }   /* 번개 플래시(전뇌 엣지) */
   .ymain.strike .ym-flash { animation:ymFlash .38s linear .24s both; }
   @keyframes ymFlash { 0% { opacity:0; } 28% { opacity:1; } 42% { opacity:.25; } 55% { opacity:.6; } 100% { opacity:0; } }
-  .ymain.strike .ymc { animation:ymcPulse calc(3.2s/var(--st-amp)) ease-in-out infinite, ymcHit .4s linear .24s; }   /* 착지 순간 원 광량 스파이크 */
-  /* PIN 대기(calm) = 원 범위 살짝 확대 + 브랜드 호흡(광량 왕복 1↔.88 — 원본색 기준이라 위로 안 밀고 아래로 숨쉼 · 플그 v4 wuBreath) */
-  .ymain.calm .ymc { filter:brightness(1.33); transition:filter .8s var(--ease);
-    animation:ymcPulse calc(3.2s/var(--st-amp)) ease-in-out infinite, ymWuBreathe 2.4s ease-in-out .8s infinite; }
-  /* 광량 1.33·호흡 2.4s·차오름 .8s(운영자 확정) · scale 확대 폐지(선택값 1.005 ≈ 0 + PIN 부상 버벅 주범 — 대형 원 scale이 PIN 글래스 blur 뒤에서 매 프레임 재계산) */
-  @keyframes ymWuBreathe { 0%,100% { filter:brightness(1.33); } 50% { filter:brightness(1.01); } }
   /* ④ 언락 라이트업 — 승인(bye) 60ms 뒤 스테이지 발광 1.35x가 .15s 스냅으로 차오른 뒤 전환(zap 지지직과 병행 = 메타버스 진입 · 운영자 확정) */
   /* 승인 다이브(운영자 260706 "메타버스 로그인") — 타격 스파이크(12% 지점 발광 1.45) 후 캐릭터 눈 방향(48.8%,36%)으로 이징 줌 인하며 어둠 속으로 · zap(VHS)은 500ms 시점 병행 · 소스 위치 = .go ymZoom 규칙 뒤(캐스케이드 승리) */
   .ymain.bye .ym-stage { transform-origin:48.8% 36%; animation:ymDive 1s var(--ease) both; }
   @keyframes ymDive { 0% { transform:translateX(-50%) scale(1); filter:brightness(1); } 12% { filter:brightness(1.45); }
     100% { transform:translateX(-50%) scale(1.9); filter:brightness(.12); } }
   /* 매트릭스 형상(운영자 260706 "들어가면서 사람 안 형상을 매트릭스로") — 승인 시 캐릭터 실루엣에만 초록 코드 레인(canvas, destination-in 마스크) · 스테이지와 별도 레이어라 다이브 어둠(brightness .12)에 안 먹혀 코드가 발광 · 눈 방향 동기 줌 · mix-blend screen */
-  .ym-matrix { position:absolute; left:50%; bottom:0; transform:translateX(-50%); width:100%; width:max(100%, calc(100dvh * 9 / 16)); aspect-ratio:9/16; z-index:3; pointer-events:none; opacity:0; mix-blend-mode:screen; transform-origin:48.8% 36%;
-    -webkit-mask:url('assets/brand/yeta-main-boy.webp') center/contain no-repeat; mask:url('assets/brand/yeta-main-boy.webp') center/contain no-repeat; }   /* 실루엣 클립 = 소년 알파 CSS 마스크(.ymb contain 동일 정렬 · canvas는 풀레인만 · taint 없음) */
-  .ymain.video-lock .ym-matrix { -webkit-mask:none; mask:none; }   /* 영상 모드 = 소년 실루엣 부재 → 풀프레임 코드(다이브 시 전체 디지털화) */
+  .ym-matrix { position:absolute; left:50%; bottom:0; transform:translateX(-50%); width:100%; width:max(100%, calc(100dvh * 9 / 16)); aspect-ratio:9/16; z-index:3; pointer-events:none; opacity:0; mix-blend-mode:screen; transform-origin:48.8% 36%; }   /* 영상 히어로 = 풀프레임 코드(소년 실루엣 마스크 폐지 · 다이브 시 전체 디지털화) */
   .ymain.bye .ym-matrix { animation:ymMatrixDive 1s var(--ease) both; }
   @keyframes ymMatrixDive { 0% { opacity:0; transform:translateX(-50%) scale(1); } 22% { opacity:1; } 100% { opacity:.92; transform:translateX(-50%) scale(1.9); } }
   .ymain.unlocked .ym-matrix { display:none; }
   @media (prefers-reduced-motion:reduce){ .ym-matrix { display:none !important; } }
-  @keyframes ymcHit { 35% { opacity:1; } }
-  .ymain.strike .ymb.main { animation:ymbHolo calc(3.1s/var(--st-amp)) linear infinite, ymHit .2s var(--ease) .3s; }   /* 착지 반동 */
-  @keyframes ymHit { 30% { transform:translateY(.9%); } 65% { transform:translateY(-.4%); } 100% { transform:none; } }
-  /* 로고 착지 후 = 사람 효과 정지(.calm · 원 디밍만 유지) + 한번씩 캐릭터+로고 전체 지지직 VHS 버스트(동일 5.6s 창 = 동기) */
-  .ymain.calm.strike .ymb.main { animation:ymBurst 5.6s linear infinite; }   /* .strike 병기 = ymHit 규칙과의 소스순서 타이 제거(평의회1 · calm은 항상 strike 뒤) */
-  .ymain.calm .ymb.g1 { animation:ymBurstG 5.6s linear infinite; }
-  .ymain.calm .ymb.g2 { animation:ymBurstG 5.6s linear -.08s infinite; }   /* 미세 어긋남만(유기감) — 큰 디싱크는 "전체 지지직" 의도 위반(평의회10) */
+  /* 로고 착지 후 = calm 상태에서 로고만 주기적 지지직 VHS 버스트(소년 착지반동·글리치 버스트는 폐지) */
   .ymain.calm.strike .ym-stage .ym-wm { animation:ywmFlick 4s steps(1) infinite, ymBurstWm 5.6s linear infinite; }
   /* PIN 승인 = 로고 전격 1회 즉발(ymBurstWm 93~97% 창 압축 · 운영자 260706 "로고 전격 한번 싹") */
   .ymain.bye.calm.strike .ym-stage .ym-wm { animation:ywmFlick 4s steps(1) infinite, ymLogoZap .5s linear both; }
   @keyframes ymLogoZap { 0%,100% { transform:translateX(-50%); } 18% { transform:translateX(-50%) translate(-8px,2px) skewX(-1.4deg); } 36% { transform:translateX(-50%) translate(6px,-2px); } 55% { transform:translateX(-50%) translate(-3px,1px) skewX(.7deg); } 72% { transform:translateX(-50%); } }
-  @keyframes ymBurst { 0%,93.4%,100% { transform:none; } 94% { transform:translate(-8px,2px) skewX(-1.4deg); } 95.2% { transform:translate(6px,-2px); } 96.4% { transform:translate(-3px,1px) skewX(.7deg); } 97.6% { transform:none; } }
   @keyframes ymBurstWm { 0%,93.4%,100% { transform:translateX(-50%); } 94% { transform:translateX(-50%) translate(-8px,2px) skewX(-1.4deg); } 95.2% { transform:translateX(-50%) translate(6px,-2px); } 96.4% { transform:translateX(-50%) translate(-3px,1px) skewX(.7deg); } 97.6% { transform:translateX(-50%); } }
-  @keyframes ymBurstG { 0%,93.6%,100% { opacity:0; } 94.4% { opacity:.55; } 95.6% { opacity:.2; } 96.8% { opacity:.45; } 97.8% { opacity:0; } }
   .ym-stage::after { content:''; position:absolute; inset:0; background:repeating-linear-gradient(0deg, rgba(255,255,255,.035) 0 1px, transparent 1px 3px); }   /* VHS 스캔라인 */
   .ymain.unlocked .ym-stage { display:none; }   /* 스택 = 잠금 화면 전용(언락 후 탭 화면과 무관 · 대형 로고 포함) */
   /* 앵커 프레임 = 스테이지와 동일 9:16 좌표계(하단 정렬) — 접속 자물쇠·PIN이 화면비 무관하게 소년 몸통에 정확히 붙는다(옛 .ym-hero flex 폐지 260706) */
@@ -669,13 +628,13 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
       border-inline:1px solid var(--glass-line); box-shadow:var(--shadow-card); overflow:hidden; }
     #yetadlg { height:100dvh; width:auto; aspect-ratio:9/16; max-width:100vw; border-radius:0; margin:auto; inset:0; }   /* 챗 = 메인(.ymain)과 동일 9:16 프레임·동일 중앙정렬(margin:auto+inset:0 — 없으면 base margin:0으로 좌상단 쏠려 앱프레임과 "따로 놀던" 것 교정 260705) */
   }
-  @media (prefers-reduced-motion:reduce){ .ym-pin, .ym-access, .ym-shackle, .ynav button, .ynav button span { transition:none; } .ym-access, .ymc, .ymb, .ymb.g1, .ymb.g2, .ym-band, .ym-flash, .ymain .ym-wm, .ymain.go .ym-stage, .ymain.bye .ym-stage, .ym-access.hitc, .ym-access[data-crack="4"] { animation:none !important; } .ymb.g1, .ymb.g2 { display:none; } .ymain.strike .ym-wm { display:block; } .ym-band { transform:rotate(-6.2deg) translateX(260%); } .ym-access[data-crack] { transform:none; filter:none; } }   /* 모션 최소화 = 정적 상태로 직행(밴드는 최종 퇴장 위치 · 다이브·크랙 무효) */
+  @media (prefers-reduced-motion:reduce){ .ym-pin, .ym-access, .ym-shackle, .ynav button, .ynav button span { transition:none; } .ym-access, .ym-flash, .ymain .ym-wm, .ymain.go .ym-stage, .ymain.bye .ym-stage, .ym-access.hitc, .ym-access[data-crack="4"] { animation:none !important; } .ymain.strike .ym-wm { display:block; } .ym-access[data-crack] { transform:none; filter:none; } }   /* 모션 최소화 = 정적 상태로 직행(다이브·크랙 무효 · 소년 참조 폐지) */
 </style>
 </head>
 <body>
 <!-- ═══ YETA 메인 화면 (라이트·PIN 게이트 · 260704 재디자인 V1) ═══ -->
 <div class="ymain video-lock" id="ymain">
-  <div class="ym-stage" aria-hidden="true"><video class="ym-video" id="ymVideo" autoplay loop muted playsinline preload="auto" poster="assets/brand/lock-hero-poster.jpg"><source src="assets/brand/lock-hero.mp4" type="video/mp4"></video><div class="ymc"></div><div class="ym-band"></div><div class="ywm ym-wm" id="ywmLock"></div><div class="ymb g1"></div><div class="ymb g2"></div><div class="ymb main"></div><div class="ym-flash"></div></div>   <!-- 잠금 스테이지 = 영상 히어로 베이스(운영자 260706 교체) + 대형 로고 글래스모피즘 + 번개 플래시 · 원/소년/라벨 = video-lock 모드서 숨김 -->
+  <div class="ym-stage" aria-hidden="true"><video class="ym-video" id="ymVideo" autoplay loop muted playsinline preload="auto" poster="assets/brand/lock-hero-poster.jpg"><source src="assets/brand/lock-hero.mp4" type="video/mp4"></video><div class="ywm ym-wm" id="ywmLock"></div><div class="ym-flash"></div></div>   <!-- 잠금 스테이지 = 영상 히어로 베이스(운영자 260706) + 대형 로고 글래스모피즘 + 번개 플래시 (소년 원/보이/라벨 폐지) -->
   <canvas class="ym-matrix" id="ymMatrix" aria-hidden="true"></canvas>   <!-- 승인 다이브 = 캐릭터 실루엣에 초록 매트릭스 코드 레인(운영자 260706) -->
   <div class="ym-ovl" aria-hidden="true"></div>   <!-- 잠금 스포티파이 블랙 67% 오버레이 -->
   <div class="ym-zap" aria-hidden="true"><i></i><i></i></div>   <!-- PIN 승인 = 전뇌 글리치 1회 -->
