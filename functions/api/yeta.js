@@ -77,7 +77,14 @@ export async function onRequestPost({ request, env }) {
   };
   const putSess = (s) => env.YETA_R2.put(KEY, JSON.stringify(s), { httpMetadata: { contentType: 'application/json' } });
 
-  if (op === 'get') return json({ ok: true, sess: await readSess() });
+  if (op === 'get') {   // 폴 — lazy 리퍼 동봉(운영자 260707 · 분신술 P1): awaiting 10분 초과 = 러너 미기동/사망 판정 → error 플립 = 뷰어 재시도 버튼 활성(영구 고착 탈출)
+    const sess = await readSess();
+    if (sess.state === 'awaiting' && sess.awaiting_since && Date.now() - sess.awaiting_since > 600000) {
+      sess.state = 'error'; sess.err = '응답이 오지 않았어 — 다시 보내면 재시도'; delete sess.awaiting_since;
+      await putSess(sess);   // 러너가 뒤늦게 도착해도 무해 — finish가 앵커 insert + state 갱신으로 자연 회복
+    }
+    return json({ ok: true, sess });
+  }
 
   if (op === 'voice') {   // 통화 음성 스트림(걸려오는 전화 v1) — 비공개 세션 버킷 voice/ 프리픽스만 · POST 유지(originOk 대칭)
     const key = String(body.key || '');
