@@ -315,10 +315,8 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   /* ═══ 영상 히어로 잠금(운영자 260706 교체) — 영상 베이스 + 처음 스포티파이 블랙 스크림(.ym-ovl) 흐림 → 잠금 터치 시 스크림 걷혀 원본 선명 → 그 위에 PIN · 로고 내리치기·다이브·zap·크랙 유지 · 라벨(밴드) 제거 ═══ */
   .ym-video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:none; }
   .ymain.video-lock .ym-video { display:block; }
-  /* 로고 스타일(운영자 260707 플그 선택값) — 블러·라임 글로우·헤일로 소등, 불투명도 .7→.92(또렷), 내부 광원 .75 점등 · filter opacity()는 flicker 애니 opacity와 곱 = 애니 안 깨고 감쇠 · 스캔라인 = 선택 1 = 실물 기존 강도 그대로(플그 재현이 .5로 약했던 것) */
-  .ymain.video-lock .ym-stage .ym-wm { top:31%; filter:opacity(.92); }   /* 위치 19.7→31%(얼굴/눈 벗어나 가슴께로 · 운영자 260706 "낮춰서") */
-  .ymain.video-lock .ym-stage .ym-wm .w-halo { display:none; }   /* 헤일로 0(선택값) — 좌상단 #ywm 헤일로는 유지 */
-  .ymain.video-lock .ym-stage .ym-wm .w-light { opacity:1; }   /* 내부 광원 점등 = 잠금 대형 로고 한정 */
+  /* 로고 글래스모피즘 = 백플레이트 판 폐지(운영자 260706 "옆에 저거 지우고") → 로고 글자 자체를 반투명+살짝 블러+네온라임 글로우(불투명도 60% · filter opacity()는 flicker 애니 opacity와 곱 = 애니 안 깨고 60% 감쇠 · drop-shadow = 라임 네온 조금) */
+  .ymain.video-lock .ym-stage .ym-wm { top:31%; filter:blur(.8px) opacity(.7) drop-shadow(0 0 5px rgba(var(--accent-rgb),.6)); }   /* 위치 19.7→31%(얼굴/눈 벗어나 가슴께로 · 운영자 260706 "낮춰서") · 불투명도 .6→.7 */
   /* 배경 화려 → 로고 전격 자주(운영자 260706): 정지 상태 flicker 4s→1.8s · 지지직 버스트 5.6s→3.2s (video-lock 한정 승격) */
   .ymain.video-lock.calm.strike .ym-stage .ym-wm { animation:ywmFlick 1.8s steps(1) infinite, ymBurstWm 3.2s linear infinite; }
   /* 소년 잠금(원 .ymc·소년 .ymb·라벨 .ym-band) 코드 폐지(운영자 260706 "소년 코드는 없애고") — 영상 히어로로 정본 전환 · 공유 잠금 기계(strike 로고·flash·ymZoom·dive·zap·matrix)만 존치 */
@@ -493,8 +491,6 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
     background-size:180% 180%; animation:ywmGlint 5.5s var(--ease) infinite; }   /* 글래스 80% 보간 알파(확정 스냅샷) */
   .ywm .w-ca { mix-blend-mode:screen; transform:translate(calc(var(--w)/-64), calc(var(--w)/-90)); animation:ywmGlA 3.4s steps(1) infinite; }
   .ywm .w-ca span { background:rgba(var(--cobalt-rgb),.85); }   /* 반전판 A = 코발트 */
-  .ywm .w-light { mix-blend-mode:screen; opacity:0; }   /* 내부 광원(로고 안 발광 · 운영자 260707 플그 광원 .75) — 기본 소등 · video-lock 잠금 로고만 점등 */
-  .ywm .w-light span { background:radial-gradient(ellipse 60% 90% at 50% 32%, rgba(255,255,255,.64) 0%, rgba(var(--accent-rgb),.3) 45%, transparent 75%); }   /* .85·.4 × 광원 .75 환산 */
   .ywm .w-scan { mix-blend-mode:screen; }
   .ywm .w-scan span { background:repeating-linear-gradient(0deg, transparent 0 4px, rgba(255,255,255,.26) 4px 5px); background-size:100% 240%; animation:ywmScan 3s linear infinite; }
   .ywm .w-flash { opacity:0; animation:ywmSnap 3.4s steps(1) infinite; }
@@ -834,7 +830,7 @@ const yStair = (() => {
 (() => {
   const spans = [['y', 1.11502], ['e', 0.90096], ['t', 1.02236], ['a', 1.15335]]
     .map(([n, ar]) => `<span style="--m:url('assets/brand/yeta-wm-${n}.png');--ar:${ar}"></span>`).join('');
-  const layers = ['w-halo', 'w-cb', 'w-body', 'w-ca', 'w-light', 'w-scan', 'w-flash'].map(c => `<div class="wl ${c}">${spans}</div>`).join('');   // w-light = 내부 광원(잠금 대형 로고만 점등 · 좌상단은 opacity 0)
+  const layers = ['w-halo', 'w-cb', 'w-body', 'w-ca', 'w-scan', 'w-flash'].map(c => `<div class="wl ${c}">${spans}</div>`).join('');
   ['ywm', 'ywmLock'].forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = layers; });
 })();
 // ── 대화 목록(메뉴2 · 카톡 결) — 단일 세션 = 진행 대화 1행(아바타·이름·미리보기·시간·라임 안읽음 배지) ──
