@@ -266,7 +266,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   .yeta-list { position:absolute; inset:0; z-index:6; overflow-y:auto; padding:var(--sp-3) var(--sp-2) 20px; display:flex; flex-direction:column; gap:8px; }
   .yeta-list[hidden] { display:none; }
   .yeta-list .ypick-row { padding:12px; border-radius:var(--r-l); background:var(--glass); border:1px solid var(--glass-line);
-    backdrop-filter:blur(var(--blur-m)) saturate(1.2); -webkit-backdrop-filter:blur(var(--blur-m)) saturate(1.2); box-shadow:inset 0 1px 0 var(--glass-line); }   /* 캐릭터 선택 = 글래스 카드 스택(레퍼런스 결 · 배경 비침) · 블러 = --blur-m 통일(운영자 260707 플그 선택값 = 전 표면 일괄) */
+    backdrop-filter:blur(var(--blur-l)) saturate(1.2); -webkit-backdrop-filter:blur(var(--blur-l)) saturate(1.2); box-shadow:inset 0 1px 0 var(--glass-line); }   /* 캐릭터 선택 = 글래스 카드 스택(레퍼런스 결 · 배경 비침) · 블러 한 단 위 계승(운영자 260707 "쥬금 더") */
   .yeta-list .ypick-row .yava { width:58px; height:58px; font-size:var(--fs-h3); border:1px solid var(--glass-line); box-shadow:inset 0 1px 0 var(--glass-line); }   /* 목록 아바타 = 캐릭터 초상 부각(운영자 260705 이미지 적용) */
   .yeta-list .ypick-row .yava.has-img { border-color:rgba(var(--accent-rgb),.22); }   /* 얼굴 채우면 은은한 라임 테 */
   /* 캐릭터 선택 = 촤르륵 stagger 등장(nomute-design 원칙5 · 기존 ybIn 커브 재사용 · 유려함) */
@@ -537,7 +537,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   .yset-chip { padding:7px 16px; border:1px solid var(--glass-line); border-radius:var(--r-pill); background:var(--glass); color:var(--fg-2); font:inherit; font-size:var(--fs-xs); font-weight:var(--fw-b); cursor:pointer; touch-action:manipulation; }
   .yset-chip:active { transform:scale(var(--press-m,.9)); }
   .yset-chip.on { color:var(--bg); background:var(--accent); border-color:transparent; font-weight:var(--fw-x); }
-  details.yset-grp { align-self:stretch; background:var(--glass-0); border:1px solid var(--glass-line); border-radius:var(--r-m); padding:0 14px; margin-bottom:11px; backdrop-filter:blur(var(--blur-m)); -webkit-backdrop-filter:blur(var(--blur-m)); }   /* 라운드 --r-m·유리 --glass-0·그룹간격 11·블러 --blur-m = 운영자 260707 플그 선택값(설정 통일) */
+  details.yset-grp { align-self:stretch; background:var(--glass); border:1px solid var(--glass-line); border-radius:var(--r-l); padding:0 14px; margin-bottom:8px; backdrop-filter:blur(var(--blur-m)); -webkit-backdrop-filter:blur(var(--blur-m)); }
   details.yset-grp summary { cursor:pointer; padding:12px 2px; font-size:var(--fs-sm); font-weight:var(--fw-x); color:var(--fg); display:flex; align-items:center; gap:8px; }
   details.yset-grp summary .ys-cnt { margin-left:auto; min-width:18px; height:18px; padding:0 5px; border-radius:var(--r-pill); background:var(--accent); color:var(--bg); font-size:var(--fs-xs); font-weight:var(--fw-x); display:grid; place-items:center; }
   details.yset-grp summary .ys-cnt[hidden] { display:none; }   /* display:grid가 [hidden]을 이기는 것 차단 */
@@ -561,15 +561,15 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   /* ═══ 시즌제 세계관 헤더 + 캐릭터 리스트(1행 1명 · 운영자 260706 "롤토체스식 시즌" — 성격 불변·역할군 리스킨) ═══
      행 = [아바타][이름/표현/대사 3줄][연한 세로 구분자][육각 성향 레이더(라임)] · 탭 = 세부 디테일 → 대화 진입 · 전부 글래스 계승 */
   .yworld { display:flex; flex-direction:column; gap:3px; margin:0 0 12px; padding:13px 16px; background:var(--glass-0); border:1px solid var(--glass-line-0); border-radius:var(--r-l);
-    backdrop-filter:blur(var(--blur-m)) saturate(1.15); -webkit-backdrop-filter:blur(var(--blur-m)) saturate(1.15); box-shadow:inset 0 1px 0 var(--glass-line-0); }   /* 초투명 단 = 계단 비침(언락 밝기 플그 운영자 확정) · 블러 = --blur-m 통일(운영자 260707 플그 선택값) */
+    backdrop-filter:blur(var(--blur-l)) saturate(1.15); -webkit-backdrop-filter:blur(var(--blur-l)) saturate(1.15); box-shadow:inset 0 1px 0 var(--glass-line-0); }   /* 초투명 단 = 계단 비침(언락 밝기 플그 운영자 확정) · 블러 한 단 위 계승(운영자 260707 "쥬금 더") */
   .yworld-ssn { font-size:var(--fs-xs); font-weight:var(--fw-x); color:var(--accent); letter-spacing:.14em; }   /* SEASON 1 배지줄 */
   .yworld-nm { font-size:var(--fs-h2); font-weight:var(--fw-x); }
   .yworld-tag { font-size:var(--fs-xs); color:var(--fg-2); }
-  .ycrow { display:flex; align-items:center; gap:11px; width:100%; padding:var(--sp-2); background:var(--glass-0); border:1px solid var(--glass-line-0); border-radius:var(--r-m);
+  .ycrow { display:flex; align-items:center; gap:11px; width:100%; padding:11px 12px; background:var(--glass-0); border:1px solid var(--glass-line-0); border-radius:var(--r-l);
     color:var(--fg); font:inherit; text-align:left; cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent;
-    backdrop-filter:blur(var(--blur-m)); -webkit-backdrop-filter:blur(var(--blur-m)); box-shadow:inset 0 1px 0 var(--glass-line-0); }   /* 초투명 단(언락 밝기 플그 운영자 확정) · 블러 --blur-m·패딩 --sp-2·라운드 --r-m 통일(운영자 260707 플그 선택값) */
+    backdrop-filter:blur(var(--blur-l)); -webkit-backdrop-filter:blur(var(--blur-l)); box-shadow:inset 0 1px 0 var(--glass-line-0); }   /* 초투명 단(언락 밝기 플그 운영자 확정) · 블러 한 단 위 계승(운영자 260707 "쥬금 더") */
   .ycrow:active { transform:scale(var(--press-l,.95)); }
-  .ycrow .yava { flex:none; width:41px; height:41px; border-radius:50%; display:grid; place-items:center; font-size:var(--fs-h3); font-weight:var(--fw-x);
+  .ycrow .yava { flex:none; width:56px; height:56px; border-radius:50%; display:grid; place-items:center; font-size:var(--fs-h3); font-weight:var(--fw-x);
     background:rgba(255,255,255,.06); border:1px solid var(--glass-line); color:var(--yeta-ac); background-size:cover; background-position:center;
     box-shadow:0 0 6px rgba(var(--accent-rgb),.21); }   /* 아바타 라임 글로우 .26(언락 밝기 플그 운영자 확정) · cover 재선언 = background 축약이 .yava.has-img cover를 리셋하던 프사 깨짐 교정(.ylist-ava 관례 동형 · 운영자 260707) */
   .ycrow-mid { flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
@@ -614,7 +614,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   .ycd-cta { width:100%; max-width:320px; margin-top:8px; padding:13px; border:none; border-radius:var(--r-pill); background:var(--accent); color:var(--bg);
     font:inherit; font-size:var(--fs-body); font-weight:var(--fw-x); cursor:pointer; touch-action:manipulation; box-shadow:0 6px 18px rgba(var(--accent-rgb),.25); }   /* CTA = 라임 필(수신콜 받기 결 계승) */
   .ycd-cta:active { transform:scale(var(--press-m,.9)); }
-  .ychar-grid { display:flex; flex-direction:column; gap:14px; }   /* 행 간격 = 운영자 260707 플그 선택값(토큰 없는 축 = raw) */
+  .ychar-grid { display:flex; flex-direction:column; gap:10px; }
   .ychar-grid > .ycrow { animation:ypickIn .42s cubic-bezier(.22,.61,.36,1) both; }   /* 리스트도 촤르륵 stagger(ypickIn 재사용) */
   .ychar-grid > .ycrow:nth-child(2){animation-delay:.02s} .ychar-grid > .ycrow:nth-child(3){animation-delay:.04s}
   .ychar-grid > .ycrow:nth-child(4){animation-delay:.06s} .ychar-grid > .ycrow:nth-child(5){animation-delay:.08s}
@@ -676,16 +676,10 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   .yset-chip:disabled { opacity:.45; cursor:default; }   /* 게스트 read-only */
   .ymain.tab-list .ym-fit, .ymain.tab-list .ym-stage, .ymain.tab-list .ym-access-card, .ymain.tab-list .ym-pin { display:none; }
   .ymain.tab-list::before { background:linear-gradient(rgba(0,0,0,.73), rgba(0,0,0,.47)); }   /* tab-char 동값 딤(언락 밝기 플그 운영자 확정) */
-  .ylist-row { display:flex; align-items:center; gap:12px; width:100%; padding:var(--sp-2); margin-bottom:8px; background:var(--glass-0); border:1px solid var(--glass-line-0); border-radius:var(--r-m);
+  .ylist-row { display:flex; align-items:center; gap:12px; width:100%; padding:11px 12px; margin-bottom:8px; background:var(--glass-0); border:1px solid var(--glass-line-0); border-radius:var(--r-l);
     color:var(--fg); font:inherit; text-align:left; cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent;
     backdrop-filter:blur(var(--blur-m)) saturate(1.2); -webkit-backdrop-filter:blur(var(--blur-m)) saturate(1.2); box-shadow:inset 0 1px 0 var(--glass-line-0);
-    animation:ypickIn .42s cubic-bezier(.22,.61,.36,1) both; }   /* 초투명 단 = 갤러리 카드와 동결(언락 밝기 플그 운영자 확정) · 패딩 --sp-2·라운드 --r-m 통일(운영자 260707) */
-  /* 대화 = 카톡 결 분할 리스트(운영자 260707 첨부 "획으로 나눠서 대화창") — 여러 스레드를 획(--glass-line-0)으로 나눈 단일 글래스 면 · 기존 토큰만 계승(값 SSOT) · 다중스레드 백엔드 미착수 = 현 활성 스레드 렌더, 구조는 스택 대비 */
-  .ylist-group { background:var(--glass-0); border:1px solid var(--glass-line-0); border-radius:var(--r-m); overflow:hidden;
-    backdrop-filter:blur(var(--blur-m)) saturate(1.2); -webkit-backdrop-filter:blur(var(--blur-m)) saturate(1.2); box-shadow:inset 0 1px 0 var(--glass-line-0); }
-  .ylist-group .ylr-wrap { margin-bottom:0; border-radius:0; border-top:1px solid var(--glass-line-0); }   /* 행 사이 획(카톡 구분선) = 초투명 헤어라인 계승 */
-  .ylist-group .ylr-wrap:first-child { border-top:none; }
-  .ylist-group .ylist-row { margin-bottom:0; background:none; border:none; border-radius:0; backdrop-filter:none; -webkit-backdrop-filter:none; box-shadow:none; }   /* 면은 그룹이 = 행은 무도형(카톡 결) */
+    animation:ypickIn .42s cubic-bezier(.22,.61,.36,1) both; }   /* 초투명 단 = 갤러리 카드와 동결(언락 밝기 플그 운영자 확정) */
   .ylist-row:active { transform:scale(var(--press-l,.95)); }
   .ylist-ava { flex:none; width:50px; height:50px; border-radius:50%; display:grid; place-items:center; font-size:var(--fs-body); font-weight:var(--fw-x);
     background:rgba(255,255,255,.06); border:1px solid var(--glass-line); color:var(--yeta-ac); background-size:cover; background-position:center;
@@ -1023,11 +1017,11 @@ async function yListRender() {
   if (!p || !turns.length) { box.innerHTML = '<div class="yeta-setup">진행 중인 대화가 없어 — 캐릭터 탭에서 말을 걸어봐.</div>'; return; }
   const last = turns[turns.length - 1], prev = turns[turns.length - 2], unread = Math.max(0, turns.length - yReadN());
   const line = t => t ? `<span class="ylist-last">${t.role === 'user' ? '나 · ' : ''}${esc(ySnip(t.text, 40) || '…')}</span>` : '';   // 최근 대화 2줄(운영자 260706 "이 2개만") · 내 턴 = '나 ·' 접두
-  box.innerHTML = `<div class="ylist-group"><div class="ylr-wrap"><button type="button" class="ylist-row" id="ylistCur">`
+  box.innerHTML = `<div class="ylr-wrap"><button type="button" class="ylist-row" id="ylistCur">`
     + `<span class="ylist-ava${p.avatar ? ' has-img' : ''}"${p.avatar ? ` style="background-image:url('${esc(p.avatar)}')"` : ''}>${p.avatar ? '' : esc(p.initial || p.name[0])}</span>`
     + `<span class="ylist-mid"><span class="ylist-nm">${esc(p.name)}${window.yPremBadge ? yPremBadge(p) : ''}</span>${line(prev)}${line(last)}</span>`
     + `<span class="ylist-r"><span class="ylist-t">${yTime(last.ts)}</span>${unread > 0 ? `<span class="ylist-badge">${unread > 99 ? '99+' : unread}</span>` : ''}</span></button>`
-    + `<button type="button" class="ylr-leave" aria-label="대화 나가기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg></button></div></div>`;
+    + `<button type="button" class="ylr-leave" aria-label="대화 나가기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg></button></div>`;
   ySwipeBind();
 }
 // ── 대화 행 스와이프 나가기(운영자 260706 "좌측으로 끌어서 밀면 나가기 픽토가 자연스럽게" · 모바일+PC) — 리서치 관례: 시작 10px·방향 |dx|>|dy|·스냅 50%·복귀 transition(드래그 중 off)·나가기 = 2탭 armed 후 op reset ──
