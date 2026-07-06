@@ -93,35 +93,6 @@ const css = `
 #yetaCallBtn:active, #yetaVcfBtn:active { transform:scale(var(--press-m,.9)); }
 #yetaCallBtn:focus-visible, #yetaVcfBtn:focus-visible { outline:none; box-shadow:0 0 0 2px rgba(var(--accent-rgb),.5); border-radius:50%; }   /* 포커스 링 = .tool-x 계승(라임) — UA 흰 사각 아웃라인 차단 */
 #yetaVcfBtn[hidden] { display:none; }   /* display:grid가 hidden 속성을 이기는 것 차단(전화 배선 캐릭터만 노출) */
-#vcfdlg { width:min(340px,92vw); padding:0; border:1px solid var(--glass-line); border-radius:var(--r-modal);
-  background:var(--bg); color:var(--fg); box-shadow:inset 0 1px 0 var(--glass-line), var(--shadow-card); }   /* 명함 시트 = #calldlg/#yetadlg 모달 결 계승(글래스 엣지+sheen) */
-#vcfdlg::backdrop { background:rgba(0,0,0,.6); }                /* #yetadlg::backdrop 동값 계승 */
-@media (max-width:640px) { #vcfdlg { margin:auto; } }           /* 모바일 좌상단 쏠림 교정(#yetadlg 동형) */
-.yvcf-wrap { display:flex; flex-direction:column; align-items:center; text-align:center; gap:7px; padding:var(--sp-3); }
-.yvcf-wrap > * { animation:yvcfIn .34s cubic-bezier(.22,.61,.36,1) backwards; }   /* 등장 = 쪼개서 stagger(ypickIn 커브 계승) */
-.yvcf-wrap > *:nth-child(2) { animation-delay:.05s } .yvcf-wrap > *:nth-child(3) { animation-delay:.1s }
-.yvcf-wrap > *:nth-child(4) { animation-delay:.15s } .yvcf-wrap > *:nth-child(5) { animation-delay:.2s }
-.yvcf-wrap > *:nth-child(6) { animation-delay:.25s }
-@keyframes yvcfIn { from { opacity:0; transform:translateY(8px); } }
-@media (prefers-reduced-motion:reduce) { .yvcf-wrap > * { animation:none; } }
-.yvcf-nar { font-size:var(--fs-sm); font-style:italic; color:var(--fg-2); opacity:.75; }   /* *지문* 이탤릭 = .yb i.yn 결 계승 */
-.yvcf-num { font-size:var(--fs-sm); color:var(--mut); font-variant-numeric:tabular-nums; }   /* 번호 = tabular(.ytime 결) */
-.yvcf-desc { font-size:var(--fs-sm); color:var(--fg-2); line-height:var(--lh-base); max-width:30ch; text-wrap:pretty; }
-.yvcf-steps { display:flex; flex-direction:column; gap:8px; margin-top:var(--sp-2); }
-.yvcf-steps[hidden] { display:none; }
-.yvcf-step { display:flex; align-items:center; gap:8px; font-size:var(--fs-sm); color:var(--fg); text-align:left; }
-.yvcf-stepn { min-width:19px; height:19px; padding:0 6px; border-radius:var(--r-pill); background:var(--accent); color:var(--bg);
-  font-size:var(--fs-xs); font-weight:var(--fw-x); display:grid; place-items:center; flex:none; }   /* 단계 번호 = .ylist-badge 정본 동일 선언(강조 CTA축) */
-.yvcf-btns { display:flex; flex-direction:column; gap:8px; align-self:stretch; margin-top:var(--sp-2); }
-.yvcf-cta { height:var(--btn); border:none; border-radius:var(--r-pill); background:var(--accent); color:var(--bg);
-  font:inherit; font-size:var(--fs-label); font-weight:var(--fw-x); cursor:pointer; touch-action:manipulation;
-  display:flex; align-items:center; justify-content:center; gap:8px; }   /* 주 CTA = 받기(.ycall-btn.take) accent 플레이트 결 · 알약(--r-pill) */
-.yvcf-cta:active { transform:scale(var(--press-l,.95)); }
-.yvcf-cta svg { width:17px; height:17px; }
-.yvcf-later { height:var(--btn); border:1px solid var(--glass-line); border-radius:var(--r-pill); background:var(--glass); color:var(--fg-2);
-  font:inherit; font-size:var(--fs-label); font-weight:var(--fw-b); cursor:pointer; touch-action:manipulation;
-  backdrop-filter:blur(var(--blur-m)); -webkit-backdrop-filter:blur(var(--blur-m)); }   /* 보조 = 무채 글래스 플레이트(.ycall-mic 결) */
-.yvcf-later:active { transform:scale(var(--press-l,.95)); }
 #yetaCallBtn.armed { color:var(--arm); }   /* 2탭 재확인(통화 = 유료 발동) — armed = 경고색 픽토 */
 #calldlg.talk .ycall-status { font-variant-numeric:tabular-nums; }   /* 보이스톡 타이머 = tabular(.yb-cap 결) */`;
 
@@ -437,73 +408,22 @@ function initCallBtn() {
 // ── 연락처 저장(프로필 카드 배포) — 폰 주소록에 사진+번호 원탭 등록 = 실전화 걸려올 때 그 캐릭터 얼굴·이름이 뜨게(운영자 260706) ──
 // 소재 = viewer/assets/contacts/<id>.vcf(vCard 2.1 · 사진 base64 임베드 · 번호 = Vapi 발신번호 국제 2표기 — 안드로이드 뒷자리 매칭이 둘 다 잡음).
 // 탭 = 같은출처 .vcf 다운로드(a[download]) → 갤럭시 "연락처에 추가"가 이름·사진·번호 프리필 = 저장 한 번이면 끝.
-const VCF = { haeun: { name: '하은', tel: '+1 240-616-4569', nar: '하은이 명함을 슥 내민다' } };   // vcf 보유 캐릭터 — 추가 = vcf 생성 + 이 행(nar = 캐릭터 결 지문)
-const VCF_AUTO_KEY = 'yeta_vcf_auto';   // {id: ts} — 명함 시트 자동 노출은 기기당 1회(재오픈 = 헤더 연락처 버튼)
+const VCF = { haeun: '하은' };   // vcf 보유 캐릭터(id → 파일 표시명) — 추가 = vcf 생성 + 이 행
+const VCF_AUTO_KEY = 'yeta_vcf_auto';   // {id: ts} — 자동 배포는 기기당 1회(재배포 = 헤더 버튼)
 const vcfAutoDone = () => { try { return JSON.parse(localStorage.getItem(VCF_AUTO_KEY) || '{}') || {}; } catch { return {}; } };
 function vcfMarkDone(pid) { try { const d = vcfAutoDone(); d[pid] = Date.now(); localStorage.setItem(VCF_AUTO_KEY, JSON.stringify(d)); } catch {} }
 function vcfDownload(pid) {   // 같은출처 .vcf — 갤럭시 "연락처에 추가"가 이름·사진·번호 프리필
   const a = document.createElement('a');
-  a.href = 'assets/contacts/' + pid + '.vcf'; a.download = VCF[pid].name + '.vcf';
+  a.href = 'assets/contacts/' + pid + '.vcf'; a.download = VCF[pid] + '.vcf';
   document.body.appendChild(a); a.click(); a.remove();
+  toast('📇 ' + VCF[pid] + ' 연락처 파일 받았어 — 알림에서 열고 저장하면 전화 올 때 얼굴이 떠');
 }
-// ── 명함 시트 — 웹은 주소록 무단 기록 불가·Web Share도 vcf 비허용(Chromium FILE_TYPES 실측 260706) →
-//    최대 자동화 = 탭 1회(진입) 시트 자동 노출 + [연락처 받기] 제스처 다운로드 + 남은 2탭을 단계 가이드로 안내 ──
-let vdlg = null;
-function vcfSheet(pid) {
-  const c = VCF[pid]; if (!c) return;
-  const p = (typeof yPersona === 'function' && yPersona(pid)) || { id: pid, name: c.name, initial: c.name[0] };
-  ensureCss();
-  if (!vdlg) {
-    vdlg = document.createElement('dialog'); vdlg.id = 'vcfdlg'; vdlg.setAttribute('aria-label', '연락처 저장');
-    vdlg.innerHTML = `<div class="yvcf-wrap">
-    <span class="yvcf-nar" id="yvcfNar"></span>
-    <span id="yvcfAva"></span>
-    <span class="yintro-name" id="yvcfName"></span>
-    <span class="yvcf-num" id="yvcfNum"></span>
-    <span class="yvcf-desc" id="yvcfDesc"></span>
-    <div class="yvcf-steps" id="yvcfSteps" hidden>
-      <span class="yvcf-step"><span class="yvcf-stepn" aria-hidden="true">1</span><span>알림에서 방금 받은 <b id="yvcfFile"></b> 열기</span></span>
-      <span class="yvcf-step"><span class="yvcf-stepn" aria-hidden="true">2</span><span><b>저장</b> 탭 — 그럼 전화 올 때 얼굴이 떠</span></span>
-    </div>
-    <div class="yvcf-btns">
-      <button type="button" class="yvcf-cta" id="yvcfGet"></button>
-      <button type="button" class="yvcf-later" id="yvcfLater">다음에</button>
-    </div>
-  </div>`;
-    document.body.appendChild(vdlg);
-    vdlg.addEventListener('cancel', e => { e.preventDefault(); vdlg.close(); });   // Esc = 닫기
-    window.addEventListener('popstate', () => { if (vdlg.open) vdlg.close(); });   // 폰 뒤로가기 = 닫기(#calldlg 결)
-    vdlg.querySelector('#yvcfLater').addEventListener('click', () => vdlg.close());
-    vdlg.querySelector('#yvcfGet').addEventListener('click', () => {
-      const id = vdlg.dataset.pid, done = vdlg.dataset.got === '1';
-      if (done) return vdlg.close();                                   // 가이드 상태의 [확인] = 닫기
-      vcfDownload(id);                                                 // CTA 탭 = 제스처 안 다운로드(차단 정책 통과)
-      vdlg.dataset.got = '1';
-      vdlg.querySelector('#yvcfDesc').hidden = true;
-      vdlg.querySelector('#yvcfSteps').hidden = false;
-      vdlg.querySelector('#yvcfLater').hidden = true;
-      vdlg.querySelector('#yvcfGet').textContent = '확인';
-    });
-  }
-  vdlg.dataset.pid = pid; vdlg.dataset.got = '';
-  vdlg.querySelector('#yvcfNar').textContent = c.nar;
-  vdlg.querySelector('#yvcfAva').innerHTML = typeof yAva === 'function' ? yAva(p, 'yintro-ava') : '';
-  vdlg.querySelector('#yvcfName').textContent = c.name;
-  vdlg.querySelector('#yvcfNum').textContent = c.tel;
-  vdlg.querySelector('#yvcfDesc').hidden = false;
-  vdlg.querySelector('#yvcfDesc').textContent = '연락처에 저장해두면 전화가 올 때 ' + c.name + ' 얼굴과 이름이 떠.';
-  vdlg.querySelector('#yvcfSteps').hidden = true;
-  vdlg.querySelector('#yvcfFile').textContent = c.name + '.vcf';
-  vdlg.querySelector('#yvcfLater').hidden = false;
-  vdlg.querySelector('#yvcfGet').textContent = '연락처 받기';
-  if (!vdlg.open) vdlg.showModal();   // 챗(#yetadlg) 위 top-layer = #calldlg 선례
-}
-// 자동 노출 — 보이스(전화) 배선 캐릭터를 *탭해 진입한* 첫 1회, 챗이 열린 뒤 명함 시트(운영자 260706 "눌렀을 때 자동" + UIUX).
+// 자동 배포 — 보이스(전화) 배선 캐릭터를 *탭한 순간* vcf 자동 다운로드(운영자 260706 "눌렀을 때 자동").
+// 탭 제스처 캡처 단계 = 브라우저 무제스처 다운로드 차단 정책 통과. 주소록 무단 기록 API는 없음 → 최대 자동화 = 여기까지(저장 탭 1회 잔여).
 document.addEventListener('click', e => {
   const el = e.target && e.target.closest && e.target.closest('.ychar-card[data-id], .ypick-row[data-id], .ys-row[data-id]');
-  if (!el || !VCF[el.dataset.id] || vcfAutoDone()[el.dataset.id]) return;   // 진입 경로만 · 기기당 1회 가드
-  const pid = el.dataset.id; vcfMarkDone(pid);
-  setTimeout(() => vcfSheet(pid), 700);   // 챗 진입 애니 자리 잡은 뒤(시트 = top-layer라 순서만 보장하면 됨)
+  if (!el || !VCF[el.dataset.id] || vcfAutoDone()[el.dataset.id]) return;   // 진입 3경로(갤러리·뽑기·대화목록)만 · 1회 가드
+  vcfMarkDone(el.dataset.id); vcfDownload(el.dataset.id);
 }, true);
 function vcfBtnSync() {
   const b = document.querySelector('#yetaVcfBtn'); if (!b) return;
@@ -520,7 +440,7 @@ function initVcfBtn() {
   hr.insertBefore(b, hr.firstChild);   // 수화기 왼쪽 자리(둘 다 firstChild 주입 = 나중 주입이 앞)
   b.addEventListener('click', () => {
     const pid = b.dataset.pid; if (!pid || !VCF[pid]) return;
-    vcfMarkDone(pid); vcfSheet(pid);   // 헤더 버튼 = 명함 시트 재오픈(수동 경로 · 자동 1회 가드에도 계상)
+    vcfMarkDone(pid); vcfDownload(pid);   // 수동 배포도 자동 1회 가드에 계상(중복 다운로드 방지)
   });
   vcfBtnSync();
 }

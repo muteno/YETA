@@ -121,7 +121,6 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   .yside { flex:none; width:104px; overflow-y:auto; padding:calc(64px + env(safe-area-inset-top)) 6px calc(76px + env(safe-area-inset-bottom)); display:flex; flex-direction:column; gap:6px; position:relative; z-index:2; scrollbar-width:none; }
   .yside::-webkit-scrollbar { display:none; }
   .yside[hidden] { display:none; }
-  #yside { display:none !important; }   /* 좌측 인물 레일 폐지(운영자 260706 "레일 때문에 채팅창이 작다") — 채팅 전폭 · 화자 전환 = 도킹 네비·갤러리 존치 · 복구 = 이 줄 삭제(16차 마이크 전례) */
   .ys-row { display:flex; flex-direction:column; align-items:center; gap:3px; padding:8px 4px 7px; background:var(--glass); border:1px solid var(--glass-line); border-radius:var(--r-l);
     color:var(--fg); font:inherit; cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent; text-align:center;
     backdrop-filter:blur(var(--blur-m)); -webkit-backdrop-filter:blur(var(--blur-m)); }
