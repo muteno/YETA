@@ -445,7 +445,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   @keyframes ynavRise { from { opacity:0; transform:translate(-50%,140%); } to { opacity:1; transform:translate(-50%,0); } }
   .ymain.reveal .ynav { animation:ynavRise .25s var(--ease) .15s both; }   /* .25s + 로고보다 .15s 늦게(운영자 확정) */
   /* ═══ 캐릭터 탭(메뉴2) — OpenAI 얼굴(roster avatar) 전원 갤러리(운영자 260705) · 카드 탭 = 그 캐릭터 챗 진입 · 챗 닫기 = 이 탭 복귀 ═══ */
-  .ychar { position:absolute; inset:0; z-index:2; display:none; overflow-y:auto; padding:calc(64px + env(safe-area-inset-top)) var(--sp-2) 96px; }   /* 상단 64 = 좌상단 로고·프로필 클리어런스(로고 112px·여백 24 정합 260706) */
+  .ychar { position:absolute; inset:0; z-index:2; display:none; overflow-y:auto; padding:calc(88px + env(safe-area-inset-top)) var(--sp-2) 96px; }   /* 상단 88 = 로고 NAV 클리어런스 64 + 여유 숨 24(운영자 260706 "DIV 간 간격 여유롭게") */
   .ymain.tab-char .ychar { display:block; }
   .ymain.tab-char .ym-fit, .ymain.tab-char .ym-stage, .ymain.tab-char .ym-access-card, .ymain.tab-char .ym-pin { display:none; }   /* 홈 히어로·PIN 퇴장 */
   .ymain.tab-char::before { background:linear-gradient(rgba(0,0,0,.73), rgba(0,0,0,.47)); }   /* 갤러리 딤 = 상단 진하게·하단 열어 계단 노출(언락 밝기 플그 운영자 확정 · ::before 전환 재사용) */
@@ -621,7 +621,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   .yset-lockmsg { display:inline-flex; align-items:center; gap:5px; color:var(--mut) !important; font-weight:var(--fw-b); }
   .yset-lockmsg svg { width:13px; height:13px; }
   /* ═══ 대화 목록 탭(메뉴2) — 카톡/레퍼런스 결(운영자 260705): 글래스 행 = 아바타+이름+미리보기+시간+라임 안읽음 배지 · 행 탭 = 챗 · 단일 세션 = 진행 대화 1행 ═══ */
-  .ylist { position:absolute; inset:0; z-index:2; display:none; overflow-y:auto; padding:calc(64px + env(safe-area-inset-top)) var(--sp-2) 96px; }   /* 상단 64 = 로고 클리어런스 동일(260706) */
+  .ylist { position:absolute; inset:0; z-index:2; display:none; overflow-y:auto; padding:calc(88px + env(safe-area-inset-top)) var(--sp-2) 96px; }   /* 상단 88 = ychar 동값(로고 NAV + 여유 숨 24 · 운영자 260706) */
   .ymain.tab-list .ylist { display:block; }
   .ymain.tab-list .ym-fit, .ymain.tab-list .ym-stage, .ymain.tab-list .ym-access-card, .ymain.tab-list .ym-pin { display:none; }
   .ymain.tab-list::before { background:linear-gradient(rgba(0,0,0,.73), rgba(0,0,0,.47)); }   /* tab-char 동값 딤(언락 밝기 플그 운영자 확정) */
@@ -642,8 +642,8 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   .ylist-badge { min-width:19px; height:19px; padding:0 6px; border-radius:var(--r-pill); background:var(--accent); color:var(--bg); font-size:var(--fs-xs); font-weight:var(--fw-x); display:grid; place-items:center; }   /* 안읽음 = 라임 배지(강조 CTA축 · 레퍼런스 결) */
   @media (prefers-reduced-motion:reduce){ .ylist-row { animation:none; } }
   /* ═══ 대화 목록 재구성(운영자 260706): 상단 NAV 헤어라인 · 시즌 라인 · 스와이프 나가기 ═══ */
-  .ymain.unlocked.tab-list .ymain-body::before, .ymain.unlocked.tab-char .ymain-body::before { content:''; position:absolute; top:calc(58px + env(safe-area-inset-top)); left:var(--sp-2); right:var(--sp-2); height:1px; background:var(--glass-line-0); z-index:3; pointer-events:none; }   /* 로고+프로필 라인(투명 상단 NAV) 아래 "아주 살짝" 구분선 — 초투명 헤어라인(--glass-line-0) */
-  .yssn { display:flex; align-items:baseline; gap:8px; padding:4px 4px 12px; white-space:nowrap; overflow:hidden; animation:ypickIn .42s cubic-bezier(.22,.61,.36,1) both; }   /* 시즌 라인(기본형 — 표현 확정은 시즌 플그) · 촤르륵 동참 */
+  .ymain.unlocked.tab-list .ymain-body::before, .ymain.unlocked.tab-char .ymain-body::before { content:''; position:absolute; top:calc(64px + env(safe-area-inset-top)); left:var(--sp-2); right:var(--sp-2); height:1px; background:var(--glass-line-0); z-index:3; pointer-events:none; }   /* 로고+프로필 라인(투명 상단 NAV) 아래 "아주 살짝" 구분선 — 초투명 헤어라인(--glass-line-0) */
+  .yssn { display:flex; align-items:baseline; gap:8px; padding:6px 4px var(--sp-3); white-space:nowrap; overflow:hidden; animation:ypickIn .42s cubic-bezier(.22,.61,.36,1) both; }   /* 시즌 라인(기본형 — 표현 확정은 시즌 플그) · 촤르륵 동참 */
   .yssn-tag { flex:none; font-size:var(--fs-h3); font-weight:var(--fw-x); color:var(--accent); letter-spacing:.02em; }   /* "S1." */
   .yssn-nm { flex:none; font-size:var(--fs-h3); font-weight:var(--fw-x); }   /* "무음동(無音洞)" */
   .yssn-nm small { font-weight:var(--fw-b); color:var(--fg-2); font-size:var(--fs-sm); }   /* 한자 부기 */
