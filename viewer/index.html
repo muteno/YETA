@@ -634,8 +634,17 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   .ypol-row .yset-nm { width:96px; }
   .ypol-row .yset-chips { margin:0; justify-content:flex-start; flex:1; min-width:0; }
   .ypol-hint { font-size:var(--fs-xs); color:var(--mut); padding:0 2px 8px; }   /* 축 밑 한 줄 설명(부속 설명 규약 결) */
-  .ypol-lock { display:flex; gap:8px; align-items:flex-start; padding:5px 2px; font-size:var(--fs-xs); color:var(--mut); }   /* L0 read-only 행 */
+  .ypol-lock { display:flex; gap:8px; align-items:flex-start; padding:3px 2px; font-size:var(--fs-xs); color:var(--mut); }   /* L0 read-only 행 */
   .ypol-lock svg { flex:none; width:13px; height:13px; margin-top:2px; }
+  .ypol-role { display:inline-block; font-size:var(--fs-xs); font-weight:var(--fw-b); color:var(--mut); border:1px solid var(--glass-line); border-radius:var(--r-pill); padding:3px 12px; margin:0 0 10px; }   /* 역할 배지 */
+  .ypol-role.on { color:var(--bg); background:var(--accent); border-color:transparent; }
+  .ypol-ro { font-size:var(--fs-xs); }
+  .ypol-grp { border-top:1px solid var(--glass-line); padding:9px 0 4px; margin-top:4px; }   /* L0 분류 그룹 */
+  .ypol-gh { display:flex; align-items:center; gap:7px; font-size:var(--fs-xs); padding-bottom:4px; }
+  .ypol-gh b { color:var(--fg-2); font-weight:var(--fw-b); }
+  .ypol-gh i { font-style:normal; color:var(--mut); margin-left:auto; }
+  .ypol-gh svg { flex:none; width:13px; height:13px; color:var(--mut); }
+  .yset-chip:disabled { opacity:.45; cursor:default; }   /* 게스트 read-only */
   .ymain.tab-list .ym-fit, .ymain.tab-list .ym-stage, .ymain.tab-list .ym-access-card, .ymain.tab-list .ym-pin { display:none; }
   .ymain.tab-list::before { background:linear-gradient(rgba(0,0,0,.73), rgba(0,0,0,.47)); }   /* tab-char 동값 딤(언락 밝기 플그 운영자 확정) */
   .ylist-row { display:flex; align-items:center; gap:12px; width:100%; padding:11px 12px; margin-bottom:8px; background:var(--glass-0); border:1px solid var(--glass-line-0); border-radius:var(--r-l);
@@ -785,9 +794,15 @@ function yTab(tab) {   // 'char' | 'list' | 'settings' — 네비 활성·패널
   if (tab === 'list') yListRender();
   if (tab === 'settings') ySettingRender();
 }
-// ── 설정 탭(메뉴4) — 시즌 정책 3계층(운영자 260706): L1 시즌 수위 = op policy(세션엔 enum 정수만 · 축·라벨·문구 정본 = apps/yeta/policy.json → 뷰어 하드코딩 0) · L0 = 잠금 read-only · L2 = 캐릭터 성향(카드 ⚙) 링크 ──
+// ── 설정 탭(메뉴4) — 3계층 정책(운영자 260706): 역할 게이팅{admin(env PIN) = L0 토글+L1 편집 / guest(users.json) = read-only+L2 안내} ·
+//    SET = op policy에 admin PIN 동봉(서버 강제) · 축·라벨·문구 정본 = apps/yeta/policy.json → 뷰어 하드코딩 0 ──
 let YPOLDEF = null, _ypolCur = {}, _ypolT = 0, _ypolArm = 0;
+let YROLE = 'guest', _ypin = '';   // 언락 시 op auth가 채움(메모리만 — 새로고침 = 재입력 규약)
 const YLOCK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>';   // 자물쇠 = ym-access 패스 재사용
+function yPolChips(e, v, ed) {   // 축·토글 공용 세그먼트(정본 .yset-chip 계승) — ed=false = 전부 disabled(게스트)
+  return (e.opts || []).map((o, i) => `<button type="button" class="yset-chip${i === v ? ' on' : ''}"${ed ? '' : ' disabled'} data-ax="${esc(e.key)}" data-v="${i}">${esc(o)}</button>`).join('');
+}
+function yPolVal(e) { return Number.isInteger(_ypolCur[e.key]) ? _ypolCur[e.key] : e.default; }
 async function ySettingRender() {
   const box = $('#ysettingBody');
   if (!YPOLDEF) {
@@ -796,26 +811,32 @@ async function ySettingRender() {
     if (!r || !r.ok || !r.def) { box.innerHTML = '<div class="yeta-setup">정책 로드 실패 — 잠시 후 다시 열어줘.</div>'; return; }
     YPOLDEF = r.def; _ypolCur = r.p || {};
   }
+  const admin = YROLE === 'admin';
   const L1 = YPOLDEF.L1 || {}, L0 = YPOLDEF.L0 || {}, L2 = YPOLDEF.L2 || {};
   let dirtyN = 0;
-  const axes = (L1.axes || []).map(ax => {
-    const v = Number.isInteger(_ypolCur[ax.key]) ? _ypolCur[ax.key] : ax.default;
-    const dirty = v !== ax.default; if (dirty) dirtyN++;
-    const chips = (ax.opts || []).map((o, i) => `<button type="button" class="yset-chip${i === v ? ' on' : ''}" data-ax="${esc(ax.key)}" data-v="${i}">${esc(o)}</button>`).join('');
-    return `<div class="yset-row ypol-row${dirty ? ' dirty' : ''}" data-ax="${esc(ax.key)}"><span class="yset-nm">${esc(ax.label)}</span><div class="yset-chips">${chips}</div></div><div class="ypol-hint">${esc(ax.hint || '')}</div>`;
+  const roleTag = admin ? '<span class="ypol-role on">슈퍼관리자</span>' : '<span class="ypol-role">게스트 — 열람만 · 조절은 캐릭터 성향(L2)</span>';
+  const axRow = e => {   // L1 축·L0 토글 공용 행
+    const v = yPolVal(e), dirty = v !== e.default; if (dirty && admin) dirtyN++;
+    return `<div class="yset-row ypol-row${dirty ? ' dirty' : ''}" data-ax="${esc(e.key)}"><span class="yset-nm">${esc(e.label)}</span><div class="yset-chips">${yPolChips(e, v, admin)}</div></div><div class="ypol-hint">${esc(e.hint || '')}</div>`;
+  };
+  const l0html = (L0.groups || []).map(g => {
+    if (g.hard) return `<div class="ypol-grp"><div class="ypol-gh">${YLOCK_SVG}<b>${esc(g.label)}</b><i>불변 — 레포에서만</i></div>${(g.items || []).map(t => `<div class="ypol-lock"><span>${esc(t)}</span></div>`).join('')}</div>`;
+    const t = g.toggle || {};
+    return `<div class="ypol-grp"><div class="ypol-gh"><b>${esc(g.label)}</b><i>${admin ? '관리자 토글' : '🔒 관리자 전용'}</i></div>${axRow({ ...t, label: t.label || g.label })}${(g.items || []).map(x => `<div class="ypol-lock"><span>${esc(x)}</span></div>`).join('')}</div>`;
   }).join('');
-  const locks = (L0.items || []).map(t => `<div class="ypol-lock">${YLOCK_SVG}<span>${esc(t)}</span></div>`).join('');
   box.innerHTML =
-    `<details class="yset-grp" open><summary>🎚 ${esc(L1.label || '시즌 — 수위·금기')}<span class="ys-cnt"${dirtyN ? '' : ' hidden'}>${dirtyN}</span></summary>${axes}
-      <div class="yset-foot"><button type="button" class="yset-reset" id="ypolReset">기본값 복원</button><span class="yset-saved" id="ypolSaved">저장됨 ✓</span></div></details>
-    <details class="yset-grp"><summary>🔒 ${esc(L0.label || '코어 — 불변')}</summary><div class="ypol-hint">${esc(L0.admin_note || '관리자 전용 — 웹앱에서 변경 불가')}</div>${locks}</details>
-    <details class="yset-grp"><summary>🎭 ${esc(L2.label || '캐릭터 — 성향')}</summary><div class="ypol-hint">캐릭터별 성향(말수·플러팅 등)은 캐릭터 카드의 ⚙에서 조절 — 시즌 정책과 별개 층(L2)이라 여기 없음.</div></details>`;
+    roleTag
+    + `<details class="yset-grp" open><summary>🎚 ${esc(L1.label || '시즌 — 수위·금기')}${admin ? '' : ' <span class="ypol-ro">🔒</span>'}<span class="ys-cnt"${dirtyN ? '' : ' hidden'}>${dirtyN}</span></summary>${(L1.axes || []).map(axRow).join('')}
+      ${admin ? '<div class="yset-foot"><button type="button" class="yset-reset" id="ypolReset">기본값 복원</button><span class="yset-saved" id="ypolSaved">저장됨 ✓</span></div>' : '<div class="ypol-hint">수위·금기 변경 = 슈퍼관리자 PIN으로 다시 잠금 해제.</div>'}</details>`
+    + `<details class="yset-grp"><summary>🧬 ${esc(L0.label || '코어')}${admin ? '' : ' <span class="ypol-ro">🔒</span>'}</summary><div class="ypol-hint">${esc(L0.admin_note || '')}</div>${l0html}</details>`
+    + `<details class="yset-grp"><summary>🎭 ${esc(L2.label || '캐릭터 — 성향')}</summary><div class="ypol-hint">캐릭터별 성향(말수·플러팅 등)은 캐릭터 카드의 ⚙에서 — 게스트 포함 누구나 조절 가능(L2).</div></details>`;
 }
-function ySettingSave() {   // 디바운스 저장 — op policy(800ms · ySetSave 패턴 계승)
+function ySettingSave() {   // 디바운스 저장 — op policy에 admin PIN 동봉(서버 강제 = env YETA_PIN_ADMIN 대조 · 800ms · ySetSave 패턴 계승)
   clearTimeout(_ypolT);
   _ypolT = setTimeout(async () => {
-    const r = await yApi('policy', { p: _ypolCur }).catch(() => null);
+    const r = await yApi('policy', { p: _ypolCur, pin: _ypin }).catch(() => null);
     if (r && r.ok) { const sv = $('#ypolSaved'); if (sv) { sv.classList.add('on'); setTimeout(() => sv.classList.remove('on'), 1600); } }
+    else miniToast((r && r.error) || '저장 실패 — 잠시 후 다시');
   }, 800);
 }
 document.getElementById('ysettingBody').addEventListener('click', e => {
@@ -824,7 +845,7 @@ document.getElementById('ysettingBody').addEventListener('click', e => {
     if (!_ypolArm) { _ypolArm = 1; rst.classList.add('armed'); rst.textContent = '한 번 더 누르면 복원'; setTimeout(() => { _ypolArm = 0; rst.classList.remove('armed'); rst.textContent = '기본값 복원'; }, 2600); return; }
     _ypolArm = 0; _ypolCur = {}; ySettingRender(); ySettingSave(); return;
   }
-  const b = e.target.closest('.yset-chip[data-ax]'); if (!b || !YPOLDEF) return;
+  const b = e.target.closest('.yset-chip[data-ax]'); if (!b || b.disabled || YROLE !== 'admin' || !YPOLDEF) return;   // 게스트 = read-only(서버도 PIN 재검증 = 이중 방어)
   const k = b.dataset.ax, v = +b.dataset.v;
   _ypolCur[k] = v;
   const row = b.closest('.ypol-row');
@@ -1326,7 +1347,7 @@ try { if (new URLSearchParams(location.search).get('yeta')) setTimeout(() => ope
 /* ═══ YETA 메인 PIN 게이트 (nomute lk- 이식 · SHA-256·5회=10분 잠금 · 260704 V1) ═══ */
 (function () {
   const ymain = $('#ymain'), slotsEl = $('#ymSlots'), padEl = $('#ymPad'), errEl = $('#ymErr'), accessBtn = $('#ymAccess'), nav = $('#ynav');
-  const YM_PIN_H = '946c4b7d0aaf90948a50008bee2d043f0ca4466b0f30ac0383926ea2b5172686';                    // sha256('<PIN>:yeta') — 운영자 PIN 설정분(260704 · 평문은 코드·커밋에 안 남김)
+  // PIN 판정 = 서버 op auth 단일 경로(운영자 260706 권한 2계층 — 클라 해시 대조 폐지: 4자리 해시 박제 = 역산 = admin PIN 노출이라 admin은 Pages env, guest는 apps/yeta/users.json[깃 SSOT])
   const YM_LEN = 4, YM_MAX = 5, YM_OUT_MS = 600000;
   const BSVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 5H9l-6 7 6 7h11a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1z"/><path d="M16 9l-4 4M12 9l4 4"/></svg>';
   const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', 'back'];
@@ -1367,9 +1388,15 @@ try { if (new URLSearchParams(location.search).get('yeta')) setTimeout(() => ope
       lockGlitch();   // 자물쇠 지지직 + 크랙 단계(fill이 data-crack 동기)
       if (val.length === YM_LEN) {
         const attempt = val;
-        const h = await ymHash(attempt);
-        if (val !== attempt) return;   // 해시 대기 중 입력 변경 = 낡은 판정 폐기(평의회2 레이스 가드)
-        if (h === YM_PIN_H) {
+        const ar = await yApi('auth', { pin: attempt }).catch(() => null);   // 서버 판정(admin=env·guest=users.json) — 오프라인/서버 다운 = 언락 불가(대화도 어차피 서버 필수)
+        if (val !== attempt) return;   // 판정 대기 중 입력 변경 = 낡은 판정 폐기(평의회2 레이스 가드)
+        if (ar === null || (ar && ar.setup)) {   // 네트워크·서버 미설정 = 오답 아님 — 실패 카운트 없이 안내만
+          errEl.className = 'lk-err'; errEl.textContent = '서버 연결 실패 — 잠시 후 다시';
+          setTimeout(() => { val = ''; fill(); if (!outLeft()) errEl.textContent = ''; }, 1400);
+          return;
+        }
+        if (ar && ar.ok) {
+          YROLE = ar.role === 'admin' ? 'admin' : 'guest'; _ypin = attempt;   // 역할·PIN = 메모리만(언락 미저장 규약과 동형 — 새로고침 = 재입력)
           try { localStorage.removeItem('yeta_pin_fails'); localStorage.removeItem('yeta_pin_until'); } catch {}   // 언락 기억 안 함(yeta_pin_ok 미저장 = 매번 PIN · 운영자 260705) · 실패/잠금 카운터만 리셋
           errEl.textContent = ''; errEl.className = 'lk-err';
           slotsEl.classList.add('ok');   // 승인 = 4원 순차 라임 파동 + 자물쇠 박살(crack4) + 로고 전격 병행(진동 없음)
@@ -1390,9 +1417,8 @@ try { if (new URLSearchParams(location.search).get('yeta')) setTimeout(() => ope
     const b = e.target.closest('button'); if (!b) return;
     const tab = b.dataset.tab;
     if (!unlocked) { ymEnterPin(); slotsEl.classList.add('shake'); setTimeout(() => slotsEl.classList.remove('shake'), 450); return; }
-    if (tab === 'char' || tab === 'list') { yTab(tab); return; }   // 메뉴1 캐릭터 · 메뉴2 대화 목록(운영자 260705 재편)
+    if (tab === 'char' || tab === 'list' || tab === 'settings') { yTab(tab); return; }   // 메뉴1 캐릭터 · 메뉴2 대화 목록 · 메뉴4 설정(시즌 정책 · 운영자 260706)
     if (tab === 'chat') { openYeta(); return; }   // 메뉴3 지금 대화(임시 · 메뉴2와 통합 예정)
-    miniToast('준비중 — 곧 열려');   // 설정(다음 머지)
   };
   const _yprofEl = $('#yprof'); if (_yprofEl) _yprofEl.onclick = () => miniToast('내 프로필 — 준비중');   // 우상단 개인 프로필(이미지 주입 축 후속)
 })();

@@ -177,9 +177,31 @@ export async function onRequestPost({ request, env }) {
     return json({ error: `GitHub dispatch ${st}` }, 502);
   }
 
-  if (op === 'policy') {   // 시즌 수위·금기(L1 · 운영자 260706 3계층) — GET(정의+현재값) / SET(enum 정수만 수용 = 프롬프트 주입 원천 차단 · 라벨/문구 정본 = apps/yeta/policy.json, 러너가 직접 읽음)
+  if (op === 'auth') {   // PIN 로그인(운영자 260706 권한 2계층) — admin = Pages env YETA_PIN_ADMIN(레포 무노출·서버 강제) · guest = apps/yeta/users.json(깃 SSOT — 사용자 추가 = 커밋). 반환 = 역할뿐(민감필드 0)
+    const pin = String(body.pin || '');
+    if (!/^\d{4,8}$/.test(pin)) return json({ ok: false });
+    const APIN = String(env.YETA_PIN_ADMIN || '');
+    if (APIN && pin === APIN) return json({ ok: true, role: 'admin', name: '운영자' });
+    try {   // users.json 대조 — pin_h = sha256('<PIN>:yeta') (뷰어 잠금 해시 규약과 동일)
+      const u = await fetch(`https://raw.githubusercontent.com/${REPO}/main/apps/yeta/users.json`,
+        { headers: { 'user-agent': 'nomute-viewer' }, cf: { cacheTtl: 60, cacheEverything: true } });
+      if (u.ok) {
+        const db = await u.json();
+        const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`${pin}:yeta`));
+        const h = [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+        const hit = (db.users || []).find(x => x && x.pin_h === h);
+        if (hit) return json({ ok: true, role: hit.role === 'admin' ? 'guest' : String(hit.role || 'guest'), name: String(hit.name || '') });   // users.json의 admin 참칭 차단 — admin은 env 단일 경로
+      }
+    } catch {}
+    return json({ ok: false });
+  }
+
+  if (op === 'policy') {   // 3계층 정책(운영자 260706) — GET(정의+현재값 · 무인증) / SET(L0 토글+L1 축 = 관리자 PIN 필수 · enum 정수만 = 프롬프트 주입 원천 차단 · 라벨/문구 정본 = apps/yeta/policy.json, 러너가 직접 읽음)
     const sess = await readSess();
-    if (body.p !== undefined) {   // SET — {key: 0~2} 객체만 · key 화이트폼 · 최대 8축
+    if (body.p !== undefined) {   // SET — admin 가드 → {key: 0~2} 객체만 · key 화이트폼 · 최대 8축
+      const APIN = String(env.YETA_PIN_ADMIN || '');
+      if (!APIN) return json({ error: '관리자 PIN 미설정 — Cloudflare Pages env YETA_PIN_ADMIN 필요' }, 501);
+      if (String(body.pin || '') !== APIN) return json({ error: '권한 없음 — 관리자 PIN 필요' }, 403);
       const raw = body.p;
       if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return json({ error: '정책은 {key:0~2} 객체' }, 400);
       const p = {};

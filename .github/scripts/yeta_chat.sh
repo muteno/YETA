@@ -252,8 +252,9 @@ PY
 )"
   fi
 
-  # 시즌 수위·금기 블록(운영자 260706 3계층: L0 절대선[00_지침 불변] > L1 시즌[여기] > L2 성향[TUNE]) —
-  # 문구 정본 = apps/yeta/policy.json(러너가 직접 읽음 · 세션엔 enum 정수만) · 기본값과 같은 축 = 생략 · 전축 기본 = 블록 생략 = 00_지침 기본값 유효.
+  # 운영 정책 블록(운영자 260706 3계층: L0 코어[하드 2그룹 불변 + 관리자 토글 2그룹] > L1 시즌 수위 > L2 성향[TUNE]) —
+  # 문구 정본 = apps/yeta/policy.json(러너가 직접 읽음 · 세션엔 enum 정수만 · SET = 관리자 PIN 게이트웨이 강제) ·
+  # 기본값과 같은 축 = 생략 · 전축 기본 = 블록 생략 = 00_지침 기본값 유효.
   POLICY_BLOCK=""
   if [ -n "$POL" ] && [ "$POL" != "None" ]; then
     POLICY_BLOCK="$(python3 - "$POL" "$ROOT/apps/yeta/policy.json" <<'PY'
@@ -262,18 +263,23 @@ try:
     p = json.loads(sys.argv[1]); d = json.load(open(sys.argv[2], encoding="utf-8"))
 except Exception: sys.exit(0)
 if not isinstance(p, dict): sys.exit(0)
-L1 = d.get("L1") or {}
+entries = []                                             # L0 관리자 토글(hard 아님) + L1 축 — 같은 {key,default,prompt[]} 계약
+for g in (d.get("L0") or {}).get("groups") or []:
+    t = g.get("toggle")
+    if isinstance(t, dict): entries.append(t)
+for ax in (d.get("L1") or {}).get("axes") or []:
+    entries.append(ax)
 lines = []
-for ax in (L1.get("axes") or []):
-    k = ax.get("key"); v = p.get(k)
+for e in entries:
+    k = e.get("key"); v = p.get(k)
     if v is None: continue
     try: v = max(0, min(2, int(v)))
     except Exception: continue
-    if v == int(ax.get("default", 1)): continue          # 기본값 = 생략(00_지침 기본 문구가 유효)
-    t = (ax.get("prompt") or ["", "", ""])[v]
-    if t: lines.append("- " + t)
+    if v == int(e.get("default", 1)): continue           # 기본값 = 생략(00_지침 기본 문구가 유효)
+    pr = e.get("prompt") or []
+    if 0 <= v < len(pr) and pr[v]: lines.append("- " + pr[v])   # 인덱스 가드(2단 토글 = prompt 길이 2)
 if lines:
-    print(L1.get("header") or "[시즌 수위·금기 — 운영자 설정]")
+    print((d.get("L1") or {}).get("header") or "[운영 정책 — 관리자 설정]")
     print("\n".join(lines))
 PY
 )"
