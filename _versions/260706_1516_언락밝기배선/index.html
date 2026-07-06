@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no">
 <meta name="color-scheme" content="light dark">
-<meta name="theme-color" content="#161716">
+<meta name="theme-color" content="#121212">
 <title>예타 : 가상현실 대화 섹션</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@latest/dist/web/variable/pretendardvariable.min.css">
 <link rel="stylesheet" href="tokens.css">
@@ -24,8 +24,8 @@
 /* ── :root 토큰(색+구조) — 원본 viewer :root 계승(L19-80) ── */
   :root {
     /* 중립 표면·텍스트 — 흰색 + 스포티파이 블랙(운영자 260704 브랜드 통일) */
-    --fg:#FFFFFF; --fg-2:#E7ECE7; --mut:#8B8F8A;   /* fg-2 = 서브텍스트 리프트(언락 밝기 플그 운영자 확정) */
-    --bg:#161716;   /* 앱 캔버스 = 스포티파이 블랙 리프트(그린 틴트 근흑 · 언락 밝기 플그 운영자 확정 = 기틀 갱신 승인) */
+    --fg:#FFFFFF; --fg-2:#C4C9C4; --mut:#8B8F8A;
+    --bg:#121212;   /* 앱 캔버스 = 스포티파이 블랙 */
     --line:rgba(255,255,255,.08); --line2:rgba(255,255,255,.06);
     /* 강조1 — 브랜드 라임(공통 컴포넌트·버튼·링·액티브·챗버블 · 운영자 260704 #CFFF40) */
     --accent:#CFFF40; --accent-rgb:207,255,64;
@@ -33,7 +33,6 @@
     --cobalt:#3D6BFF; --cobalt-rgb:61,107,255;
     /* 글래스모피즘 — 프로스티드 표면·엣지 하이라이트(구성도 표면3단 계승·260704) */
     --glass:rgba(255,255,255,.055); --glass-2:rgba(255,255,255,.09); --glass-line:rgba(255,255,255,.14);
-    --glass-0:rgba(255,255,255,.02); --glass-line-0:rgba(255,255,255,.115);   /* 0 = 가장 옅은 단(언락 갤러리 카드 초투명 — 계단이 비치는 표면 · 언락 밝기 플그 운영자 확정) */
     /* 그림자·배경 스크림(절대1: raw 금지→토큰 · 260704) */
     --shadow-card:0 24px 60px rgba(0,0,0,.42); --bg-scrim:linear-gradient(transparent 44%,rgba(0,0,0,.5) 76%,rgba(0,0,0,.85));
     /* 의미색 */
@@ -265,14 +264,14 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
       var(--bg); color:var(--fg); }
   /* step1 로그인창 = 살아있는 레이어 스택(운영자 260705 픽 이식 — 정적 포스터 폐지 · 소년 컷아웃 + CSS 원/밴드 + 효과 4종) */
   .ymain { position:fixed; inset:0; display:flex; flex-direction:column; z-index:1; background:var(--bg); overflow:hidden; }
-  .ymain.unlocked { background:radial-gradient(circle at 62% 30%, rgba(var(--accent-rgb),.14), transparent 52%), radial-gradient(circle at 12% 90%, rgba(var(--cobalt-rgb),.03), transparent 42%), var(--bg); }   /* 언락 후 배경 = CSS 3D 계단(.ystair 라이브 연출) · 앰비언트 = 라임 .14 + 코발트 .03(언락 밝기 플그 운영자 확정) · 포스터 = PIN 잠금 화면 전용 */
+  .ymain.unlocked { background:radial-gradient(circle at 62% 30%, rgba(var(--accent-rgb),.08), transparent 52%), var(--bg); }   /* 언락 후 배경 = CSS 3D 계단(.ystair 라이브 연출 · webp 정지사진 대체 · 운영자 260705 확정) · 포스터 = PIN 잠금 화면 전용 */
   /* ═══ CSS 3D 계단 배경(운영자 260705 확정: 플로우 웨이브 1.3x · 간격 .08s · 길이 210 · 두께 40 · 원근 740 · 변주 16% · 스텝 14 · 꺾임 4 · 완성 후 10초 뒤 재쌓기) ═══
      원본 webp 결 재현(지그재그 스위치백 · 투명 라임 유리 육면체). ⚠ opacity/will-change:opacity를 .ys-step(preserve-3d)에 걸면 3D 평면화 → 페이드는 말단 면에만. 커브 = 안무 예외축 */
   .ystair { display:none; position:absolute; inset:0; z-index:0; overflow:hidden; pointer-events:none; }
   .ymain.unlocked .ystair { display:block; }
   .ymain.unlocked .ystair.ys-hold { display:none; }   /* 챗(dialog) 열림 중 계단 정지 — 3D 레이어가 top layer 위로 새는 컴포지팅 아티팩트(폰 회색 깡통 렌더) + GPU 낭비 차단 · 닫으면 재쌓기 */
   .ystair .ys-glow { position:absolute; left:50%; bottom:-18%; width:140%; height:46%; transform:translateX(-50%); border-radius:50%;
-    background:radial-gradient(closest-side, rgba(var(--accent-rgb),.36), transparent 70%); filter:blur(30px); }   /* 발광 x2(언락 밝기 플그 운영자 확정 — 글로우·그림자·채움만 2배 · 테두리 위계는 보존) */
+    background:radial-gradient(closest-side, rgba(var(--accent-rgb),.18), transparent 70%); filter:blur(30px); }
   .ys-sc { position:absolute; inset:0; transform-origin:50% 78%; }
   .ys-scene { position:absolute; inset:0; perspective:740px; perspective-origin:50% 26%; }
   .ys-world { position:absolute; left:50%; top:76%; transform-style:preserve-3d; transform:rotateX(74deg) rotateZ(-20deg); }
@@ -280,14 +279,14 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   .ys-step { position:absolute; will-change:transform; animation:ysWave var(--ys-dur,.885s) cubic-bezier(.16,1,.3,1) both; animation-delay:var(--d); }
   @keyframes ysWave { from { transform:translate3d(var(--x), calc(var(--y) + 260px), calc(var(--z) - 80px)) rotateZ(9deg); }
     to { transform:translate3d(var(--x), var(--y), var(--z)) rotateZ(0deg); } }
-  .ys-face { position:absolute; left:0; top:0; transform-origin:0 0; background:rgba(var(--accent-rgb),.12); border:1.5px solid rgba(var(--accent-rgb),.8);
-    box-shadow:0 0 16px rgba(var(--accent-rgb),.44), inset 0 0 18px rgba(var(--accent-rgb),.28);
+  .ys-face { position:absolute; left:0; top:0; transform-origin:0 0; background:rgba(var(--accent-rgb),.06); border:1.5px solid rgba(var(--accent-rgb),.8);
+    box-shadow:0 0 16px rgba(var(--accent-rgb),.22), inset 0 0 18px rgba(var(--accent-rgb),.14);
     opacity:0; animation:ysIn .3s linear both; animation-delay:var(--d); }
   @keyframes ysIn { from { opacity:0; } to { opacity:1; } }
-  .ys-top { border-color:rgba(var(--accent-rgb),1); background:rgba(var(--accent-rgb),.28); }
+  .ys-top { border-color:rgba(var(--accent-rgb),1); background:rgba(var(--accent-rgb),.14); }
   .ys-bot { border-color:rgba(var(--accent-rgb),.4); }
-  .ys-fb { background:rgba(var(--accent-rgb),.32); border-color:rgba(var(--accent-rgb),.9); }
-  .ys-sd { background:rgba(var(--accent-rgb),.4); border-color:rgba(var(--accent-rgb),.95); }
+  .ys-fb { background:rgba(var(--accent-rgb),.16); border-color:rgba(var(--accent-rgb),.9); }
+  .ys-sd { background:rgba(var(--accent-rgb),.2); border-color:rgba(var(--accent-rgb),.95); }
   @media (prefers-reduced-motion:reduce){ .ys-step, .ys-face { animation-duration:.01s; animation-delay:0s; } }
   /* PIN 모드 전면 글래스 딤 — 포스터 타이포(PLAY a Episode/YETA) 위에 PIN 라벨·슬롯이 겹쳐 뒤죽박죽 되던 것 차단(운영자 스샷 260704).
      딤 값 = dialog ::backdrop 동값 계승 · blur = --blur-m · z = 로컬(절대1 예외축) */
@@ -446,7 +445,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   .ychar { position:absolute; inset:0; z-index:2; display:none; overflow-y:auto; padding:calc(64px + env(safe-area-inset-top)) var(--sp-2) 96px; }   /* 상단 64 = 좌상단 로고·프로필 클리어런스(로고 112px·여백 24 정합 260706) */
   .ymain.tab-char .ychar { display:block; }
   .ymain.tab-char .ym-fit, .ymain.tab-char .ym-stage, .ymain.tab-char .ym-access-card, .ymain.tab-char .ym-pin { display:none; }   /* 홈 히어로·PIN 퇴장 */
-  .ymain.tab-char::before { background:linear-gradient(rgba(0,0,0,.73), rgba(0,0,0,.47)); }   /* 갤러리 딤 = 상단 진하게·하단 열어 계단 노출(언락 밝기 플그 운영자 확정 · ::before 전환 재사용) */
+  .ymain.tab-char::before { background:linear-gradient(rgba(0,0,0,.66), rgba(0,0,0,.78)); }   /* 포스터 위 딤 강화 = 갤러리 가독(::before 전환 재사용) */
   /* ═══ YETA 워드마크 로고(운영자 260705 확정: 오프셋×전뇌 반반 — 코발트+라임 반전판 · 코발트 글로우 · 글래스 80% · 모션 6종 · 자간 -22%·엇갈림) ═══
      레터링 = 메인 포스터(main_v2) 원본 추출 4장(assets/brand/yeta-wm-*.png · 마스크) · 색 전부 토큰 · 오프셋/자간 = --w 비례 기하 · 겹층은 JS 조립(#ywm) */
   /* 좌상단 상시 로고(운영자 260705 "계단 배경 타이틀 말고 좌상단에 항상 박히는 로고") — 언락 후 전 탭 상주 · 우상단 = 프로필(.yprof) 쌍 · 130% 확대+모서리 여백 확장(운영자 260706 "쏠린 느낌" 해소 · 24px = --sp-2 x2 기하) */
@@ -538,18 +537,17 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   .yset-saved.on { opacity:1; color:var(--accent); }
   /* ═══ 시즌제 세계관 헤더 + 캐릭터 리스트(1행 1명 · 운영자 260706 "롤토체스식 시즌" — 성격 불변·역할군 리스킨) ═══
      행 = [아바타][이름/표현/대사 3줄][연한 세로 구분자][육각 성향 레이더(라임)] · 탭 = 세부 디테일 → 대화 진입 · 전부 글래스 계승 */
-  .yworld { display:flex; flex-direction:column; gap:3px; margin:0 0 12px; padding:13px 16px; background:var(--glass-0); border:1px solid var(--glass-line-0); border-radius:var(--r-l);
-    backdrop-filter:blur(var(--blur-m)) saturate(1.15); -webkit-backdrop-filter:blur(var(--blur-m)) saturate(1.15); box-shadow:inset 0 1px 0 var(--glass-line-0); }   /* 초투명 단 = 계단 비침(언락 밝기 플그 운영자 확정) */
+  .yworld { display:flex; flex-direction:column; gap:3px; margin:0 0 12px; padding:13px 16px; background:var(--glass); border:1px solid var(--glass-line); border-radius:var(--r-l);
+    backdrop-filter:blur(var(--blur-m)) saturate(1.15); -webkit-backdrop-filter:blur(var(--blur-m)) saturate(1.15); box-shadow:inset 0 1px 0 var(--glass-line); }
   .yworld-ssn { font-size:var(--fs-xs); font-weight:var(--fw-x); color:var(--accent); letter-spacing:.14em; }   /* SEASON 1 배지줄 */
   .yworld-nm { font-size:var(--fs-h2); font-weight:var(--fw-x); }
   .yworld-tag { font-size:var(--fs-xs); color:var(--fg-2); }
-  .ycrow { display:flex; align-items:center; gap:11px; width:100%; padding:11px 12px; background:var(--glass-0); border:1px solid var(--glass-line-0); border-radius:var(--r-l);
+  .ycrow { display:flex; align-items:center; gap:11px; width:100%; padding:11px 12px; background:var(--glass); border:1px solid var(--glass-line); border-radius:var(--r-l);
     color:var(--fg); font:inherit; text-align:left; cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent;
-    backdrop-filter:blur(var(--blur-m)); -webkit-backdrop-filter:blur(var(--blur-m)); box-shadow:inset 0 1px 0 var(--glass-line-0); }   /* 초투명 단(언락 밝기 플그 운영자 확정) */
+    backdrop-filter:blur(var(--blur-m)); -webkit-backdrop-filter:blur(var(--blur-m)); box-shadow:inset 0 1px 0 var(--glass-line); }
   .ycrow:active { transform:scale(var(--press-l,.95)); }
   .ycrow .yava { flex:none; width:56px; height:56px; border-radius:50%; display:grid; place-items:center; font-size:var(--fs-h3); font-weight:var(--fw-x);
-    background:rgba(255,255,255,.06); border:1px solid var(--glass-line); color:var(--yeta-ac);
-    box-shadow:0 0 6px rgba(var(--accent-rgb),.21); }   /* 아바타 라임 글로우 .26(언락 밝기 플그 운영자 확정 · 글로우 색 = 라임 기본) */
+    background:rgba(255,255,255,.06); border:1px solid var(--glass-line); color:var(--yeta-ac); }
   .ycrow-mid { flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
   .ycrow-nm { font-weight:var(--fw-x); font-size:var(--fs-h3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .ycrow-desc { font-size:var(--fs-xs); color:var(--fg-2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -593,15 +591,14 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   .ylist { position:absolute; inset:0; z-index:2; display:none; overflow-y:auto; padding:calc(64px + env(safe-area-inset-top)) var(--sp-2) 96px; }   /* 상단 64 = 로고 클리어런스 동일(260706) */
   .ymain.tab-list .ylist { display:block; }
   .ymain.tab-list .ym-fit, .ymain.tab-list .ym-stage, .ymain.tab-list .ym-access-card, .ymain.tab-list .ym-pin { display:none; }
-  .ymain.tab-list::before { background:linear-gradient(rgba(0,0,0,.73), rgba(0,0,0,.47)); }   /* tab-char 동값 딤(언락 밝기 플그 운영자 확정) */
-  .ylist-row { display:flex; align-items:center; gap:12px; width:100%; padding:11px 12px; margin-bottom:8px; background:var(--glass-0); border:1px solid var(--glass-line-0); border-radius:var(--r-l);
+  .ymain.tab-list::before { background:linear-gradient(rgba(0,0,0,.66), rgba(0,0,0,.78)); }   /* tab-char 동값 딤 */
+  .ylist-row { display:flex; align-items:center; gap:12px; width:100%; padding:11px 12px; margin-bottom:8px; background:var(--glass); border:1px solid var(--glass-line); border-radius:var(--r-l);
     color:var(--fg); font:inherit; text-align:left; cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent;
-    backdrop-filter:blur(var(--blur-m)) saturate(1.2); -webkit-backdrop-filter:blur(var(--blur-m)) saturate(1.2); box-shadow:inset 0 1px 0 var(--glass-line-0);
-    animation:ypickIn .42s cubic-bezier(.22,.61,.36,1) both; }   /* 초투명 단 = 갤러리 카드와 동결(언락 밝기 플그 운영자 확정) */
+    backdrop-filter:blur(var(--blur-m)) saturate(1.2); -webkit-backdrop-filter:blur(var(--blur-m)) saturate(1.2); box-shadow:inset 0 1px 0 var(--glass-line);
+    animation:ypickIn .42s cubic-bezier(.22,.61,.36,1) both; }
   .ylist-row:active { transform:scale(var(--press-l,.95)); }
   .ylist-ava { flex:none; width:50px; height:50px; border-radius:50%; display:grid; place-items:center; font-size:var(--fs-body); font-weight:var(--fw-x);
-    background:rgba(255,255,255,.06); border:1px solid var(--glass-line); color:var(--yeta-ac); background-size:cover; background-position:center;
-    box-shadow:0 0 6px rgba(var(--accent-rgb),.21); }   /* 아바타 라임 글로우 = 갤러리 동결 */
+    background:rgba(255,255,255,.06); border:1px solid var(--glass-line); color:var(--yeta-ac); background-size:cover; background-position:center; }
   .ylist-ava.has-img { color:transparent; }
   .ylist-mid { flex:1; min-width:0; }
   .ylist-nm { display:block; font-weight:var(--fw-x); font-size:var(--fs-h3); }

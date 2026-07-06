@@ -10,8 +10,8 @@
     "standalone"
   ],
   "orientation": "portrait",
-  "background_color": "#161716",
-  "theme_color": "#161716",
+  "background_color": "#121212",
+  "theme_color": "#121212",
   "icons": [
     {
       "src": "assets/brand/yeta-icon-192.png",
