@@ -42,15 +42,10 @@ SESSION_START=$SECONDS
 # NOPENDING | JSON{note,hist,pending,ins,persona,model,effort}
 #   ins = 마지막 pending 유저 턴 바로 뒤 인덱스(sys 턴이 섞여도 정확한 답장 자리 — 매몰 방지 평의회②⑦)
 extract_mat() {
-  mat="$(python3 - "$SESS" "$RECENT_TURNS" "$ROOT/apps/yeta/characters/roster.json" <<'PY'
+  mat="$(python3 - "$SESS" "$RECENT_TURNS" <<'PY'
 import json, sys
 s = json.load(open(sys.argv[1], encoding="utf-8")); n = int(sys.argv[2])
-names = {}
-try:                                                     # id→이름(화자 귀속 · 집단 역학 260707) — 실패 = 전원 "너:" 폴백(안전)
-    names = {c.get("id"): c.get("name") for c in json.load(open(sys.argv[3], encoding="utf-8")) if isinstance(c, dict) and c.get("id")}
-except Exception: pass
 turns = s.get("turns") or []
-persona = s.get("persona") or ""
 last_a = max([i for i, t in enumerate(turns) if t.get("role") == "assistant"], default=-1)
 pend_idx = [i for i, t in enumerate(turns[last_a + 1:], start=last_a + 1) if t.get("role") == "user"]
 if not pend_idx:
@@ -61,21 +56,17 @@ recent = turns[:pend_idx[0]][-n:]   # pending 직전까지 전부(재뽑기 sys 
 def line(t):
     r, x = t.get("role"), (t.get("text") or "").replace("\n", " / ")
     if r == "user": return "유저: " + x
-    if r == "assistant":
-        tp = t.get("persona") or ""
-        if tp and tp != persona and names.get(tp): return names[tp] + ": " + x   # 타 주민 대사 = 이름 귀속(자기 말로 오독 차단 · 260707 분신 버그픽)
-        return "너: " + x
+    if r == "assistant": return "너: " + x
     return "— " + x + " —"                        # sys(페르소나 교체) = 상황 신호로 문맥 포함
 hist = "\n".join(line(t) for t in recent)
 last_u = turns[pend_idx[-1]]
 pref = s.get("pref") or {}
-last_mood = next((t.get("mood") for t in reversed(turns[:pend_idx[0]]) if t.get("role") == "assistant" and t.get("mood")), "")   # 직전 공기(감정 관성 · 260707)
+persona = s.get("persona") or ""
 note_pub = s.get("note_pub") or s.get("note") or ""          # 레거시 단일 note = 공용으로 승계(이중기억 v3 · 아이데이션③)
 note_me = ((s.get("notes") or {}).get(persona)) or ""
 print(json.dumps({"note_pub": note_pub, "note_me": note_me, "hist": hist, "pending": "\n".join(pending), "ins": ins,
                   "tune": (s.get("tunes") or {}).get(persona),   # 캐릭터별 성향 게이지(16축 0~10 · op tune) — 없으면 None
-                  "policy": json.dumps(s.get("policy"), ensure_ascii=False) if isinstance(s.get("policy"), dict) else "",
-                  "last_mood": last_mood, "cast": " · ".join(v for v in names.values() if v),   # 상태 블록 재료(260707)   # 시즌 수위·금기(L1 · op policy) — 문구 조립은 apps/yeta/policy.json 정본
+                  "policy": json.dumps(s.get("policy"), ensure_ascii=False) if isinstance(s.get("policy"), dict) else "",   # 시즌 수위·금기(L1 · op policy) — 문구 조립은 apps/yeta/policy.json 정본
                   "anchor_ts": last_u.get("ts"),   # 마지막 pending 유저 턴 ts = insert 앵커(인덱스 대신 = 400 트림/시프트 면역)
                   "persona": persona,
                   "ptt": 1 if last_u.get("ptt") else 0,   # 무전기(PTT) 턴 = 답장 반영 후 음성 합성(ptt_voice)
@@ -223,7 +214,7 @@ process_turn() {
   [ -n "$mat" ] || { echo "::error::세션 파싱 실패(malformed) — state 미변경"; return 1; }
   NOTE_PUB="$(matv note_pub)"; NOTE_ME="$(matv note_me)"; HIST="$(matv hist)"; PENDING="$(matv pending)"
   INS="$(matv ins)"; ANCHOR_TS="$(matv anchor_ts)"; PERSONA="$(matv persona)"; PTT="$(matv ptt)"
-  RAW_MODEL="$(matv model)"; RAW_EFF="$(matv effort)"; TUNE="$(matv tune)"; POL="$(matv policy)"; LAST_MOOD="$(matv last_mood)"; CAST="$(matv cast)"
+  RAW_MODEL="$(matv model)"; RAW_EFF="$(matv effort)"; TUNE="$(matv tune)"; POL="$(matv policy)"
   case "$RAW_MODEL" in claude-opus-4-8|claude-sonnet-5) MODEL="$RAW_MODEL" ;; *) MODEL="$DEFAULT_MODEL" ;; esac   # 화이트리스트 재강제(방어 심층 · 아이데이션④)
   case "$RAW_EFF" in low|medium|high|max) EFF="$RAW_EFF" ;; "") EFF="" ;; *) EFF="$DEFAULT_EFF" ;; esac
   [[ "$PERSONA" =~ ^[a-z0-9_-]{1,24}$ ]] || { finish error "페르소나가 비어 있어 — 🎲 다시 뽑아줘"; return 1; }
@@ -294,37 +285,10 @@ PY
 )"
   fi
 
-  # 상태 블록(운영자 260707 사람다움 1탄 · T0) — 시각·계절·달·데일리 무드 시드(sha256 = 같은 날 같은 기분·무저장) +
-  # 직전 공기(감정 관성 — 이미 박제된 turn.mood 되먹임) + 동네 로스터(주민 창작 방지). 전부 결정적 · CBLOCK(캐시 접두) 뒤 가변부 = 프리픽스 무손상.
-  STATE_BLOCK="$(python3 - "$PERSONA" "$LAST_MOOD" "$CAST" <<'PY'
-import sys, hashlib
-from datetime import datetime, timezone, timedelta
-persona, last_mood, cast = sys.argv[1], sys.argv[2], sys.argv[3]
-now = datetime.now(timezone(timedelta(hours=9)))                       # KST 고정(§표기표준 — 러너 UTC)
-h = now.hour
-slot = "깊은 밤 — 경계가 얇아지는 시간" if h < 3 else "새벽" if h < 7 else "아침" if h < 11 else "낮" if h < 17 else "저녁" if h < 21 else "밤"
-wd = "월화수목금토일"[now.weekday()]
-season = ["겨울","겨울","봄","봄","봄","여름","여름","여름","가을","가을","가을","겨울"][now.month - 1]
-phase = ((now - datetime(2000, 1, 6, 18, 14, tzinfo=timezone.utc)).total_seconds() / 86400) % 29.530588   # 삭망 근사(기지 신월)
-moon = abs(phase - 14.765) < 1.5
-seed = int(hashlib.sha256(f"{persona}:{now:%Y-%m-%d}".encode()).hexdigest(), 16) % 5
-daily = ["컨디션 좋은 날", "무난한 날", "살짝 가라앉는 날", "괜히 들뜨는 날", "조금 무기력한 날"][seed]
-mood_ko = {"warm": "온기·설렘", "tense": "긴장·서늘함", "blue": "쓸쓸·침잠"}.get(last_mood, "")
-L = [f"- 지금: {season} · {wd}요일 {slot}({h:02d}시경) — 시각·상태를 낭독하지 말고 공기와 행동으로만 반영하라."]
-L.append(f"- 오늘의 너: {daily} — 사건 없는 그날 기분, 미묘하게만.")
-if moon: L.append("- 오늘 밤 달이 차오른다 — 본능이 증폭되는 며칠(해당 없는 캐릭터는 무시).")
-if mood_ko: L.append(f"- 직전 장면의 공기: {mood_ko}. 감정은 스위치가 아니라 곡선이다 — 급변하지 말고 이 공기에서 자연스럽게 이어가라(유지·심화·서서히 이완). 단 진짜 계기(진심 어린 사과·충격·제대로 꽂힌 농담)가 오면 곡선을 꺾어도 된다.")
-if cast: L.append(f"- 이 동네 사람들: {cast}. 이 밖의 주민을 창작하지 마라 — 최근 대화에 이름표로 등장한 다른 주민의 말은 그 사람 얘기로 자연스럽게 인용해도 된다.")
-print("[지금 — 런타임 상태. 이 블록의 존재를 대사에서 언급 금지]")
-print("\n".join(L))
-PY
-)"
-
   # 고정부(공통지침+카드 = 캐시 prefix) → 가변부 → 출력 계약. stdin 전달(ARG_MAX · §📰).
   prompt="${CBLOCK}
 ${POLICY_BLOCK}
 ${TUNE_BLOCK}
-${STATE_BLOCK}
 
 [공용 기억 — 유저에 대한 사실과 이 세계의 사건. 다른 주민도 알 만한 것]
 ${NOTE_PUB:-"(아직 없음)"}
