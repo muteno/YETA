@@ -21,6 +21,8 @@
   /* ── LEMONMILK (YETA 디스플레이 · 로컬 호스팅) ── */
   @font-face{font-family:'LEMONMILK';font-weight:700;font-style:normal;src:url('fonts/LEMONMILK-Bold.otf') format('opentype');font-display:swap}
   @font-face{font-family:'LEMONMILK';font-weight:300;font-style:normal;src:url('fonts/LEMONMILK-Light.otf') format('opentype');font-display:swap}
+  @font-face{font-family:'LEMONMILK';font-weight:400;font-style:normal;src:url('fonts/LEMONMILK-Regular.otf') format('opentype');font-display:swap}   /* 시즌 subnav 날짜(운영자 260707 "Regular 정방향 연하게") */
+  @font-face{font-family:'LEMONMILK';font-weight:700;font-style:italic;src:url('fonts/LEMONMILK-BoldItalic.otf') format('opentype');font-display:swap}   /* 시즌 배지 SEASON 01(운영자 260707 "S1 이탤릭") */
 /* ── :root 토큰(색+구조) — 원본 viewer :root 계승(L19-80) ── */
   :root {
     /* 중립 표면·텍스트 — 흰색 + 스포티파이 블랙(운영자 260704 브랜드 통일) */
@@ -667,12 +669,19 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   @media (prefers-reduced-motion:reduce){ .ylist-row { animation:none; } }
   /* ═══ 대화 목록 재구성(운영자 260706): 상단 NAV 헤어라인 · 시즌 라인 · 스와이프 나가기 ═══ */
   .ymain.unlocked.tab-list .ymain-body::before, .ymain.unlocked.tab-char .ymain-body::before { content:''; position:absolute; top:calc(64px + env(safe-area-inset-top)); left:var(--sp-2); right:var(--sp-2); height:1px; background:var(--glass-line-0); z-index:3; pointer-events:none; }   /* 로고+프로필 라인(투명 상단 NAV) 아래 "아주 살짝" 구분선 — 초투명 헤어라인(--glass-line-0) */
-  .yssn { display:flex; align-items:baseline; gap:8px; padding:6px 4px var(--sp-3); white-space:nowrap; overflow:hidden; animation:ypickIn .42s cubic-bezier(.22,.61,.36,1) both; }   /* 시즌 라인(기본형 — 표현 확정은 시즌 플그) · 촤르륵 동참 */
-  .yssn-tag { flex:none; font-size:var(--fs-h3); font-weight:var(--fw-x); color:var(--accent); letter-spacing:.02em; }   /* "S1." */
-  .yssn-nm { flex:none; font-size:var(--fs-h3); font-weight:var(--fw-x); }   /* "무음동(無音洞)" */
+  /* 시즌 subnav(운영자 260707 플그 선택값 + 보정 5) — NAV(로고·프로필) 바로 아래 이어지는 크롬 구역("거기 두 개까지는 내용이 아님") · div 구역화 + 테마 오버레이 아주 살짝 · px 수치 = 플그 승인값 */
+  .yssn { display:block; padding:12px 14px; margin-bottom:var(--sp-3); border-radius:var(--r-l); overflow:hidden;
+    background:linear-gradient(135deg, rgba(var(--accent-rgb),.07), rgba(var(--cobalt-rgb),.045) 72%);
+    border:1px solid var(--glass-line-0); box-shadow:inset 0 1px 0 var(--glass-line-0);
+    animation:ypickIn .42s cubic-bezier(.22,.61,.36,1) both; }
+  .yssn-hd { display:flex; align-items:center; gap:14px; }   /* 배지↔제목 간격 충분(운영자 ②) */
+  .yssn-tag { flex:none; display:inline-flex; align-items:center; padding:3px 11px 2px; border-radius:var(--r-pill);
+    background:linear-gradient(135deg, var(--accent), rgba(var(--accent-rgb),.72)); color:var(--bg); box-shadow:0 4px 14px rgba(var(--accent-rgb),.3);
+    font-family:'LEMONMILK',Pretendard,sans-serif; font-style:italic; font-weight:700; font-size:13.5px; letter-spacing:.01em; }   /* SEASON 01 = 라임 필 + 레몬밀크 이탤릭(플그 ★+L) */
+  .yssn-nm { flex:none; font-size:var(--fs-body); font-weight:var(--fw-x); white-space:nowrap; }
   .yssn-nm small { font-weight:var(--fw-b); color:var(--fg-2); font-size:var(--fs-sm); }   /* 한자 부기 */
-  .yssn-sep { flex:none; color:var(--mut); opacity:.6; font-weight:var(--fw-b); }   /* ｜ */
-  .yssn-tl { font-size:var(--fs-xs); color:var(--mut); overflow:hidden; text-overflow:ellipsis; }
+  .yssn-date { margin-left:auto; flex:none; font-family:'LEMONMILK',Pretendard,sans-serif; font-weight:400; font-style:normal; font-size:10px; color:var(--mut); letter-spacing:.04em; font-variant-numeric:tabular-nums; }   /* 날짜 = 제목 라인 우측 끝(운영자 ①) · Regular 연하게 */
+  .yssn-tl { margin-top:9px; text-align:center; font-size:11.5px; color:var(--mut); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }   /* 줄간격 확보(③) · 가운데 고정(④) · 1줄 초과 = …(④) */
   .ylr-wrap { position:relative; margin-bottom:8px; border-radius:var(--r-l); overflow:hidden; }   /* 스와이프 레일(행+나가기 픽토) — 행 margin은 wrap이 승계 */
   .ylr-wrap .ylist-row { margin-bottom:0; position:relative; z-index:1; transition:transform .28s var(--ease); touch-action:pan-y; }   /* 좌로 밀면 나가기 노출(글래스 네비 결 이동감) · 드래그 중엔 JS가 transition 끔 */
   .ylr-leave { position:absolute; top:0; right:0; bottom:0; width:72px; display:grid; place-items:center; border:none; cursor:pointer; color:var(--fg-2);
@@ -962,8 +971,12 @@ async function yListRender() {
     if (r && r.ok) YSESS = r.sess || {};
     if (!YCHARS.length) { const c = await yApi('chars').catch(() => null); if (c && c.ok) { YCHARS = c.chars || []; YWORLD = c.world || null; YREADY = !!c.ready; } }
   }
-  const ssn = $('#yssnList');   // 시즌 라인 "S1. 무음동(無音洞) ｜ 태그라인" — 표현 확정 = 시즌 플그(기본형 선배선 · 운영자 260706)
-  if (ssn) ssn.innerHTML = YWORLD ? `<span class="yssn-tag">S${esc(String(YWORLD.n || 1))}.</span><span class="yssn-nm">${esc(YWORLD.name || '')}${YWORLD.hanja ? `<small>(${esc(YWORLD.hanja)})</small>` : ''}</span><span class="yssn-sep">｜</span><span class="yssn-tl">${esc((YWORLD.tagline || '').split(' — ')[0])}</span>` : '';
+  const ssn = $('#yssnList');   // 시즌 subnav(운영자 260707 플그 선택값): [SEASON 01 필배지][무음동(無音洞)][우측 날짜] / 아래 태그라인 전문(가운데·1줄 말줄임)
+  if (ssn) {
+    const k = new Date(Date.now() + 9 * 3600e3);   // KST 고정(§표기표준)
+    const dt = `${String(k.getUTCFullYear()).slice(2)}. ${String(k.getUTCMonth() + 1).padStart(2, '0')}. ${String(k.getUTCDate()).padStart(2, '0')}`;
+    ssn.innerHTML = YWORLD ? `<div class="yssn-hd"><span class="yssn-tag">SEASON ${String(YWORLD.n || 1).padStart(2, '0')}</span><span class="yssn-nm">${esc(YWORLD.name || '')}${YWORLD.hanja ? `<small>(${esc(YWORLD.hanja)})</small>` : ''}</span><span class="yssn-date">${dt}</span></div><div class="yssn-tl">${esc(YWORLD.tagline || '')}</div>` : '';
+  }
   const s = YSESS || {}, turns = s.turns || [], p = s.persona ? yPersona(s.persona) : null;
   if (p) yNavName(p.name);   // 세션 상대 확인 즉시 메뉴3 라벨 동기화(프로필 = 기본 캐릭터 고정 260706)
   if (!p || !turns.length) { box.innerHTML = '<div class="yeta-setup">진행 중인 대화가 없어 — 캐릭터 탭에서 말을 걸어봐.</div>'; return; }
