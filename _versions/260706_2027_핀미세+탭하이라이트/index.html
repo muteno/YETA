@@ -61,7 +61,7 @@
   /* reduced-motion = 눌림 토큰 전역 무효화(1) — 개별 transform:none 가드 대신 한 블록(분신술10·4뷰어 가드 불균형 해소) */
   @media (prefers-reduced-motion:reduce){ :root{ --press-m:1; --press-l:1; } }
 /* ── body 기본(독립 뷰어) ── */
-* { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }   /* 탭 하이라이트 전역 봉합 — 개별 선언 누락(22곳 중 15곳)이 안드로이드에서 사각 잔상으로 비치던 것(운영자 260706 자물쇠 스샷 · call.js 주입분 포함 일괄) */
+* { box-sizing:border-box; }
 html,body { margin:0; height:100%; }
 body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendard,-apple-system,system-ui,sans-serif; -webkit-font-smoothing:antialiased; overscroll-behavior:none; }
 ::selection { background:var(--cobalt); color:var(--fg); }   /* 2차 강조 코발트 — 텍스트 선택(브랜드 통일 260704) */
@@ -401,13 +401,14 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   .ymain.pin-mode .ym-pin { opacity:1; visibility:visible; transform:translate(-50%,-50%); pointer-events:auto;
     transition:opacity .4s var(--ease) .12s, transform .4s var(--ease) .12s, visibility 0s; }
   /* PIN 키패드 = nomute lk- 이식 · 다크+라임 리컬러(260704) */
-  /* 'PIN 입력' 텍스트 라벨 폐지(운영자 260706 — aria-label 대체) · 핀칸 = 스포티파이 블랙 10% 알약 스크림으로 감싸기(첨부 nomute 결) */
-  .lk-slots { display:flex; justify-content:center; gap:15px; margin:22px 0 2px; padding:13px 26px; background:rgba(18,18,18,.1); border-radius:var(--r-pill); }
+  .lk-m { font-size:14px; font-weight:800; color:var(--fg-2); letter-spacing:-.2px; margin-top:6px; }
+  .lk-slots { display:flex; justify-content:center; gap:15px; margin:22px 0 2px; }
   .lk-slot { width:18px; height:20px; display:grid; place-items:center; font:800 20px/1 Pretendard,sans-serif; color:var(--pin-ac); opacity:.5; transition:opacity .15s, transform .15s; }
   .lk-slot::before { content:''; grid-area:1/1; width:13px; height:13px; box-sizing:border-box; border-radius:50%; border:2px solid var(--mut); transition:border-color .15s, background .15s; }
   .lk-slot.on { opacity:1; }
-  /* 입력한 것만 = 채워진 라임 원(OS 잠금 결) · 숫자 노출 폐지(운영자 260706 "그때그때 보이니까" — 잔존 문제 원천 제거) */
+  /* 입력한 것만 = 채워진 라임 원(OS 잠금 결 · 운영자 260706) · 숫자 = 입력 직후 1초 노출 후 원 복귀 · grid center = 중앙 높이 정렬 */
   .lk-slot.on::before { content:''; border:none; background:var(--pin-ac); }
+  .lk-slot.on.num::before { content:attr(data-d); width:auto; height:auto; border:none; border-radius:0; background:none; color:var(--pin-ac); }
   .lk-slot.pop { animation:lkPop .3s cubic-bezier(.22,.61,.36,1); }   /* 입력 순간 통통(촤르륵 커브 계승) */
   @keyframes lkPop { 0% { transform:scale(.5); } 60% { transform:scale(1.3); } 100% { transform:scale(1); } }
   /* 승인 = 4원 순차 라임 파동(왼→오 한 바퀴 · 운영자 260706) */
@@ -421,8 +422,8 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   .lk-slots.shake { animation:lkShake .45s cubic-bezier(.36,.07,.19,.97); }
   .lk-err { color:var(--danger); font-size:12px; margin-top:12px; min-height:15px; font-weight:700; }
   .lk-ok { color:var(--accent); font-size:12.5px; margin-top:12px; min-height:15px; font-weight:800; }
-  /* 패드 = OS 잠금화면 결(운영자 260706 첨부) — 구분선·blur 없이 스포티파이 블랙 10% 스크림만(가독 보강 · 운영자 "10%만 불투명도") */
-  .lk-pad { display:grid; grid-template-columns:repeat(3,1fr); gap:0; width:100%; max-width:270px; margin:20px auto 0; padding:4px; border:none; background:rgba(18,18,18,.1); border-radius:var(--r-l); }
+  /* 패드 = OS 잠금화면 결 완전 투명(운영자 260706 첨부 기준 — 상자·구분선·blur 폐지 · 배경 전부 비침 · 숫자만) */
+  .lk-pad { display:grid; grid-template-columns:repeat(3,1fr); gap:0; width:100%; max-width:270px; margin:20px auto 0; border:none; background:none; }
   .lk-key { height:56px; display:grid; place-items:center; font-size:22px; font-weight:700; color:var(--fg); background:none; border:none; cursor:pointer;
     -webkit-tap-highlight-color:transparent; user-select:none; touch-action:manipulation; transition:color .15s, transform .07s; }
   .lk-key:active { transform:scale(.93); }
@@ -435,7 +436,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   .lk-key.back.hit svg { stroke:var(--pin-ac); }
   @media (prefers-reduced-motion:reduce){ .lk-slots.shake{animation-duration:.01s} .lk-key:active{transform:none} .lk-slot.pop, .lk-key.hit, .lk-slots.ok .lk-slot{animation:none} }
   /* 짧은 세로 프레임(가로모드 폰·분할창) = PIN 블록 압축 — '0'·백스페이스가 프레임 밖으로 잘려 언락 불가하던 사전존재 결함 방어(평의회3 H-1 · 임계 Hf<~550px) · lk- 베이스 뒤 선언 = 캐스케이드 승리 보장 */
-  @media (max-height:560px) { .ym-pin { top:58%; } .lk-key { height:38px; font-size:18px; } .lk-slots { margin:6px 0 0; padding:9px 20px; } .lk-err { margin-top:4px; min-height:12px; } .lk-pad { margin-top:6px; max-width:216px; } }
+  @media (max-height:560px) { .ym-pin { top:58%; } .lk-m { margin-top:0; } .lk-key { height:38px; font-size:18px; } .lk-slots { margin:6px 0 0; } .lk-err { margin-top:4px; min-height:12px; } .lk-pad { margin-top:6px; max-width:216px; } }
   /* 하단 네비 = 플로팅 알약(운영자 260705 레퍼런스 결) — 활성 탭 = 라임 확장 필(GIF 레퍼런스 260705: 아이콘만 → 탭하면 필이 늘어나며 라벨 등장 · 비활성 = 픽토-온리) · 투명도 아주 높게(--glass = 뒤 비침) · PIN 전 = 메인만 */
   .ynav { display:none; position:absolute; left:50%; bottom:calc(14px + env(safe-area-inset-bottom)); transform:translateX(-50%); z-index:4;
     background:var(--glass); background:color-mix(in srgb, var(--glass) 50%, transparent); border:1px solid var(--glass-line); border-radius:var(--r-pill); padding:6px 10px; gap:8px;
@@ -673,7 +674,8 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path class="ym-shackle" d="M8 11V7a4 4 0 018 0v4"/></svg>
       </button>
     </div>
-    <div class="ym-pin" role="group" aria-label="PIN 입력">
+    <div class="ym-pin">
+      <div class="lk-m">PIN 입력</div>
       <div class="lk-slots" id="ymSlots"><span class="lk-slot"></span><span class="lk-slot"></span><span class="lk-slot"></span><span class="lk-slot"></span></div>
       <div class="lk-err" id="ymErr" role="alert"></div>   <!-- 오류 = 스크린리더 즉시 낭독(평의회8) -->
       <div class="lk-pad" id="ymPad"></div>
@@ -1280,7 +1282,7 @@ try { if (new URLSearchParams(location.search).get('yeta')) setTimeout(() => ope
     if (outLeft()) { errEl.className = 'lk-err'; errEl.textContent = `PIN 오류 ${YM_MAX}회 — ${Math.ceil(outLeft() / 60000)}분 후 다시`; return; }
     if (b.dataset.n && val.length < YM_LEN) {
       flash(b); yVib(8); val += b.dataset.n; fill();   // 키 입력 = 짧은 진동(운영자 260706 "핀 입력하면 진동 + 기존 입력 그대로")
-      { const s9 = slots[val.length - 1]; if (s9) { s9.classList.remove('pop'); void s9.offsetWidth; s9.classList.add('pop'); } }   // 입력 = 채워진 원 + 통통(숫자 노출 폐지 · 운영자 260706)
+      { const s9 = slots[val.length - 1]; if (s9) { s9.dataset.d = b.dataset.n; s9.classList.remove('pop'); void s9.offsetWidth; s9.classList.add('num', 'pop'); setTimeout(() => { s9.classList.remove('num'); }, 1000); } }   // 실숫자 1초 → 채워진 원 복귀 + 입력 통통(운영자 260706)
       if (val.length === YM_LEN) {
         const attempt = val;
         const h = await ymHash(attempt);
