@@ -266,7 +266,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   .yeta-list { position:absolute; inset:0; z-index:6; overflow-y:auto; padding:var(--sp-3) var(--sp-2) 20px; display:flex; flex-direction:column; gap:8px; }
   .yeta-list[hidden] { display:none; }
   .yeta-list .ypick-row { padding:12px; border-radius:var(--r-l); background:var(--glass); border:1px solid var(--glass-line);
-    backdrop-filter:blur(var(--blur-l)) saturate(1.2); -webkit-backdrop-filter:blur(var(--blur-l)) saturate(1.2); box-shadow:inset 0 1px 0 var(--glass-line); }   /* 캐릭터 선택 = 글래스 카드 스택(레퍼런스 결 · 배경 비침) · 블러 한 단 위 계승(운영자 260707 "쥬금 더") */
+    backdrop-filter:blur(var(--blur-m)) saturate(1.2); -webkit-backdrop-filter:blur(var(--blur-m)) saturate(1.2); box-shadow:inset 0 1px 0 var(--glass-line); }   /* 캐릭터 선택 = 글래스 카드 스택(레퍼런스 결 · 배경 비침) */
   .yeta-list .ypick-row .yava { width:58px; height:58px; font-size:var(--fs-h3); border:1px solid var(--glass-line); box-shadow:inset 0 1px 0 var(--glass-line); }   /* 목록 아바타 = 캐릭터 초상 부각(운영자 260705 이미지 적용) */
   .yeta-list .ypick-row .yava.has-img { border-color:rgba(var(--accent-rgb),.22); }   /* 얼굴 채우면 은은한 라임 테 */
   /* 캐릭터 선택 = 촤르륵 stagger 등장(nomute-design 원칙5 · 기존 ybIn 커브 재사용 · 유려함) */
@@ -559,13 +559,13 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   /* ═══ 시즌제 세계관 헤더 + 캐릭터 리스트(1행 1명 · 운영자 260706 "롤토체스식 시즌" — 성격 불변·역할군 리스킨) ═══
      행 = [아바타][이름/표현/대사 3줄][연한 세로 구분자][육각 성향 레이더(라임)] · 탭 = 세부 디테일 → 대화 진입 · 전부 글래스 계승 */
   .yworld { display:flex; flex-direction:column; gap:3px; margin:0 0 12px; padding:13px 16px; background:var(--glass-0); border:1px solid var(--glass-line-0); border-radius:var(--r-l);
-    backdrop-filter:blur(var(--blur-l)) saturate(1.15); -webkit-backdrop-filter:blur(var(--blur-l)) saturate(1.15); box-shadow:inset 0 1px 0 var(--glass-line-0); }   /* 초투명 단 = 계단 비침(언락 밝기 플그 운영자 확정) · 블러 한 단 위 계승(운영자 260707 "쥬금 더") */
+    backdrop-filter:blur(var(--blur-m)) saturate(1.15); -webkit-backdrop-filter:blur(var(--blur-m)) saturate(1.15); box-shadow:inset 0 1px 0 var(--glass-line-0); }   /* 초투명 단 = 계단 비침(언락 밝기 플그 운영자 확정) */
   .yworld-ssn { font-size:var(--fs-xs); font-weight:var(--fw-x); color:var(--accent); letter-spacing:.14em; }   /* SEASON 1 배지줄 */
   .yworld-nm { font-size:var(--fs-h2); font-weight:var(--fw-x); }
   .yworld-tag { font-size:var(--fs-xs); color:var(--fg-2); }
   .ycrow { display:flex; align-items:center; gap:11px; width:100%; padding:11px 12px; background:var(--glass-0); border:1px solid var(--glass-line-0); border-radius:var(--r-l);
     color:var(--fg); font:inherit; text-align:left; cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent;
-    backdrop-filter:blur(var(--blur-l)); -webkit-backdrop-filter:blur(var(--blur-l)); box-shadow:inset 0 1px 0 var(--glass-line-0); }   /* 초투명 단(언락 밝기 플그 운영자 확정) · 블러 한 단 위 계승(운영자 260707 "쥬금 더") */
+    backdrop-filter:blur(var(--blur-m)); -webkit-backdrop-filter:blur(var(--blur-m)); box-shadow:inset 0 1px 0 var(--glass-line-0); }   /* 초투명 단(언락 밝기 플그 운영자 확정) */
   .ycrow:active { transform:scale(var(--press-l,.95)); }
   .ycrow .yava { flex:none; width:56px; height:56px; border-radius:50%; display:grid; place-items:center; font-size:var(--fs-h3); font-weight:var(--fw-x);
     background:rgba(255,255,255,.06); border:1px solid var(--glass-line); color:var(--yeta-ac);
