@@ -525,7 +525,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   .ychar-h { font-size:var(--fs-h2); font-weight:var(--fw-x); padding:2px 4px 12px; }
   .ychar-h small { display:block; font-size:var(--fs-xs); color:var(--mut); font-weight:var(--fw-b); margin-top:2px; }
   /* 캐릭터별 성향 설정(운영자 260706 — 디테일 ⚙ 진입 · 16축 슬라이더 · 프리셋 · 라이브 육각) */
-  .ycd-gear { margin-left:auto; width:var(--btn); height:var(--btn); display:grid; place-items:center; background:var(--glass); border:1px solid var(--glass-line); border-radius:50%; color:var(--fg-2); cursor:pointer; touch-action:manipulation; }   /* 헤더 행 우측 = 뒤로가기와 쌍(좌 로고·우 프로필 결 계승 · 운영자 260707 "마진 좋게" — 카드 모서리 absolute 폐지) */
+  .ycd-gear { position:absolute; top:0; right:0; width:var(--btn); height:var(--btn); display:grid; place-items:center; background:var(--glass); border:1px solid var(--glass-line); border-radius:50%; color:var(--fg-2); cursor:pointer; touch-action:manipulation; }
   .ycd-gear:active { transform:scale(var(--press-m,.9)); }
   .ycd-gear svg { width:19px; height:19px; }
   .ycd-card { position:relative; }
@@ -742,7 +742,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
       <div class="ychar-grid" id="ycharGrid"></div>
     </div>
     <div class="ycd" id="ycdetail" aria-modal="true" role="dialog">   <!-- 캐릭터 세부 디테일 → [대화 시작](운영자 260706) -->
-      <div class="ycd-top"><button type="button" class="ycd-back" id="ycdBack" aria-label="뒤로"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><button type="button" class="ycd-gear" id="ycdGear" aria-label="성향 설정" title="성향 설정"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33h.01a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51h.01a1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82v.01a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></button></div>   <!-- ⚙ = 헤더 행 우측(뒤로가기와 쌍 · 운영자 260707 "마진 좋게") -->
+      <div class="ycd-top"><button type="button" class="ycd-back" id="ycdBack" aria-label="뒤로"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button></div>
       <div class="ycd-card" id="ycdCard"></div>
     </div>
     <div class="ycd" id="ycset" aria-modal="true" role="dialog">   <!-- 캐릭터별 성향 설정(16축 게이지 · 운영자 260706) -->
@@ -1108,8 +1108,8 @@ function yShowDetail(id) {   // 캐릭터 세부 디테일 — 대형 아바타�
     + (c.intro ? `<span class="ycd-desc">${esc(c.intro)}</span>` : '')
     + (c.video ? `<video class="ycd-video" src="${esc(c.video)}"${c.video_poster ? ` poster="${esc(c.video_poster)}"` : ''} muted loop playsinline autoplay preload="metadata"></video>` : '')
     + yHexSvg(c.stats, true)
-    + `<button type="button" class="ycd-cta" data-id="${esc(c.id)}">대화 시작</button>`;
-  $('#ycdGear').dataset.set = c.id;   // ⚙ = 헤더 행 상주 버튼(카드 재주입 아님) — 대상 캐릭터만 갱신
+    + `<button type="button" class="ycd-cta" data-id="${esc(c.id)}">대화 시작</button>`
+    + `<button type="button" class="ycd-gear" data-set="${esc(c.id)}" aria-label="성향 설정" title="성향 설정"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33h.01a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51h.01a1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82v.01a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></button>`;
   const d = $('#ycdetail'); d.classList.add('on'); d.scrollTop = 0;
   document.getElementById('ymain').classList.add('cd-open');
 }
@@ -1287,8 +1287,8 @@ $('#ycsettingsCard').addEventListener('click', e => {
 });
 $('#ycprofileCard').addEventListener('click', e => { if (e.target.closest('.yset-item[data-nav]')) miniToast('준비중 — 곧 열려'); });
 
-$('#ycdGear').addEventListener('click', e => yShowSet(e.currentTarget.dataset.set));
 $('#ycdCard').addEventListener('click', e => {
+  const g = e.target.closest('.ycd-gear'); if (g) { yShowSet(g.dataset.set); return; }
   const b = e.target.closest('.ycd-cta'); if (!b) return; yHideDetail(); openYeta(b.dataset.id); });
 async function openYeta(charId) {
   if (!yetadlg.open) { yetadlg.showModal(); yetadlg.classList.add('ydlg-in'); setTimeout(() => yetadlg.classList.remove('ydlg-in'), 720);   // 열 때만 촤르륵 진입 애니(원샷 · 720ms = 최장 시퀀스보다 여유 후 클래스 회수 = 내부 뷰 토글 재트리거 방지)
