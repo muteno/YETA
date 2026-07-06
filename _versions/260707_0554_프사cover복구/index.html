@@ -570,8 +570,8 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
     backdrop-filter:blur(var(--blur-l)); -webkit-backdrop-filter:blur(var(--blur-l)); box-shadow:inset 0 1px 0 var(--glass-line-0); }   /* 초투명 단(언락 밝기 플그 운영자 확정) · 블러 한 단 위 계승(운영자 260707 "쥬금 더") */
   .ycrow:active { transform:scale(var(--press-l,.95)); }
   .ycrow .yava { flex:none; width:56px; height:56px; border-radius:50%; display:grid; place-items:center; font-size:var(--fs-h3); font-weight:var(--fw-x);
-    background:rgba(255,255,255,.06); border:1px solid var(--glass-line); color:var(--yeta-ac); background-size:cover; background-position:center;
-    box-shadow:0 0 6px rgba(var(--accent-rgb),.21); }   /* 아바타 라임 글로우 .26(언락 밝기 플그 운영자 확정) · cover 재선언 = background 축약이 .yava.has-img cover를 리셋하던 프사 깨짐 교정(.ylist-ava 관례 동형 · 운영자 260707) */
+    background:rgba(255,255,255,.06); border:1px solid var(--glass-line); color:var(--yeta-ac);
+    box-shadow:0 0 6px rgba(var(--accent-rgb),.21); }   /* 아바타 라임 글로우 .26(언락 밝기 플그 운영자 확정 · 글로우 색 = 라임 기본) */
   .ycrow-mid { flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
   .ycrow-nm { font-weight:var(--fw-x); font-size:var(--fs-h3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .ycrow-desc { font-size:var(--fs-xs); color:var(--fg-2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
