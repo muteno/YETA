@@ -296,8 +296,6 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   .ymain.pin-mode::before { background:none; }   /* 추가 딤 폐지 — 균일 오버레이(.ym-ovl 67%)가 대체(운영자 260706 확정) */
   .ym-ovl { position:absolute; inset:0; z-index:1; background:rgba(18,18,18,.67); pointer-events:none; transition:opacity 1.15s var(--ease); }   /* 페이드 1.15s(잠금 안무 플그 운영자 확정) */   /* 잠금 오버레이 = 스포티파이 블랙 67%(운영자 260706 플그 확정) · 언락 = 페이드 퇴장 */
   .ymain.unlocked .ym-ovl { opacity:0; }
-  /* ⑤ PIN 웜업(운영자 260706 메타버스 서사·플그 v4) — 로고 꽂히는 순간(strike)부터 딤이 1.4s 램프로 걷혀 원본 포스터(main_v2) 명료도 노출("레포 배경만큼 또렷하게") · 딤 잔량 0 */
-  .ymain.strike .ym-ovl { opacity:0; transition:opacity 1.4s var(--ease); }
   .ym-zap { position:absolute; inset:0; z-index:6; pointer-events:none; display:none; }
   .ymain.zap .ym-zap { display:block; }
   .ym-zap i { position:absolute; inset:0; mix-blend-mode:screen; }
@@ -346,13 +344,6 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   .ymain.strike .ym-flash { animation:ymFlash .38s linear .24s both; }
   @keyframes ymFlash { 0% { opacity:0; } 28% { opacity:1; } 42% { opacity:.25; } 55% { opacity:.6; } 100% { opacity:0; } }
   .ymain.strike .ymc { animation:ymcPulse calc(3.2s/var(--st-amp)) ease-in-out infinite, ymcHit .4s linear .24s; }   /* 착지 순간 원 광량 스파이크 */
-  /* PIN 대기(calm) = 원 범위 살짝 확대 + 브랜드 호흡(광량 왕복 1↔.88 — 원본색 기준이라 위로 안 밀고 아래로 숨쉼 · 플그 v4 wuBreath) */
-  .ymain.calm .ymc { scale:1.03; transition:scale 1.4s var(--ease);
-    animation:ymcPulse calc(3.2s/var(--st-amp)) ease-in-out infinite, ymWuBreathe 2.6s ease-in-out 1.4s infinite; }
-  @keyframes ymWuBreathe { 0%,100% { filter:brightness(1); } 50% { filter:brightness(.88); } }
-  /* ④ 언락 라이트업(플그 v3) — 승인(bye) 순간 스테이지 발광 1.6x가 .45s 차오른 뒤 전환(zap 지지직과 병행 = 메타버스 진입) */
-  .ym-stage { transition:filter .45s var(--ease); }
-  .ymain.bye .ym-stage { filter:brightness(1.6); }
   @keyframes ymcHit { 35% { opacity:1; } }
   .ymain.strike .ymb.main { animation:ymbHolo calc(3.1s/var(--st-amp)) linear infinite, ymHit .2s var(--ease) .3s; }   /* 착지 반동 */
   @keyframes ymHit { 30% { transform:translateY(.9%); } 65% { transform:translateY(-.4%); } 100% { transform:none; } }
