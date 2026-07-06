@@ -104,16 +104,9 @@ const css = `
 .yvcf-wrap > *:nth-child(6) { animation-delay:.25s }
 @keyframes yvcfIn { from { opacity:0; transform:translateY(8px); } }
 @media (prefers-reduced-motion:reduce) { .yvcf-wrap > * { animation:none; } }
-.yvcf-nar { font-size:var(--fs-sm); font-style:italic; color:var(--fg-2); opacity:.75; margin-top:var(--sp-2); word-break:keep-all; }   /* *지문* 이탤릭 = .yb i.yn 결 계승 · 프로필과 간격 --sp-2 추가(운영자 260706) */
+.yvcf-nar { font-size:var(--fs-sm); font-style:italic; color:var(--fg-2); opacity:.75; }   /* *지문* 이탤릭 = .yb i.yn 결 계승 */
 .yvcf-num { font-size:var(--fs-sm); color:var(--mut); font-variant-numeric:tabular-nums; }   /* 번호 = tabular(.ytime 결) */
-.yvcf-desc { font-size:var(--fs-xs); color:var(--fg); line-height:var(--lh-base); max-width:30ch; text-wrap:pretty;
-  word-break:keep-all; white-space:pre-line; }   /* 대사 = 발화(--fg) · 크기 75%(15→11 ≈ --fs-xs 계승 · 운영자 260706) · keep-all=음절 잘림 방지 · pre-line=대사 \n = 구 단위 개행 */
-.ycd-vcf { width:100%; max-width:320px; margin-top:8px; padding:13px; border:1px solid var(--glass-line); border-radius:var(--r-pill);
-  background:var(--glass); color:var(--fg-2); font:inherit; font-size:var(--fs-label); font-weight:var(--fw-b); cursor:pointer; touch-action:manipulation;
-  display:flex; align-items:center; justify-content:center; gap:8px;
-  backdrop-filter:blur(var(--blur-m)); -webkit-backdrop-filter:blur(var(--blur-m)); }   /* 연락처 교환하기 = .ycd-cta 지오메트리 동형 · 무채 글래스(보조 CTA — 라임은 대화 시작 단독) */
-.ycd-vcf:active { transform:scale(var(--press-m,.9)); }   /* .ycd-cta 동일 티어 */
-.ycd-vcf svg { width:15px; height:15px; }
+.yvcf-desc { font-size:var(--fs-sm); color:var(--fg-2); line-height:var(--lh-base); max-width:30ch; text-wrap:pretty; }
 .yvcf-steps { display:flex; flex-direction:column; gap:8px; margin-top:var(--sp-2); }
 .yvcf-steps[hidden] { display:none; }
 .yvcf-step { display:flex; align-items:center; gap:8px; font-size:var(--fs-sm); color:var(--fg); text-align:left; }
@@ -444,11 +437,7 @@ function initCallBtn() {
 // ── 연락처 저장(프로필 카드 배포) — 폰 주소록에 사진+번호 원탭 등록 = 실전화 걸려올 때 그 캐릭터 얼굴·이름이 뜨게(운영자 260706) ──
 // 소재 = viewer/assets/contacts/<id>.vcf(vCard 2.1 · 사진 base64 임베드 · 번호 = Vapi 발신번호 국제 2표기 — 안드로이드 뒷자리 매칭이 둘 다 잡음).
 // 탭 = 같은출처 .vcf 다운로드(a[download]) → 갤럭시 "연락처에 추가"가 이름·사진·번호 프리필 = 저장 한 번이면 끝.
-const VCF = { haeun: {   // vcf 보유 캐릭터 — 추가 = vcf 생성 + 이 행(nar=지문·line=대사 = 페르소나 결 · 운영자 260706 문구 — 페르소나 대개편 확정 시 카드와 동기)
-  name: '하은', tel: '+1 240-616-4569',
-  nar: '하은이 폰 번호를 적어서 건넨다',                                // 행동 = 이탤릭 지문
-  line: '연락처에 저장하면 이름 뜰거야.\n아직도 저장 안 한건 아니지?',   // 대사 = 잘 삐지는 페르소나 · \n = 구 단위 개행(pre-line 렌더 — 운영자 "쉼표 들어갈 부분 단위")
-} };
+const VCF = { haeun: { name: '하은', tel: '+1 240-616-4569', nar: '하은이 명함을 슥 내민다' } };   // vcf 보유 캐릭터 — 추가 = vcf 생성 + 이 행(nar = 캐릭터 결 지문)
 const VCF_AUTO_KEY = 'yeta_vcf_auto';   // {id: ts} — 명함 시트 자동 노출은 기기당 1회(재오픈 = 헤더 연락처 버튼)
 const vcfAutoDone = () => { try { return JSON.parse(localStorage.getItem(VCF_AUTO_KEY) || '{}') || {}; } catch { return {}; } };
 function vcfMarkDone(pid) { try { const d = vcfAutoDone(); d[pid] = Date.now(); localStorage.setItem(VCF_AUTO_KEY, JSON.stringify(d)); } catch {} }
@@ -467,10 +456,11 @@ function vcfSheet(pid) {
   if (!vdlg) {
     vdlg = document.createElement('dialog'); vdlg.id = 'vcfdlg'; vdlg.setAttribute('aria-label', '연락처 저장');
     vdlg.innerHTML = `<div class="yvcf-wrap">
-    <span id="yvcfAva"></span>
     <span class="yvcf-nar" id="yvcfNar"></span>
-    <span class="yvcf-desc" id="yvcfDesc"></span>
+    <span id="yvcfAva"></span>
+    <span class="yintro-name" id="yvcfName"></span>
     <span class="yvcf-num" id="yvcfNum"></span>
+    <span class="yvcf-desc" id="yvcfDesc"></span>
     <div class="yvcf-steps" id="yvcfSteps" hidden>
       <span class="yvcf-step"><span class="yvcf-stepn" aria-hidden="true">1</span><span>알림에서 방금 받은 <b id="yvcfFile"></b> 열기</span></span>
       <span class="yvcf-step"><span class="yvcf-stepn" aria-hidden="true">2</span><span><b>저장</b> 탭 — 그럼 전화 올 때 얼굴이 떠</span></span>
@@ -498,9 +488,10 @@ function vcfSheet(pid) {
   vdlg.dataset.pid = pid; vdlg.dataset.got = '';
   vdlg.querySelector('#yvcfNar').textContent = c.nar;
   vdlg.querySelector('#yvcfAva').innerHTML = typeof yAva === 'function' ? yAva(p, 'yintro-ava') : '';
+  vdlg.querySelector('#yvcfName').textContent = c.name;
   vdlg.querySelector('#yvcfNum').textContent = c.tel;
   vdlg.querySelector('#yvcfDesc').hidden = false;
-  vdlg.querySelector('#yvcfDesc').textContent = '"' + c.line + '"';   // 대사 = 페르소나 말투(따옴표 = 발화)
+  vdlg.querySelector('#yvcfDesc').textContent = '연락처에 저장해두면 전화가 올 때 ' + c.name + ' 얼굴과 이름이 떠.';
   vdlg.querySelector('#yvcfSteps').hidden = true;
   vdlg.querySelector('#yvcfFile').textContent = c.name + '.vcf';
   vdlg.querySelector('#yvcfLater').hidden = false;
@@ -509,26 +500,11 @@ function vcfSheet(pid) {
 }
 // 자동 노출 — 보이스(전화) 배선 캐릭터를 *탭해 진입한* 첫 1회, 챗이 열린 뒤 명함 시트(운영자 260706 "눌렀을 때 자동" + UIUX).
 document.addEventListener('click', e => {
-  const el = e.target && e.target.closest && e.target.closest('.ycd-cta[data-id], .ypick-row[data-id], .ys-row[data-id]');
-  if (!el || !VCF[el.dataset.id] || vcfAutoDone()[el.dataset.id]) return;   // 진입 경로(대화 시작 CTA·뽑기·대화목록)만 · 기기당 1회 가드
+  const el = e.target && e.target.closest && e.target.closest('.ychar-card[data-id], .ypick-row[data-id], .ys-row[data-id]');
+  if (!el || !VCF[el.dataset.id] || vcfAutoDone()[el.dataset.id]) return;   // 진입 경로만 · 기기당 1회 가드
   const pid = el.dataset.id; vcfMarkDone(pid);
   setTimeout(() => vcfSheet(pid), 700);   // 챗 진입 애니 자리 잡은 뒤(시트 = top-layer라 순서만 보장하면 됨)
 }, true);
-// 캐릭터 디테일(.ycd) — 배선 캐릭터면 [연락처 교환하기] 주입(본체 무수정 · #ycdCard innerHTML 재생성을 옵저버로 감지 = 운영자 260706 "캐릭터 설정 부분에 버튼")
-function initCdVcf() {
-  const card = document.querySelector('#ycdCard'); if (!card || card._yvcfOb) return;
-  card._yvcfOb = new MutationObserver(() => {
-    if (card.querySelector('.ycd-vcf')) return;
-    const cta = card.querySelector('.ycd-cta[data-id]'); if (!cta || !VCF[cta.dataset.id]) return;
-    const id = cta.dataset.id;
-    const b = document.createElement('button');
-    b.type = 'button'; b.className = 'ycd-vcf';
-    b.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6M23 11h-6"/></svg>연락처 교환하기';
-    b.addEventListener('click', () => { vcfMarkDone(id); vcfSheet(id); });   // 명함 시트 = 단일 플로우(자동 1회 가드에도 계상)
-    cta.after(b);
-  });
-  card._yvcfOb.observe(card, { childList: true });
-}
 function vcfBtnSync() {
   const b = document.querySelector('#yetaVcfBtn'); if (!b) return;
   const pid = (typeof YSESS !== 'undefined' && YSESS && YSESS.persona) || '';
@@ -568,7 +544,7 @@ async function check() {
 setInterval(check, POLL_MS);
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') setTimeout(check, 600); });   // 푸시 탭 복귀 = 즉시 픽업
 setTimeout(check, 1500);   // 첫 로드(딥링크 /?yeta=main&call=1 포함) — 기존 ?yeta= 오픈에 편승 + 벨은 여기서
-const initInject = () => { ensureCss(); initPtt(); initCallBtn(); initVcfBtn(); initCdVcf(); };   // 스타일 주입 먼저(마이크 즉시 스타일) + 입력행 마이크 + 헤더 수화기 + 연락처 저장 + 디테일 연락처 교환(전부 모듈 주입 = 본체 무수정)
+const initInject = () => { ensureCss(); initPtt(); initCallBtn(); initVcfBtn(); };   // 스타일 주입 먼저(마이크 즉시 스타일) + 입력행 마이크 + 헤더 수화기 + 연락처 저장(전부 모듈 주입 = 본체 무수정)
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initInject); else initInject();
 
 window.YCALL = { onSess, open, playVoice };   // open/playVoice = 테스트 훅 · onSess = 본체 yLoad 훅 계약
