@@ -502,8 +502,8 @@ function vcfSheet(pid) {
 }
 // 자동 노출 — 보이스(전화) 배선 캐릭터를 *탭해 진입한* 첫 1회, 챗이 열린 뒤 명함 시트(운영자 260706 "눌렀을 때 자동" + UIUX).
 document.addEventListener('click', e => {
-  const el = e.target && e.target.closest && e.target.closest('.ychar-card[data-id], .ypick-row[data-id], .ys-row[data-id]');
-  if (!el || !VCF[el.dataset.id] || vcfAutoDone()[el.dataset.id]) return;   // 진입 경로만 · 기기당 1회 가드
+  const el = e.target && e.target.closest && e.target.closest('.ycd-cta[data-id], .ypick-row[data-id], .ys-row[data-id]');
+  if (!el || !VCF[el.dataset.id] || vcfAutoDone()[el.dataset.id]) return;   // 진입 경로(대화 시작 CTA·뽑기·대화목록)만 · 기기당 1회 가드
   const pid = el.dataset.id; vcfMarkDone(pid);
   setTimeout(() => vcfSheet(pid), 700);   // 챗 진입 애니 자리 잡은 뒤(시트 = top-layer라 순서만 보장하면 됨)
 }, true);
