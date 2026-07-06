@@ -1,0 +1,45 @@
+name: yeta-bg-var
+
+# 무음동 배경 배리에이션(운영자 260707 "openai 프롬프팅 — 날씨·분위기·시간대·편의점 등 다양하게").
+# ⚠️ OpenAI 유료 종량제 = 수동 dispatch 전용(자동 트리거 금지 · 이미지 파이프 공통 규약).
+# 산출 = viewer/assets/yeta_bg/var_*.png 을 main에 직접 커밋(git 정본 · yeta_face git 폴백 결).
+on:
+  workflow_dispatch:
+    inputs:
+      force:
+        description: '1 = 기존 것도 재생성'
+        required: false
+        default: ''
+
+concurrency:
+  group: yeta-bg-var
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  bgvar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+
+      - name: 배경 배리에이션 생성
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_API_KEY_nomute: ${{ secrets.OPENAI_API_KEY_nomute }}
+          OPENAI_IMAGE_MODEL: ${{ vars.OPENAI_IMAGE_MODEL }}
+          FORCE: ${{ inputs.force }}
+        run: python3 .github/scripts/yeta_bg_var.py
+
+      - name: 커밋 (신규 있을 때만)
+        run: |
+          git config user.name "yeta-bg-var[bot]"
+          git config user.email "actions@users.noreply.github.com"
+          git add viewer/assets/yeta_bg/ 2>/dev/null || true
+          git diff --cached --quiet && { echo "신규 없음 — 커밋 생략"; exit 0; }
+          git commit -m "무음동 배경 배리에이션 생성 — yeta-bg-var 수동 dispatch"
+          git push
