@@ -637,10 +637,26 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   .ylist-mid { flex:1; min-width:0; }
   .ylist-nm { display:block; font-weight:var(--fw-x); font-size:var(--fs-h3); }
   .ylist-last { display:block; font-size:var(--fs-sm); color:var(--mut); margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .ylist-r { flex:none; display:flex; flex-direction:column; align-items:flex-end; gap:5px; }
+  .ylist-r { flex:none; display:flex; flex-direction:column; align-items:flex-end; align-self:stretch; justify-content:flex-start; padding-top:3px; gap:5px; }   /* 시간 = 행 우측 "상단"(운영자 260706 카톡 뉘앙스) */
   .ylist-t { font-size:var(--fs-xs); color:var(--mut); font-variant-numeric:tabular-nums; }
   .ylist-badge { min-width:19px; height:19px; padding:0 6px; border-radius:var(--r-pill); background:var(--accent); color:var(--bg); font-size:var(--fs-xs); font-weight:var(--fw-x); display:grid; place-items:center; }   /* 안읽음 = 라임 배지(강조 CTA축 · 레퍼런스 결) */
   @media (prefers-reduced-motion:reduce){ .ylist-row { animation:none; } }
+  /* ═══ 대화 목록 재구성(운영자 260706): 상단 NAV 헤어라인 · 시즌 라인 · 스와이프 나가기 ═══ */
+  .ymain.unlocked.tab-list .ymain-body::before, .ymain.unlocked.tab-char .ymain-body::before { content:''; position:absolute; top:calc(58px + env(safe-area-inset-top)); left:var(--sp-2); right:var(--sp-2); height:1px; background:var(--glass-line-0); z-index:3; pointer-events:none; }   /* 로고+프로필 라인(투명 상단 NAV) 아래 "아주 살짝" 구분선 — 초투명 헤어라인(--glass-line-0) */
+  .yssn { display:flex; align-items:baseline; gap:8px; padding:4px 4px 12px; white-space:nowrap; overflow:hidden; animation:ypickIn .42s cubic-bezier(.22,.61,.36,1) both; }   /* 시즌 라인(기본형 — 표현 확정은 시즌 플그) · 촤르륵 동참 */
+  .yssn-tag { flex:none; font-size:var(--fs-h3); font-weight:var(--fw-x); color:var(--accent); letter-spacing:.02em; }   /* "S1." */
+  .yssn-nm { flex:none; font-size:var(--fs-h3); font-weight:var(--fw-x); }   /* "무음동(無音洞)" */
+  .yssn-nm small { font-weight:var(--fw-b); color:var(--fg-2); font-size:var(--fs-sm); }   /* 한자 부기 */
+  .yssn-sep { flex:none; color:var(--mut); opacity:.6; font-weight:var(--fw-b); }   /* ｜ */
+  .yssn-tl { font-size:var(--fs-xs); color:var(--mut); overflow:hidden; text-overflow:ellipsis; }
+  .ylr-wrap { position:relative; margin-bottom:8px; border-radius:var(--r-l); overflow:hidden; }   /* 스와이프 레일(행+나가기 픽토) — 행 margin은 wrap이 승계 */
+  .ylr-wrap .ylist-row { margin-bottom:0; position:relative; z-index:1; transition:transform .28s var(--ease); touch-action:pan-y; }   /* 좌로 밀면 나가기 노출(글래스 네비 결 이동감) · 드래그 중엔 JS가 transition 끔 */
+  .ylr-leave { position:absolute; top:0; right:0; bottom:0; width:72px; display:grid; place-items:center; border:none; cursor:pointer; color:var(--fg-2);
+    background:var(--glass); border-left:1px solid var(--glass-line-0); backdrop-filter:blur(var(--blur-m)); -webkit-backdrop-filter:blur(var(--blur-m)); -webkit-tap-highlight-color:transparent; }   /* 나가기 = 뒤에 숨은 글래스 픽토(밀면 자연 노출) */
+  .ylr-leave svg { width:22px; height:22px; }
+  .ylr-leave:active { transform:scale(var(--press-m,.9)); }
+  .ylr-leave.armed { color:var(--danger); }   /* 2탭 확인 = 파괴 액션 톤 */
+  @media (prefers-reduced-motion:reduce){ .yssn { animation:none; } .ylr-wrap .ylist-row { transition:none; } }
   /* 챗 헤더 X → 뒤로가기로 대체(260705) · 잔여 tool-x(콜 등) 픽토 통일 스코프 유지 */
   #yetadlg .tool-x { background:none; border:none; color:var(--fg-2); }
   #yetadlg .tool-x svg { width:19px; height:19px; }
@@ -685,8 +701,8 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
       <div class="ycd-top"><button type="button" class="ycd-back" id="ycprofileBack" aria-label="뒤로"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button></div>
       <div class="ycd-card card-left" id="ycprofileCard"></div>
     </div>
-    <div class="ylist" id="ylist">   <!-- 메뉴2 = 대화 목록(카톡 결 · 단일 세션 = 진행 대화 1행 · 운영자 260705) -->
-      <div class="ychar-h">대화<small>진행 중인 대화</small></div>
+    <div class="ylist" id="ylist">   <!-- 메뉴2 = 대화 목록(카톡 결 · 단일 세션 = 진행 대화 1행 · 운영자 260705 · 260706 재구성: 시즌 라인 + 이름·최근 2줄·우상단 KST·스와이프 나가기) -->
+      <div class="yssn" id="yssnList"></div>   <!-- 시즌 라인 "S1. 무음동(無音洞) ｜ 태그라인" — 표현 확정 = 시즌 플그(운영자 대기) · 기본형 선배선 -->
       <div id="ylistRows"></div>
     </div>
   </div>
@@ -854,16 +870,53 @@ async function yListRender() {
     if (r && r.ok) YSESS = r.sess || {};
     if (!YCHARS.length) { const c = await yApi('chars').catch(() => null); if (c && c.ok) { YCHARS = c.chars || []; YWORLD = c.world || null; YREADY = !!c.ready; } }
   }
+  const ssn = $('#yssnList');   // 시즌 라인 "S1. 무음동(無音洞) ｜ 태그라인" — 표현 확정 = 시즌 플그(기본형 선배선 · 운영자 260706)
+  if (ssn) ssn.innerHTML = YWORLD ? `<span class="yssn-tag">S${esc(String(YWORLD.n || 1))}.</span><span class="yssn-nm">${esc(YWORLD.name || '')}${YWORLD.hanja ? `<small>(${esc(YWORLD.hanja)})</small>` : ''}</span><span class="yssn-sep">｜</span><span class="yssn-tl">${esc((YWORLD.tagline || '').split(' — ')[0])}</span>` : '';
   const s = YSESS || {}, turns = s.turns || [], p = s.persona ? yPersona(s.persona) : null;
   if (p) yNavName(p.name);   // 세션 상대 확인 즉시 메뉴3 라벨 동기화(프로필 = 기본 캐릭터 고정 260706)
   if (!p || !turns.length) { box.innerHTML = '<div class="yeta-setup">진행 중인 대화가 없어 — 캐릭터 탭에서 말을 걸어봐.</div>'; return; }
-  const last = turns[turns.length - 1], unread = Math.max(0, turns.length - yReadN());
-  box.innerHTML = `<button type="button" class="ylist-row" id="ylistCur">`
+  const last = turns[turns.length - 1], prev = turns[turns.length - 2], unread = Math.max(0, turns.length - yReadN());
+  const line = t => t ? `<span class="ylist-last">${t.role === 'user' ? '나 · ' : ''}${esc(ySnip(t.text, 40) || '…')}</span>` : '';   // 최근 대화 2줄(운영자 260706 "이 2개만") · 내 턴 = '나 ·' 접두
+  box.innerHTML = `<div class="ylr-wrap"><button type="button" class="ylist-row" id="ylistCur">`
     + `<span class="ylist-ava${p.avatar ? ' has-img' : ''}"${p.avatar ? ` style="background-image:url('${esc(p.avatar)}')"` : ''}>${p.avatar ? '' : esc(p.initial || p.name[0])}</span>`
-    + `<span class="ylist-mid"><span class="ylist-nm">${esc(p.name)}${window.yPremBadge ? yPremBadge(p) : ''}</span><span class="ylist-last">${esc(ySnip(last.text, 40) || '…')}</span></span>`
-    + `<span class="ylist-r"><span class="ylist-t">${yTime(last.ts)}</span>${unread > 0 ? `<span class="ylist-badge">${unread > 99 ? '99+' : unread}</span>` : ''}</span></button>`;
+    + `<span class="ylist-mid"><span class="ylist-nm">${esc(p.name)}${window.yPremBadge ? yPremBadge(p) : ''}</span>${line(prev)}${line(last)}</span>`
+    + `<span class="ylist-r"><span class="ylist-t">${yTime(last.ts)}</span>${unread > 0 ? `<span class="ylist-badge">${unread > 99 ? '99+' : unread}</span>` : ''}</span></button>`
+    + `<button type="button" class="ylr-leave" aria-label="대화 나가기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg></button></div>`;
+  ySwipeBind();
 }
-$('#ylistRows').addEventListener('click', e => { if (e.target.closest('.ylist-row')) openYeta(); });   // 행 = 대화 이어보기
+// ── 대화 행 스와이프 나가기(운영자 260706 "좌측으로 끌어서 밀면 나가기 픽토가 자연스럽게" · 모바일+PC) — 리서치 관례: 시작 10px·방향 |dx|>|dy|·스냅 50%·복귀 transition(드래그 중 off)·나가기 = 2탭 armed 후 op reset ──
+const YLR_W = 72;   // 노출 폭 = .ylr-leave width
+let _ylrArm = 0;
+function ySwipeBind() {
+  const wrap = $('#ylistRows .ylr-wrap'); if (!wrap) return;
+  const row = wrap.querySelector('.ylist-row'), leave = wrap.querySelector('.ylr-leave');
+  let x0 = 0, y0 = 0, dx = 0, open = false, drag = null;   // drag: null=미판정 · 1=가로 잠금 · 0=세로(스크롤 양보)
+  const setX = (px, anim) => { row.style.transition = anim ? '' : 'none'; row.style.transform = px ? `translateX(${px}px)` : ''; };
+  row.addEventListener('pointerdown', e => { x0 = e.clientX; y0 = e.clientY; dx = 0; drag = null; });
+  row.addEventListener('pointermove', e => {
+    if (e.pressure === 0 && e.pointerType === 'mouse' && !e.buttons) return;
+    const mx = e.clientX - x0, my = e.clientY - y0;
+    if (drag === null) { if (Math.abs(mx) < 10 && Math.abs(my) < 10) return; drag = Math.abs(mx) > Math.abs(my) ? 1 : 0; if (drag) try { row.setPointerCapture(e.pointerId); } catch {} }
+    if (!drag) return;
+    dx = Math.max(-YLR_W - 14, Math.min(0, (open ? -YLR_W : 0) + mx));   // 좌로만 · 최대 노출+14 고무줄
+    setX(dx, false);
+  });
+  let justDrag = false;   // 드래그를 끝낸 pointerup이 만드는 합성 click 1회 소비(억제만 — 열림은 유지 · 실마우스 실측 260706)
+  const settle = () => { if (drag !== 1) { drag = null; return; }
+    open = dx < -YLR_W / 2;   // 스냅 임계 = 노출 폭 50%(리서치 관례)
+    setX(open ? -YLR_W : 0, true); drag = null; justDrag = true; };
+  row.addEventListener('pointerup', settle); row.addEventListener('pointercancel', settle);
+  row.addEventListener('click', e => {
+    if (justDrag) { justDrag = false; dx = 0; e.stopImmediatePropagation(); e.preventDefault(); return; }   // 드래그 마감 click = 무시(스냅 상태 보존)
+    if (open) { e.stopImmediatePropagation(); e.preventDefault(); open = false; dx = 0; setX(0, true); } }, true);   // 열림 상태 "새" 탭 = 챗 진입 대신 닫기
+  leave.addEventListener('click', async () => {
+    if (!_ylrArm) { _ylrArm = 1; leave.classList.add('armed'); miniToast('한 번 더 누르면 대화에서 나가 (기록 초기화)'); setTimeout(() => { _ylrArm = 0; leave.classList.remove('armed'); }, 2600); return; }
+    _ylrArm = 0; leave.classList.remove('armed');
+    const r = await yApi('reset').catch(() => null);   // 나가기 = 세션 초기화(게이트웨이가 1세대 백업 보관)
+    if (r && r.ok) { YSESS = r.sess || {}; yMarkRead(0); yNavName(''); yListRender(); miniToast('대화에서 나갔어'); }
+    else miniToast('나가기 실패 — 잠시 후 다시');
+  });
+}
 // ── 좌 슬림 캐릭터 레일(챗 안 · 운영자 260705 "왔다갔다") — 현 상대 라임 링 · 탭 = 화자 전환(draw·맥락 유지) ──
 function ySideRender() {
   const side = $('#yside'); if (!YCHARS.length) { side.hidden = true; return; }
