@@ -625,17 +625,6 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   /* ═══ 대화 목록 탭(메뉴2) — 카톡/레퍼런스 결(운영자 260705): 글래스 행 = 아바타+이름+미리보기+시간+라임 안읽음 배지 · 행 탭 = 챗 · 단일 세션 = 진행 대화 1행 ═══ */
   .ylist { position:absolute; inset:0; z-index:2; display:none; overflow-y:auto; padding:calc(64px + env(safe-area-inset-top)) var(--sp-2) 96px; }   /* 상단 64 = 로고 클리어런스 동일(260706) */
   .ymain.tab-list .ylist { display:block; }
-
-  /* ═══ 설정 탭(메뉴4) — 시즌 정책 3계층(L0 코어 잠금 · L1 시즌 수위 = op policy · L2 성향 링크 · 운영자 260706) ═══ */
-  .ysetting { position:absolute; inset:0; z-index:2; display:none; overflow-y:auto; padding:calc(64px + env(safe-area-inset-top)) var(--sp-2) 96px; }   /* 패널 골격 = .ychar/.ylist 계승 */
-  .ymain.tab-settings .ysetting { display:block; }
-  .ymain.tab-settings::before { background:linear-gradient(rgba(0,0,0,.73), rgba(0,0,0,.47)); }   /* tab-char 동값 딤(언락 밝기 플그 운영자 확정) */
-  .ypol-row { flex-wrap:wrap; }   /* 축 행 = .yset-row 계승 + 세그먼트 줄바꿈 허용(좁은 폰) */
-  .ypol-row .yset-nm { width:96px; }
-  .ypol-row .yset-chips { margin:0; justify-content:flex-start; flex:1; min-width:0; }
-  .ypol-hint { font-size:var(--fs-xs); color:var(--mut); padding:0 2px 8px; }   /* 축 밑 한 줄 설명(부속 설명 규약 결) */
-  .ypol-lock { display:flex; gap:8px; align-items:flex-start; padding:5px 2px; font-size:var(--fs-xs); color:var(--mut); }   /* L0 read-only 행 */
-  .ypol-lock svg { flex:none; width:13px; height:13px; margin-top:2px; }
   .ymain.tab-list .ym-fit, .ymain.tab-list .ym-stage, .ymain.tab-list .ym-access-card, .ymain.tab-list .ym-pin { display:none; }
   .ymain.tab-list::before { background:linear-gradient(rgba(0,0,0,.73), rgba(0,0,0,.47)); }   /* tab-char 동값 딤(언락 밝기 플그 운영자 확정) */
   .ylist-row { display:flex; align-items:center; gap:12px; width:100%; padding:11px 12px; margin-bottom:8px; background:var(--glass-0); border:1px solid var(--glass-line-0); border-radius:var(--r-l);
@@ -690,10 +679,6 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
     <div class="ylist" id="ylist">   <!-- 메뉴2 = 대화 목록(카톡 결 · 단일 세션 = 진행 대화 1행 · 운영자 260705) -->
       <div class="ychar-h">대화<small>진행 중인 대화</small></div>
       <div id="ylistRows"></div>
-    </div>
-    <div class="ysetting" id="ysetting">   <!-- 메뉴4 = 설정(시즌 정책 3계층 — L0 코어·L1 시즌 수위·L2 성향 · 운영자 260706) -->
-      <div class="ychar-h">설정<small>시즌 정책 — 수위·금기 · 코어 규칙</small></div>
-      <div id="ysettingBody"></div>
     </div>
   </div>
   <div class="ym-fit">   <!-- 9:16 앵커 = 자물쇠·PIN이 화면비 무관하게 소년 몸통 좌표에 고정(260706) -->
@@ -773,68 +758,16 @@ const yApi = (op, extra) => fetch('api/yeta', { method: 'POST', headers: { 'cont
 const yFmt = t => esc(t).replace(/\*([^*\n]{1,200}?)\*/g, '<i class="yn">$1</i>');   // *지문* → 이탤릭(제타 대화 폰트 결)
 const yPersona = id => YCHARS.find(x => x.id === id);
 // ── 탭 패널(운영자 260705 재편: 1=캐릭터 · 2=대화 목록 · 3=지금 대화[dialog] · 메인 화면 폐지) ──
-function yTab(tab) {   // 'char' | 'list' | 'settings' — 네비 활성·패널 토글(chat=dialog)
+function yTab(tab) {   // 'char' | 'list' — 네비 활성·패널 토글(chat=dialog·settings=준비중이라 패널 없음)
   const m = document.getElementById('ymain');
   const cd = document.getElementById('ycdetail'); if (cd) { cd.classList.remove('on'); m.classList.remove('cd-open'); }   // 탭 전환 = 디테일 자동 닫기
   const cs = document.getElementById('ycset'); if (cs) cs.classList.remove('on');
   m.classList.toggle('tab-char', tab === 'char');
   m.classList.toggle('tab-list', tab === 'list');
-  m.classList.toggle('tab-settings', tab === 'settings');
   document.querySelectorAll('#ynav button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
   if (tab === 'char') yCharRender();
   if (tab === 'list') yListRender();
-  if (tab === 'settings') ySettingRender();
 }
-// ── 설정 탭(메뉴4) — 시즌 정책 3계층(운영자 260706): L1 시즌 수위 = op policy(세션엔 enum 정수만 · 축·라벨·문구 정본 = apps/yeta/policy.json → 뷰어 하드코딩 0) · L0 = 잠금 read-only · L2 = 캐릭터 성향(카드 ⚙) 링크 ──
-let YPOLDEF = null, _ypolCur = {}, _ypolT = 0, _ypolArm = 0;
-const YLOCK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>';   // 자물쇠 = ym-access 패스 재사용
-async function ySettingRender() {
-  const box = $('#ysettingBody');
-  if (!YPOLDEF) {
-    box.innerHTML = '<div class="yeta-setup">불러오는 중<span class="gdots"><i>.</i><i>.</i><i>.</i></span></div>';
-    const r = await yApi('policy').catch(() => null);
-    if (!r || !r.ok || !r.def) { box.innerHTML = '<div class="yeta-setup">정책 로드 실패 — 잠시 후 다시 열어줘.</div>'; return; }
-    YPOLDEF = r.def; _ypolCur = r.p || {};
-  }
-  const L1 = YPOLDEF.L1 || {}, L0 = YPOLDEF.L0 || {}, L2 = YPOLDEF.L2 || {};
-  let dirtyN = 0;
-  const axes = (L1.axes || []).map(ax => {
-    const v = Number.isInteger(_ypolCur[ax.key]) ? _ypolCur[ax.key] : ax.default;
-    const dirty = v !== ax.default; if (dirty) dirtyN++;
-    const chips = (ax.opts || []).map((o, i) => `<button type="button" class="yset-chip${i === v ? ' on' : ''}" data-ax="${esc(ax.key)}" data-v="${i}">${esc(o)}</button>`).join('');
-    return `<div class="yset-row ypol-row${dirty ? ' dirty' : ''}" data-ax="${esc(ax.key)}"><span class="yset-nm">${esc(ax.label)}</span><div class="yset-chips">${chips}</div></div><div class="ypol-hint">${esc(ax.hint || '')}</div>`;
-  }).join('');
-  const locks = (L0.items || []).map(t => `<div class="ypol-lock">${YLOCK_SVG}<span>${esc(t)}</span></div>`).join('');
-  box.innerHTML =
-    `<details class="yset-grp" open><summary>🎚 ${esc(L1.label || '시즌 — 수위·금기')}<span class="ys-cnt"${dirtyN ? '' : ' hidden'}>${dirtyN}</span></summary>${axes}
-      <div class="yset-foot"><button type="button" class="yset-reset" id="ypolReset">기본값 복원</button><span class="yset-saved" id="ypolSaved">저장됨 ✓</span></div></details>
-    <details class="yset-grp"><summary>🔒 ${esc(L0.label || '코어 — 불변')}</summary><div class="ypol-hint">${esc(L0.admin_note || '관리자 전용 — 웹앱에서 변경 불가')}</div>${locks}</details>
-    <details class="yset-grp"><summary>🎭 ${esc(L2.label || '캐릭터 — 성향')}</summary><div class="ypol-hint">캐릭터별 성향(말수·플러팅 등)은 캐릭터 카드의 ⚙에서 조절 — 시즌 정책과 별개 층(L2)이라 여기 없음.</div></details>`;
-}
-function ySettingSave() {   // 디바운스 저장 — op policy(800ms · ySetSave 패턴 계승)
-  clearTimeout(_ypolT);
-  _ypolT = setTimeout(async () => {
-    const r = await yApi('policy', { p: _ypolCur }).catch(() => null);
-    if (r && r.ok) { const sv = $('#ypolSaved'); if (sv) { sv.classList.add('on'); setTimeout(() => sv.classList.remove('on'), 1600); } }
-  }, 800);
-}
-document.getElementById('ysettingBody').addEventListener('click', e => {
-  const rst = e.target.closest('#ypolReset');
-  if (rst) {   // 복원 = 오버라이드 전량 제거(기본값 = 00_지침 원문) · 2탭 재확인 = .yset-reset armed 정본 패턴 계승(ycset ysetReset 동형)
-    if (!_ypolArm) { _ypolArm = 1; rst.classList.add('armed'); rst.textContent = '한 번 더 누르면 복원'; setTimeout(() => { _ypolArm = 0; rst.classList.remove('armed'); rst.textContent = '기본값 복원'; }, 2600); return; }
-    _ypolArm = 0; _ypolCur = {}; ySettingRender(); ySettingSave(); return;
-  }
-  const b = e.target.closest('.yset-chip[data-ax]'); if (!b || !YPOLDEF) return;
-  const k = b.dataset.ax, v = +b.dataset.v;
-  _ypolCur[k] = v;
-  const row = b.closest('.ypol-row');
-  row.querySelectorAll('.yset-chip').forEach(x => x.classList.toggle('on', x === b));
-  const ax = ((YPOLDEF.L1 || {}).axes || []).find(a => a.key === k);
-  row.classList.toggle('dirty', !!ax && v !== ax.default);
-  const grp = row.closest('.yset-grp'), cnt = grp && grp.querySelector('.ys-cnt');
-  if (cnt) { const n = grp.querySelectorAll('.ypol-row.dirty').length; cnt.hidden = !n; cnt.textContent = n; }
-  ySettingSave();
-});
 const yNavName = n => { const s = document.querySelector('#ynav button[data-tab="chat"] span'); if (s) s.textContent = n || '지금'; };   // 메뉴3 라벨 = 항상 지금 대화 상대 이름(운영자 260705 · 상대 미정 = '지금' 폴백)
 // ── CSS 3D 계단 배경(운영자 260705 확정 조합 박제) — 결정적 변주 = 매 재쌓기 동일 실루엣 ──
 const yStair = (() => {

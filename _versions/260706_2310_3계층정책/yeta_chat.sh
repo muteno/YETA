@@ -66,7 +66,6 @@ note_pub = s.get("note_pub") or s.get("note") or ""          # 레거시 단일 
 note_me = ((s.get("notes") or {}).get(persona)) or ""
 print(json.dumps({"note_pub": note_pub, "note_me": note_me, "hist": hist, "pending": "\n".join(pending), "ins": ins,
                   "tune": (s.get("tunes") or {}).get(persona),   # 캐릭터별 성향 게이지(16축 0~10 · op tune) — 없으면 None
-                  "policy": json.dumps(s.get("policy"), ensure_ascii=False) if isinstance(s.get("policy"), dict) else "",   # 시즌 수위·금기(L1 · op policy) — 문구 조립은 apps/yeta/policy.json 정본
                   "anchor_ts": last_u.get("ts"),   # 마지막 pending 유저 턴 ts = insert 앵커(인덱스 대신 = 400 트림/시프트 면역)
                   "persona": persona,
                   "ptt": 1 if last_u.get("ptt") else 0,   # 무전기(PTT) 턴 = 답장 반영 후 음성 합성(ptt_voice)
@@ -214,7 +213,7 @@ process_turn() {
   [ -n "$mat" ] || { echo "::error::세션 파싱 실패(malformed) — state 미변경"; return 1; }
   NOTE_PUB="$(matv note_pub)"; NOTE_ME="$(matv note_me)"; HIST="$(matv hist)"; PENDING="$(matv pending)"
   INS="$(matv ins)"; ANCHOR_TS="$(matv anchor_ts)"; PERSONA="$(matv persona)"; PTT="$(matv ptt)"
-  RAW_MODEL="$(matv model)"; RAW_EFF="$(matv effort)"; TUNE="$(matv tune)"; POL="$(matv policy)"
+  RAW_MODEL="$(matv model)"; RAW_EFF="$(matv effort)"; TUNE="$(matv tune)"
   case "$RAW_MODEL" in claude-opus-4-8|claude-sonnet-5) MODEL="$RAW_MODEL" ;; *) MODEL="$DEFAULT_MODEL" ;; esac   # 화이트리스트 재강제(방어 심층 · 아이데이션④)
   case "$RAW_EFF" in low|medium|high|max) EFF="$RAW_EFF" ;; "") EFF="" ;; *) EFF="$DEFAULT_EFF" ;; esac
   [[ "$PERSONA" =~ ^[a-z0-9_-]{1,24}$ ]] || { finish error "페르소나가 비어 있어 — 🎲 다시 뽑아줘"; return 1; }
@@ -252,36 +251,8 @@ PY
 )"
   fi
 
-  # 시즌 수위·금기 블록(운영자 260706 3계층: L0 절대선[00_지침 불변] > L1 시즌[여기] > L2 성향[TUNE]) —
-  # 문구 정본 = apps/yeta/policy.json(러너가 직접 읽음 · 세션엔 enum 정수만) · 기본값과 같은 축 = 생략 · 전축 기본 = 블록 생략 = 00_지침 기본값 유효.
-  POLICY_BLOCK=""
-  if [ -n "$POL" ] && [ "$POL" != "None" ]; then
-    POLICY_BLOCK="$(python3 - "$POL" "$ROOT/apps/yeta/policy.json" <<'PY'
-import sys, json
-try:
-    p = json.loads(sys.argv[1]); d = json.load(open(sys.argv[2], encoding="utf-8"))
-except Exception: sys.exit(0)
-if not isinstance(p, dict): sys.exit(0)
-L1 = d.get("L1") or {}
-lines = []
-for ax in (L1.get("axes") or []):
-    k = ax.get("key"); v = p.get(k)
-    if v is None: continue
-    try: v = max(0, min(2, int(v)))
-    except Exception: continue
-    if v == int(ax.get("default", 1)): continue          # 기본값 = 생략(00_지침 기본 문구가 유효)
-    t = (ax.get("prompt") or ["", "", ""])[v]
-    if t: lines.append("- " + t)
-if lines:
-    print(L1.get("header") or "[시즌 수위·금기 — 운영자 설정]")
-    print("\n".join(lines))
-PY
-)"
-  fi
-
   # 고정부(공통지침+카드 = 캐시 prefix) → 가변부 → 출력 계약. stdin 전달(ARG_MAX · §📰).
   prompt="${CBLOCK}
-${POLICY_BLOCK}
 ${TUNE_BLOCK}
 
 [공용 기억 — 유저에 대한 사실과 이 세계의 사건. 다른 주민도 알 만한 것]

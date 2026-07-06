@@ -177,31 +177,6 @@ export async function onRequestPost({ request, env }) {
     return json({ error: `GitHub dispatch ${st}` }, 502);
   }
 
-  if (op === 'policy') {   // 시즌 수위·금기(L1 · 운영자 260706 3계층) — GET(정의+현재값) / SET(enum 정수만 수용 = 프롬프트 주입 원천 차단 · 라벨/문구 정본 = apps/yeta/policy.json, 러너가 직접 읽음)
-    const sess = await readSess();
-    if (body.p !== undefined) {   // SET — {key: 0~2} 객체만 · key 화이트폼 · 최대 8축
-      const raw = body.p;
-      if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return json({ error: '정책은 {key:0~2} 객체' }, 400);
-      const p = {};
-      for (const [k, v] of Object.entries(raw)) {
-        if (Object.keys(p).length >= 8) break;   // 8축 캡 도달 = 조기 종료(초대형 페이로드 전량 순회 컷 · 기틀검증 보안 권고)
-        if (!/^[a-z]{1,16}$/.test(k)) continue;
-        p[k] = Math.max(0, Math.min(2, Math.round(Number(v) || 0)));
-      }
-      sess.policy = p; sess.updated = Date.now();
-      await putSess(sess);
-      return json({ ok: true, p });
-    }
-    let def = null;   // GET — 정의(policy.json raw)+세션 현재값. 뷰어 설정 탭이 이걸로 렌더 = 축·라벨·문구 전부 문서 의존(뷰어 하드코딩 0)
-    try {
-      const d = await fetch(`https://raw.githubusercontent.com/${REPO}/main/apps/yeta/policy.json`,
-        { headers: { 'user-agent': 'nomute-viewer' }, cf: { cacheTtl: 60, cacheEverything: true } });
-      if (d.ok) def = await d.json();
-    } catch {}
-    if (!def) return json({ error: '정책 정의 로드 실패' }, 502);
-    return json({ ok: true, def, p: sess.policy || {} });
-  }
-
   if (op === 'tune') {   // 캐릭터별 성향 게이지(16축 0~10 · 운영자 260706) — 숫자 배열만 수용 = 프롬프트 주입 원천 차단(라벨은 러너 상수)
     const persona = String(body.persona || '');
     if (!ID_RE.test(persona)) return json({ error: '잘못된 페르소나 id' }, 400);
@@ -216,9 +191,9 @@ export async function onRequestPost({ request, env }) {
 
   if (op === 'reset') {
     const cur = await env.YETA_R2.get(KEY);   // 삭제 직전 1세대 백업(reset 비가역 완화 — R2엔 copy 없어 get→put) · 비공개 버킷
-    let keepTunes = {}, keepPolicy = {};
-    if (cur) { try { const buf = await cur.arrayBuffer(); await env.YETA_R2.put('sessions/main.prev.json', buf, { httpMetadata: { contentType: 'application/json' } }); const prev = JSON.parse(new TextDecoder().decode(buf)); keepTunes = prev.tunes || {}; keepPolicy = prev.policy || {}; } catch {} }
-    await putSess({ turns: [], note: '', state: 'idle', tunes: keepTunes, policy: keepPolicy, updated: Date.now() });   // 페르소나는 비움 → 재뽑기 · 게이지·시즌 정책은 설정이라 승계(운영자 260706)
+    let keepTunes = {};
+    if (cur) { try { const buf = await cur.arrayBuffer(); await env.YETA_R2.put('sessions/main.prev.json', buf, { httpMetadata: { contentType: 'application/json' } }); keepTunes = (JSON.parse(new TextDecoder().decode(buf)).tunes) || {}; } catch {} }
+    await putSess({ turns: [], note: '', state: 'idle', tunes: keepTunes, updated: Date.now() });   // 페르소나는 비움 → 재뽑기 · 게이지는 설정이라 승계(운영자 260706)
     return json({ ok: true });
   }
 
@@ -271,12 +246,14 @@ export async function onRequestPost({ request, env }) {
   if (!MODELS.has(model)) model = 'claude-opus-4-8';
   if (!EFFORTS.has(effort)) effort = 'low';
 
-  // 채팅 상한 폐지(운영자 260706 — env YETA_MAX_PER_DAY 축 제거·무제한. 사용자별 상한은 후속 보류) · 카운터는 관측용 상시 기록 유지(KST 일자 키)
+  // 일 상한 — D4 무제한(기본 0) · env YETA_MAX_PER_DAY(양수)로만 발동 · 카운터는 관측용 상시 기록(KST 일자 키)
+  const cap = parseInt(env.YETA_MAX_PER_DAY || '0', 10) || 0;
   const kst = new Date(Date.now() + 9 * 3600e3).toISOString().slice(2, 10).replace(/-/g, '');
   const qkey = `quota/${kst}.json`;
   let used = 0;
   const qo = await env.YETA_R2.get(qkey);
   if (qo) { try { used = (await qo.json()).n || 0; } catch { used = 0; } }
+  if (cap > 0 && used >= cap) return json({ error: `오늘 대화 상한(${cap}턴) 도달 — 내일 다시`, remain: 0 }, 429);
 
   const sess = await readSess();
   if (!ID_RE.test(String(sess.persona || ''))) return json({ error: '페르소나가 없어 — 🎲 먼저 뽑아줘' }, 409);
@@ -291,11 +268,12 @@ export async function onRequestPost({ request, env }) {
   await env.YETA_R2.put(qkey, JSON.stringify({ n: used + 1 }), { httpMetadata: { contentType: 'application/json' } });
 
   const st = await dispatch(env);
-  if (st === 204) return json({ ok: true });
+  const remain = cap > 0 ? cap - used - 1 : -1;
+  if (st === 204) return json({ ok: true, remain });
   // dispatch 실패 = 답장 올 런이 없음 → awaiting 고착 방지: state=error 롤백(평의회②)
   sess.state = 'error'; sess.err = `발사 실패(GitHub ${st}) — 다시 보내면 재시도`; delete sess.awaiting_since;
   await putSess(sess);
-  return json({ error: `GitHub dispatch ${st}` }, 502);
+  return json({ error: `GitHub dispatch ${st}`, remain }, 502);
 }
 
 async function dispatch(env, wf = 'yeta-chat.yml', inputs = { char: 'main' }) {   // 워크플로 기동(기본 = 챗 · 단일 스레드 = char 'main' 고정 → concurrency 직렬 / ring = yeta-call.yml)
