@@ -318,12 +318,8 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   .ym-video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:none; }
   .ymain.video-lock .ym-video { display:block; }
   .ymain.video-lock .ymc, .ymain.video-lock .ymb, .ymain.video-lock .ym-band { display:none; }   /* 원·소년·라벨 = 영상 모드서 폐지(라벨 들어오고 나가는 것 제거 · 운영자 260706) */
-  /* 대형 로고 글래스모피즘 백플레이트 — 로고 뒤 프로스티드 판(운영자 260706 "로고가 글래스모피즘으로") · strike와 함께 등장 */
-  .ywm-glass { display:none; position:absolute; top:16.5%; left:50%; transform:translateX(-50%); width:74%; height:15%; z-index:3; border-radius:var(--r-l);
-    background:var(--glass); border:1px solid var(--glass-line); backdrop-filter:blur(var(--blur-l)) saturate(1.2); -webkit-backdrop-filter:blur(var(--blur-l)) saturate(1.2);
-    box-shadow:inset 0 1px 0 var(--glass-line), var(--shadow-card); }
-  .ymain.video-lock.strike .ywm-glass { display:block; animation:ymGlassIn .48s cubic-bezier(.22,.61,.36,1) both; }
-  @keyframes ymGlassIn { 0% { opacity:0; transform:translateX(-50%) translateY(-40%) scale(1.1); } 100% { opacity:1; transform:translateX(-50%); } }
+  /* 로고 글래스모피즘 = 백플레이트 판 폐지(운영자 260706 "옆에 저거 지우고") → 로고 글자 자체를 반투명+살짝 블러(불투명도 ≈30% · filter opacity()는 flicker 애니 opacity와 곱 = 애니 안 깨고 30% 감쇠) */
+  .ymain.video-lock .ym-stage .ym-wm { filter:blur(.8px) opacity(.3); }
   .ymc { position:absolute; left:48.8%; top:69.5%; width:97.7%; aspect-ratio:1; border-radius:50%; translate:-50% -50%; opacity:var(--st-glowop);
     background:radial-gradient(circle closest-side, #8fce01 0 76%, rgba(143,206,1,.34) 77.5%, rgba(143,206,1,.16) 82%, rgba(105,150,10,.08) 88%, transparent 96%);   /* 색·스톱 = main_v2 원 실측 프로파일(코어 rgb(143,206,1) 플랫 · 급락 엣지+얇은 글로우 · 피크 불투명 1) · closest-side = 스톱%가 반지름 기준(farthest-corner 디폴트 = √2 과대 실측 260706) */
     animation:ymcIn 1.5s var(--ease) both, ymcPulse calc(3.2s/var(--st-amp)) ease-in-out 1.5s infinite; }   /* 배경 원 선등장(1.5s 그윽하게 · 잠금 안무 플그 운영자 확정) → 글로우 펄스(등장 완료 후 시작) */
@@ -677,7 +673,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
 <body>
 <!-- ═══ YETA 메인 화면 (라이트·PIN 게이트 · 260704 재디자인 V1) ═══ -->
 <div class="ymain video-lock" id="ymain">
-  <div class="ym-stage" aria-hidden="true"><video class="ym-video" id="ymVideo" autoplay loop muted playsinline preload="auto" poster="assets/brand/lock-hero-poster.jpg"><source src="assets/brand/lock-hero.mp4" type="video/mp4"></video><div class="ymc"></div><div class="ym-band"></div><div class="ywm-glass"></div><div class="ywm ym-wm" id="ywmLock"></div><div class="ymb g1"></div><div class="ymb g2"></div><div class="ymb main"></div><div class="ym-flash"></div></div>   <!-- 잠금 스테이지 = 영상 히어로 베이스(운영자 260706 교체) + 대형 로고 글래스모피즘 + 번개 플래시 · 원/소년/라벨 = video-lock 모드서 숨김 -->
+  <div class="ym-stage" aria-hidden="true"><video class="ym-video" id="ymVideo" autoplay loop muted playsinline preload="auto" poster="assets/brand/lock-hero-poster.jpg"><source src="assets/brand/lock-hero.mp4" type="video/mp4"></video><div class="ymc"></div><div class="ym-band"></div><div class="ywm ym-wm" id="ywmLock"></div><div class="ymb g1"></div><div class="ymb g2"></div><div class="ymb main"></div><div class="ym-flash"></div></div>   <!-- 잠금 스테이지 = 영상 히어로 베이스(운영자 260706 교체) + 대형 로고 글래스모피즘 + 번개 플래시 · 원/소년/라벨 = video-lock 모드서 숨김 -->
   <canvas class="ym-matrix" id="ymMatrix" aria-hidden="true"></canvas>   <!-- 승인 다이브 = 캐릭터 실루엣에 초록 매트릭스 코드 레인(운영자 260706) -->
   <div class="ym-ovl" aria-hidden="true"></div>   <!-- 잠금 스포티파이 블랙 67% 오버레이 -->
   <div class="ym-zap" aria-hidden="true"><i></i><i></i></div>   <!-- PIN 승인 = 전뇌 글리치 1회 -->
