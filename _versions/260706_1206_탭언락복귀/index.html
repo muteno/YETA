@@ -363,6 +363,16 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
     color:var(--accent); box-shadow:inset 0 1px 0 var(--glass-line), var(--shadow-card), 0 0 26px rgba(var(--accent-rgb),.16);
     transition:transform .28s var(--ease), box-shadow .3s var(--ease); touch-action:manipulation; }
   .ym-access:active { transform:scale(var(--press-m)); }
+  /* 슬라이드 언락(운영자 260706 "그어서 푸는 느낌" 확정) — 트랙 글래스 필 + 라임 노브 + 샤인 힌트 */
+  .ym-slide { position:relative; width:236px; height:54px; border-radius:var(--r-pill); background:var(--glass); border:1px solid var(--glass-line); display:flex; align-items:center; padding:4px;
+    backdrop-filter:blur(var(--blur-m)); -webkit-backdrop-filter:blur(var(--blur-m)); box-shadow:inset 0 1px 0 var(--glass-line); }
+  .ym-knob { position:relative; z-index:2; width:46px; height:46px; border-radius:50%; background:rgba(var(--accent-rgb),.18); border:1px solid rgba(var(--accent-rgb),.45); color:var(--accent);
+    display:grid; place-items:center; cursor:grab; touch-action:none; box-shadow:0 0 16px rgba(var(--accent-rgb),.2); }
+  .ym-knob svg { width:20px; height:20px; }
+  .ym-shint { position:absolute; left:0; right:0; text-align:center; font-size:var(--fs-sm); font-weight:var(--fw-b); color:var(--mut); pointer-events:none;
+    -webkit-mask-image:linear-gradient(100deg, rgba(0,0,0,.4) 30%, #000 50%, rgba(0,0,0,.4) 70%); mask-image:linear-gradient(100deg, rgba(0,0,0,.4) 30%, #000 50%, rgba(0,0,0,.4) 70%);
+    -webkit-mask-size:220% 100%; mask-size:220% 100%; animation:ymShine 2.2s linear infinite; }
+  @keyframes ymShine { from { -webkit-mask-position:150% 0; mask-position:150% 0; } to { -webkit-mask-position:-120% 0; mask-position:-120% 0; } }
   .ym-access svg { width:24px; height:24px; }
   /* 텍스트 라벨 대신 자물쇠가 숨쉬듯 커졌다 작아지며(작을 때 약하게 디밍) "눌러" 신호 = 접속 어포던스(운영자 260705) · 등장 페이드는 아래 .ym-access-card 블록 */
   @keyframes ymLockBreathe { 0%,100% { transform:scale(.96); opacity:.78; } 50% { transform:scale(1.08); opacity:1; } }
@@ -407,7 +417,6 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   .lk-key:nth-child(3n+2), .lk-key:nth-child(3n) { border-left:1px solid var(--line2); }
   .lk-key:nth-child(n+4) { border-top:1px solid var(--line2); }
   .lk-key:active { background:rgba(255,255,255,.05); transform:scale(.93); }
-  .lk-key:focus:not(:focus-visible) { outline:none; }   /* 진입 시 프로그램 포커스의 네모 테두리 억제(운영자 260706 스샷 · 키보드 접근성 링은 유지) */
   .lk-key.hit { background:rgba(var(--pin-ac-rgb),.14); color:var(--pin-ac); }
   .lk-key.empty { pointer-events:none; }
   .lk-key:focus:not(:focus-visible) { outline:none; }   /* 프로그램 포커스(pin-mode 진입 이동)는 링 없음 · 키보드 탐색은 UA 링 유지 */
@@ -647,9 +656,9 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   </div>
   <div class="ym-fit">   <!-- 9:16 앵커 = 자물쇠·PIN이 화면비 무관하게 소년 몸통 좌표에 고정(260706) -->
     <div class="ym-access-card">
-      <button class="ym-access" id="ymAccess" type="button" aria-label="접속">
+      <div class="ym-slide" id="ymSlide"><button class="ym-knob" id="ymAccess" type="button" aria-label="밀어서 접속">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path class="ym-shackle" d="M8 11V7a4 4 0 018 0v4"/></svg>
-      </button>
+      </button><span class="ym-shint">밀어서 접속</span></div>
     </div>
     <div class="ym-pin">
       <div class="lk-m">PIN 입력</div>
@@ -1252,7 +1261,17 @@ try { if (new URLSearchParams(location.search).get('yeta')) setTimeout(() => ope
     setTimeout(() => ymain.classList.add('strike'), 840);
     setTimeout(() => { ymain.classList.add('calm', 'pin-mode'); ymPinFocus(); }, 1330);
   }
-  accessBtn.onclick = () => { yVib([50, 40, 90]); ymEnterPin(); };   // 탭 언락 복귀(운영자 260706 "처음처럼 누르는 거") · 진동 유지
+  (() => {   // 슬라이드 언락: 노브를 끝까지 그으면 진입(탭만으로는 안 풀림) + 진동
+    const tr = $('#ymSlide'), kn = accessBtn; if (!tr || !kn) return;
+    let sx = null;
+    kn.addEventListener('pointerdown', e => { sx = e.clientX; try { kn.setPointerCapture(e.pointerId); } catch {} kn.style.transition = 'none'; });
+    kn.addEventListener('pointermove', e => { if (sx == null) return;
+      const max = tr.clientWidth - kn.offsetWidth - 8, dx = Math.max(0, Math.min(max, e.clientX - sx));
+      kn.style.transform = `translateX(${dx}px)`;
+      if (dx >= max - 3) { sx = null; yVib([50, 40, 90]); ymEnterPin(); setTimeout(() => { kn.style.transform = ''; }, 700); } });
+    const rel = () => { if (sx == null) return; sx = null; kn.style.transition = 'transform .3s var(--ease)'; kn.style.transform = ''; setTimeout(() => { kn.style.transition = ''; }, 320); };
+    kn.addEventListener('pointerup', rel); kn.addEventListener('pointercancel', rel);
+  })();
   padEl.onclick = async e => {
     const b = e.target.closest('.lk-key'); if (!b || unlocked || !ymain.classList.contains('pin-mode')) return;   // pin-mode 게이트 = 비가시 패드 입력 차단(평의회8)
     if (b.dataset.back) { flash(b); yVib(8); val = val.slice(0, -1); errEl.textContent = ''; errEl.className = 'lk-err'; slotsEl.classList.remove('bad'); fill(); return; }
