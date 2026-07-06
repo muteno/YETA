@@ -1,0 +1,286 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>웹앱 게이지 배선 — 선택 플레이그라운드</title>
+<style>
+/* ═══ 값 = viewer/index.html :root 사본(시안 자기완결용 · 정본은 viewer) ═══ */
+:root{
+  --fg:#FFFFFF; --fg-2:#C4C9C4; --mut:#8B8F8A; --bg:#121212;
+  --accent:#CFFF40; --accent-rgb:207,255,64; --cobalt:#3D6BFF; --cobalt-rgb:61,107,255;
+  --danger:#FF6B5E; --danger-rgb:255,107,94;
+  --glass:rgba(255,255,255,.055); --glass-2:rgba(255,255,255,.09); --glass-line:rgba(255,255,255,.14);
+  --r-s:9px; --r-m:11px; --r-l:16px; --r-modal:22px; --r-pill:999px;
+  --sp-2:12px; --sp-3:18px;
+  --fs-h2:15px; --fs-h3:14px; --fs-body:15px; --fs-sm:12px; --fs-xs:11px;
+  --fw-x:800; --fw-b:700; --lh-base:1.6;
+  --ease:cubic-bezier(.2,.7,.3,1); --blur-m:16px;
+  --press-m:.9; --press-l:.95;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{background:#0b0c0b;color:var(--fg);font:14px/1.6 Pretendard,-apple-system,system-ui,'Apple SD Gothic Neo',sans-serif;-webkit-font-smoothing:antialiased;max-width:760px;margin-inline:auto;padding:20px 14px 150px}
+h1{font-size:17px;font-weight:var(--fw-x);margin:0 0 4px}
+h1 b{color:var(--accent)}
+.sub{font-size:var(--fs-sm);color:var(--mut);margin:0 0 18px}
+h2{font-size:var(--fs-h2);font-weight:var(--fw-x);margin:26px 0 4px;color:var(--accent)}
+h2 .n{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:rgba(var(--accent-rgb),.14);color:var(--accent);font-size:var(--fs-xs);margin-right:7px;vertical-align:-3px}
+.cap{font-size:var(--fs-sm);color:var(--mut);margin:0 0 12px}
+.warn{color:#ffb38a}
+
+/* ── ② 프리셋 카드 ── */
+.presets{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:560px){.presets{grid-template-columns:1fr}}
+.pcard{position:relative;text-align:left;border:1px solid var(--glass-line);border-radius:var(--r-l);background:var(--glass);padding:13px 14px 12px;cursor:pointer;font:inherit;color:inherit;transition:border-color .25s var(--ease),background .25s var(--ease),transform .15s var(--ease)}
+.pcard:active{transform:scale(var(--press-l))}
+.pcard.on{border-color:rgba(var(--accent-rgb),.65);background:rgba(var(--accent-rgb),.07)}
+.pcard .pk{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;border-radius:7px;background:var(--glass-2);color:var(--fg-2);font-weight:var(--fw-x);font-size:var(--fs-sm);margin-right:8px;transition:background .25s var(--ease),color .25s var(--ease)}
+.pcard.on .pk{background:var(--accent);color:#121212}
+.pcard .pt{font-weight:var(--fw-b);font-size:var(--fs-h3)}
+.pcard .star{color:var(--accent);font-size:var(--fs-xs);font-weight:var(--fw-x);margin-left:6px}
+.pcard .pd{font-size:var(--fs-sm);color:var(--fg-2);margin:7px 0 0;line-height:1.55}
+.pcard .pm{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
+.pcard .chip{font-size:var(--fs-xs);color:var(--mut);border:1px solid var(--glass-line);border-radius:var(--r-pill);padding:1px 9px}
+.pcard .chip.g{color:#9be09b;border-color:rgba(155,224,155,.35)}
+.pcard .chip.o{color:#ffb38a;border-color:rgba(255,179,138,.35)}
+
+/* ── ① 배선 다이어그램 ── */
+.diagram{border:1px solid var(--glass-line);border-radius:var(--r-l);background:var(--glass);padding:16px 14px;overflow-x:auto}
+.lane{display:flex;align-items:center;gap:0;min-width:560px}
+.node{flex:1;position:relative;border:1px solid var(--glass-line);border-radius:var(--r-m);background:rgba(18,18,18,.72);padding:9px 10px;text-align:center;transition:border-color .3s var(--ease),box-shadow .3s var(--ease)}
+.node b{display:block;font-size:var(--fs-sm);font-weight:var(--fw-b)}
+.node i{display:block;font-style:normal;font-size:var(--fs-xs);color:var(--mut);margin-top:2px}
+.arrow{flex:none;width:26px;height:2px;background:var(--glass-line);position:relative;margin:0 2px}
+.arrow::after{content:"";position:absolute;right:-1px;top:-3.5px;border:4.5px solid transparent;border-left-color:var(--glass-line)}
+.badge{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(100% + 5px);white-space:nowrap;font-size:var(--fs-xs);font-weight:var(--fw-b);border-radius:var(--r-pill);padding:1px 9px;transition:opacity .3s var(--ease)}
+.badge.hard{background:rgba(var(--danger-rgb),.16);color:var(--danger);border:1px solid rgba(var(--danger-rgb),.4)}
+.badge.doc{background:rgba(var(--accent-rgb),.14);color:var(--accent);border:1px solid rgba(var(--accent-rgb),.4)}
+.ssotrow{display:flex;justify-content:center;margin:0 0 30px;transition:opacity .35s var(--ease),transform .35s var(--ease)}
+.ssot{position:relative;border:1.5px dashed rgba(var(--accent-rgb),.6);border-radius:var(--r-m);background:rgba(var(--accent-rgb),.06);padding:8px 16px;text-align:center}
+.ssot b{font-size:var(--fs-sm);color:var(--accent)}
+.ssot i{display:block;font-style:normal;font-size:var(--fs-xs);color:var(--mut)}
+.ssot::before,.ssot::after{content:"";position:absolute;top:100%;height:22px;width:2px;background:repeating-linear-gradient(rgba(var(--accent-rgb),.55) 0 4px,transparent 4px 8px)}
+.ssot::before{left:18%}.ssot::after{right:18%}
+.diagram.mode-D .ssotrow{opacity:0;transform:translateY(-6px);pointer-events:none}
+.diagram.mode-D .lane{margin-top:-38px}
+.diagram .b-doc{opacity:0}
+.diagram.mode-A .b-hard,.diagram.mode-B .b-hard,.diagram.mode-C .b-hard{opacity:0}
+.diagram.mode-A .b-doc,.diagram.mode-B .b-doc,.diagram.mode-C .b-doc{opacity:1}
+.diagram.mode-A .n-view,.diagram.mode-A .n-run,.diagram.mode-B .n-view,.diagram.mode-B .n-run,.diagram.mode-C .n-view,.diagram.mode-C .n-run{border-color:rgba(var(--accent-rgb),.5)}
+.dnote{font-size:var(--fs-xs);color:var(--mut);margin:12px 2px 0;min-width:560px}
+.dnote b{color:var(--fg-2)}
+
+/* ── ③ 프롬프트 주입 시뮬레이터 ── */
+.sim{border:1px solid var(--glass-line);border-radius:var(--r-l);background:var(--glass);padding:14px}
+.simtabs{display:flex;gap:8px;margin-bottom:12px}
+.simtabs button{flex:1;font:inherit;font-size:var(--fs-sm);font-weight:var(--fw-b);color:var(--fg-2);background:var(--glass-2);border:1px solid var(--glass-line);border-radius:var(--r-pill);padding:7px 0;cursor:pointer;transition:background .25s var(--ease),color .25s var(--ease),transform .15s var(--ease)}
+.simtabs button:active{transform:scale(var(--press-m))}
+.simtabs button.on{background:var(--accent);color:#121212;border-color:transparent}
+.srow{display:flex;align-items:center;gap:10px;margin:5px 0;font-size:var(--fs-sm)}
+.srow label{flex:none;width:96px;color:var(--fg-2)}
+.srow label small{display:block;color:var(--mut);font-size:var(--fs-xs);line-height:1.2}
+.srow input[type=range]{flex:1;accent-color:var(--accent);height:20px;min-width:0}
+.srow output{flex:none;width:20px;text-align:right;color:var(--accent);font-weight:var(--fw-b);font-variant-numeric:tabular-nums}
+.srow .gone{flex:none;font-size:var(--fs-xs);color:var(--danger);width:88px;text-align:right}
+.srow.dead input{accent-color:#555}
+.srow.dead output{color:var(--mut)}
+.promptbox{margin-top:12px;border:1px dashed rgba(var(--cobalt-rgb),.5);border-radius:var(--r-m);background:rgba(var(--cobalt-rgb),.05);padding:11px 12px;font:12px/1.7 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--fg-2);white-space:pre-wrap;word-break:break-all;min-height:96px}
+.promptbox .hd{color:#7d9dff;font-weight:var(--fw-b)}
+.promptbox .miss{color:var(--danger)}
+.promptbox .skip{color:var(--mut)}
+
+/* ── ④ 미세조정 ── */
+.fine{border:1px solid var(--glass-line);border-radius:var(--r-l);background:var(--glass);padding:6px 14px 14px}
+.frow{margin-top:11px}
+.frow .fl{font-size:var(--fs-sm);font-weight:var(--fw-b);color:var(--fg-2)}
+.frow .fl .tag{font-size:var(--fs-xs);font-weight:var(--fw-b);color:#ffb38a;border:1px solid rgba(255,179,138,.4);border-radius:var(--r-pill);padding:0 8px;margin-left:7px;vertical-align:1px}
+.opts{display:flex;gap:8px;flex-wrap:wrap;margin-top:7px}
+.opts button{font:inherit;font-size:var(--fs-sm);color:var(--fg-2);background:var(--glass-2);border:1px solid var(--glass-line);border-radius:var(--r-pill);padding:6px 14px;cursor:pointer;transition:background .25s var(--ease),color .25s var(--ease),border-color .25s var(--ease),transform .15s var(--ease)}
+.opts button:active{transform:scale(var(--press-m))}
+.opts button.on{background:rgba(var(--accent-rgb),.14);color:var(--accent);border-color:rgba(var(--accent-rgb),.55)}
+.opts button:disabled{opacity:.35;cursor:default}
+.fhint{font-size:var(--fs-xs);color:var(--mut);margin-top:5px}
+
+/* ── ⑤ 선택값 + 복사 바 ── */
+.specbox{border:1px solid var(--glass-line);border-radius:var(--r-l);background:var(--glass);padding:12px 14px;font:12px/1.75 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--fg-2);white-space:pre-wrap}
+.bar{position:fixed;left:0;right:0;bottom:0;background:rgba(11,12,11,.9);backdrop-filter:blur(var(--blur-m));-webkit-backdrop-filter:blur(var(--blur-m));border-top:1px solid var(--glass-line);padding:10px 14px calc(10px + env(safe-area-inset-bottom));display:flex;gap:10px;justify-content:center;align-items:center}
+.bar .cur{font-size:var(--fs-sm);color:var(--mut)}
+.bar .cur b{color:var(--accent)}
+.bar button{font:inherit;background:var(--accent);color:#121212;border:none;border-radius:var(--r-pill);padding:11px 24px;font-size:var(--fs-h3);font-weight:var(--fw-x);cursor:pointer;transition:transform .15s var(--ease)}
+.bar button:active{transform:scale(var(--press-l))}
+#toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%) translateY(6px);background:var(--accent);color:#121212;padding:8px 18px;border-radius:var(--r-pill);font-weight:var(--fw-b);font-size:var(--fs-sm);opacity:0;transition:opacity .3s var(--ease),transform .3s var(--ease);pointer-events:none;white-space:nowrap}
+#toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.foot{margin-top:26px;font-size:var(--fs-xs);color:var(--mut);border-top:1px solid var(--glass-line);padding-top:12px}
+.foot b{color:var(--fg-2)}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+
+<h1>웹앱 게이지 배선 — <b>선택 플레이그라운드</b></h1>
+<p class="sub">시트가 34축으로 개편됐는데 웹앱(뷰어·러너)은 16축 하드코딩 상태. <b style="color:var(--fg-2)">어떻게 문서(SSOT) 의존으로 바꿀지</b> 아래에서 고르고 하단 [선택 확정 복사] → 클로드한테 붙여넣어줘. ⚠ 이 선택은 파이프라인(기틀) 변경 승인이다.</p>
+
+<h2><span class="n">1</span>반영 방식 프리셋</h2>
+<p class="cap">카드를 탭하면 아래 배선도·사양이 바뀐다.</p>
+<div class="presets" id="presets">
+  <button class="pcard" data-p="A"><span class="pk">A</span><span class="pt">시트 확정 후 한 번에</span><span class="star">★ 추천</span>
+    <p class="pd">네가 시트에서 축·값을 조정해 [전체 내보내기]로 확정하면 → 축 정의 파일 신설 + 뷰어·러너·게이트웨이 34축 전환을 한 번에.</p>
+    <div class="pm"><span class="chip g">두 번 손 안 댐</span><span class="chip">시트 확정 대기</span><span class="chip">작업 1회·중</span></div></button>
+  <button class="pcard" data-p="B"><span class="pk">B</span><span class="pt">축 정의 파일만 지금 먼저</span>
+    <p class="pd">16축은 그대로 두고, 코드 2곳(뷰어·러너)의 하드코딩 라벨만 먼저 문서 파일로 추출. 34축 확장은 시트 확정 후 값만 갈아끼움.</p>
+    <div class="pm"><span class="chip g">구조 먼저 확보</span><span class="chip o">총 2회 손</span><span class="chip">작업 소+소</span></div></button>
+  <button class="pcard" data-p="C"><span class="pk">C</span><span class="pt">지금 바로 34축 전부</span>
+    <p class="pd">현재 시트의 34축 구성을 확정본으로 보고 축 정의 파일 + 뷰어 UI + 러너 + 게이트웨이까지 즉시 전환. 이후 축이 바뀌면 정의 파일만 수정.</p>
+    <div class="pm"><span class="chip g">즉시 라이브</span><span class="chip o">미확정 축이 굳음</span><span class="chip">작업 1회·중</span></div></button>
+  <button class="pcard" data-p="D"><span class="pk">D</span><span class="pt">현행 유지 (조사만)</span>
+    <p class="pd">웹앱 반영은 나중에 따로 지시. 시트(사람용 원장)와 웹앱(16축)이 어긋난 채 유지 — 당장 동작엔 무해.</p>
+    <div class="pm"><span class="chip">작업 0</span><span class="chip o">16↔34 드리프트 지속</span></div></button>
+</div>
+
+<h2><span class="n">2</span>배선 실물 — 선택하면 바뀌는 것</h2>
+<p class="cap">폰에선 상자를 <b style="color:var(--fg-2)">옆으로 밀면</b> 배선 끝(러너→프롬프트)까지 보인다.</p>
+<div class="diagram" id="diagram">
+  <div class="ssotrow"><div class="ssot"><b>📄 축 정의 SSOT</b><i>apps/yeta/ 축 라벨·순서·개수 — 문서가 정본</i></div></div>
+  <div class="lane">
+    <div class="node n-view"><span class="badge hard b-hard">16축 라벨 하드코딩</span><span class="badge doc b-doc">정의 파일 읽음</span><b>뷰어 ⚙</b><i>성향 슬라이더</i></div>
+    <div class="arrow"></div>
+    <div class="node"><b>op tune</b><i>숫자만 수용 = 인젝션 차단</i></div>
+    <div class="arrow"></div>
+    <div class="node"><b>R2 세션</b><i>tunes[캐릭터]</i></div>
+    <div class="arrow"></div>
+    <div class="node n-run"><span class="badge hard b-hard">16축 라벨 하드코딩</span><span class="badge doc b-doc">정의 파일 읽음</span><b>러너 변환</b><i>5구간 자연어</i></div>
+    <div class="arrow"></div>
+    <div class="node"><b>프롬프트</b><i>[성향 보정] 블록</i></div>
+  </div>
+  <p class="dnote" id="dnote"></p>
+</div>
+
+<h2><span class="n">3</span>주입 실물 재현 — 러너가 모델한테 뭘 넣나</h2>
+<p class="cap">러너의 실제 변환 로직(0–1 극단↓ · 2–4 낮게 · <b style="color:var(--fg-2)">5–6 생략=카드 원본</b> · 7–8 높게 · 9–10 극단↑) 그대로 재현. 대표 6축만 만져봐 — 아래 파란 상자가 실제 프롬프트에 박히는 블록이다.</p>
+<div class="sim">
+  <div class="simtabs"><button id="m16">현행 · 16축</button><button id="m34" class="on">개편 · 34축</button></div>
+  <div id="srows"></div>
+  <div class="promptbox" id="pbox"></div>
+</div>
+
+<h2><span class="n">4</span>미세조정 <span style="font-size:var(--fs-xs);color:#ffb38a;font-weight:400">⚠ 전부 기틀 축 — 선택 = 승인</span></h2>
+<div class="fine" id="fine">
+  <div class="frow" data-k="fmt"><div class="fl">축 정의 파일 포맷</div>
+    <div class="opts"><button data-v="json" class="on">JSON<small> (기계 정본)</small></button><button data-v="md">MD 표<small> (사람+기계 겸용)</small></button></div>
+    <p class="fhint">json = 러너·뷰어가 바로 읽음(추천) · md = 읽기 좋지만 파서 한 겹 추가</p></div>
+  <div class="frow" data-k="ui"><div class="fl">뷰어 34축 UI</div>
+    <div class="opts"><button data-v="accordion" class="on">4계층 아코디언</button><button data-v="flat">전체 펼침</button><button data-v="tabs">계층 탭</button></div>
+    <p class="fhint">34축을 한 화면에 다 펼치면 폰에서 길다 — 아코디언(기본 접힘) 추천</p></div>
+  <div class="frow" data-k="roster"><div class="fl">roster 캐릭터 기본값(tune)</div>
+    <div class="opts"><button data-v="sheet" class="on">시트 34축 값으로 이관</button><button data-v="neutral">기존 16 유지 + 신설 중립5</button></div>
+    <p class="fhint">시트에서 잡은 서사 기반 초기값을 캐릭터 기본으로 쓸지 (⚠ 현 roster = 옛 6인 — 신 라인업 교체는 시트 확정 작업에 포함)</p></div>
+  <div class="frow" data-k="gate"><div class="fl">게이트웨이 개수 검증</div>
+    <div class="opts"><button data-v="sync" class="on">정의 파일과 동기<small> (현 34 고정)</small></button><button data-v="loose">유연<small> (≤40 허용)</small></button></div>
+    <p class="fhint">둘 다 숫자 배열만 받는 보안 설계는 그대로 — 라벨은 절대 클라이언트에서 안 받음</p></div>
+</div>
+
+<h2><span class="n">5</span>선택값</h2>
+<div class="specbox" id="spec"></div>
+
+<p class="foot"><b>재현 한계 각주</b> — 이 페이지는 결정용 시뮬레이션이다: 코드는 아직 아무것도 안 바뀌었고, 복사해 넘긴 선택이 실제 반영 사양이 된다. 배선도는 개념도(실물 = viewer/index.html·functions/api/yeta.js·.github/scripts/yeta_chat.sh). 주입 재현은 러너 변환 로직과 동일하되 대표 6축만 표시(전축은 같은 규칙 반복). 콘텐츠 제한(수위·금기)은 이 선택과 무관하게 이미 문서 정본(apps/yeta/00_지침 §안전 경계 + 각 카드)이며 코드에 없다.</p>
+
+<div class="bar"><span class="cur">선택: <b id="curp">A</b></span><button id="copyBtn">📋 선택 확정 복사</button></div>
+<div id="toast">복사 완료 — 클로드한테 붙여넣어줘</div>
+
+<script>
+(function(){
+var LS='yeta_wiring_choice_v1';
+var PRESETS={A:'시트 확정 후 한 번에 (축 정의 파일 SSOT 신설 + 34축 전환)',B:'축 정의 파일만 지금 먼저 (16축 유지 · 34축은 시트 확정 후)',C:'지금 바로 34축 전부 (현 시트 구성을 확정본으로)',D:'현행 유지 (웹앱 반영은 나중에 별도 지시)'};
+var FMT={json:'apps/yeta/tune_axes.json (JSON)',md:'apps/yeta/튜닝축_정의.md (MD 표)'};
+var UI={accordion:'4계층 아코디언(기본 접힘)',flat:'전체 펼침',tabs:'계층 탭'};
+var ROSTER={sheet:'시트 34축 값으로 이관',neutral:'기존 16축 유지 + 신설은 중립 5'};
+var GATE={sync:'축 정의 파일과 개수 동기(현 34)',loose:'유연(≤40 허용)'};
+var st={p:'A',fmt:'json',ui:'accordion',roster:'sheet',gate:'sync'};
+try{var s=JSON.parse(localStorage.getItem(LS)||'null'); if(s&&PRESETS[s.p]) st=Object.assign(st,s);}catch(e){}
+
+/* 대표 6축: [라벨, 계층, 기본값, 16축에 존재?] — 값 기본 = 세라 결(생략 로직이 보이게 5 포함) */
+var AXES=[['지능(지력)','기본',5,false],['관능(색기)','기본',3,false],['말수','태도',3,true],['플러팅 수위','관계',3,true],['설정 몰입도','세계관',8,false],['메타 허용','세계관',2,false]];
+var vals=AXES.map(function(a){return a[2]});
+var mode34=true;
+
+function band(v){v=Math.max(0,Math.min(10,Math.round(v)));if(v<=1)return'극단적으로 낮게';if(v<=4)return'낮게';if(v<=6)return null;if(v<=8)return'높게';return'극단적으로 높게';}
+function esc(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;');}
+
+function drawSim(){
+  var rows=document.getElementById('srows');rows.innerHTML='';
+  AXES.forEach(function(a,i){
+    var dead=!mode34&&!a[3];
+    var r=document.createElement('div');r.className='srow'+(dead?' dead':'');
+    r.innerHTML='<label>'+a[0]+'<small>'+a[1]+(a[3]?'':' · 신설')+'</small></label>'
+      +'<input type="range" min="0" max="10" step="1" value="'+vals[i]+'">'
+      +'<output>'+vals[i]+'</output>'+(dead?'<span class="gone">16축에 없음</span>':'');
+    var inp=r.querySelector('input');
+    inp.addEventListener('input',function(){vals[i]=+inp.value;r.querySelector('output').textContent=inp.value;drawPrompt();});
+    rows.appendChild(r);
+  });
+  drawPrompt();
+}
+function drawPrompt(){
+  var lines=[],missed=[],skipped=[];
+  AXES.forEach(function(a,i){
+    if(!mode34&&!a[3]){missed.push(a[0]);return;}
+    var b=band(vals[i]);
+    if(b)lines.push('- '+a[0]+': '+b+' ('+vals[i]+'/10)');else skipped.push(a[0]);
+  });
+  var h='<span class="hd">[성향 보정 — 유저가 설정한 강도 조절. 카드가 기본값이며, 아래 축만 지시 강도로 보정하라. 정체성·말투 제1규칙·금기는 절대 불변]</span>\n';
+  h+=lines.length?esc(lines.join('\n')):'<span class="skip">(전 축 중립 → 블록 자체가 생략 = 카드 원본 그대로)</span>';
+  if(skipped.length)h+='\n<span class="skip">· 생략(중립 5~6 = 카드 원본): '+esc(skipped.join(' · '))+'</span>';
+  if(missed.length)h+='\n<span class="miss">· 주입 불가(현행 16축에 축이 없음): '+esc(missed.join(' · '))+' ← 이게 지금의 갭</span>';
+  document.getElementById('pbox').innerHTML=h;
+}
+document.getElementById('m16').addEventListener('click',function(){mode34=false;this.classList.add('on');document.getElementById('m34').classList.remove('on');drawSim();});
+document.getElementById('m34').addEventListener('click',function(){mode34=true;this.classList.add('on');document.getElementById('m16').classList.remove('on');drawSim();});
+
+var DN={
+ A:'<b>A 선택 시:</b> 점선 상자(축 정의 파일)가 생기고 뷰어·러너의 빨간 하드코딩이 사라진다 — 시트 확정 후 34축으로 한 번에 전환. 이후 축 수정 = 문서 파일 하나.',
+ B:'<b>B 선택 시:</b> 점선 상자가 먼저 생기고(16축 그대로 추출) 하드코딩만 제거. 34축 확장은 시트 확정 후 정의 파일 값 교체로 끝.',
+ C:'<b>C 선택 시:</b> 점선 상자 + 34축 전환을 지금 즉시. 시트에서 축이 또 바뀌면 정의 파일만 고치면 된다.',
+ D:'<b>D(현행):</b> 뷰어·러너 두 곳에 16축 라벨이 각각 박혀 있고(빨간 배지) 순서로 결합 — 시트(34축)와 어긋난 상태가 유지된다.'};
+
+function apply(){
+  document.querySelectorAll('#presets .pcard').forEach(function(c){c.classList.toggle('on',c.dataset.p===st.p);});
+  document.getElementById('diagram').className='diagram mode-'+st.p;
+  document.getElementById('dnote').innerHTML=DN[st.p];
+  document.getElementById('curp').textContent=st.p;
+  var d=st.p==='D';
+  document.querySelectorAll('#fine .opts button').forEach(function(b){b.disabled=d;});
+  document.getElementById('spec').textContent=specText();
+  try{localStorage.setItem(LS,JSON.stringify(st));}catch(e){}
+}
+function specText(){
+  var t='[웹앱 게이지 배선 — 운영자 선택 확정]\n방식: '+st.p+'. '+PRESETS[st.p];
+  if(st.p!=='D'){
+    t+='\n축 정의 파일: '+FMT[st.fmt]+' (현행: 뷰어·러너 코드 상수 — 갱신)'
+     +'\n뷰어 UI: '+UI[st.ui]+' (현행: 16축 전체 펼침)'
+     +'\nroster 기본값: '+ROSTER[st.roster]+' (현행: 옛 6인 16축)'
+     +'\n게이트웨이 검증: '+GATE[st.gate]+' (현행: 16 고정 · 숫자만 수용 보안 유지)';
+  }
+  t+='\n비고: 콘텐츠 제한(수위·금기)은 문서 정본 유지(00_지침 §안전 경계 + 카드) — 코드 이관 없음\n⚠ 기틀 변경 승인으로 처리';
+  return t;
+}
+document.getElementById('presets').addEventListener('click',function(e){
+  var c=e.target.closest('.pcard');if(!c)return;st.p=c.dataset.p;apply();
+});
+document.getElementById('fine').addEventListener('click',function(e){
+  var b=e.target.closest('button');if(!b||b.disabled)return;
+  var row=b.closest('.frow');st[row.dataset.k]=b.dataset.v;
+  row.querySelectorAll('button').forEach(function(x){x.classList.toggle('on',x===b);});
+  apply();
+});
+document.querySelectorAll('#fine .frow').forEach(function(row){
+  row.querySelectorAll('button').forEach(function(b){b.classList.toggle('on',b.dataset.v===st[row.dataset.k]);});
+});
+document.getElementById('copyBtn').addEventListener('click',function(){
+  var txt=specText();
+  (navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(txt):Promise.reject()).then(show,function(){
+    var ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();
+    try{document.execCommand('copy');show();}catch(e){alert('복사 실패 — 아래 선택값 상자를 수동으로 긁어줘');}
+    ta.remove();
+  });
+  function show(){var t=document.getElementById('toast');t.classList.add('on');setTimeout(function(){t.classList.remove('on');},2200);}
+});
+apply();drawSim();
+})();
+</script>
+</html>
