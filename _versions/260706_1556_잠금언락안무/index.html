@@ -294,7 +294,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   /* PIN 모드 딤 = 이미지를 덮지 않음(운영자 260705 "기존 이미지 안 덮고") — 풀블러 폐지, 키패드 있는 하단만 은은한 그라데 스크림(가독). 얼굴·헤드라인은 그대로 노출. */
   .ymain::before { content:''; position:absolute; inset:0; z-index:1; background:linear-gradient(transparent 44%, rgba(0,0,0,0) 86%); pointer-events:none; transition:background .5s var(--ease); }
   .ymain.pin-mode::before { background:none; }   /* 추가 딤 폐지 — 균일 오버레이(.ym-ovl 67%)가 대체(운영자 260706 확정) */
-  .ym-ovl { position:absolute; inset:0; z-index:1; background:rgba(18,18,18,.67); pointer-events:none; transition:opacity 1.15s var(--ease); }   /* 페이드 1.15s(잠금 안무 플그 운영자 확정) */   /* 잠금 오버레이 = 스포티파이 블랙 67%(운영자 260706 플그 확정) · 언락 = 페이드 퇴장 */
+  .ym-ovl { position:absolute; inset:0; z-index:1; background:rgba(18,18,18,.67); pointer-events:none; transition:opacity .6s var(--ease); }   /* 잠금 오버레이 = 스포티파이 블랙 67%(운영자 260706 플그 확정) · 언락 = 페이드 퇴장 */
   .ymain.unlocked .ym-ovl { opacity:0; }
   .ym-zap { position:absolute; inset:0; z-index:6; pointer-events:none; display:none; }
   .ymain.zap .ym-zap { display:block; }
@@ -331,7 +331,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   @keyframes ymBandIn { from { transform:rotate(-6.2deg) translateX(-260%); } to { transform:rotate(-6.2deg) translateX(0); } }
   .ymain.go .ym-band { animation:ymBandOut .34s var(--ease) both; }   /* 잠금 터치 = 각도 유지한 채 싹 퇴장(.34s · 잠금 안무 플그 운영자 확정) */
   @keyframes ymBandOut { from { transform:rotate(-6.2deg) translateX(0); } to { transform:rotate(-6.2deg) translateX(260%); } }
-  .ymain.bye.go .ym-band { animation:ymBandWipe .5s var(--ease) both; }   /* PIN 통과 = 라벨이 다시 쭉 가로지르며 메뉴 전환 · .go 병기 = .go 규칙과의 소스순서 타이 제거(평의회1 · bye는 항상 go 뒤) */
+  .ymain.bye.go .ym-band { animation:ymBandWipe .65s var(--ease) both; }   /* PIN 통과 = 라벨이 다시 쭉 가로지르며 메뉴 전환 · .go 병기 = .go 규칙과의 소스순서 타이 제거(평의회1 · bye는 항상 go 뒤) */
   @keyframes ymBandWipe { from { transform:rotate(-6.2deg) translateX(-260%); } to { transform:rotate(-6.2deg) translateX(260%); } }
   .ymain.go .ym-stage { animation:ymZoom .45s var(--ease) both; }   /* 줌했다가 정면 복귀(.45s · 잠금 안무 플그 운영자 확정) */
   @keyframes ymZoom { 0% { transform:translateX(-50%) scale(1); } 45% { transform:translateX(-50%) scale(1.11); } 100% { transform:translateX(-50%) scale(1); } }
@@ -441,7 +441,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   .ymain.unlocked .ym-access-card { opacity:0; pointer-events:none; }   /* 언락 = 접속 버튼 퇴장(pin-mode에서 이미 opacity0 → 배너 없이 자연 유지) */
   /* PIN 통과 = 알약이 아래서 촤르륵 슬라이드업 · reveal은 라이브 언락 1회만(재방문 복원은 무애니) · translateX 기본값과 합성 */
   @keyframes ynavRise { from { opacity:0; transform:translate(-50%,140%); } to { opacity:1; transform:translate(-50%,0); } }
-  .ymain.reveal .ynav { animation:ynavRise .45s var(--ease) both; }
+  .ymain.reveal .ynav { animation:ynavRise .5s var(--ease) both; }
   /* ═══ 캐릭터 탭(메뉴2) — OpenAI 얼굴(roster avatar) 전원 갤러리(운영자 260705) · 카드 탭 = 그 캐릭터 챗 진입 · 챗 닫기 = 이 탭 복귀 ═══ */
   .ychar { position:absolute; inset:0; z-index:2; display:none; overflow-y:auto; padding:calc(64px + env(safe-area-inset-top)) var(--sp-2) 96px; }   /* 상단 64 = 좌상단 로고·프로필 클리어런스(로고 112px·여백 24 정합 260706) */
   .ymain.tab-char .ychar { display:block; }
@@ -455,8 +455,8 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
     filter:drop-shadow(0 6px 14px rgba(0,0,0,.45)) drop-shadow(0 0 14px rgba(var(--cobalt-rgb),.4));
     animation:ywmFlick 4s steps(1) infinite; }
   .ymain.unlocked > .ywm { display:block; }   /* > 자식 결합자 = 좌상단 #ywm 전용(스테이지 손자 #ywmLock 부수 매칭 차단 · 평의회1 F2) */
-  .ymain.reveal > .ywm { animation:ywmIn .45s var(--ease) both, ywmFlick 4s steps(1) .6s infinite; }   /* 언락 = 네비 rise와 짝(위에서 스르륵 · .45s) · 플리커 병행 유지 */
-  .ymain.reveal .yprof { animation:ywmIn .45s var(--ease) both; }
+  .ymain.reveal > .ywm { animation:ywmIn .5s var(--ease) both, ywmFlick 4s steps(1) .6s infinite; }   /* 언락 = 네비 rise와 짝(위에서 스르륵) · 플리커 병행 유지 */
+  .ymain.reveal .yprof { animation:ywmIn .5s var(--ease) both; }
   @keyframes ywmIn { from { opacity:0; transform:translateY(-130%); } to { opacity:1; transform:none; } }
   .yprof { display:none; position:absolute; top:calc(calc(var(--sp-2) * 2) + env(safe-area-inset-top)); right:calc(var(--sp-2) * 2); z-index:4; width:var(--btn); height:var(--btn);
     place-items:center; background:var(--glass-2); border:1px solid var(--glass-line); border-radius:50%; color:var(--fg-2); cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent;
@@ -583,11 +583,11 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   .ycd-cta:active { transform:scale(var(--press-m,.9)); }
   .ychar-grid { display:flex; flex-direction:column; gap:10px; }
   .ychar-grid > .ycrow { animation:ypickIn .42s cubic-bezier(.22,.61,.36,1) both; }   /* 리스트도 촤르륵 stagger(ypickIn 재사용) */
-  .ychar-grid > .ycrow:nth-child(2){animation-delay:.09s} .ychar-grid > .ycrow:nth-child(3){animation-delay:.18s}
-  .ychar-grid > .ycrow:nth-child(4){animation-delay:.27s} .ychar-grid > .ycrow:nth-child(5){animation-delay:.36s}
-  .ychar-grid > .ycrow:nth-child(6){animation-delay:.45s} .ychar-grid > .ycrow:nth-child(7){animation-delay:.54s}
-  .ychar-grid > .ycrow:nth-child(8){animation-delay:.63s} .ychar-grid > .ycrow:nth-child(9){animation-delay:.72s}
-  .ychar-grid > .ycrow:nth-child(n+10){animation-delay:.81s}   /* 간격 .09(잠금 안무 플그 운영자 확정) */
+  .ychar-grid > .ycrow:nth-child(2){animation-delay:.05s} .ychar-grid > .ycrow:nth-child(3){animation-delay:.1s}
+  .ychar-grid > .ycrow:nth-child(4){animation-delay:.15s} .ychar-grid > .ycrow:nth-child(5){animation-delay:.2s}
+  .ychar-grid > .ycrow:nth-child(6){animation-delay:.25s} .ychar-grid > .ycrow:nth-child(7){animation-delay:.3s}
+  .ychar-grid > .ycrow:nth-child(8){animation-delay:.35s} .ychar-grid > .ycrow:nth-child(9){animation-delay:.4s}
+  .ychar-grid > .ycrow:nth-child(n+10){animation-delay:.45s}
   @media (prefers-reduced-motion:reduce){ .ychar-grid > .ycrow, .ycd.on { animation:none; } }
   /* ═══ 대화 목록 탭(메뉴2) — 카톡/레퍼런스 결(운영자 260705): 글래스 행 = 아바타+이름+미리보기+시간+라임 안읽음 배지 · 행 탭 = 챗 · 단일 세션 = 진행 대화 1행 ═══ */
   .ylist { position:absolute; inset:0; z-index:2; display:none; overflow-y:auto; padding:calc(64px + env(safe-area-inset-top)) var(--sp-2) 96px; }   /* 상단 64 = 로고 클리어런스 동일(260706) */
@@ -1271,7 +1271,7 @@ try { if (new URLSearchParams(location.search).get('yeta')) setTimeout(() => ope
           try { localStorage.removeItem('yeta_pin_fails'); localStorage.removeItem('yeta_pin_until'); } catch {}   // 언락 기억 안 함(yeta_pin_ok 미저장 = 매번 PIN · 운영자 260705) · 실패/잠금 카운터만 리셋
           errEl.textContent = ''; errEl.className = 'lk-err'; yVib(18);
           ymain.classList.add('bye');   // PIN 통과 = 라벨 재스윕(쭉 가로지르며) 후 캐릭터 메뉴 자동 이동(운영자 260706)
-          setTimeout(() => setUnlocked(true), 800);   // 재스윕 후 전환(800ms · 잠금 안무 플그 운영자 확정)
+          setTimeout(() => setUnlocked(true), 560);   // 라벨이 화면 대부분을 가로지른 시점에 전환
         } else {
           yVib([60, 40, 60]);
           let n = 0; try { n = (+localStorage.getItem('yeta_pin_fails') || 0) + 1; localStorage.setItem('yeta_pin_fails', String(n)); if (n >= YM_MAX) localStorage.setItem('yeta_pin_until', String(Date.now() + YM_OUT_MS)); } catch {}
