@@ -298,8 +298,8 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   /* ═══ 잠금 화면 = 기본 메인 포스터(구성도/소스이미지/main_v2) 좌표계 재현(운영자 260706 "기본 메인 이미지 그 위치에 효과 그대로") ═══
      스테이지 = 9:16 포스터 프레임 하단 정렬 · 기하 = main_v2 실측 %{원 중심 (48.8,69.5)·코어 지름 74.3%W · 밴드 rect (25.7,33.1,43.8x6.43) -6.2° · 로고 폭 63.66%W 상단 19.7%} · 효과 4종(글리치 RGB·VHS 지터·홀로 플리커·글로우 펄스) 계승 · 픽 값 = 로컬 변수 · 키프레임 안무·기하 = 절대1 예외축
      진입 안무(운영자 260706): 소년 촤르륵 인 → 라벨 쏵 스윕인 → [잠금 터치] 라벨 각도 유지 퇴장+줌 복귀(.go) → 로고 번개 스트라이크(.strike) → 사람 효과 정지·원 디밍만(.calm)+PIN 부상 → PIN 통과 = 라벨 재스윕(.bye) → 캐릭터 메뉴 */
-  .ym-stage { position:absolute; left:50%; bottom:0; transform:translateX(-50%); width:100%; width:max(100%, calc(100dvh * 9 / 16)); aspect-ratio:9/16; z-index:0; pointer-events:none; transform-origin:50% 42%;
-    --st-glowop:1; --st-amp:1.4; }   /* 롱폰(9:20~22) = 세로 꽉 채움·가운데 정렬·좌우 크롭(운영자 260706 "위 화면 안 씀") — 내부 % 좌표계 불변(박스만 확대) · 구형 dvh 미지원 = 100% 폴백 */
+  .ym-stage { position:absolute; left:50%; bottom:0; transform:translateX(-50%); width:100%; aspect-ratio:9/16; z-index:0; pointer-events:none; transform-origin:50% 42%;
+    --st-glowop:1; --st-amp:1.4; }
   .ymc { position:absolute; left:48.8%; top:69.5%; width:97.7%; aspect-ratio:1; border-radius:50%; translate:-50% -50%; opacity:var(--st-glowop);
     background:radial-gradient(circle closest-side, #8fce01 0 76%, rgba(143,206,1,.34) 77.5%, rgba(143,206,1,.16) 82%, rgba(105,150,10,.08) 88%, transparent 96%);   /* 색·스톱 = main_v2 원 실측 프로파일(코어 rgb(143,206,1) 플랫 · 급락 엣지+얇은 글로우 · 피크 불투명 1) · closest-side = 스톱%가 반지름 기준(farthest-corner 디폴트 = √2 과대 실측 260706) */
     animation:ymcIn .5s var(--ease) both, ymcPulse calc(3.2s/var(--st-amp)) ease-in-out .5s infinite; }   /* 배경 원 선등장 → 글로우 펄스(디밍 유지 · "너무 어두워지진 않게" = 하한 .55×) */
@@ -348,7 +348,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   .ym-stage::after { content:''; position:absolute; inset:0; background:repeating-linear-gradient(0deg, rgba(255,255,255,.035) 0 1px, transparent 1px 3px); }   /* VHS 스캔라인 */
   .ymain.unlocked .ym-stage { display:none; }   /* 스택 = 잠금 화면 전용(언락 후 탭 화면과 무관 · 대형 로고 포함) */
   /* 앵커 프레임 = 스테이지와 동일 9:16 좌표계(하단 정렬) — 접속 자물쇠·PIN이 화면비 무관하게 소년 몸통에 정확히 붙는다(옛 .ym-hero flex 폐지 260706) */
-  .ym-fit { position:absolute; left:50%; bottom:0; transform:translateX(-50%); width:100%; width:max(100%, calc(100dvh * 9 / 16)); aspect-ratio:9/16; z-index:2; pointer-events:none; }   /* .ym-stage 동일 박스 공식 유지 = PIN·자물쇠 몸통 유착(17차 계약) */
+  .ym-fit { position:absolute; left:50%; bottom:0; transform:translateX(-50%); width:100%; aspect-ratio:9/16; z-index:2; pointer-events:none; }
   .ym-access { width:72px; height:72px; border-radius:50%; border:1px solid var(--glass-line); cursor:pointer; display:grid; place-items:center;
     background:var(--glass-2); backdrop-filter:blur(var(--blur-l)) saturate(1.05); -webkit-backdrop-filter:blur(var(--blur-l)) saturate(1.05);
     color:var(--accent); box-shadow:inset 0 1px 0 var(--glass-line), var(--shadow-card), 0 0 26px rgba(var(--accent-rgb),.16);
@@ -981,7 +981,6 @@ function yAiMsg(t, fresh, cont) {   // 캐릭터 메시지 = 아바타 + 이름 
   return `<div class="ymsg${fresh ? ' in' : ''}${cont ? ' cont' : ''}">${yAva(p)}<span class="ycol"><span class="yname">${esc(p.name || '')}</span><span class="ybrow"><div class="yb ai">${yFmt(t.text)}</div>${tm ? `<time class="ytime">${tm}</time>` : ''}</span></span></div>`;
 }
 let _yLastN = -1, _yTypOn = false, _yFailOn = false;   // 촤르륵 키드 상태 — 신규 노드만 .in(폴 재렌더 재트리거 방지 · 운영자 "채팅방 모션 그대로 유지")
-let _yPaceN = -1, _yPaceT = 0;   // 답장 페이스 — 공개 승인된 턴 수(꼬리 답장 런은 ~1초 타이핑 모션 후 공개 · 운영자 260706 "바로 대답 어색")
 function yTypingHtml(fresh) {   // 타이핑 = 캐릭터 버블(점 3개 바운스 · 카톡/제타 결) — 등장만 촤르륵, 이후 재렌더는 무애니 유지
   const p = YCUR || {};
   const lbl = '입력 중';
@@ -995,18 +994,9 @@ function yOut(el) {   // 촤르륵 복귀 — 접혀 사라진 뒤 제거(운영
   setTimeout(rm, 400);   // reduced-motion(animation:none = 이벤트 미발화) 백스톱
 }
 function yRender() {
-  const log = $('#yetaLog'), s = YSESS || {}, all = s.turns || [];
+  const log = $('#yetaLog'), s = YSESS || {}, turns = s.turns || [];
   $('#yetaIn').hidden = false;
   const prevN = _yLastN, first = prevN < 0;   // 첫 렌더(재진입 포함) = 전체 무애니(히스토리 우르르 방지)
-  // 답장 페이스(운영자 260706): 새 답장이 즉답으로 꽂히면 어색 → 꼬리 assistant 런만 ~1초 홀드 + 타이핑 모션 선행. 내 턴·sys·첫 렌더 = 즉시.
-  if (first || _yPaceN < 0 || _yPaceN > all.length) _yPaceN = all.length;
-  else if (all.length > _yPaceN) {
-    let cut = all.length; while (cut > 0 && all[cut - 1].role === 'assistant') cut--;   // 꼬리 답장 런 직전까지는 즉시 공개(낙관 내 버블 소실 방지)
-    _yPaceN = Math.max(_yPaceN, cut);
-    if (all.length > _yPaceN && !_yPaceT) _yPaceT = setTimeout(() => { _yPaceT = 0; _yPaceN = ((YSESS || {}).turns || []).length; if (yetadlg.open) yRender(); }, 1000);
-  }
-  const staged = all.length > _yPaceN;              // 홀드 중 = 타이핑 유지
-  const turns = staged ? all.slice(0, _yPaceN) : all;
   let h = '';
   // 소개 카드(yintro) = 대화창에서 스킵(운영자 260705 #11 · 인물 프사·이름·소개는 헤더에만)
   if (!turns.length && YCUR) h += yAiMsg({ text: YCUR.greeting || '왔네.', persona: YCUR.id });   // 첫인사 — 서버 draw가 greeting 턴을 박기 전(레이스)이나 미설정 세션의 임시 표시(정상 경로는 서버 턴)
@@ -1025,7 +1015,7 @@ function yRender() {
   const waitMs = awaiting ? Math.max(0, Date.now() - (s.awaiting_since || 0)) : -1;
   const failMsg = s.state === 'error' ? `답장을 못 만들었어 — 다시 보내면 재시도야. (${(s.err || '').slice(0, 80)})`
     : (awaiting && waitMs > zlim ? '답장이 너무 늦네 — 러너가 밀렸거나 실패한 듯. 다시 보내면 재시도야.' : '');
-  const typing = !failMsg && (awaiting || staged) && !!YCUR;   // staged = 답장 페이스 홀드 중(타이핑 모션 유지)
+  const typing = !failMsg && awaiting && !!YCUR;
   if (failMsg) h += `<div class="yb fail${_yFailOn ? '' : ' in'}">${esc(failMsg)}<button type="button" class="yfail-retry" aria-label="다시 보내기">다시 보내기</button></div>`;   // 원탭 재시도(재타이핑 0 · retry op)
   else if (typing) h += yTypingHtml(!_yTypOn);
   _yFailOn = !!failMsg; _yTypOn = typing;
