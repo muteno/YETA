@@ -409,22 +409,6 @@ function initCallBtn() {
 // 소재 = viewer/assets/contacts/<id>.vcf(vCard 2.1 · 사진 base64 임베드 · 번호 = Vapi 발신번호 국제 2표기 — 안드로이드 뒷자리 매칭이 둘 다 잡음).
 // 탭 = 같은출처 .vcf 다운로드(a[download]) → 갤럭시 "연락처에 추가"가 이름·사진·번호 프리필 = 저장 한 번이면 끝.
 const VCF = { haeun: '하은' };   // vcf 보유 캐릭터(id → 파일 표시명) — 추가 = vcf 생성 + 이 행
-const VCF_AUTO_KEY = 'yeta_vcf_auto';   // {id: ts} — 자동 배포는 기기당 1회(재배포 = 헤더 버튼)
-const vcfAutoDone = () => { try { return JSON.parse(localStorage.getItem(VCF_AUTO_KEY) || '{}') || {}; } catch { return {}; } };
-function vcfMarkDone(pid) { try { const d = vcfAutoDone(); d[pid] = Date.now(); localStorage.setItem(VCF_AUTO_KEY, JSON.stringify(d)); } catch {} }
-function vcfDownload(pid) {   // 같은출처 .vcf — 갤럭시 "연락처에 추가"가 이름·사진·번호 프리필
-  const a = document.createElement('a');
-  a.href = 'assets/contacts/' + pid + '.vcf'; a.download = VCF[pid] + '.vcf';
-  document.body.appendChild(a); a.click(); a.remove();
-  toast('📇 ' + VCF[pid] + ' 연락처 파일 받았어 — 알림에서 열고 저장하면 전화 올 때 얼굴이 떠');
-}
-// 자동 배포 — 보이스(전화) 배선 캐릭터를 *탭한 순간* vcf 자동 다운로드(운영자 260706 "눌렀을 때 자동").
-// 탭 제스처 캡처 단계 = 브라우저 무제스처 다운로드 차단 정책 통과. 주소록 무단 기록 API는 없음 → 최대 자동화 = 여기까지(저장 탭 1회 잔여).
-document.addEventListener('click', e => {
-  const el = e.target && e.target.closest && e.target.closest('.ychar-card[data-id], .ypick-row[data-id], .ys-row[data-id]');
-  if (!el || !VCF[el.dataset.id] || vcfAutoDone()[el.dataset.id]) return;   // 진입 3경로(갤러리·뽑기·대화목록)만 · 1회 가드
-  vcfMarkDone(el.dataset.id); vcfDownload(el.dataset.id);
-}, true);
 function vcfBtnSync() {
   const b = document.querySelector('#yetaVcfBtn'); if (!b) return;
   const pid = (typeof YSESS !== 'undefined' && YSESS && YSESS.persona) || '';
@@ -440,7 +424,10 @@ function initVcfBtn() {
   hr.insertBefore(b, hr.firstChild);   // 수화기 왼쪽 자리(둘 다 firstChild 주입 = 나중 주입이 앞)
   b.addEventListener('click', () => {
     const pid = b.dataset.pid; if (!pid || !VCF[pid]) return;
-    vcfMarkDone(pid); vcfDownload(pid);   // 수동 배포도 자동 1회 가드에 계상(중복 다운로드 방지)
+    const a = document.createElement('a');
+    a.href = 'assets/contacts/' + pid + '.vcf'; a.download = VCF[pid] + '.vcf';
+    document.body.appendChild(a); a.click(); a.remove();
+    toast('연락처 파일 받았어 — 열어서 저장하면 전화 올 때 ' + VCF[pid] + ' 얼굴이 떠');
   });
   vcfBtnSync();
 }
