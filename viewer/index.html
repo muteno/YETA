@@ -1462,7 +1462,7 @@ function yAiMsg(t, fresh, cont) {   // 캐릭터 메시지 = 아바타 + 이름 
   const tm = yTime(t.ts);
   return `<div class="ymsg${fresh ? ' in' : ''}${cont ? ' cont' : ''}">${yAva(p)}<span class="ycol"><span class="yname">${esc(p.name || '')}</span><span class="ybrow"><div class="yb ai">${yFmt(t.text)}</div>${tm ? `<time class="ytime">${tm}</time>` : ''}</span></span></div>`;
 }
-let _yLastN = -1, _yTypOn = false, _yFailOn = false;   // 촤르륵 키드 상태 — 신규 노드만 .in(폴 재렌더 재트리거 방지 · 운영자 "채팅방 모션 그대로 유지")
+let _yLastN = -1, _yTypOn = false, _yFailOn = false, _yTypHold = 0, _yTypT = null;   // 촤르륵 키드 + 타이핑 지연 홀드(읽는 시간 · 운영자 260707)
 let _yPaceN = -1, _yPaceT = 0;   // 답장 페이스 — 공개 승인된 턴 수(꼬리 답장 런은 ~1초 타이핑 모션 후 공개 · 운영자 260706 "바로 대답 어색")
 function yTypingHtml(fresh) {   // 타이핑 = 캐릭터 버블(점 3개 바운스 · 카톡/제타 결) — 등장만 촤르륵, 이후 재렌더는 무애니 유지
   const p = YCUR || {};
@@ -1507,7 +1507,7 @@ function yRender() {
   const waitMs = awaiting ? Math.max(0, Date.now() - (s.awaiting_since || 0)) : -1;
   const failMsg = s.state === 'error' ? `답장을 못 만들었어 — 다시 보내면 재시도야. (${(s.err || '').slice(0, 80)})`
     : (awaiting && waitMs > zlim ? '답장이 너무 늦네 — 러너가 밀렸거나 실패한 듯. 다시 보내면 재시도야.' : '');
-  const typing = !failMsg && (awaiting || staged) && !!YCUR;   // staged = 답장 페이스 홀드 중(타이핑 모션 유지)
+  const typing = !failMsg && (awaiting || staged) && !!YCUR && Date.now() >= _yTypHold;   // staged = 답장 페이스 홀드 · _yTypHold = 읽는 시간 경과 후에만 "입력 중"(운영자 260707)
   if (failMsg) h += `<div class="yb fail${_yFailOn ? '' : ' in'}">${esc(failMsg)}<button type="button" class="yfail-retry" aria-label="다시 보내기">다시 보내기</button></div>`;   // 원탭 재시도(재타이핑 0 · retry op)
   else if (typing) h += yTypingHtml(!_yTypOn);
   _yFailOn = !!failMsg; _yTypOn = typing;
@@ -1529,15 +1529,16 @@ async function ySend() {
   if (!text || !YCUR) return;
   const btn = $('#yetaSend'); btn.disabled = true;
   ta.value = ''; ta.style.height = '';
-  const log = $('#yetaLog');   // 낙관적 표시(확정은 폴이 대체) — 내 버블·타이핑 모두 촤르륵 등장
-  log.insertAdjacentHTML('beforeend', `<div class="ymrow me in"><time class="ytime">${yTime(Date.now())}</time><div class="yb me">${yFmt(text)}</div></div>` + yTypingHtml(!_yTypOn));   // 낙관 노드도 [시각][버블] 동일 구조(확정은 폴 재렌더가 대체)
-  _yTypOn = true;
-  const _typEl = log.lastElementChild, _meEl = _typEl.previousElementSibling;   // 실패 시 회수용(평의회⑨)
+  const log = $('#yetaLog');   // 낙관적 표시(확정은 폴이 대체) — 내 버블 즉시 · 타이핑은 "읽는 시간" 뒤(운영자 260707 "보내자마자 1초도 안 돼 입력 중 = 어색")
+  log.insertAdjacentHTML('beforeend', `<div class="ymrow me in"><time class="ytime">${yTime(Date.now())}</time><div class="yb me">${yFmt(text)}</div></div>`);
+  const _meEl = log.lastElementChild; let _typEl = null;
+  _yTypOn = false; _yTypHold = Date.now() + 1100 + Math.random() * 1700;   // 상대가 읽는 시간 1.1~2.8s — 그 후에야 "입력 중"
+  clearTimeout(_yTypT); _yTypT = setTimeout(() => { if (Date.now() >= _yTypHold && !_yTypOn && YSESS) { log.insertAdjacentHTML('beforeend', yTypingHtml(true)); _typEl = log.lastElementChild; _yTypOn = true; log.scrollTop = log.scrollHeight; } }, 1150 + Math.random() * 1700);
   log.scrollTop = log.scrollHeight;
   const r = await yApi('send', { text, model: YDIAL.model, effort: YDIAL.effort }).catch(() => ({ error: '네트워크 실패 — 다시 보내줘' }));
   btn.disabled = false;
   if (!r.ok) {
-    yOut(_typEl); yOut(_meEl); _yTypOn = false; ta.value = text;   // 낙관 노드 = 촤르륵 접혀 복귀 + 입력 복원(운영자 "지워도 촤르륵")
+    if (_typEl) yOut(_typEl); yOut(_meEl); clearTimeout(_yTypT); _yTypOn = false; ta.value = text;   // 낙관 노드 = 촤르륵 접혀 복귀 + 입력 복원(운영자 "지워도 촤르륵")
     log.insertAdjacentHTML('beforeend', `<div class="yb fail in">${esc(r.error || '전송 실패')}</div>`); _yFailOn = true; log.scrollTop = log.scrollHeight; return;
   }
   if (_yLastN >= 0) _yLastN += 1;   // 낙관 버블은 이미 촤르륵함 — 폴 확정 재렌더에서 같은 턴 재애니 방지
