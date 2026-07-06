@@ -205,9 +205,22 @@ PY
 }
 
 # per-reply 웹푸시 — 웜 런은 답장 후에도 살아있으므로 잡끝 푸시는 최대 5분 지연(아이데이션③ g) → 즉시 발송. tag 교체 = 중복 무해.
-push_reply() {
+push_reply() {   # $1 = 답장 원문 — 알림 = "캐릭터 이름 + 대사 미리보기"(카톡 결 · 운영자 260707 "앱 이름 X · 캐릭터 이름 · 대화가 이어져야")
   [ -n "${VAPID_PRIVATE_KEY:-}" ] || return 0
-  python3 .github/scripts/push_send.py --notify "yeta" "답장이 도착했어 — 탭해서 확인" \
+  local nm prev
+  nm="$(python3 -c "
+import json,sys
+try:
+    r=json.load(open('apps/yeta/characters/roster.json',encoding='utf-8'))
+    print(next((c.get('name') or sys.argv[1] for c in r if c.get('id')==sys.argv[1]), sys.argv[1]))
+except Exception: print(sys.argv[1])" "$CHAR")"
+  prev="$(printf '%s' "${1:-}" | python3 -c "
+import sys,re
+t=sys.stdin.read()
+t=re.sub(r'\*[^*]*\*','',t)                # 지문 제거 = 대사만(미리보기)
+t=re.sub(r'\s+',' ',t).strip()
+print((t[:70]+'…') if len(t)>70 else (t or '새 메시지'))")"
+  python3 .github/scripts/push_send.py --notify "$nm" "$prev" \
     --url "/?yeta=${CHAR}" --tag "nomute-yeta-${CHAR}" >/dev/null 2>&1 || true
 }
 
@@ -383,7 +396,7 @@ ${PENDING}
     finish error "답장 생성 실패(rc=$rc)"; return 1
   fi
   finish ok "$out" || { echo "::error::세션 반영 실패(R2 put)"; return 1; }
-  [ "$_did_reply" = 1 ] && { echo "yeta: 답장 완료(${#out}자 · ${GEN_S}s)"; push_reply; [ "$PTT" = "1" ] && ptt_voice "$out"; }
+  [ "$_did_reply" = 1 ] && { echo "yeta: 답장 완료(${#out}자 · ${GEN_S}s)"; push_reply "$out"; [ "$PTT" = "1" ] && ptt_voice "$out"; }
   return 0
 }
 
