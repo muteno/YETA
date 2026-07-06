@@ -492,38 +492,6 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   @media (prefers-reduced-motion:reduce){ .ywm, .ywm .wl, .ywm .wl span { animation:none !important; } }
   .ychar-h { font-size:var(--fs-h2); font-weight:var(--fw-x); padding:2px 4px 12px; }
   .ychar-h small { display:block; font-size:var(--fs-xs); color:var(--mut); font-weight:var(--fw-b); margin-top:2px; }
-  /* 캐릭터별 성향 설정(운영자 260706 — 디테일 ⚙ 진입 · 16축 슬라이더 · 프리셋 · 라이브 육각) */
-  .ycd-gear { position:absolute; top:0; right:0; width:var(--btn); height:var(--btn); display:grid; place-items:center; background:var(--glass); border:1px solid var(--glass-line); border-radius:50%; color:var(--fg-2); cursor:pointer; touch-action:manipulation; }
-  .ycd-gear:active { transform:scale(var(--press-m,.9)); }
-  .ycd-gear svg { width:19px; height:19px; }
-  .ycd-card { position:relative; }
-  .yset-hex { display:flex; justify-content:center; margin:2px 0 6px; }
-  .yset-hex .yhex { width:150px; height:150px; }
-  .yset-chips { display:flex; gap:8px; justify-content:center; margin-bottom:10px; flex-wrap:wrap; }
-  .yset-chip { padding:7px 16px; border:1px solid var(--glass-line); border-radius:var(--r-pill); background:var(--glass); color:var(--fg-2); font:inherit; font-size:var(--fs-xs); font-weight:var(--fw-b); cursor:pointer; touch-action:manipulation; }
-  .yset-chip:active { transform:scale(var(--press-m,.9)); }
-  .yset-chip.on { color:var(--bg); background:var(--accent); border-color:transparent; font-weight:var(--fw-x); }
-  details.yset-grp { align-self:stretch; background:var(--glass); border:1px solid var(--glass-line); border-radius:var(--r-l); padding:0 14px; margin-bottom:8px; backdrop-filter:blur(var(--blur-m)); -webkit-backdrop-filter:blur(var(--blur-m)); }
-  details.yset-grp summary { cursor:pointer; padding:12px 2px; font-size:var(--fs-sm); font-weight:var(--fw-x); color:var(--fg); display:flex; align-items:center; gap:8px; }
-  details.yset-grp summary .ys-cnt { margin-left:auto; min-width:18px; height:18px; padding:0 5px; border-radius:var(--r-pill); background:var(--accent); color:var(--bg); font-size:var(--fs-xs); font-weight:var(--fw-x); display:grid; place-items:center; }
-  details.yset-grp summary .ys-cnt[hidden] { display:none; }   /* display:grid가 [hidden]을 이기는 것 차단 */
-  details.yset-grp[open] { padding-bottom:10px; }
-  .yset-row { display:flex; align-items:center; gap:10px; padding:7px 0; }
-  .yset-nm { flex:none; width:86px; font-size:var(--fs-xs); color:var(--fg-2); display:flex; align-items:center; gap:5px; }
-  .yset-row.dirty .yset-nm::after { content:""; width:6px; height:6px; border-radius:50%; background:var(--accent); }   /* 기본값과 다름 = 라임 도트(안읽음 배지 결) */
-  .yset-range { appearance:none; -webkit-appearance:none; flex:1; height:6px; border-radius:var(--r-pill); border:1px solid var(--glass-line);
-    background:linear-gradient(90deg, rgba(var(--accent-rgb),.85) var(--p,50%), var(--glass) var(--p,50%)); outline:none; }
-  .yset-range::-webkit-slider-thumb { -webkit-appearance:none; appearance:none; width:22px; height:22px; border-radius:50%; background:var(--accent); border:none;
-    box-shadow:0 0 10px rgba(var(--accent-rgb),.35); transition:transform .2s var(--ease); }
-  .yset-range:active::-webkit-slider-thumb { transform:scale(var(--press-l,.95)); }
-  .yset-range::-moz-range-thumb { width:22px; height:22px; border-radius:50%; background:var(--accent); border:none; box-shadow:0 0 10px rgba(var(--accent-rgb),.35); }
-  .yset-val { flex:none; width:26px; text-align:right; font-size:var(--fs-xs); color:var(--accent); font-weight:var(--fw-x); font-variant-numeric:tabular-nums; }
-  .yset-foot { display:flex; align-items:center; gap:10px; width:100%; max-width:320px; margin-top:6px; }
-  .yset-reset { flex:1; padding:11px; border:1px solid var(--glass-line); border-radius:var(--r-pill); background:none; color:var(--fg-2); font:inherit; font-size:var(--fs-sm); font-weight:var(--fw-b); cursor:pointer; touch-action:manipulation; }
-  .yset-reset:active { transform:scale(var(--press-m,.9)); }
-  .yset-reset.armed { color:var(--arm); border-color:rgba(var(--danger-rgb),.4); }   /* 2탭 재확인(수화기 armed 패턴) */
-  .yset-saved { flex:none; font-size:var(--fs-xs); color:var(--mut); opacity:0; transition:opacity .3s var(--ease); }
-  .yset-saved.on { opacity:1; color:var(--accent); }
   /* ═══ 시즌제 세계관 헤더 + 캐릭터 리스트(1행 1명 · 운영자 260706 "롤토체스식 시즌" — 성격 불변·역할군 리스킨) ═══
      행 = [아바타][이름/표현/대사 3줄][연한 세로 구분자][육각 성향 레이더(라임)] · 탭 = 세부 디테일 → 대화 진입 · 전부 글래스 계승 */
   .yworld { display:flex; flex-direction:column; gap:3px; margin:0 0 12px; padding:13px 16px; background:var(--glass); border:1px solid var(--glass-line); border-radius:var(--r-l);
@@ -550,7 +518,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   .ycd { position:fixed; inset:0; z-index:6; display:none; overflow-y:auto; background:radial-gradient(circle at 62% 12%, rgba(var(--accent-rgb),.08), transparent 52%), var(--bg);
     padding:calc(16px + env(safe-area-inset-top)) var(--sp-2) calc(28px + env(safe-area-inset-bottom)); }
   .ycd.on { display:block; animation:ypickIn .3s var(--ease) both; }
-  .ymain.cd-open > .ywm, .ymain.cd-open .yprof, .ymain.cd-open .ynav { display:none; }   /* 디테일·설정 열림 = 로고·프로필·하단 네비 숨김(오버레이 가림 방지 — 스택 컨텍스트가 달라 z로 못 이김) */
+  .ymain.cd-open > .ywm, .ymain.cd-open .yprof { display:none; }   /* 디테일 열림 = 로고·프로필 숨김(뒤로가기 가림 방지) */
   .ycd-top { display:flex; align-items:center; gap:6px; margin-bottom:10px; }
   .ycd-back { width:var(--btn); height:var(--btn); display:grid; place-items:center; background:var(--glass); border:1px solid var(--glass-line); border-radius:50%; color:var(--fg-2); cursor:pointer; touch-action:manipulation; }
   .ycd-back:active { transform:scale(var(--press-m,.9)); }
@@ -622,10 +590,6 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
     <div class="ycd" id="ycdetail" aria-modal="true" role="dialog">   <!-- 캐릭터 세부 디테일 → [대화 시작](운영자 260706) -->
       <div class="ycd-top"><button type="button" class="ycd-back" id="ycdBack" aria-label="뒤로"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button></div>
       <div class="ycd-card" id="ycdCard"></div>
-    </div>
-    <div class="ycd" id="ycset" aria-modal="true" role="dialog">   <!-- 캐릭터별 성향 설정(16축 게이지 · 운영자 260706) -->
-      <div class="ycd-top"><button type="button" class="ycd-back" id="ycsetBack" aria-label="뒤로"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button></div>
-      <div class="ycd-card" id="ycsetCard"></div>
     </div>
     <div class="ylist" id="ylist">   <!-- 메뉴2 = 대화 목록(카톡 결 · 단일 세션 = 진행 대화 1행 · 운영자 260705) -->
       <div class="ychar-h">대화<small>진행 중인 대화</small></div>
@@ -713,7 +677,6 @@ const yPersona = id => YCHARS.find(x => x.id === id);
 function yTab(tab) {   // 'char' | 'list' — 네비 활성·패널 토글(chat=dialog·settings=준비중이라 패널 없음)
   const m = document.getElementById('ymain');
   const cd = document.getElementById('ycdetail'); if (cd) { cd.classList.remove('on'); m.classList.remove('cd-open'); }   // 탭 전환 = 디테일 자동 닫기
-  const cs = document.getElementById('ycset'); if (cs) cs.classList.remove('on');
   m.classList.toggle('tab-char', tab === 'char');
   m.classList.toggle('tab-list', tab === 'list');
   document.querySelectorAll('#ynav button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
@@ -839,106 +802,13 @@ function yShowDetail(id) {   // 캐릭터 세부 디테일 — 대형 아바타�
     + (c.quote ? `<span class="ycd-quote">“${esc(c.quote)}”</span>` : '')
     + (c.intro ? `<span class="ycd-desc">${esc(c.intro)}</span>` : '')
     + yHexSvg(c.stats, true)
-    + `<button type="button" class="ycd-cta" data-id="${esc(c.id)}">대화 시작</button>`
-    + `<button type="button" class="ycd-gear" data-set="${esc(c.id)}" aria-label="성향 설정" title="성향 설정"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33h.01a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51h.01a1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82v.01a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></button>`;
+    + `<button type="button" class="ycd-cta" data-id="${esc(c.id)}">대화 시작</button>`;
   const d = $('#ycdetail'); d.classList.add('on'); d.scrollTop = 0;
   document.getElementById('ymain').classList.add('cd-open');
 }
 function yHideDetail() { $('#ycdetail').classList.remove('on'); document.getElementById('ymain').classList.remove('cd-open'); }
 $('#ycdBack').addEventListener('click', yHideDetail);
-// ── 캐릭터별 성향 설정(운영자 260706) — 16축 게이지 · 프리셋 · 라이브 육각 · op tune(디바운스) · 축 순서 = yeta_chat.sh AX와 짝 ──
-const TUNE_AX = ['말수', '장난기', '어투 강도', '답장 길이', '친절도', '온기', '인내심', '삐짐·질투', '츤데레 낙차', '초기 친밀도', '상승 속도', '경계심', '플러팅', '신비 노출', '스위치 빈도', '위험도'];
-const TUNE_GRP = [['대화 스타일', 0, 4], ['감정 · 태도', 4, 9], ['관계', 9, 13], ['세계관', 13, 16]];
-const yTuneDef = c => (c && Array.isArray(c.tune) && c.tune.length === 16) ? c.tune.slice() : Array(16).fill(5);
-function yTuneCur(c) {   // 우선순위: 세션 저장분 > localStorage 캐시 > roster 디폴트
-  const fromSess = YSESS && YSESS.tunes && YSESS.tunes[c.id];
-  if (Array.isArray(fromSess) && fromSess.length === 16) return fromSess.slice();
-  try { const l = JSON.parse(localStorage.getItem('yeta_tune_' + c.id) || 'null'); if (Array.isArray(l) && l.length === 16) return l; } catch {}
-  return yTuneDef(c);
-}
-const yTuneHex = g => [(g[4] + g[5]) / 4, g[1] / 2, g[13] / 2, g[2] / 2, (g[0] + g[14]) / 4, (g[11] + (10 - g[7])) / 4];   // 16축 → 육각 6축(0~5) 파생 요약
-let _ysetC = null, _ysetG = null, _ysetT = 0;
-function yShowSet(id) {
-  const c = yPersona(id); if (!c) return;
-  _ysetC = c; _ysetG = yTuneCur(c);
-  const def = yTuneDef(c);
-  const grpHtml = TUNE_GRP.map(([nm, a, b], gi) => {
-    const rows = [];
-    for (let i = a; i < b; i++) rows.push(`<div class="yset-row${_ysetG[i] !== def[i] ? ' dirty' : ''}" data-i="${i}"><span class="yset-nm">${TUNE_AX[i]}</span><input type="range" class="yset-range" min="0" max="10" step="1" value="${_ysetG[i]}" style="--p:${_ysetG[i] * 10}%"><span class="yset-val">${_ysetG[i]}</span></div>`);
-    return `<details class="yset-grp"${gi === 0 ? ' open' : ''}><summary>${nm}<span class="ys-cnt" hidden></span></summary>${rows.join('')}</details>`;
-  }).join('');
-  $('#ycsetCard').innerHTML = yAva(c, 'yintro-ava')
-    + `<span class="ycd-nm">${esc(c.name)} 성향 설정</span><span class="ycd-tag">카드가 기본값 — 축을 조절하면 이 캐릭터의 답장 결이 바뀐다</span>`
-    + `<div class="yset-hex" id="ysetHex">${yHexSvg(yTuneHex(_ysetG), true)}</div>`
-    + `<div class="yset-chips"><button type="button" class="yset-chip" data-pre="def">기본</button><button type="button" class="yset-chip" data-pre="soft">순한맛</button><button type="button" class="yset-chip" data-pre="hot">매운맛</button></div>`
-    + grpHtml
-    + `<div class="yset-foot"><button type="button" class="yset-reset" id="ysetReset">기본값 복원</button><span class="yset-saved" id="ysetSaved">저장됨 ✓</span></div>`;
-  ySetCnt();
-  const d = $('#ycset'); d.classList.add('on'); d.scrollTop = 0;
-  document.getElementById('ymain').classList.add('cd-open');
-}
-function yHideSet() { $('#ycset').classList.remove('on'); if (!$('#ycdetail').classList.contains('on')) document.getElementById('ymain').classList.remove('cd-open'); }
-function ySetCnt() {   // 그룹 헤더 = 변경 축 수 배지
-  const def = yTuneDef(_ysetC);
-  document.querySelectorAll('#ycsetCard .yset-grp').forEach((g, gi) => {
-    const [, a, b] = TUNE_GRP[gi]; let n = 0;
-    for (let i = a; i < b; i++) if (_ysetG[i] !== def[i]) n++;
-    const badge = g.querySelector('.ys-cnt'); badge.hidden = !n; badge.textContent = n;
-  });
-}
-function ySetPaint() {   // 슬라이더·육각·도트 전체 재도색(프리셋/복원 후)
-  const def = yTuneDef(_ysetC);
-  document.querySelectorAll('#ycsetCard .yset-row').forEach(row => {
-    const i = +row.dataset.i, r = row.querySelector('input'), v = _ysetG[i];
-    r.value = v; r.style.setProperty('--p', v * 10 + '%');
-    row.querySelector('.yset-val').textContent = v;
-    row.classList.toggle('dirty', v !== def[i]);
-  });
-  $('#ysetHex').innerHTML = yHexSvg(yTuneHex(_ysetG), true);
-  ySetCnt();
-}
-function ySetSave() {   // 디바운스 저장 — localStorage 즉시 + op tune(800ms)
-  try { localStorage.setItem('yeta_tune_' + _ysetC.id, JSON.stringify(_ysetG)); } catch {}
-  clearTimeout(_ysetT);
-  _ysetT = setTimeout(async () => {
-    const r = await yApi('tune', { persona: _ysetC.id, g: _ysetG }).catch(() => null);
-    if (r && r.ok) { if (YSESS) { YSESS.tunes = YSESS.tunes || {}; YSESS.tunes[_ysetC.id] = _ysetG.slice(); }
-      const sv = $('#ysetSaved'); if (sv) { sv.classList.add('on'); setTimeout(() => sv.classList.remove('on'), 1600); } }
-  }, 800);
-}
-$('#ycsetCard').addEventListener('input', e => {
-  const r = e.target.closest('.yset-range'); if (!r || !_ysetC) return;
-  const row = r.closest('.yset-row'), i = +row.dataset.i, v = +r.value;
-  _ysetG[i] = v; r.style.setProperty('--p', v * 10 + '%');
-  row.querySelector('.yset-val').textContent = v;
-  row.classList.toggle('dirty', v !== yTuneDef(_ysetC)[i]);
-  $('#ysetHex').innerHTML = yHexSvg(yTuneHex(_ysetG), true);
-  ySetCnt(); ySetSave();
-});
-let _ysetArm = 0;
-$('#ycsetCard').addEventListener('click', e => {
-  const chip = e.target.closest('.yset-chip');
-  if (chip && _ysetC) {
-    const def = yTuneDef(_ysetC), pre = chip.dataset.pre;
-    const cl = v => Math.max(0, Math.min(10, v));
-    if (pre === 'def') _ysetG = def.slice();
-    else if (pre === 'soft') _ysetG = def.map((v, i) => [2, 7, 11, 15].includes(i) ? cl(v - 3) : ([4, 5, 6].includes(i) ? cl(v + 2) : v));   // 어투·삐짐·경계·위험 ↓ 친절·온기·인내 ↑
-    else _ysetG = def.map((v, i) => [2, 7, 12, 14, 15].includes(i) ? cl(v + 3) : ([6].includes(i) ? cl(v - 2) : v));                          // 매운맛 = 강도·삐짐·플러팅·스위치·위험 ↑ 인내 ↓
-    document.querySelectorAll('#ycsetCard .yset-chip').forEach(b => b.classList.toggle('on', b === chip));
-    ySetPaint(); ySetSave(); return;
-  }
-  const rst = e.target.closest('#ysetReset');
-  if (rst && _ysetC) {
-    if (!_ysetArm) { _ysetArm = 1; rst.classList.add('armed'); rst.textContent = '한 번 더 누르면 복원'; setTimeout(() => { _ysetArm = 0; rst.classList.remove('armed'); rst.textContent = '기본값 복원'; }, 2600); return; }
-    _ysetArm = 0; rst.classList.remove('armed'); rst.textContent = '기본값 복원';
-    _ysetG = yTuneDef(_ysetC).slice(); ySetPaint(); ySetSave();
-  }
-});
-$('#ycsetBack').addEventListener('click', yHideSet);
-
-$('#ycdCard').addEventListener('click', e => {
-  const g = e.target.closest('.ycd-gear'); if (g) { yShowSet(g.dataset.set); return; }
-  const b = e.target.closest('.ycd-cta'); if (!b) return; yHideDetail(); openYeta(b.dataset.id); });
+$('#ycdCard').addEventListener('click', e => { const b = e.target.closest('.ycd-cta'); if (!b) return; yHideDetail(); openYeta(b.dataset.id); });
 async function openYeta(charId) {
   if (!yetadlg.open) { yetadlg.showModal(); try { document.activeElement && document.activeElement.blur(); } catch {} document.documentElement.style.overflow = 'hidden'; history.pushState({ ydlg: 1 }, ''); _yLastN = -1; _yTypOn = false; _yFailOn = false; }   // 재진입 = 촤르륵 키드 리셋 · showModal 자동 포커스 해제(첫 버튼[전화]에 UA 포커스 링 뜨던 것 — 키보드 탐색 시엔 :focus-visible 라임 링 정상 작동)
   yStair.pause();   // 챗 열림 중 계단 정지(top layer 투과 아티팩트 + GPU 낭비 차단) — 닫힘 핸들러가 resume
