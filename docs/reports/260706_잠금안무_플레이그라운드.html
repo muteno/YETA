@@ -46,19 +46,21 @@ header p{margin:4px 0 0;font-size:var(--fs-sm);color:var(--mut)}
   --k-stairDelay:0s; --k-stairWave:.08s; --k-navLag:0s;
   /* ④ 언락 라이트업 (신규 제안 · 현행 없음) */
   --k-litAmt:1.6; --k-litDur:.45s;
-  /* ⑤ PIN 웜업 (신규 제안 · 현행 없음) — 로고 꽂히는 순간부터 캐릭터에 숨(운영자 260706 메타버스 서사) */
-  --k-wuAmt:1.25; --k-wuGlow:1.35; --k-wuScale:1.05; --k-wuBreath:2.6s; --k-wuRamp:1.4s;
+  /* ⑤ PIN 웜업 (신규 제안 · 현행 없음) — 로고 꽂히는 순간 오버레이가 걷혀 원본 포스터(main_v2) 명료도로(운영자 260706 메타버스 서사 · "레포 배경만큼 또렷하게") */
+  --k-wuOvl:.67; --k-wuAmt:1; --k-wuGlow:1; --k-wuScale:1.03; --k-wuBreath:2.6s; --k-wuRamp:1.4s;
 }
 /* ④ 언락 라이트업 — 승인 순간 스테이지 발광(brightness = 검정 배경 불변·원+소년만 밝아짐) */
 .phone .lstage{transition:filter var(--k-litDur) var(--ease)}
 .phone.lit .lstage{filter:brightness(var(--k-litAmt))}
-/* ⑤ PIN 웜업 — strike(로고 낙하)부터 점진: 캐릭터 실체화(brightness·contrast) + 원 광량·범위 확대 → calm에서 브랜드 호흡 왕복 */
+/* ⑤ PIN 웜업 — 핵심 = 오버레이 걷힘: strike(로고 낙하)부터 67% 딤이 잔량(--k-wuOvl)까지 점진으로 걷혀 원본 노출.
+   + 보조: 캐릭터 추가 밝힘·원 광량/범위·브랜드 호흡(광량 왕복). 언락 페이드(.unlocked 규칙)가 소스 뒤 = 캐스케이드 승리 */
+.phone.f-warm.strike:not(.unlocked) .lovl{opacity:calc(var(--k-wuOvl) / .67);transition:opacity var(--k-wuRamp) var(--ease)}   /* :not(.unlocked) = 언락 페이드 캐스케이드 보존 */
 .phone .lboy.main{transition:filter var(--k-wuRamp) var(--ease)}
 .phone .lmc{transition:filter var(--k-wuRamp) var(--ease), scale var(--k-wuRamp) var(--ease)}
-.phone.f-warm.strike .lboy.main{filter:brightness(var(--k-wuAmt)) contrast(1.05)}
+.phone.f-warm.strike .lboy.main{filter:brightness(var(--k-wuAmt)) contrast(1.03)}
 .phone.f-warm.strike .lmc{filter:brightness(var(--k-wuGlow)); scale:var(--k-wuScale)}
 .phone.f-warm.calm.strike .lmc{animation:ymcPulse calc(var(--k-pulsePeriod)/var(--k-amp)) ease-in-out infinite, wuBreath var(--k-wuBreath) ease-in-out var(--k-wuRamp) infinite}
-@keyframes wuBreath{0%,100%{filter:brightness(var(--k-wuGlow))}50%{filter:brightness(calc(1 + (var(--k-wuGlow) - 1) * .4))}}
+@keyframes wuBreath{0%,100%{filter:brightness(var(--k-wuGlow))}50%{filter:brightness(calc(1 + (var(--k-wuGlow) - 1) * .4 - .12))}}
 .lockroot{position:absolute;inset:0;background:var(--bg);overflow:hidden}
 /* 언락 = 실물 동형: 스테이지 즉시 숨김 + 오버레이만 페이드 퇴장 → 페이드 후 잠금층 완전 제거 */
 .phone.unlocked .lockroot{background:transparent;pointer-events:none;visibility:hidden;transition:visibility 0s var(--k-ovlDur)}
@@ -434,19 +436,20 @@ const KNOBS = [
  {k:'litAmt', nm:'발광 세기', d:'brightness 배율', v:1.6, min:1, max:2.5, step:.05, css:'--k-litAmt'},
  {k:'litDur', nm:'발광 시간', d:'차오르는 속도', v:.45, min:.1, max:1.2, step:.05, u:'s', css:'--k-litDur'},
  {k:'litAt', nm:'발광 시점', d:'승인 후 딜레이', v:0, min:0, max:800, step:20, u:'ms'},
- {grp:'⑤ PIN 웜업 (신규 제안 — 로고 꽂히며 캐릭터에 숨 · PIN 대기 = 브랜드 각인 정점 · 현행 = 없음 OFF)', open:1},
+ {grp:'⑤ PIN 웜업 (신규 제안 — 로고 꽂히며 오버레이 걷힘 = 원본 포스터 명료도 · 현행 = 없음 OFF)', open:1},
  {k:'wuOn', nm:'웜업', d:'strike부터 점진 점화', v:0, tgl:'f-warm'},
- {k:'wuAmt', nm:'캐릭터 실체화', d:'소년 brightness', v:1.25, min:1, max:1.6, step:.01, css:'--k-wuAmt'},
- {k:'wuGlow', nm:'원 광량', d:'코어 brightness', v:1.35, min:1, max:1.8, step:.01, css:'--k-wuGlow'},
- {k:'wuScale', nm:'원 범위', d:'디밍 확대 scale', v:1.05, min:1, max:1.15, step:.005, css:'--k-wuScale'},
+ {k:'wuOvl', nm:'딤 잔량', d:'0 = 원본 그대로 · .67 = 현행', v:.67, min:0, max:.67, step:.01, css:'--k-wuOvl'},
+ {k:'wuAmt', nm:'캐릭터 추가 밝힘', d:'원본 위에 보조(1 = 원본)', v:1, min:1, max:1.4, step:.01, css:'--k-wuAmt'},
+ {k:'wuGlow', nm:'원 광량', d:'코어 brightness(1 = 원본색)', v:1, min:1, max:1.6, step:.01, css:'--k-wuGlow'},
+ {k:'wuScale', nm:'원 범위', d:'디밍 확대 scale', v:1.03, min:1, max:1.15, step:.005, css:'--k-wuScale'},
  {k:'wuBreath', nm:'브랜드 호흡 주기', d:'광량 왕복(디밍 분기)', v:2.6, min:1, max:5, step:.1, u:'s', css:'--k-wuBreath'},
- {k:'wuRamp', nm:'차오름 시간', d:'웜업 램프', v:1.4, min:.3, max:2.5, step:.1, u:'s', css:'--k-wuRamp'},
+ {k:'wuRamp', nm:'차오름 시간', d:'딤 걷힘·웜업 램프', v:1.4, min:.3, max:2.5, step:.1, u:'s', css:'--k-wuRamp'},
 ];
 const DEFAULTS = {}; KNOBS.forEach(x => { if (x.k) DEFAULTS[x.k] = x.v; });
 const PRESETS = [
  {id:'p0', nm:'현행(배선 완료판)', st:{...DEFAULTS}},
- {id:'p1', nm:'웜업+라이트업 시안', star:'★', st:{...DEFAULTS, wuOn:1, litOn:1}},
- {id:'p2', nm:'웜업 강(각인 최대)', st:{...DEFAULTS, wuOn:1, wuAmt:1.4, wuGlow:1.6, wuScale:1.08, wuBreath:2.2, wuRamp:1.1, litOn:1, litAmt:2, litDur:.35, ambFade:.6, stairDelay:.25, navLag:.15}},
+ {id:'p1', nm:'원본 노출 시안', star:'★', st:{...DEFAULTS, wuOn:1, wuOvl:0, litOn:1}},
+ {id:'p2', nm:'은은 노출(딤 15%)', st:{...DEFAULTS, wuOn:1, wuOvl:.15, wuGlow:1.2, wuScale:1.05, wuBreath:2.2, litOn:1, litAmt:2, litDur:.35}},
 ];
 let state = {...DEFAULTS};
 const ph = $('#ph');
@@ -555,9 +558,9 @@ ${line('행 등장', v.rowDur, c.rowDur, 's')} · ${line('거리', v.rowDist, c.
 ${line('계단 쌓기 시작', v.stairDelay, c.stairDelay, 's')} · ${line('웨이브', v.stairWave, c.stairWave, 's')}
 ◆ 언락 라이트업 (신규 축)
 라이트업 ${v.litOn ? 'ON' : 'OFF(현행)'} · ${line('세기', v.litAmt, c.litAmt)} · ${line('시간', v.litDur, c.litDur, 's')} · ${line('시점', v.litAt, c.litAt, 'ms')}
-◆ PIN 웜업 (신규 축 — 메타버스 서사)
-웜업 ${v.wuOn ? 'ON' : 'OFF(현행)'} · ${line('캐릭터 실체화', v.wuAmt, c.wuAmt)} · ${line('원 광량', v.wuGlow, c.wuGlow)} · ${line('원 범위', v.wuScale, c.wuScale)}
-${line('브랜드 호흡', v.wuBreath, c.wuBreath, 's')} · ${line('차오름', v.wuRamp, c.wuRamp, 's')}`;
+◆ PIN 웜업 (신규 축 — 오버레이 걷힘 = 원본 명료도)
+웜업 ${v.wuOn ? 'ON' : 'OFF(현행)'} · ${line('딤 잔량', v.wuOvl, c.wuOvl)} (0 = 원본) · ${line('캐릭터 추가 밝힘', v.wuAmt, c.wuAmt)}
+${line('원 광량', v.wuGlow, c.wuGlow)} · ${line('원 범위', v.wuScale, c.wuScale)} · ${line('브랜드 호흡', v.wuBreath, c.wuBreath, 's')} · ${line('차오름', v.wuRamp, c.wuRamp, 's')}`;
 }
 $('#copy').addEventListener('click', async () => {
   try { await navigator.clipboard.writeText($('#out').textContent); $('#copy').textContent = '복사됨 ✓'; }
