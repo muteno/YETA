@@ -528,8 +528,6 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   .ycd-gear { margin-left:auto; width:var(--btn); height:var(--btn); display:grid; place-items:center; background:var(--glass); border:1px solid var(--glass-line); border-radius:50%; color:var(--fg-2); cursor:pointer; touch-action:manipulation; }   /* 헤더 행 우측 = 뒤로가기와 쌍(좌 로고·우 프로필 결 계승 · 운영자 260707 "마진 좋게" — 카드 모서리 absolute 폐지) */
   .ycd-gear:active { transform:scale(var(--press-m,.9)); }
   .ycd-gear svg { width:19px; height:19px; }
-  .ycd-gear.armed { color:var(--arm); border-color:rgba(var(--danger-rgb),.4); }   /* 2탭 재확인 = .yset-reset.armed 동값 계승 */
-  #ycset.locked #ysetReset { display:none; }   /* 대화 중 잠금 = 복원 진입 자체 숨김(기존 잠금 계약 승계) */
   .ycd-card { position:relative; }
   .yset-hex { display:flex; justify-content:center; margin:2px 0 6px; }
   .yset-hex .yhex { width:150px; height:150px; }
@@ -748,7 +746,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
       <div class="ycd-card" id="ycdCard"></div>
     </div>
     <div class="ycd" id="ycset" aria-modal="true" role="dialog">   <!-- 캐릭터별 성향 설정(16축 게이지 · 운영자 260706) -->
-      <div class="ycd-top"><button type="button" class="ycd-back" id="ycsetBack" aria-label="뒤로"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><button type="button" class="ycd-gear" id="ysetReset" aria-label="기본값 복원" title="기본값 복원"></button></div>   <!-- 기본값 복원 = 헤더 행 우측 승격(디테일 ⚙와 쌍 골격 통일 · 운영자 260707 '한수 ㄱ') · 아이콘 = UNDO_SVG(nm-svg SSOT) JS 주입 -->
+      <div class="ycd-top"><button type="button" class="ycd-back" id="ycsetBack" aria-label="뒤로"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button></div>
       <div class="ycd-card" id="ycsetCard"></div>
     </div>
     <div class="ycd" id="ycsettings" aria-modal="true" role="dialog">   <!-- 설정 화면(메뉴3 · 목업 · 운영자 260706 "목업만 구성") -->
@@ -1150,7 +1148,7 @@ function yShowSet(id) {
     + (lk ? '' : `<div class="yset-chips"><button type="button" class="yset-chip" data-pre="def">기본</button><button type="button" class="yset-chip" data-pre="soft">순한맛</button><button type="button" class="yset-chip" data-pre="hot">매운맛</button></div>`)
     + grpHtml
     + (lk ? `<div class="yset-note">새 대화를 시작하면 다시 조절할 수 있어.</div>`
-          : `<div class="yset-foot"><span class="yset-saved" id="ysetSaved">저장됨 ✓</span></div>`);   // 기본값 복원 = 헤더 행 우측 승격(운영자 260707)
+          : `<div class="yset-foot"><button type="button" class="yset-reset" id="ysetReset">기본값 복원</button><span class="yset-saved" id="ysetSaved">저장됨 ✓</span></div>`);
   ySetCnt();
   const d = $('#ycset'); d.classList.toggle('locked', lk); d.classList.add('on'); d.scrollTop = 0;
   document.getElementById('ymain').classList.add('cd-open');
@@ -1207,14 +1205,12 @@ $('#ycsetCard').addEventListener('click', e => {
     document.querySelectorAll('#ycsetCard .yset-chip').forEach(b => b.classList.toggle('on', b === chip));
     ySetPaint(); ySetSave(); return;
   }
-});
-$('#ysetReset').innerHTML = UNDO_SVG;   // 아이콘 = nm-svg SSOT 계승(인라인 재선언 0)
-$('#ysetReset').addEventListener('click', () => {   // 2탭 재확인 = armed 색 + miniToast 안내(아이콘 버튼 = 문구 스왑 대신 토스트)
-  if (_ysetLocked || !_ysetC) return;
-  const rst = $('#ysetReset');
-  if (!_ysetArm) { _ysetArm = 1; rst.classList.add('armed'); miniToast('한 번 더 누르면 기본값 복원'); setTimeout(() => { _ysetArm = 0; rst.classList.remove('armed'); }, 2600); return; }
-  _ysetArm = 0; rst.classList.remove('armed');
-  _ysetG = yTuneDef(_ysetC).slice(); ySetPaint(); ySetSave();
+  const rst = e.target.closest('#ysetReset');
+  if (rst && _ysetC) {
+    if (!_ysetArm) { _ysetArm = 1; rst.classList.add('armed'); rst.textContent = '한 번 더 누르면 복원'; setTimeout(() => { _ysetArm = 0; rst.classList.remove('armed'); rst.textContent = '기본값 복원'; }, 2600); return; }
+    _ysetArm = 0; rst.classList.remove('armed'); rst.textContent = '기본값 복원';
+    _ysetG = yTuneDef(_ysetC).slice(); ySetPaint(); ySetSave();
+  }
 });
 $('#ycsetBack').addEventListener('click', yHideSet);
 // ── 설정·프로필 화면(목업 · 운영자 260706 "목업만 구성") — .ycd 글래스 시트 계승 · 토글=시각만·나머지=준비중 토스트 ──
