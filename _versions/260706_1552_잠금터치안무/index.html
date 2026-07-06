@@ -329,17 +329,17 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   .ym-band { position:absolute; left:25.7%; top:33.1%; width:43.8%; height:6.43%; transform:rotate(-6.2deg); border-radius:2px;
     background:rgb(99,137,4); animation:ymBandIn .4s var(--ease) .5s both; }   /* 라벨 = 포스터 유한 밴드(끝단 보임 · 색 = 밴드-온-블랙 실측) · 소년 뒤 z(머리카락 튜프트가 밴드 앞 = 포스터 층위) · 쏵 스윕인 */
   @keyframes ymBandIn { from { transform:rotate(-6.2deg) translateX(-260%); } to { transform:rotate(-6.2deg) translateX(0); } }
-  .ymain.go .ym-band { animation:ymBandOut .34s var(--ease) both; }   /* 잠금 터치 = 각도 유지한 채 싹 퇴장(.34s · 잠금 안무 플그 운영자 확정) */
+  .ymain.go .ym-band { animation:ymBandOut .42s var(--ease) both; }   /* 잠금 터치 = 각도 유지한 채 싹 퇴장 */
   @keyframes ymBandOut { from { transform:rotate(-6.2deg) translateX(0); } to { transform:rotate(-6.2deg) translateX(260%); } }
   .ymain.bye.go .ym-band { animation:ymBandWipe .65s var(--ease) both; }   /* PIN 통과 = 라벨이 다시 쭉 가로지르며 메뉴 전환 · .go 병기 = .go 규칙과의 소스순서 타이 제거(평의회1 · bye는 항상 go 뒤) */
   @keyframes ymBandWipe { from { transform:rotate(-6.2deg) translateX(-260%); } to { transform:rotate(-6.2deg) translateX(260%); } }
-  .ymain.go .ym-stage { animation:ymZoom .45s var(--ease) both; }   /* 줌했다가 정면 복귀(.45s · 잠금 안무 플그 운영자 확정) */
-  @keyframes ymZoom { 0% { transform:translateX(-50%) scale(1); } 45% { transform:translateX(-50%) scale(1.11); } 100% { transform:translateX(-50%) scale(1); } }
+  .ymain.go .ym-stage { animation:ymZoom .75s var(--ease) both; }   /* 줌했다가 정면 복귀 */
+  @keyframes ymZoom { 0% { transform:translateX(-50%) scale(1); } 45% { transform:translateX(-50%) scale(1.09); } 100% { transform:translateX(-50%) scale(1); } }
   /* 잠금 화면 대형 YETA 로고 — 확정 워드마크(#ywm 6겹) 재사용 · 포스터 YETA 위치(폭 63.66% · 상단 19.7% · 머리카락 뒤 z) · 번개 스트라이크 등장
      ⚠ 셀렉터 = .ym-stage .ym-wm 특이도 승격(베이스 .ywm이 소스 뒤라 단일 클래스는 패배 — 실측 260706) */
   .ym-stage .ym-wm { display:none; top:19.7%; left:50%; right:auto; z-index:auto; --w:63.66%; width:var(--w); transform:translateX(-50%); animation:none; }   /* z-index:auto = DOM 순서 층위(소년 레이어 뒤 = 포스터처럼 머리카락이 로고를 가림) · --w=%라 내부 오프셋 calc(자간·판 이동)는 자기폭 비례 해석 = 대형 로고에 의도된 스케일링(평의회1 F3) */
-  .ymain.strike .ym-stage .ym-wm { display:block; animation:ymStrike .92s cubic-bezier(.22,.61,.36,1) both, ywmFlick 4s steps(1) .6s infinite; }   /* 스트라이크 .92s(잠금 안무 플그 운영자 확정 — 높이 220%에서 그윽한 낙하) */
-  @keyframes ymStrike { 0% { opacity:0; transform:translateX(-50%) translateY(-220%) scale(1.45); } 34% { opacity:1; } 55% { transform:translateX(-50%) translateY(1.6%) scale(.985); } 74% { transform:translateX(-50%) translateY(-.8%) scale(1.006); } 100% { opacity:1; transform:translateX(-50%); } }
+  .ymain.strike .ym-stage .ym-wm { display:block; animation:ymStrike .48s cubic-bezier(.22,.61,.36,1) both, ywmFlick 4s steps(1) .6s infinite; }
+  @keyframes ymStrike { 0% { opacity:0; transform:translateX(-50%) translateY(-130%) scale(1.45); } 34% { opacity:1; } 55% { transform:translateX(-50%) translateY(1.6%) scale(.985); } 74% { transform:translateX(-50%) translateY(-.8%) scale(1.006); } 100% { opacity:1; transform:translateX(-50%); } }
   .ym-flash { position:absolute; inset:0; opacity:0; background:radial-gradient(circle at 50% 24%, rgba(255,255,255,.85), rgba(var(--accent-rgb),.22) 42%, transparent 68%); }   /* 번개 플래시(전뇌 엣지) */
   .ymain.strike .ym-flash { animation:ymFlash .38s linear .24s both; }
   @keyframes ymFlash { 0% { opacity:0; } 28% { opacity:1; } 42% { opacity:.25; } 55% { opacity:.6; } 100% { opacity:0; } }
@@ -370,7 +370,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   .ym-access.unlocking { animation:none; opacity:1; }   /* 누르면 펄스 멈추고 락 열림 모션으로 전환 */
   /* 접속 누름 = 잠금해제 액티브 — 고리가 힌지 축으로 들려 열리고 라임 글로우 점등(운영자 260704 "락이 풀리는 모션") · 고리 회전=기하 raw 예외축 */
   .ym-shackle { transform-box:fill-box; transform-origin:86% 100%; transition:transform .5s var(--ease); }
-  .ym-access.unlocking .ym-shackle { transform:translateY(-2px) rotate(-31deg); }   /* 31°(잠금 안무 플그 운영자 확정) */
+  .ym-access.unlocking .ym-shackle { transform:translateY(-2px) rotate(-28deg); }
   .ym-access.unlocking { color:var(--accent); border-color:rgba(var(--accent-rgb),.55);
     box-shadow:inset 0 1px 0 var(--glass-line), var(--shadow-card), 0 0 40px rgba(var(--accent-rgb),.42); }
   /* 접속 = 캐릭터 가슴팍 위 글래스 잠금해제 버튼(무채색 글래스 + 강조 라임 디밍 · 운영자 260704) · 누르면 진입 시퀀스(.go→.strike→.calm+pin-mode) · 위치 = 포스터 가슴(60% · 9:16 앵커) */
@@ -381,12 +381,12 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   .ymain.pin-mode .ym-access-card { opacity:0; pointer-events:none; }
   /* PIN 블록 = 캐릭터 '배' 높이(≈66%)에 이미지 오버랩 절대배치 · 접속 후 아래에서 위로 올라오며 페이드인(운영자 260705) */
   .ym-pin { position:absolute; left:50%; top:71.5%; z-index:3; width:100%; max-width:300px; display:flex; flex-direction:column; align-items:center;
-    opacity:0; visibility:hidden; transform:translate(-50%, calc(-50% + 94px)); pointer-events:none;
-    transition:opacity .4s var(--ease) .12s, transform .4s var(--ease) .12s, visibility 0s .52s; }   /* 부상 .4s·거리 94px(잠금 안무 플그 운영자 확정) */   /* visibility = 비활성 시 탭 순서·AT에서 제거(비가시 조작가능 창 차단 · 평의회8) */
+    opacity:0; visibility:hidden; transform:translate(-50%, calc(-50% + 46px)); pointer-events:none;
+    transition:opacity .5s var(--ease) .12s, transform .5s var(--ease) .12s, visibility 0s .62s; }   /* visibility = 비활성 시 탭 순서·AT에서 제거(비가시 조작가능 창 차단 · 평의회8) */
   .ymain.pin-mode .ym-access { opacity:0; pointer-events:none; }   /* 접속 자물쇠 퇴장(라벨 없음) */
   .ymain.pin-mode .ym-access-card { visibility:hidden; }   /* 페이드 후 포커스 대상에서도 제거(transition-delay가 페이드 시간 벌어줌) */
   .ymain.pin-mode .ym-pin { opacity:1; visibility:visible; transform:translate(-50%,-50%); pointer-events:auto;
-    transition:opacity .4s var(--ease) .12s, transform .4s var(--ease) .12s, visibility 0s; }
+    transition:opacity .5s var(--ease) .12s, transform .5s var(--ease) .12s, visibility 0s; }
   /* PIN 키패드 = nomute lk- 이식 · 다크+라임 리컬러(260704) */
   .lk-m { font-size:14px; font-weight:800; color:var(--fg-2); letter-spacing:-.2px; margin-top:6px; }
   .lk-slots { display:flex; justify-content:center; gap:15px; margin:22px 0 2px; }
@@ -1251,9 +1251,9 @@ try { if (new URLSearchParams(location.search).get('yeta')) setTimeout(() => ope
     entered = true;
     accessBtn.classList.add('unlocking');
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) { ymain.classList.add('go', 'strike', 'calm', 'pin-mode'); ymPinFocus(); return; }   // 모션 최소화 = 최종 상태 직행
-    setTimeout(() => ymain.classList.add('go'), 260);
-    setTimeout(() => ymain.classList.add('strike'), 280);
-    setTimeout(() => { ymain.classList.add('calm', 'pin-mode'); ymPinFocus(); }, 790);   // 260/280/790(잠금 안무 플그 운영자 확정 — 낙하 즉시 시작·PIN 조기 부상)
+    setTimeout(() => ymain.classList.add('go'), 140);
+    setTimeout(() => ymain.classList.add('strike'), 840);
+    setTimeout(() => { ymain.classList.add('calm', 'pin-mode'); ymPinFocus(); }, 1330);
   }
   accessBtn.onclick = () => { yVib([50, 40, 90]); ymEnterPin(); };   // 탭 언락 복귀(운영자 260706 "처음처럼 누르는 거") · 진동 유지
   padEl.onclick = async e => {
