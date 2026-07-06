@@ -8,8 +8,6 @@
 <title>예타 : 가상현실 대화 섹션</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@latest/dist/web/variable/pretendardvariable.min.css">
 <link rel="stylesheet" href="tokens.css">
-<link rel="icon" href="favicon.ico" sizes="32x32"><!-- PC 브라우저 탭 파비콘(운영자 260706 · 데스크톱 누락 보강) -->
-<link rel="icon" type="image/png" href="assets/brand/yeta-icon-192.png" sizes="192x192">
 <link rel="apple-touch-icon" href="assets/brand/yeta-icon-192.png">
 <link rel="manifest" href="manifest.json">
 <!-- PWA 웹앱(홈화면 설치·전체화면) — 안드로이드=manifest, iOS=아래 apple 메타(운영자 260704 "웹앱 형태로 여는것") -->
@@ -341,7 +339,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   @keyframes ymZoom { 0% { transform:translateX(-50%) scale(1); } 45% { transform:translateX(-50%) scale(1.11); } 100% { transform:translateX(-50%) scale(1); } }
   /* 잠금 화면 대형 YETA 로고 — 확정 워드마크(#ywm 6겹) 재사용 · 포스터 YETA 위치(폭 63.66% · 상단 19.7% · 머리카락 뒤 z) · 번개 스트라이크 등장
      ⚠ 셀렉터 = .ym-stage .ym-wm 특이도 승격(베이스 .ywm이 소스 뒤라 단일 클래스는 패배 — 실측 260706) */
-  .ym-stage .ym-wm { display:none; top:19.7%; left:50%; right:auto; z-index:4; --w:63.66%; width:var(--w); transform:translateX(-50%); animation:none; }   /* z-index:4 = 소년(.ymb z-auto) 앞 — 로고가 머리 앞으로(운영자 260706 · 옛 포스터 층위[머리카락이 로고 가림] 폐지) · --w=%라 내부 오프셋 calc는 자기폭 비례 = 대형 로고 스케일링(평의회1 F3) */
+  .ym-stage .ym-wm { display:none; top:19.7%; left:50%; right:auto; z-index:auto; --w:63.66%; width:var(--w); transform:translateX(-50%); animation:none; }   /* z-index:auto = DOM 순서 층위(소년 레이어 뒤 = 포스터처럼 머리카락이 로고를 가림) · --w=%라 내부 오프셋 calc(자간·판 이동)는 자기폭 비례 해석 = 대형 로고에 의도된 스케일링(평의회1 F3) */
   .ymain.strike .ym-stage .ym-wm { display:block; animation:ymStrike .92s cubic-bezier(.22,.61,.36,1) both, ywmFlick 4s steps(1) .6s infinite; }   /* 스트라이크 .92s(잠금 안무 플그 운영자 확정 — 높이 220%에서 그윽한 낙하) */
   @keyframes ymStrike { 0% { opacity:0; transform:translateX(-50%) translateY(-220%) scale(1.45); } 34% { opacity:1; } 55% { transform:translateX(-50%) translateY(1.6%) scale(.985); } 74% { transform:translateX(-50%) translateY(-.8%) scale(1.006); } 100% { opacity:1; transform:translateX(-50%); } }
   .ym-flash { position:absolute; inset:0; opacity:0; background:radial-gradient(circle at 50% 24%, rgba(255,255,255,.85), rgba(var(--accent-rgb),.22) 42%, transparent 68%); }   /* 번개 플래시(전뇌 엣지) */
