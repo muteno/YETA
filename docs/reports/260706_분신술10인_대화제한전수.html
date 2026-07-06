@@ -1,0 +1,95 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>분신술 10인 — 대화 제한사항 전수 보고</title>
+<style>
+:root{color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0 auto;padding:24px 14px 80px;background:#121212;color:#e8e8e8;font-family:system-ui,-apple-system,'Apple SD Gothic Neo',Pretendard,sans-serif;line-height:1.65;max-width:860px;font-size:14px}
+h1{font-size:1.3rem;margin:0 0 4px}h1 b{color:#CFFF40}
+.sub{color:#999;font-size:.82rem;margin-bottom:18px}
+h2{font-size:1.02rem;color:#CFFF40;margin:26px 0 8px}
+h3{font-size:.9rem;color:#7d9dff;margin:16px 0 6px}
+table{border-collapse:collapse;width:100%;font-size:.8rem;margin:8px 0}
+th,td{border:1px solid #2c2c2c;padding:5px 8px;text-align:left;vertical-align:top}
+th{background:#1a1a1a;color:#bbb;white-space:nowrap}
+td b{color:#CFFF40}
+.done{color:#8fe0a3}.warn{color:#ffb38a}.crit{color:#ff9d6b;font-weight:700}
+.card{background:#181818;border:1px solid #2b2b2b;border-radius:14px;padding:12px 16px;margin:10px 0}
+.tag{display:inline-block;font-size:.72rem;border:1px solid #3a4a20;background:#1a2010;color:#CFFF40;border-radius:999px;padding:0 10px;margin-right:6px}
+.p1{border-color:rgba(255,107,94,.5);background:rgba(255,107,94,.08);color:#ff9d8a}
+.p2{border-color:rgba(255,211,107,.4);background:rgba(255,211,107,.06);color:#ffd36b}
+.p3{border-color:#333;background:#1c1c1c;color:#999}
+code{background:#1e1e1e;border-radius:5px;padding:1px 6px;font-size:.78rem;color:#bfe08f}
+ul{margin:4px 0;padding-left:18px}li{margin:3px 0}
+.foot{margin-top:26px;font-size:.75rem;color:#777;border-top:1px solid #2c2c2c;padding-top:10px}
+</style>
+
+<h1>분신술 10인 — <b>대화 제한사항 전수 보고</b></h1>
+<p class="sub">260706 · 운영자 지시 "웹앱 대화 관련 제한 철저 파악 + 달라진 것 일일이 보고 · 누락 금지" · 10인 전원 READ-ONLY 병렬 · 앵글별 발견 총 <b style="color:#CFFF40">311항목</b>(중복 포함) · 아래 = 함정·모순·조치 중심 압축(단순 스펙 값은 각 앵글 표 원문이 세션 로그에 존재)</p>
+
+<h2>0. 분신술 때문에 달라진 것 (이번 커밋 반영분 — 전부 이 라운드에서 실변경)</h2>
+<div class="card">
+<table><tr><th>#</th><th>변경</th><th>출처 분신</th><th>파일</th></tr>
+<tr><td>1</td><td class="done">설정 리셋 버튼 1탭 → <b>2탭 armed</b> 재확인(기존 정본 패턴과 발산이었음)</td><td>기틀검증 뷰어 앵글(조기종료→메인 완결)</td><td>viewer/index.html</td></tr>
+<tr><td>2</td><td class="done">op policy SET 8축 캡 continue → <b>조기 break</b>(초대형 페이로드 순회 컷)</td><td>기틀검증 보안</td><td>functions/api/yeta.js</td></tr>
+<tr><td>3</td><td class="done">policy.json untracked 지적 → 커밋 포함 확정(누락 시 정책 기능이 조용히 no-op였음)</td><td>기틀검증 파이프라인</td><td>커밋 위생</td></tr>
+<tr><td>4</td><td class="done">yeta.js 파일 헤더 현행화 — op 카탈로그 12→16종(calllog·tune·policy·auth 추가) · 죽은 <code>YETA_MAX_PER_DAY</code> 서술 삭제 · 허구 "Cloudflare Access" 게이트 서술 → "무인증 공개" 사실대로 · <code>YETA_PIN_ADMIN</code> 등재</td><td>분신 9(정책 잔재 #4)</td><td>functions/api/yeta.js</td></tr>
+<tr><td>5</td><td class="done">CLAUDE.md L0 서술 자기모순 해소 — "불변·레포 커밋으로만" ↔ "관리자 웹 토글" 한 줄 내 충돌 → "하드 2그룹 불변 / 토글 2그룹 관리자 PIN"으로 단일화</td><td>분신 9(#1)</td><td>CLAUDE.md</td></tr>
+<tr><td>6</td><td class="done">TUNE 보정 헤더에 <b>계층 클램프 한 줄</b> 추가 — "[운영 정책](L1)과 겹치는 축은 운영 정책이 상한"(L1 sexual ↔ L2 플러팅 등 겹침 축의 우선순위가 미명문이었음)</td><td>분신 9(#8·9)</td><td>.github/scripts/yeta_chat.sh</td></tr>
+<tr><td>7</td><td class="done">quota 카운터 주석 — "소비처 없음 · 후속 users.cap 연동 후보" 명시(죽은 read로 오해 방지)</td><td>분신 9(#5) + 분신 1(#18)</td><td>functions/api/yeta.js 헤더</td></tr>
+</table>
+※ 같은 세션 선행 커밋(3계층·PIN 권한)에 이미 반영된 분신 지적: nav 설정 버튼 "준비중" 토스트 버그(분신 6이 재확인) · <code>auth</code> 서버 단일 판정(클라 해시 4자리 역산 위험 — 분신 6 #19가 같은 위험을 독립 지적).
+</div>
+
+<h2>1. 운영자가 몰랐다간 당하는 함정 TOP (전 앵글 교차 — P1 = 실사용 직격)</h2>
+<div class="card">
+<table><tr><th>P</th><th>함정</th><th>위치</th><th>출처</th></tr>
+<tr><td><span class="tag p1">P1</span></td><td class="crit">답장 대기(awaiting) 영구 고착 경로 — dispatch 204여도 Actions 큐 드롭이면 런이 안 뜨고, 서버 타임아웃·자동 복구 없음. 뷰어는 5분 후 "늦네" 표시 + 폴 중단뿐. 실패 푸시도 런이 떠야 발동 = 미시작 드롭은 무알림. 유저 재전송이 유일한 탈출</td><td>yeta.js awaiting + yeta-chat.yml concurrency</td><td>분신 10</td></tr>
+<tr><td><span class="tag p1">P1</span></td><td class="crit">웹푸시 실질 무력 — 구독 엔드포인트(api/push)·구독 원장(push/subscriptions.json) 둘 다 부재 → 답장·실패 푸시가 전부 "구독자 없음"으로 조용히 무발송. 앱 닫은 유저에게 답장 알릴 수단이 사실상 없음</td><td>push_send.py + sw.js</td><td>분신 8</td></tr>
+<tr><td><span class="tag p1">P1</span></td><td>실패 에러 버블이 "러너가 밀렸거나"·rc·R2 등 <b>시스템 내부를 유저에게 노출</b> — L0 메타 차단(몰입 보호)을 앱 UI가 스스로 깸. 에러 문구 톤도 op마다 반말/시스템체 혼재(문구 SSOT 없음)</td><td>viewer 에러 표시 + yeta.js 문구</td><td>분신 10</td></tr>
+<tr><td><span class="tag p1">P1</span></td><td>전역 단일 세션 — 무인증 공개라 <b>두 사람이 동시 접속하면 같은 대화방</b>을 밟고, 한 명의 재뽑기·reset·설정이 전원에 전파. 사용자 DB(users.json)가 생겼어도 세션은 여전히 1개(사용자별 분리 미배선)</td><td>sessions/main.json + char:'main' 고정</td><td>분신 5·8·10</td></tr>
+<tr><td><span class="tag p2">P2</span></td><td>기억의 실체 = 최근 8턴 + 노트 600자×2뿐(저장은 400턴). 9턴 전 사건은 노트에 안 녹으면 모델이 모름 · 노트는 매턴 통째 덮어쓰기라 모델이 이번에 안 적은 사실은 소실 · reset은 노트 전소실(백업 1세대·복원 op 없음)</td><td>RECENT_TURNS=8 · [:600] · reset</td><td>분신 2·5</td></tr>
+<tr><td><span class="tag p2">P2</span></td><td>조용한 변형 3종 — 유저 텍스트 4000자 초과 <b>무경고 잘림</b> · <code>&lt;&lt;NOTE&gt;&gt;</code>/<code>&lt;&lt;MOOD&gt;&gt;</code>/<code>&lt;user_message&gt;</code> 문자열은 예약어라 글에 쓰면 통째 소실 · 모델/effort 오타는 조용히 opus/low 폴백</td><td>yeta.js send 새니타이즈</td><td>분신 1</td></tr>
+<tr><td><span class="tag p2">P2</span></td><td>ring(걸려오는 전화) 쿼터 = dispatch 실패·BUSY여도 <b>선차감</b>(일 3통이 실패에도 줄어듦 — phone은 성공분만 계상, 비대칭) · 대화 pending 중 전화 요청은 쿼터만 먹고 조용히 생략</td><td>yeta.js ring vs phone</td><td>분신 7</td></tr>
+<tr><td><span class="tag p2">P2</span></td><td>다이얼 UI는 폐지 상태 — 문서(CLAUDE.md)는 "다이얼 = opus/sonnet × effort"라 서술하나 뷰어는 <code>YDIAL</code> 상수 고정(opus×low). sonnet-5는 게이트웨이·러너가 지원해도 <b>UI 진입점 0 = 사실상 사문</b>(PTT만 sonnet 고정)</td><td>viewer YDIAL vs CLAUDE.md 🎬</td><td>분신 4·10</td></tr>
+<tr><td><span class="tag p2">P2</span></td><td>worlds.json 시즌제 = 장식 — active를 s2로 바꿔도 러너가 주입하는 세계관은 항상 <code>10_세계관.md</code>(링크 0) · desc "성격은 그대로 역할군만"은 판타지 전면 개편 방향과 자기모순</td><td>worlds.json ↔ inject_character.sh</td><td>분신 10</td></tr>
+<tr><td><span class="tag p2">P2</span></td><td>16축 라벨이 뷰어·러너 2벌 하드코딩 + <b>문구 드리프트</b>("온기"↔"온기(다정함)"·"위험도"↔"위험한 분위기(밤 모드)") — 같은 슬라이더가 모델엔 다른 지시. 34축 이관 시 3곳(뷰어·게이트웨이 len16·러너) 동시 수정 필수, 한 곳 누락 = 러너가 <b>에러 없이 전 성향 무효화</b></td><td>TUNE_AX ↔ AX ↔ len 16</td><td>분신 9·10</td></tr>
+<tr><td><span class="tag p3">P3</span></td><td>00_지침 내부 모순 — narration:false 지문을 L34는 "감정 순간 1줄 허용", L44는 "지문 자체 금지"로 상반 서술(실카드는 L34 준행)</td><td>00_지침 §대화형식 ↔ §나레이션</td><td>분신 3</td></tr>
+<tr><td><span class="tag p3">P3</span></td><td>뷰어 주석·코드 불일치 — 폴 "적응형 8s/4s" 주석 vs 실제 4s 고정 · 좀비 "10분/5분" vs 실제 5분 단일. 유지보수 시 주석 신뢰 금지</td><td>viewer 폴 로직</td><td>분신 6</td></tr>
+<tr><td><span class="tag p3">P3</span></td><td>핀치줌 봉쇄(<code>user-scalable=no</code>) = 저시력 확대 차단(WCAG 1.4.4) · 한국어 3중 강제(i18n 훅 0) · 유저 호칭 "에디터" 하드 고정</td><td>viewer 메타 · 문서</td><td>분신 10</td></tr>
+<tr><td><span class="tag p3">P3</span></td><td>L1/L2 네임스페이스 3중 의미(정책 계층 ↔ 페르소나시트 주입 스키마 L1~L5 ↔ 게이지 4계층) · L2 프리셋 "순한맛/매운맛" ↔ L1 sexual "순한맛/성인" 토큰 충돌</td><td>시트 ↔ policy.json ↔ 뷰어</td><td>분신 9</td></tr>
+</table>
+</div>
+
+<h2>2. 앵글별 발견 요약 (총 311항목 — 각 분신의 전수표는 세션 로그 원문)</h2>
+<div class="card">
+<table><tr><th>분신</th><th>총</th><th>핵심 결론 한 줄</th></tr>
+<tr><td>1 게이트웨이 send</td><td>29</td><td>조용한 변형 3곳(4000자·예약어·폴백)이 최대 함정 · <code>YETA_MAX_PER_DAY</code>는 죽은 env · 400턴 트림 비가역</td></tr>
+<tr><td>2 러너 프롬프트</td><td>32</td><td>웹앱에서 조절 가능한 건 다이얼·tune·policy 3종뿐 — 길이·기억·예산·재시도는 전부 코드/env · 문장 길이 규칙의 본체는 00_지침(주입 문서)</td></tr>
+<tr><td>3 지침·카드 문서</td><td>54</td><td>수위는 전적으로 L1, 카드엔 수위 필드 자체가 없음(카드 = narration·relationship·말투·금기만) · L1 violence=직접이 세계관 룰②를 뚫는 유일 통로 · narration 모순 1건</td></tr>
+<tr><td>4 모델·타이밍</td><td>40</td><td>3중 화이트리스트(opus/sonnet만) · 30초 목표의 본체 = 웜(300s)+low+turns1+도구0 · effort 빈값은 CLI high 회귀 함정 · 모델/타이밍 축의 웹앱 노브 0개</td></tr>
+<tr><td>5 세션·기억</td><td>19</td><td>저장 400턴 vs 실기억 8턴+노트1200자 괴리가 최대 제약 · 관계 진도 = note_me 한 곳(재뽑기=관계 리셋·복귀=부활) · reset 복원 op 없음</td></tr>
+<tr><td>6 뷰어 대화 UI</td><td>25</td><td>입력 maxlength 없음(서버 4000 의존) · Enter 경로 중복 전송 틈 · 매 폴 전체 innerHTML 재빌드(장기 대화 성능) · PIN은 UX 게이트지 보안 아님(→ 이번에 서버 판정으로 교체됨)</td></tr>
+<tr><td>7 음성 축</td><td>51</td><td>ring 쿼터 선차감 비대칭 · PTT는 다이얼 무시 sonnet 고정 · 보이스톡 web 경로 = 死코드(버튼이 안 탐) · 프리미엄 음색·실전화 = haeun 단 1명</td></tr>
+<tr><td>8 인프라</td><td>32</td><td>단일 장애점 3(GitHub Actions·CF·R2 — 하나 죽으면 대화 전면 불능·대체 경로 0) · 전 대화 완전 직렬(concurrency main) · 웹푸시 원장 부재 · 오프라인 지원 0</td></tr>
+<tr><td>9 정책 잔재</td><td>14</td><td>v1→v2 시차 잔재(CLAUDE.md·yeta.js 헤더 — 이번에 해소) · 성적 축 4중 겹침(L1 sexual ↔ tune 플러팅 ↔ 시트 관능/개방) 역할 경계 미정의(→ 클램프 1줄 반영) · 16/34축 표현 상충</td></tr>
+<tr><td>10 종합 크리틱</td><td>15</td><td>세대 3중 공존(구6인 라이브 ↔ 신9인 시트 — 카드 0개 생성) · awaiting 영구 고착 · 에러 문구 몰입 파괴 · worlds 장식화 · 시즌제 서사 계약 자기모순</td></tr>
+</table>
+</div>
+
+<h2>3. 후속 조치 후보 (미조치분 — 운영자 픽 대기)</h2>
+<div class="card">
+<ul>
+<li><span class="tag p1">P1</span> awaiting 고착 리퍼 — 서버측 타임아웃(awaiting_since 10분 초과 = error 자동 플립) 또는 뷰어 재전송 유도</li>
+<li><span class="tag p1">P1</span> 웹푸시 배선 완결 — op push(구독 저장) + 구독 원장(R2 비공개) 신설</li>
+<li><span class="tag p1">P1</span> 에러 문구 캐릭터화 — 시스템 내부어(러너·rc·R2) 제거 + 문구 톤 SSOT 1곳</li>
+<li><span class="tag p2">P2</span> 34축 이관(시트 확정 후) — 축 정의 파일 SSOT로 뷰어·게이트웨이·러너 3중 하드코딩 해소(배선 선택 플레이그라운드 A안과 동일 축)</li>
+<li><span class="tag p2">P2</span> 사용자별 세션 분리 — users.json 역할 축 위에 세션 키 분리(현 전역 1스레드), 사용자별 채팅 상한(users.cap) 연동</li>
+<li><span class="tag p2">P2</span> ring 쿼터 후차감(성공분만 — phone과 대칭화) · BUSY 시 쿼터 반환</li>
+<li><span class="tag p3">P3</span> worlds.json → 세계관 문서 링크 배선(시즌별 10_세계관 스위치) 또는 시즌제 서술 정리</li>
+<li><span class="tag p3">P3</span> 00_지침 narration 모순 1줄 정리 · 뷰어 폴 주석 실값 동기 · L1/L2 네임스페이스 리네임 · 핀치줌 허용 검토</li>
+</ul>
+</div>
+
+<p class="foot">검증 규율: 10인 전원 READ-ONLY 계약(레포 무변경·산출 텍스트만) · 전원 최상위 모델 · 발사 후 rogue 브랜치·커밋 사후점검 통과. 이 보고서의 "즉시 조치" 표가 분신술발 실변경의 전부이며, 미조치 발견은 §3에 전수 등재(누락 금지 — 운영자 260706 지시).</p>
+</html>
