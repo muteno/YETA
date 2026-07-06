@@ -1,0 +1,71 @@
+name: yeta-nudge
+
+# 읽씹 리마인더(운영자 260707) — 유저가 2~3시간 답 없으면 페르소나가 먼저 말 걸기.
+# 30분 주기 판정(조건 미충족 = 클로드 호출 없이 수 초 종료 = 쿼터 0) · 발화 시 세션 append + 캐릭터 이름 카톡식 푸시.
+# ⚠️ 대화 데이터는 레포에 커밋하지 않는다(세션 = R2 비공개) · 가드 = 일 상한 2·연속 재촉 금지·fresh 재확인(yeta_nudge.sh).
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch: {}
+
+concurrency:
+  group: yeta-nudge
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  nudge:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout (shallow+sparse)
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          sparse-checkout: |
+            .github
+            shared
+            apps/yeta
+            push
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+
+      - name: CLI 캐시 키(ISO 주 단위 — yeta-chat 동일 키 공유 = 캐시 재사용)
+        id: week
+        run: echo "week=$(date +%G%V)" >> "$GITHUB_OUTPUT"
+      - name: Cache claude CLI
+        id: clicache
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm-global
+          key: claude-cli-${{ runner.os }}-${{ steps.week.outputs.week }}
+      - name: Install Claude Code CLI (캐시 미스 시만)
+        if: steps.clicache.outputs.cache-hit != 'true'
+        run: npm install -g --prefix "$HOME/.npm-global" @anthropic-ai/claude-code
+      - name: CLI PATH
+        run: echo "$HOME/.npm-global/bin" >> "$GITHUB_PATH"
+
+      - name: pywebpush (푸시용)
+        run: python3 -m pip install --quiet --break-system-packages pywebpush 2>/dev/null || echo "pywebpush 미설치 — 푸시 생략(비치명)"
+
+      - name: 읽씹 판정 + 페르소나 선발화
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets[format('CLAUDE_CODE_OAUTH_TOKEN_{0}', vars.ACTIVE_ACCOUNT || 'MUTENO')] }}
+          CLAUDE_CODE_OAUTH_TOKEN_ALT: ${{ (vars.ACTIVE_ACCOUNT || 'MUTENO') == 'NOMUTEFB' && secrets.CLAUDE_CODE_OAUTH_TOKEN_EMS1130G || secrets.CLAUDE_CODE_OAUTH_TOKEN_NOMUTEFB }}
+          CLAUDE_CODE_OAUTH_TOKEN_ALT2: ${{ (vars.ACTIVE_ACCOUNT || 'MUTENO') == 'MUTENO' && secrets.CLAUDE_CODE_OAUTH_TOKEN_EMS1130G || secrets.CLAUDE_CODE_OAUTH_TOKEN_MUTENO }}
+          CLAUDE_CODE_OAUTH_TOKEN_ALT3: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN_MUTENONA }}
+          ACTIVE_ACCOUNT: ${{ vars.ACTIVE_ACCOUNT || 'MUTENO' }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          YETA_R2_BUCKET: ${{ secrets.YETA_R2_BUCKET }}
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+          VAPID_SUBJECT: ${{ secrets.VAPID_SUBJECT }}
+          NUDGE_AFTER_MIN: ${{ vars.NUDGE_AFTER_MIN || 150 }}
+          NUDGE_MAX_PER_DAY: ${{ vars.NUDGE_MAX_PER_DAY || 2 }}
+        run: bash .github/scripts/yeta_nudge.sh
