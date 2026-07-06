@@ -65,7 +65,6 @@ persona = s.get("persona") or ""
 note_pub = s.get("note_pub") or s.get("note") or ""          # 레거시 단일 note = 공용으로 승계(이중기억 v3 · 아이데이션③)
 note_me = ((s.get("notes") or {}).get(persona)) or ""
 print(json.dumps({"note_pub": note_pub, "note_me": note_me, "hist": hist, "pending": "\n".join(pending), "ins": ins,
-                  "tune": (s.get("tunes") or {}).get(persona),   # 캐릭터별 성향 게이지(16축 0~10 · op tune) — 없으면 None
                   "anchor_ts": last_u.get("ts"),   # 마지막 pending 유저 턴 ts = insert 앵커(인덱스 대신 = 400 트림/시프트 면역)
                   "persona": persona,
                   "ptt": 1 if last_u.get("ptt") else 0,   # 무전기(PTT) 턴 = 답장 반영 후 음성 합성(ptt_voice)
@@ -213,7 +212,7 @@ process_turn() {
   [ -n "$mat" ] || { echo "::error::세션 파싱 실패(malformed) — state 미변경"; return 1; }
   NOTE_PUB="$(matv note_pub)"; NOTE_ME="$(matv note_me)"; HIST="$(matv hist)"; PENDING="$(matv pending)"
   INS="$(matv ins)"; ANCHOR_TS="$(matv anchor_ts)"; PERSONA="$(matv persona)"; PTT="$(matv ptt)"
-  RAW_MODEL="$(matv model)"; RAW_EFF="$(matv effort)"; TUNE="$(matv tune)"
+  RAW_MODEL="$(matv model)"; RAW_EFF="$(matv effort)"
   case "$RAW_MODEL" in claude-opus-4-8|claude-sonnet-5) MODEL="$RAW_MODEL" ;; *) MODEL="$DEFAULT_MODEL" ;; esac   # 화이트리스트 재강제(방어 심층 · 아이데이션④)
   case "$RAW_EFF" in low|medium|high|max) EFF="$RAW_EFF" ;; "") EFF="" ;; *) EFF="$DEFAULT_EFF" ;; esac
   [[ "$PERSONA" =~ ^[a-z0-9_-]{1,24}$ ]] || { finish error "페르소나가 비어 있어 — 🎲 다시 뽑아줘"; return 1; }
@@ -223,37 +222,8 @@ process_turn() {
   CBLOCK="$(character_block "$PERSONA")" || { finish error "지침 주입 실패"; return 1; }
   CNAME="$(sed -n 's/^name:[[:space:]]*"\{0,1\}\([^"]*\)"\{0,1\}$/\1/p' "$CARD" | head -1)"; CNAME="${CNAME:-$PERSONA}"
 
-  # 성향 보정 블록(운영자 260706 게이지) — 숫자 16축을 5구간 자연어로 변환(중립 5~6 = 줄 생략 = 무설정은 카드 원본). 축 순서 = viewer TUNE_AX와 짝.
-  TUNE_BLOCK=""
-  if [ -n "$TUNE" ] && [ "$TUNE" != "None" ]; then
-    TUNE_BLOCK="$(python3 - "$TUNE" <<'PY'
-import sys, json
-try: g = json.loads(sys.argv[1])
-except Exception: sys.exit(0)
-if not (isinstance(g, list) and len(g) == 16): sys.exit(0)
-AX = ["말수","장난기","어투 강도","답장 길이","친절도","온기(다정함)","인내심","삐짐·질투","츤데레 낙차(겉과 속 차이)","초기 친밀도","친밀해지는 속도","경계심(비밀 방어)","플러팅 수위","신비 노출(판타지 누설)","이중성 스위치 빈도","위험한 분위기(밤 모드)"]
-def band(v):
-    try: v = max(0, min(10, int(round(float(v)))))
-    except Exception: return None
-    if v <= 1: return "극단적으로 낮게"
-    if v <= 4: return "낮게"
-    if v <= 6: return None
-    if v <= 8: return "높게"
-    return "극단적으로 높게"
-lines = []
-for i, v in enumerate(g[:16]):
-    b = band(v)
-    if b: lines.append(f"- {AX[i]}: {b} ({v}/10)")
-if lines:
-    print("[성향 보정 — 유저가 설정한 강도 조절. 카드가 기본값이며, 아래 축만 지시 강도로 보정하라. 정체성·말투 제1규칙·금기는 절대 불변]")
-    print("\n".join(lines))
-PY
-)"
-  fi
-
   # 고정부(공통지침+카드 = 캐시 prefix) → 가변부 → 출력 계약. stdin 전달(ARG_MAX · §📰).
   prompt="${CBLOCK}
-${TUNE_BLOCK}
 
 [공용 기억 — 유저에 대한 사실과 이 세계의 사건. 다른 주민도 알 만한 것]
 ${NOTE_PUB:-"(아직 없음)"}

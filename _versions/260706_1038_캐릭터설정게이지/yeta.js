@@ -177,23 +177,10 @@ export async function onRequestPost({ request, env }) {
     return json({ error: `GitHub dispatch ${st}` }, 502);
   }
 
-  if (op === 'tune') {   // 캐릭터별 성향 게이지(16축 0~10 · 운영자 260706) — 숫자 배열만 수용 = 프롬프트 주입 원천 차단(라벨은 러너 상수)
-    const persona = String(body.persona || '');
-    if (!ID_RE.test(persona)) return json({ error: '잘못된 페르소나 id' }, 400);
-    const raw = Array.isArray(body.g) ? body.g : null;
-    if (!raw || raw.length !== 16) return json({ error: '게이지는 16개 숫자 배열' }, 400);
-    const g = raw.map(v => Math.max(0, Math.min(10, Math.round(Number(v) || 0))));
-    const sess = await readSess();
-    sess.tunes = sess.tunes || {}; sess.tunes[persona] = g; sess.updated = Date.now();
-    await putSess(sess);
-    return json({ ok: true, g });
-  }
-
   if (op === 'reset') {
     const cur = await env.YETA_R2.get(KEY);   // 삭제 직전 1세대 백업(reset 비가역 완화 — R2엔 copy 없어 get→put) · 비공개 버킷
-    let keepTunes = {};
-    if (cur) { try { const buf = await cur.arrayBuffer(); await env.YETA_R2.put('sessions/main.prev.json', buf, { httpMetadata: { contentType: 'application/json' } }); keepTunes = (JSON.parse(new TextDecoder().decode(buf)).tunes) || {}; } catch {} }
-    await putSess({ turns: [], note: '', state: 'idle', tunes: keepTunes, updated: Date.now() });   // 페르소나는 비움 → 재뽑기 · 게이지는 설정이라 승계(운영자 260706)
+    if (cur) { try { await env.YETA_R2.put('sessions/main.prev.json', await cur.arrayBuffer(), { httpMetadata: { contentType: 'application/json' } }); } catch {} }
+    await putSess({ turns: [], note: '', state: 'idle', updated: Date.now() });   // 페르소나도 비움 → 재뽑기
     return json({ ok: true });
   }
 
