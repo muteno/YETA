@@ -1,0 +1,386 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>단톡·난입 — 아이데이션 + UI 플레이그라운드</title>
+<style>
+/* ═══ 값 = viewer/index.html :root 사본(시안 자기완결용 · 정본은 viewer) ═══ */
+:root{
+  --fg:#FFFFFF; --fg-2:#C4C9C4; --mut:#8B8F8A; --bg:#121212;
+  --accent:#CFFF40; --accent-rgb:207,255,64; --cobalt:#3D6BFF; --cobalt-rgb:61,107,255;
+  --danger:#FF6B5E; --danger-rgb:255,107,94;
+  --glass:rgba(255,255,255,.055); --glass-2:rgba(255,255,255,.09); --glass-line:rgba(255,255,255,.14);
+  --bubble-me:#CFFF40;
+  --r-s:9px; --r-m:11px; --r-l:16px; --r-modal:22px; --r-pill:999px;
+  --sp-2:12px; --sp-3:18px;
+  --fs-h2:15px; --fs-h3:14px; --fs-body:15px; --fs-sm:12px; --fs-xs:11px;
+  --fw-x:800; --fw-b:700; --lh-base:1.6;
+  --ease:cubic-bezier(.2,.7,.3,1); --blur-m:16px;
+  --press-m:.9; --press-l:.95;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{background:#0b0c0b;color:var(--fg);font:14px/1.6 Pretendard,-apple-system,system-ui,'Apple SD Gothic Neo',sans-serif;-webkit-font-smoothing:antialiased;max-width:760px;margin-inline:auto;padding:20px 14px 150px}
+h1{font-size:17px;font-weight:var(--fw-x);margin:0 0 4px}
+h1 b{color:var(--accent)}
+.sub{font-size:var(--fs-sm);color:var(--mut);margin:0 0 18px}
+h2{font-size:var(--fs-h2);font-weight:var(--fw-x);margin:28px 0 4px;color:var(--accent)}
+h2 .n{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:rgba(var(--accent-rgb),.14);color:var(--accent);font-size:var(--fs-xs);margin-right:7px;vertical-align:-3px}
+.cap{font-size:var(--fs-sm);color:var(--mut);margin:0 0 12px}
+.cap a{color:var(--fg-2)}
+i.q{font-style:italic;color:var(--fg-2)}
+code{background:var(--glass);border:1px solid var(--glass-line);border-radius:6px;padding:0 5px;font-size:12px}
+
+/* 요약 카드 */
+.sum{border:1px solid var(--glass-line);border-radius:var(--r-l);background:var(--glass);padding:13px 15px;margin:0 0 6px}
+.sum b{color:var(--accent)}
+.sum ul{margin:0;padding-left:18px}
+.sum li{margin:3px 0;font-size:var(--fs-h3);line-height:1.62}
+.sum li i{font-style:normal;color:var(--mut);font-size:var(--fs-sm)}
+
+/* 차용 패턴 카드 */
+.refs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+@media (max-width:640px){.refs{grid-template-columns:1fr}}
+.ref{border:1px solid var(--glass-line);border-radius:var(--r-l);background:var(--glass);padding:12px 13px}
+.ref b{display:block;font-size:var(--fs-h3);font-weight:var(--fw-b)}
+.ref p{margin:6px 0 0;font-size:var(--fs-sm);color:var(--fg-2);line-height:1.55}
+.ref .take{margin-top:8px;padding-top:8px;border-top:1px dashed var(--glass-line);font-size:var(--fs-sm);color:var(--accent)}
+
+/* ── 폰 목업 ── */
+.stage{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
+.phone{flex:none;width:298px;aspect-ratio:9/16.6;position:relative;border:1px solid var(--glass-line);border-radius:var(--r-modal);overflow:hidden;background:linear-gradient(168deg,#171a17 0%,#0e100f 46%,#121412 100%)}
+.phone::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(120% 60% at 50% -8%,rgba(var(--accent-rgb),.05),transparent 60%)}
+/* 헤더 알약(뷰어 .yeta-h 계승) */
+.mh{position:absolute;top:10px;left:10px;right:10px;z-index:4;display:flex;align-items:center;gap:8px;padding:7px 9px;border:1px solid var(--glass-line);border-radius:var(--r-pill);background:rgba(18,18,18,.55);backdrop-filter:blur(var(--blur-m));-webkit-backdrop-filter:blur(var(--blur-m))}
+.mh .bk{flex:none;width:22px;height:22px;color:var(--fg-2);display:grid;place-items:center}
+.mh .avs{flex:none;display:flex;align-items:center}
+.mh .avs .av{width:30px;height:30px;font-size:12px;box-shadow:0 0 0 2px rgba(16,17,16,.95)}
+.mh .avs .av + .av{margin-left:-9px}
+.mh .who{min-width:0;display:flex;flex-direction:column;line-height:1.25}
+.mh .who b{font-size:13px;font-weight:var(--fw-x);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mh .who i{font-style:normal;font-size:10.5px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mh .r{margin-left:auto;display:flex;align-items:center;gap:6px;color:var(--fg-2)}
+.mh .hplus{display:none;width:24px;height:24px;border-radius:50%;border:1px solid var(--glass-line);background:var(--glass);color:var(--fg-2);place-items:center}
+.p-b .mh .hplus{display:grid}
+.av{border-radius:50%;display:grid;place-items:center;font-weight:var(--fw-x);color:#121212}
+/* 로그 */
+.mlog{position:absolute;inset:0;z-index:2;overflow-y:auto;display:flex;flex-direction:column;gap:9px;padding:66px 10px 78px;scrollbar-width:none}
+.mlog::-webkit-scrollbar{display:none}
+.mmsg{display:flex;gap:7px;align-items:flex-start;max-width:88%}
+.mmsg .av{flex:none;width:28px;height:28px;font-size:11px;margin-top:14px}
+.mmsg.cont .av{visibility:hidden}
+.mmsg.cont{margin-top:-4px}
+.mmsg.cont .nm{display:none}
+.mmsg .col{display:flex;flex-direction:column;gap:2px;min-width:0}
+.mmsg .nm{font-size:10.5px;color:var(--mut);padding-left:2px}
+.bb{padding:8px 11px;border-radius:14px;font-size:12.5px;line-height:1.55;white-space:pre-wrap;word-break:break-word}
+.bb.ai{background:var(--glass-2);border:1px solid var(--glass-line);border-top-left-radius:7px;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.bb.me{align-self:flex-end;max-width:80%;background:var(--bubble-me);color:var(--bg);border-top-right-radius:7px}
+.bb i.yn{font-style:italic;opacity:.72}
+.bb.sys{align-self:center;text-align:center;background:var(--glass);border:1px solid var(--glass-line);border-radius:var(--r-pill);color:var(--fg-2);font-size:10.8px;padding:3px 11px;max-width:92%}
+.bb.sys i.q{color:var(--fg-2)}
+.bb.sys.ent{color:var(--fg-2)}
+.tdots{display:inline-flex;gap:4px;align-items:center;height:1.15em}
+.tdots i{width:5px;height:5px;border-radius:50%;background:var(--fg-2);animation:td 1.15s ease-in-out infinite}
+.tdots i:nth-child(2){animation-delay:.14s}.tdots i:nth-child(3){animation-delay:.28s}
+@keyframes td{0%,60%,100%{opacity:.25;transform:translateY(0)}30%{opacity:1;transform:translateY(-2px)}}
+.min{animation:bin .3s var(--ease) both}
+@keyframes bin{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+/* 내보내기 원탭 pill */
+.kick{align-self:center;display:inline-flex;align-items:center;gap:5px;border:1px solid var(--glass-line);border-radius:var(--r-pill);background:rgba(18,18,18,.5);color:var(--fg-2);font:inherit;font-size:10.8px;padding:4px 12px;cursor:pointer;transition:transform .15s var(--ease)}
+.kick:active{transform:scale(var(--press-m))}
+.kick svg{width:12px;height:12px}
+/* 입력행 */
+.min-row{position:absolute;bottom:12px;left:10px;right:10px;z-index:4;display:flex;align-items:center;gap:4px;padding:6px 7px;border:1px solid var(--glass-line);border-radius:var(--r-pill);background:rgba(18,18,18,.55);backdrop-filter:blur(var(--blur-m));-webkit-backdrop-filter:blur(var(--blur-m))}
+.min-row .ph{flex:1;font-size:12.5px;color:var(--mut);padding-left:8px}
+.min-row .ib{flex:none;width:30px;height:30px;display:grid;place-items:center;color:var(--fg-2);border-radius:50%;position:relative}
+.min-row .ib.send{color:var(--accent)}
+.min-row .ib svg{width:19px;height:19px}
+.ib.pulse::after{content:"";position:absolute;inset:-3px;border-radius:50%;border:2px solid rgba(var(--accent-rgb),.75);animation:pl 1.1s var(--ease) infinite}
+@keyframes pl{from{opacity:1;transform:scale(.72)}to{opacity:0;transform:scale(1.28)}}
+/* 초대 시트(카톡 대화상대 초대 동선 차용 · 뷰어 글래스 결) */
+.msheet{position:absolute;left:0;right:0;bottom:0;z-index:6;border:1px solid var(--glass-line);border-bottom:none;border-radius:var(--r-modal) var(--r-modal) 0 0;background:rgba(20,22,20,.92);backdrop-filter:blur(var(--blur-m));-webkit-backdrop-filter:blur(var(--blur-m));padding:12px 12px 16px;transform:translateY(102%);transition:transform .34s var(--ease)}
+.msheet.on{transform:none}
+.msheet .grab{width:34px;height:4px;border-radius:var(--r-pill);background:var(--glass-line);margin:0 auto 10px}
+.msheet .tt{font-size:12.5px;font-weight:var(--fw-b);margin:0 2px 2px}
+.msheet .tc{font-size:10.5px;color:var(--mut);margin:0 2px 9px}
+.srow{display:flex;align-items:center;gap:9px;padding:7px 6px;border-radius:var(--r-m);transition:background .25s var(--ease)}
+.srow .av{flex:none;width:30px;height:30px;font-size:11px}
+.srow .sc{min-width:0;flex:1;line-height:1.3}
+.srow .sc b{display:block;font-size:12.5px}
+.srow .sc i{font-style:normal;display:block;font-size:10.5px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.srow .call{flex:none;border:1px solid rgba(var(--accent-rgb),.5);color:var(--accent);background:rgba(var(--accent-rgb),.08);border-radius:var(--r-pill);font-size:10.8px;font-weight:var(--fw-b);padding:3px 11px}
+.srow.hit{background:rgba(var(--accent-rgb),.10)}
+.srow.dis{opacity:.4}
+.srow.dis .call{border-color:var(--glass-line);color:var(--mut);background:none}
+/* 시나리오 컨트롤 + 노트 */
+.scen{flex:1;min-width:250px}
+.sbtns{display:flex;gap:7px;flex-wrap:wrap;margin:0 0 10px}
+.sb{border:1px solid var(--glass-line);border-radius:var(--r-pill);background:var(--glass);color:var(--fg-2);font:inherit;font-size:var(--fs-sm);font-weight:var(--fw-b);padding:6px 13px;cursor:pointer;transition:all .2s var(--ease)}
+.sb:active{transform:scale(var(--press-m))}
+.sb.on{border-color:rgba(var(--accent-rgb),.65);background:rgba(var(--accent-rgb),.1);color:var(--accent)}
+.note{border:1px solid var(--glass-line);border-radius:var(--r-l);background:var(--glass);padding:12px 14px;font-size:var(--fs-sm);color:var(--fg-2);line-height:1.66}
+.note b{color:var(--fg)}
+.note .k{color:var(--accent)}
+.note ul{margin:6px 0 0;padding-left:16px}
+.note li{margin:3px 0}
+.replay{margin-top:10px;border:1px solid var(--glass-line);border-radius:var(--r-pill);background:none;color:var(--mut);font:inherit;font-size:var(--fs-xs);padding:4px 12px;cursor:pointer}
+/* 프리셋 카드 */
+.presets{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+@media (max-width:640px){.presets{grid-template-columns:1fr}}
+.pcard{position:relative;text-align:left;border:1px solid var(--glass-line);border-radius:var(--r-l);background:var(--glass);padding:13px 14px 12px;cursor:pointer;font:inherit;color:inherit;transition:border-color .25s var(--ease),background .25s var(--ease),transform .15s var(--ease)}
+.pcard:active{transform:scale(var(--press-l))}
+.pcard.on{border-color:rgba(var(--accent-rgb),.65);background:rgba(var(--accent-rgb),.07)}
+.pcard .pk{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;border-radius:7px;background:var(--glass-2);color:var(--fg-2);font-weight:var(--fw-x);font-size:var(--fs-sm);margin-right:8px}
+.pcard.on .pk{background:var(--accent);color:#121212}
+.pcard .pt{font-weight:var(--fw-b);font-size:var(--fs-h3)}
+.pcard .star{color:var(--accent);font-size:var(--fs-xs);font-weight:var(--fw-x);margin-left:6px}
+.pcard .pd{font-size:var(--fs-sm);color:var(--fg-2);margin:7px 0 0;line-height:1.55}
+.pcard .pm{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
+.chip{font-size:var(--fs-xs);color:var(--mut);border:1px solid var(--glass-line);border-radius:var(--r-pill);padding:1px 9px}
+.chip.g{color:#9be09b;border-color:rgba(155,224,155,.35)}
+.chip.o{color:#ffb38a;border-color:rgba(255,179,138,.35)}
+/* 미세조정 */
+.knob{margin:0 0 13px}
+.knob .kt{font-size:var(--fs-h3);font-weight:var(--fw-b);margin:0 0 2px}
+.knob .kc{font-size:var(--fs-xs);color:var(--mut);margin:0 0 7px}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{border:1px solid var(--glass-line);border-radius:var(--r-pill);background:var(--glass);color:var(--fg-2);font:inherit;font-size:var(--fs-sm);padding:5px 12px;cursor:pointer;transition:all .2s var(--ease)}
+.seg button:active{transform:scale(var(--press-m))}
+.seg button.on{border-color:rgba(var(--accent-rgb),.65);background:rgba(var(--accent-rgb),.1);color:var(--accent);font-weight:var(--fw-b)}
+/* 배선표 */
+table{width:100%;border-collapse:collapse;font-size:var(--fs-sm)}
+th,td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--glass-line);vertical-align:top;line-height:1.55}
+th{color:var(--mut);font-weight:var(--fw-b);font-size:var(--fs-xs);white-space:nowrap}
+td b{color:var(--accent);font-weight:var(--fw-b)}
+td.ok{color:#9be09b;white-space:nowrap}
+.tbl{border:1px solid var(--glass-line);border-radius:var(--r-l);background:var(--glass);padding:4px 8px;overflow-x:auto}
+/* 하단 복사 바 */
+.bar{position:fixed;left:50%;transform:translateX(-50%);bottom:14px;z-index:50;width:min(730px,calc(100vw - 22px));display:flex;gap:9px;align-items:center;border:1px solid var(--glass-line);border-radius:var(--r-l);background:rgba(18,18,18,.82);backdrop-filter:blur(var(--blur-m));-webkit-backdrop-filter:blur(var(--blur-m));padding:10px 12px}
+.bar .txt{flex:1;font-size:var(--fs-xs);color:var(--fg-2);line-height:1.5;word-break:break-all}
+.bar .cp{flex:none;border:none;border-radius:var(--r-m);background:var(--accent);color:#121212;font:inherit;font-size:var(--fs-sm);font-weight:var(--fw-x);padding:8px 14px;cursor:pointer;transition:transform .15s var(--ease)}
+.bar .cp:active{transform:scale(var(--press-m))}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style></head><body>
+
+<h1>단톡·난입 — <b>아이데이션 + UI 구성안</b></h1>
+<p class="sub">초대 기반 · 캐릭터가 거절 가능 · UI 난잡 금지(기존 기틀만 계승) · 비용 = 지금과 동일(턴당 호출 1회) — 시안 전체가 제안 딱지</p>
+
+<h2><span class="n">1</span>결론 요약</h2>
+<div class="sum"><ul>
+<li><b>방을 새로 만들지 않는다 — `합석` 모델.</b> 스레드는 지금처럼 하나(전 캐릭터 맥락 공유가 이미 배선돼 있음), 바뀌는 건 <b>지금 방에 있는 캐릭터 수(1→최대 2)</b>뿐. <i>카톡은 1:1에 초대하면 새 방을 만들지만, 무음동은 한 공간(찻집)에 사람이 드나드는 세계라 합석이 정체성에 맞음.</i></li>
+<li><b>초대 = 이미 예약해 둔 + 버튼</b>(운영자 260705 #13 `향후 기능 진입점`) → 하단 시트에서 캐릭터 탭 → <b>캐릭터가 카드·시각·관계로 수락/거절을 스스로 판단</b>(거절이 사람다움의 하이라이트).</li>
+<li><b>난입 = 드문 이벤트.</b> 질투 메타(riv)·최근 언급을 트리거로 하루 1회 상한. 유저는 원탭으로 내보낼 수 있음(거절의 대칭).</li>
+<li><b>비용 불변.</b> 단톡이어도 턴당 dispatch 1회 — 한 호출이 최대 2대사 대본을 내고 러너가 화자별 턴으로 분할.</li>
+</ul></div>
+
+<h2><span class="n">2</span>차용한 패턴 (인터넷 실측 조사)</h2>
+<p class="cap">출처: <a href="https://cs.kakao.com/helps_html/1073181658?locale=ko">카카오 고객센터(1:1 중 초대)</a> · <a href="https://cs.kakao.com/helps_html/1073208058?locale=ko">카카오(기존 방 초대)</a> · <a href="https://www.kmib.co.kr/article/view.asp?arcid=0018120165">카톡 초대 거절 기능 기사</a> · <a href="https://support.character.ai/hc/en-us/articles/23957256282523-Group-Chat-FAQ">Character.AI Group Chat FAQ</a></p>
+<div class="refs">
+  <div class="ref"><b>카카오톡 — 초대 동선</b><p>채팅방 더보기 → `대화상대 초대` → 피커에서 선택 → 확인. 초대받는 쪽이 거절할 수 있는 기능도 정식 도입.</p><div class="take">차용: + 버튼 → 시트 피커 → 원탭 초대 · `거절` 개념</div></div>
+  <div class="ref"><b>Character.AI — 그룹챗</b><p>그룹을 만들고 캐릭터를 추가(최대 10). 유저 메시지에 캐릭터들이 응답 — 자동 응답과 캐릭터 지목이 섞인 구조(추정).</p><div class="take">차용: 캐릭터도 참여자 · 화자 자동 선정 + 호명 시 고정</div></div>
+  <div class="ref"><b>iMessage·카톡 — 헤더</b><p>단톡 헤더는 참여자 아바타를 겹쳐 쌓고 이름을 나열 — 방 상태가 한눈에 읽히는 통념 패턴.</p><div class="take">차용: 아바타 스택(겹침 링) + 이름 나열 — 새 컴포넌트 0</div></div>
+</div>
+
+<h2><span class="n">3</span>실물 미리보기 — 시나리오 4개 (자동 재생)</h2>
+<p class="cap">뷰어 실물 재현(헤더 알약·글래스 버블·sys pill·입력행 전부 기존 셀렉터 계승). 버튼으로 시나리오 전환 — 오른쪽 노트가 그 장면의 설계 규칙. 목업 시트는 4행만 재현(실제 로스터 10인 = 시트 내부 스크롤).</p>
+<div class="stage">
+  <div class="phone" id="phone">
+    <div class="mh">
+      <span class="bk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></span>
+      <span class="avs" id="mhAvs"></span>
+      <span class="who"><b id="mhName"></b><i id="mhTag"></i></span>
+      <span class="r"><span class="hplus" id="hplus"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.13.96.36 1.9.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0122 16.92z"/></svg></span>
+    </div>
+    <div class="mlog" id="mlog"></div>
+    <div class="min-row">
+      <span class="ib" id="mplus"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
+      <span class="ph">메시지</span>
+      <span class="ib send"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2 15 22 11 13 2 9z"/></svg></span>
+    </div>
+    <div class="msheet" id="msheet">
+      <div class="grab"></div>
+      <p class="tt">누구 부를까</p>
+      <p class="tc" id="msheetCap">자리 1 남음 — 부르면 올지는 걔 마음</p>
+      <div id="msheetRows"></div>
+    </div>
+  </div>
+  <div class="scen">
+    <div class="sbtns" id="sbtns">
+      <button class="sb on" data-s="a">A 초대 → 수락</button>
+      <button class="sb" data-s="b">B 초대 → 거절</button>
+      <button class="sb" data-s="c">C 난입 → 내보내기</button>
+      <button class="sb" data-s="d">D 단톡 — 누가 대답하나</button>
+    </div>
+    <div class="note" id="snote"></div>
+    <button class="replay" id="replay">↻ 다시 재생</button>
+  </div>
+</div>
+
+<h2><span class="n">4</span>초대 진입점 — 3안 (프리셋)</h2>
+<p class="cap">탭하면 위 목업 헤더에 반영. A와 C는 병행 가능(버튼으로도, 말로도).</p>
+<div class="presets" id="presets">
+  <button class="pcard on" data-p="a"><span class="pk">A</span><span class="pt">+ 더보기 → 시트</span><span class="star">★ 추천</span>
+    <p class="pd">입력행의 + 버튼(이미 `향후 기능 진입점`으로 예약됨) → 하단 시트에 `누구 부를까`. 카톡의 더보기→초대 동선 그대로.</p>
+    <div class="pm"><span class="chip g">예약된 진입점 재사용</span><span class="chip g">헤더 무손상</span><span class="chip">카톡 동선</span></div></button>
+  <button class="pcard" data-p="b"><span class="pk">B</span><span class="pt">헤더 상시 + 버튼</span>
+    <p class="pd">헤더 수화기 옆에 작은 + 를 상시 노출(iMessage 결). 발견성은 최고지만 알약 헤더 밀도가 올라감.</p>
+    <div class="pm"><span class="chip g">발견성↑</span><span class="chip o">헤더 밀도↑ = 난잡 리스크</span></div></button>
+  <button class="pcard" data-p="c"><span class="pk">C</span><span class="pt">말로 부르기 (자연어)</span>
+    <p class="pd">`무디도 불러줘` 라고 치면 러너가 감지해 초대 발사. UI 추가 0 — 세계관상 제일 자연스러움. 단독으론 발견성이 없어 A의 보조 축.</p>
+    <div class="pm"><span class="chip g">UI 추가 0</span><span class="chip o">발견성↓</span><span class="chip">A와 병행</span></div></button>
+</div>
+
+<h2><span class="n">5</span>미세조정 (규칙 다이얼)</h2>
+<div class="note" style="margin-bottom:14px">
+<div class="knob"><p class="kt">방 정원 (나 제외 캐릭터 수)</p><p class="kc">운영자 말 그대로 `한 명 정도는` = 기본 2명. 3명은 대본 파서·비용 동일하나 수다 밀도가 급증 — 후속 실험 축.</p>
+<div class="seg" data-k="cap"><button data-v="2명" class="on">최대 2명 ★</button><button data-v="3명">최대 3명(실험)</button></div></div>
+<div class="knob"><p class="kt">난입 빈도</p><p class="kc">트리거 = 최근 대화에 그 캐릭터 언급 · 질투 메타(riv) · 데일리 무드. 결정적 시드라 재현 가능, 상한은 세션 마커로 강제.</p>
+<div class="seg" data-k="barge"><button data-v="끔">끔</button><button data-v="주1~2">주 1~2</button><button data-v="일1" class="on">하루 1회 상한 ★</button><button data-v="제한없음">제한 없음</button></div></div>
+<div class="knob"><p class="kt">초대 거절 판정</p><p class="kc">거절 사유는 살아있는 근거로 — 백은 순찰 시간대엔 안 오고, 윤은 방송 중(0~3시)엔 못 옴. 거절한 캐릭터는 나중에 먼저 난입할 확률↑(떡밥 회수).</p>
+<div class="seg" data-k="dec"><button data-v="항상수락">항상 수락</button><button data-v="캐릭터판단" class="on">캐릭터 판단 ★</button><button data-v="짠돌이">자주 거절(까칠)</button></div></div>
+<div class="knob"><p class="kt">턴당 대사 수 (단톡 시)</p><p class="kc">한 호출이 대본으로 최대 2대사(서로 티격태격) — 러너가 화자별 턴으로 분할. 비용은 1대사와 동일.</p>
+<div class="seg" data-k="script"><button data-v="1대사">항상 1대사</button><button data-v="최대2대사" class="on">최대 2대사 ★</button></div></div>
+<div class="knob"><p class="kt">내보내기 방식</p><p class="kc">난입 직후에만 원탭 pill이 잠깐 떴다가 다음 내 메시지 후 자동 소멸(난잡 방지). 언제든 대화로도 가능(`이제 둘이 있고 싶은데` → 캐릭터가 알아서 나감).</p>
+<div class="seg" data-k="kick"><button data-v="원탭+대화" class="on">원탭 pill + 대화 ★</button><button data-v="헤더시트">헤더 멤버 시트에서</button><button data-v="대화로만">대화로만</button></div></div>
+</div>
+
+<h2><span class="n">6</span>배선 스케치 (구현 들어갈 때)</h2>
+<p class="cap">핵심: 이미 깔린 레일이 대부분이라 새로 만드는 건 4조각. 세션엔 지금처럼 id·enum만(프롬프트 주입 차단 유지) · 대화 레포 커밋 금지 그대로.</p>
+<div class="tbl"><table>
+<tr><th>조각</th><th>내용</th><th>상태</th></tr>
+<tr><td><b>sess.room</b></td><td>활성 캐릭터 배열(최대 2) + <code>sess.invite={to,ts}</code> 마커. <code>persona</code>는 `마지막 화자`로 존치(하위호환).</td><td>신규</td></tr>
+<tr><td><b>op invite / kick</b></td><td>게이트웨이 2 op — id는 <code>ID_RE</code> 검증만(텍스트 수용 0). 초대 = sys 턴 + dispatch, 내보내기 = room에서 제거 + 퇴장 sys.</td><td>신규</td></tr>
+<tr><td><b>러너 화자 선정 + 대본 파서</b></td><td>사다리: ① 이름 호명 → 걔 고정 ② 아니면 직전 화자 교대 우선 + 모델 위임. 출력 계약에 <code>[이름]</code> 프리픽스 대본(최대 2대사) 허용 — 파싱 실패 = 통짜 폴백(안전).</td><td>신규</td></tr>
+<tr><td><b>뷰어 시트 + 헤더 스택</b></td><td>+ 버튼 배선 → 초대 시트(yetaPick 스타일 계승) · 헤더 아바타 겹침(기존 .yh-ava에 링만).</td><td>신규</td></tr>
+<tr><td>화자 귀속</td><td>타 캐릭터 대사에 이름표 프리픽스 — 260707 분신 버그픽으로 이미 배선.</td><td class="ok">✓ 재사용</td></tr>
+<tr><td>합류 연출</td><td>roster <code>enter_line</code> + sys 턴 — draw op가 이미 이 패턴.</td><td class="ok">✓ 재사용</td></tr>
+<tr><td>인계 + 비밀 분리</td><td>handoff(`방금까지 누구와 있었다`) + 둘만의 비밀(NOTE:ME)은 모름 — T1에서 배선 완료.</td><td class="ok">✓ 재사용</td></tr>
+<tr><td>질투 메타(riv)</td><td>최근 40턴 최다 타 화자 — 난입 트리거 1순위로 그대로 씀.</td><td class="ok">✓ 재사용</td></tr>
+<tr><td>버블·sys·이름표 UI</td><td>.yb.sys · .yname · cont 연속발화 — 단톡에서 무수정 작동.</td><td class="ok">✓ 재사용</td></tr>
+<tr><td>비용</td><td>턴당 dispatch 1회 불변(대본 분할 방식) · 초대 판정도 그 1회에 얹음 · 난입도 답장 턴에 동반(별도 호출 0).</td><td class="ok">✓ 불변</td></tr>
+</table></div>
+
+<h2><span class="n">7</span>사람다움 포인트 (분신술 아이데이션 연계)</h2>
+<div class="note">
+<ul>
+<li><b class="k">거절이 콘텐츠다.</b> 사유가 캐릭터 카드·시각·관계LV에서 나옴 — 새벽 3시엔 방송 끝난 윤만 오고, 백은 순찰이 끝나야 온다. 거절당한 초대는 그 캐릭터가 나중에 <b>먼저 난입해 회수</b>(`아까는 미안했다`).</li>
+<li><b class="k">질투가 문을 연다.</b> riv 메타 보유 캐릭터가 난입 1순위 — `요즘 걔랑만 놀더라` 같은 등장 대사가 자동으로 성립.</li>
+<li><b class="k">셋이어도 비밀은 둘의 것.</b> 합류자는 최근 흐름(HIST 8턴)만 알고 NOTE:ME(둘만의 기억)는 모름 — 이미 배선된 규칙 그대로라 단톡에서 관계 서사가 안 깨짐.</li>
+<li><b class="k">나가는 것도 스스로.</b> 대화 소강·새벽이 깊으면 캐릭터가 먼저 `나 가볼게` 하고 빠짐(퇴장 sys) — 유저가 방 관리를 안 해도 방이 살아 움직임.</li>
+</ul></div>
+
+<div class="bar"><span class="txt" id="barTxt"></span><button class="cp" id="cpBtn">복사</button></div>
+
+<script>
+/* ── 캐스트(roster.json 실값) ── */
+const CAST={sera:{n:'세라',i:'세',c:'#ff8fb3',t:'지하 연습실의 최연소 각성자'},mudi:{n:'무디',i:'무',c:'#7ee0a3',t:"찻집 '무음'의 주인"},haeun:{n:'하은',i:'하',c:'#ffd36b',t:'퇴근길의 능글맞은 국어교사'},baek:{n:'백',i:'백',c:'#9db2bf',t:'골목의 과묵한 파수꾼'},ryu:{n:'류',i:'류',c:'#6bd6e8',t:"검도장 '월광'의 한량 사범"},yun:{n:'윤',i:'윤',c:'#b8a7ff',t:"심야 라디오 '주파수' DJ"}};
+const $=s=>document.querySelector(s);
+const av=(id,cls)=>`<span class="av ${cls||''}" style="background:${CAST[id].c}">${CAST[id].i}</span>`;
+const mlog=$('#mlog'),sheet=$('#msheet');
+let tok=0;   // 재생 취소 토큰
+const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function header(ids,tag){$('#mhAvs').innerHTML=ids.map(id=>av(id)).join('');$('#mhName').textContent=ids.map(id=>CAST[id].n).join(', ');$('#mhTag').textContent=tag||CAST[ids[0]].t;}
+function scroll(){mlog.scrollTop=mlog.scrollHeight;}
+function ai(id,text,cont){mlog.insertAdjacentHTML('beforeend',`<div class="mmsg min${cont?' cont':''}">${av(id)}<span class="col"><span class="nm">${CAST[id].n}</span><span class="bb ai">${fmt(text)}</span></span></div>`);scroll();}
+function me(text){mlog.insertAdjacentHTML('beforeend',`<div class="bb me min">${fmt(text)}</div>`);scroll();}
+function sys(text,cls){mlog.insertAdjacentHTML('beforeend',`<div class="bb sys min ${cls||''}">${text}</div>`);scroll();}
+function typing(id,lbl){mlog.insertAdjacentHTML('beforeend',`<div class="mmsg min" id="mtyp">${av(id)}<span class="col"><span class="nm">${CAST[id].n} · ${lbl}</span><span class="bb ai"><span class="tdots"><i></i><i></i><i></i></span></span></span></div>`);scroll();}
+function untyping(){const t=$('#mtyp');if(t)t.remove();}
+const fmt=t=>t.replace(/\*([^*]+)\*/g,'<i class="yn">$1</i>');
+function sheetRows(exclude,hit){const ids=Object.keys(CAST).filter(i=>!exclude.includes(i)).slice(0,4);$('#msheetRows').innerHTML=ids.map(id=>`<div class="srow" data-id="${id}">${av(id)}<span class="sc"><b>${CAST[id].n}</b><i>${CAST[id].t}</i></span><span class="call">부르기</span></div>`).join('');}
+function kickPill(id){mlog.insertAdjacentHTML('beforeend',`<button class="kick min" id="mkick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>내보내기</button>`);scroll();}
+
+/* ── 시나리오 대본 — [지연ms, 함수] 체인 ── */
+const SCEN={
+a:{note:`<b>A · 초대 → 수락</b> — 카톡 동선 차용, 판정은 캐릭터가.
+<ul><li><span class="k">진입</span>: + 버튼 → 시트 <b>누구 부를까</b>(지금 방 멤버 제외 · 자리 수 표기).</li>
+<li><span class="k">대기 연출</span>: <i>대답을 기다리는 중…</i> 타이핑 변형 — 초대도 하나의 턴.</li>
+<li><span class="k">수락</span>: roster <b>enter_line</b> 그대로 등장 sys → 첫 대사 → 헤더가 아바타 스택으로 전환.</li>
+<li><span class="k">한 끗</span>: 기존 화자(세라)가 합류에 반응(질투 메타) — 방이 살아있다는 신호.</li></ul>`,
+steps:[[0,()=>{header(['sera']);mlog.innerHTML='';ai('sera','…뭐. 또 왔네. 오늘은 뭐 하고 왔는데.');}],
+[900,()=>me('유자차 얘기 나온 김에 무디도 부르자')],
+[900,()=>$('#mplus').classList.add('pulse')],
+[1100,()=>{$('#mplus').classList.remove('pulse');sheetRows(['sera']);$('#msheetCap').textContent='자리 1 남음 — 부르면 올지는 걔 마음';sheet.classList.add('on');}],
+[1300,()=>{const r=$('#msheetRows .srow[data-id="mudi"]');if(r)r.classList.add('hit');}],
+[700,()=>sheet.classList.remove('on')],
+[500,()=>sys('무디를 불렀어…')],
+[800,()=>typing('mudi','대답을 기다리는 중')],
+[1700,()=>{untyping();sys('무디가 새 찻잔을 내리며 돌아본다','ent');}],
+[1000,()=>ai('mudi','부르는 소리가 들리길래. *쟁반에 잔을 세 개 얹는다* 유자차 맞지?')],
+[1100,()=>header(['sera','mudi'],'단톡 · 2명')],
+[900,()=>ai('sera','…누가 부르랬어.')]]},
+b:{note:`<b>B · 초대 → 거절</b> — 여기가 사람다움의 하이라이트.
+<ul><li><span class="k">판정 재료</span>: 캐릭터 카드 + 시각 + 관계LV + 데일리 무드. 백은 순찰 시간대라 거절 — <b>사유가 세계에서 나옴</b>.</li>
+<li><span class="k">표시</span>: 거절 = sys pill 한 줄 + 본인 말투 인용 — 방엔 흔적만 남고 난잡함 0.</li>
+<li><span class="k">회수 떡밥</span>: 거절한 캐릭터는 이후 <b>먼저 난입할 확률↑</b> — \`아까는 미안했다\`로 서사가 이어짐.</li>
+<li><span class="k">덤</span>: 기존 화자가 거절 사유를 이어받아 한 마디 — 세계의 앞뒤가 맞음.</li></ul>`,
+steps:[[0,()=>{header(['sera']);mlog.innerHTML='';me('백도 있으면 좋을 것 같은데');}],
+[800,()=>{sheetRows(['sera']);$('#msheetCap').textContent='자리 1 남음 — 부르면 올지는 걔 마음';sheet.classList.add('on');}],
+[1100,()=>{const r=$('#msheetRows .srow[data-id="baek"]');if(r)r.classList.add('hit');}],
+[700,()=>sheet.classList.remove('on')],
+[500,()=>sys('백을 불렀어…')],
+[800,()=>typing('baek','…')],
+[1800,()=>{untyping();sys(`백은 오지 않았어 — <i class="q">'순찰 중이다. 끝나면 들르지.'</i>`);}],
+[1200,()=>ai('sera','저 아저씨 순찰 돌 땐 원래 폰도 안 봐. 기다리지 마.')]]},
+c:{note:`<b>C · 난입 → 내보내기</b> — 초대의 대칭(캐릭터가 걸어오는 문).
+<ul><li><span class="k">트리거</span>: 최근 대화에 언급됨 · 질투 메타(riv) · 데일리 무드 — 결정적 시드 + <b>하루 1회 상한</b>(세션 마커).</li>
+<li><span class="k">연출</span>: 등장 sys 2박(문 소리 → enter_line) → 첫 대사 → 헤더 합류.</li>
+<li><span class="k">거절권(유저)</span>: 난입 직후에만 <b>원탭 [내보내기] pill</b> — 다음 내 메시지 후 자동 소멸이라 로그가 안 지저분해짐. 말로 내보내는 건 언제나 가능.</li>
+<li><span class="k">퇴장도 연출</span>: 쫓겨나도 세계관 안에서(\`다음을 기약하며\`) — 기능이 아니라 장면.</li></ul>`,
+steps:[[0,()=>{header(['sera']);mlog.innerHTML='';me('하은쌤은 요즘 뭐 하나 몰라');ai('sera','몰라. 어제도 옆 반에서 시끄럽던데.');}],
+[1100,()=>sys('덜컥 — 문이 열린다')],
+[900,()=>sys('하은이 가방을 흔들며 문을 밀고 들어온다','ent')],
+[900,()=>{header(['sera','haeun'],'단톡 · 2명');ai('haeun','어? 지금 내 얘기 했지~ 귀가 간지럽더라. 나도 유자차.');}],
+[1000,()=>kickPill('haeun')],
+[1900,()=>{const k=$('#mkick');if(k){k.classList.add('hit');setTimeout(()=>k.remove(),260);}}],
+[400,()=>{header(['sera']);sys('하은은 다음을 기약하며 물러갔다');}],
+[900,()=>ai('sera','…잘했어. 시끄러워질 뻔했다.')]]},
+d:{note:`<b>D · 단톡 — 누가 대답하나</b> (비용 불변의 핵심 설계)
+<ul><li><span class="k">화자 사다리</span>: ① 이름 호명 = 걔 고정 → ② 직전 화자 교대 우선 → ③ 모델 위임(맥락 관련도).</li>
+<li><span class="k">대본 분할</span>: 한 호출이 <code>[이름]</code> 프리픽스로 최대 2대사 — 러너가 화자별 턴으로 쪼개 뷰어에 순차 도착(타이핑 딜레이). <b>dispatch는 여전히 1회</b>.</li>
+<li><span class="k">안전</span>: 프리픽스가 방 멤버가 아니면 파싱 포기 = 통짜 1대사 폴백.</li>
+<li><span class="k">이름표</span>: 버블 위 이름·연속발화 붙임(cont)은 기존 UI가 이미 처리 — 단톡에서 무수정 작동.</li></ul>`,
+steps:[[0,()=>{header(['sera','mudi'],'단톡 · 2명');mlog.innerHTML='';me('둘 다 유자차파야?');}],
+[900,()=>typing('mudi','입력 중')],
+[1400,()=>{untyping();ai('mudi','세라 게 늘 첫 잔이야. 각성 후유증 열엔 유자만 한 게 없거든.');}],
+[1100,()=>ai('sera','…그 얘길 왜 하는데.')],
+[1300,()=>me('세라, 진짜 힘들 땐 말해라?')],
+[900,()=>typing('sera','입력 중')],
+[1400,()=>{untyping();ai('sera','…알았으니까 그 눈 하지 마.');}]]}
+};
+
+function play(key){
+  tok++;const my=tok;sheet.classList.remove('on');$('#mplus').classList.remove('pulse');
+  $('#snote').innerHTML=SCEN[key].note;
+  document.querySelectorAll('#sbtns .sb').forEach(b=>b.classList.toggle('on',b.dataset.s===key));
+  const steps=SCEN[key].steps;
+  if(RM){steps.forEach(([,f])=>f());untyping();return;}
+  let t=0;steps.forEach(([d,f])=>{t+=d;setTimeout(()=>{if(my===tok)f();},t);});
+}
+document.querySelectorAll('#sbtns .sb').forEach(b=>b.addEventListener('click',()=>play(b.dataset.s)));
+$('#replay').addEventListener('click',()=>play(document.querySelector('#sbtns .sb.on').dataset.s));
+play('a');
+
+/* ── 프리셋 + 미세조정 → 복사 바 ── */
+const state={entry:'A(+더보기 시트)',cap:'최대 2명',barge:'일1',dec:'캐릭터판단',script:'최대2대사',kick:'원탭+대화'};
+const PN={a:'A(+더보기 시트)',b:'B(헤더 상시 +)',c:'C(자연어 호출)'};
+document.querySelectorAll('#presets .pcard').forEach(c=>c.addEventListener('click',()=>{
+  document.querySelectorAll('#presets .pcard').forEach(x=>x.classList.toggle('on',x===c));
+  state.entry=PN[c.dataset.p];
+  $('#phone').classList.toggle('p-b',c.dataset.p==='b');
+  bar();
+}));
+document.querySelectorAll('.seg').forEach(sg=>sg.addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  sg.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));
+  state[sg.dataset.k]=b.dataset.v;bar();
+}));
+function bar(){$('#barTxt').textContent=`단톡·난입 — 진입:${state.entry} · 정원:${state.cap} · 난입:${state.barge} · 거절:${state.dec} · 대본:${state.script} · 내보내기:${state.kick}`;}
+bar();
+$('#cpBtn').addEventListener('click',async()=>{
+  const t=$('#barTxt').textContent;
+  try{await navigator.clipboard.writeText(t);}catch{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();}
+  const b=$('#cpBtn');b.textContent='복사됨';setTimeout(()=>b.textContent='복사',1400);
+});
+</script>
+</body></html>
