@@ -6,7 +6,3 @@
   Cache-Control: no-cache
 /tokens.css
   Cache-Control: no-cache
-# 연락처 vCard(사진 임베드) — 안드로이드가 "연락처에 추가"로 열게 정확 MIME 명시
-/assets/contacts/haeun.vcf
-  Content-Type: text/x-vcard; charset=utf-8
-  Content-Disposition: attachment; filename="haeun.vcf"

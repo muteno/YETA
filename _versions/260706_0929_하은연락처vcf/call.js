@@ -88,11 +88,10 @@ const css = `
 .yprem { display:inline-flex; align-items:center; gap:4px; margin-left:6px; padding:1px 8px; border-radius:var(--r-pill);
   background:rgba(var(--accent-rgb),.12); border:1px solid rgba(var(--accent-rgb),.4); color:var(--accent);
   font-size:var(--fs-xs); font-weight:var(--fw-b); vertical-align:middle; white-space:nowrap; }   /* 프리미엄(전용 음색) 배지 = accent 10%대 플레이트(.dlbtn 결) */
-#yetaCallBtn, #yetaVcfBtn { width:var(--btn); height:var(--btn); flex:none; display:grid; place-items:center; background:none; border:none; color:var(--fg-2); cursor:pointer; touch-action:manipulation; transition:transform .3s var(--ease), color .2s; }   /* 전화·연락처저장 = 픽토그램-온리(감싸는 도형 제거 · 운영자 260705) · 무채 — 마이크/+ 결 · 히트영역 --btn 유지 */
-#yetaCallBtn svg, #yetaVcfBtn svg { width:19px; height:19px; }
-#yetaCallBtn:active, #yetaVcfBtn:active { transform:scale(var(--press-m,.9)); }
-#yetaCallBtn:focus-visible, #yetaVcfBtn:focus-visible { outline:none; box-shadow:0 0 0 2px rgba(var(--accent-rgb),.5); border-radius:50%; }   /* 포커스 링 = .tool-x 계승(라임) — UA 흰 사각 아웃라인 차단 */
-#yetaVcfBtn[hidden] { display:none; }   /* display:grid가 hidden 속성을 이기는 것 차단(전화 배선 캐릭터만 노출) */
+#yetaCallBtn { width:var(--btn); height:var(--btn); flex:none; display:grid; place-items:center; background:none; border:none; color:var(--fg-2); cursor:pointer; touch-action:manipulation; transition:transform .3s var(--ease), color .2s; }   /* 전화 = 픽토그램-온리(감싸는 도형 제거 · 운영자 260705) · 무채 — 마이크/+ 결 · 히트영역 --btn 유지 */
+#yetaCallBtn svg { width:19px; height:19px; }
+#yetaCallBtn:active { transform:scale(var(--press-m,.9)); }
+#yetaCallBtn:focus-visible { outline:none; box-shadow:0 0 0 2px rgba(var(--accent-rgb),.5); border-radius:50%; }   /* 포커스 링 = .tool-x 계승(라임) — UA 흰 사각 아웃라인 차단 */
 #yetaCallBtn.armed { color:var(--arm); }   /* 2탭 재확인(통화 = 유료 발동) — armed = 경고색 픽토 */
 #calldlg.talk .ycall-status { font-variant-numeric:tabular-nums; }   /* 보이스톡 타이머 = tabular(.yb-cap 결) */`;
 
@@ -405,37 +404,9 @@ function initCallBtn() {
   });
 }
 
-// ── 연락처 저장(프로필 카드 배포) — 폰 주소록에 사진+번호 원탭 등록 = 실전화 걸려올 때 그 캐릭터 얼굴·이름이 뜨게(운영자 260706) ──
-// 소재 = viewer/assets/contacts/<id>.vcf(vCard 2.1 · 사진 base64 임베드 · 번호 = Vapi 발신번호 국제 2표기 — 안드로이드 뒷자리 매칭이 둘 다 잡음).
-// 탭 = 같은출처 .vcf 다운로드(a[download]) → 갤럭시 "연락처에 추가"가 이름·사진·번호 프리필 = 저장 한 번이면 끝.
-const VCF = { haeun: '하은' };   // vcf 보유 캐릭터(id → 파일 표시명) — 추가 = vcf 생성 + 이 행
-function vcfBtnSync() {
-  const b = document.querySelector('#yetaVcfBtn'); if (!b) return;
-  const pid = (typeof YSESS !== 'undefined' && YSESS && YSESS.persona) || '';
-  b.hidden = !VCF[pid]; b.dataset.pid = VCF[pid] ? pid : '';
-}
-function initVcfBtn() {
-  const hr = document.querySelector('#yetadlg .yh-r');
-  if (!hr || document.querySelector('#yetaVcfBtn')) return;
-  const b = document.createElement('button');
-  b.type = 'button'; b.id = 'yetaVcfBtn'; b.hidden = true;   // 픽토그램-온리 · 스타일 = #yetaCallBtn 동일 선언 계승
-  b.setAttribute('aria-label', '연락처 저장'); b.title = '연락처 저장 — 전화 올 때 사진·이름이 뜨게';
-  b.innerHTML = '<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6M23 11h-6"/></svg>';
-  hr.insertBefore(b, hr.firstChild);   // 수화기 왼쪽 자리(둘 다 firstChild 주입 = 나중 주입이 앞)
-  b.addEventListener('click', () => {
-    const pid = b.dataset.pid; if (!pid || !VCF[pid]) return;
-    const a = document.createElement('a');
-    a.href = 'assets/contacts/' + pid + '.vcf'; a.download = VCF[pid] + '.vcf';
-    document.body.appendChild(a); a.click(); a.remove();
-    toast('연락처 파일 받았어 — 열어서 저장하면 전화 올 때 ' + VCF[pid] + ' 얼굴이 떠');
-  });
-  vcfBtnSync();
-}
-
 // ── 감지 — 본체 yLoad 훅(①) + 자체 백스톱 폴(챗 폴 비활성·visible 시만) ──
 function onSess(sess) {
   if (!alive()) return;
-  vcfBtnSync();   // 페르소나 교체(뽑기·진입) 반영 — 전화 배선 캐릭터만 연락처 버튼 노출
   checkReplyVoice(sess);
   const call = sess && sess.call;
   if (!call || !call.ts || call.ts <= seen()) return;
@@ -451,7 +422,7 @@ async function check() {
 setInterval(check, POLL_MS);
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') setTimeout(check, 600); });   // 푸시 탭 복귀 = 즉시 픽업
 setTimeout(check, 1500);   // 첫 로드(딥링크 /?yeta=main&call=1 포함) — 기존 ?yeta= 오픈에 편승 + 벨은 여기서
-const initInject = () => { ensureCss(); initPtt(); initCallBtn(); initVcfBtn(); };   // 스타일 주입 먼저(마이크 즉시 스타일) + 입력행 마이크 + 헤더 수화기 + 연락처 저장(전부 모듈 주입 = 본체 무수정)
+const initInject = () => { ensureCss(); initPtt(); initCallBtn(); };   // 스타일 주입 먼저(마이크 즉시 스타일) + 입력행 마이크 + 헤더 수화기(둘 다 모듈 주입 = 본체 무수정)
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initInject); else initInject();
 
 window.YCALL = { onSess, open, playVoice };   // open/playVoice = 테스트 훅 · onSess = 본체 yLoad 훅 계약
