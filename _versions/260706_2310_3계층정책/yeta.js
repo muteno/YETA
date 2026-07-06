@@ -13,14 +13,10 @@
 //                                    → Workers AI Whisper(env.AI 바인딩 게이트 · 미설정 501 = 뷰어가 타이핑 폴백 안내)
 //   phone {}                       : ☎️ 실전화(PSTN·Vapi) 스캐폴드 — 등록 번호로 실제 발신(⚠️분당 과금 · env 3종 게이트 · 일 상한 기본 2)
 //   vapikey {}                     : 보이스톡(브라우저 통화 · Vapi Web SDK) 공개키 — env VAPI_PUBLIC_KEY(공개 축 · Origins 제한 권장)
-//   calllog {}                     : 🩺 통화 진단 — Vapi 메타데이터만(상태·종료사유·비용 — transcript/PII 반환 금지)
-//   tune  {persona, g[16]}         : 캐릭터 성향 게이지(L2 · 숫자 배열만 = 프롬프트 주입 차단)
-//   policy {} | {p, pin}           : 3계층 정책 — GET 정의+현재값(무인증) / SET enum 정수만(⚠️ 관리자 PIN 필수)
-//   auth  {pin}                    : PIN 로그인 — admin = env YETA_PIN_ADMIN(레포 무노출) / guest = apps/yeta/users.json 해시(깃 SSOT)
-//   reset {}                       : 세션 초기화(페르소나도 비움 → 재뽑기 · tunes/policy 승계)
+//   reset {}                       : 세션 초기화(페르소나도 비움 → 다음 진입 시 재뽑기)
 // 저장 = R2 비공개 버킷 바인딩 env.YETA_R2 (⚠️ 대화는 public 레포 커밋 절대 금지 — 계획안 D2).
-// 게이트: 무인증 공개(originOk=CSRF만 · Access 미부착) · 채팅 상한 없음(운영자 260706 폐지 — quota 카운터는 관측용, 소비처 없음·후속 users.cap 연동 후보) · 유료 축(ring/phone)만 일 상한.
-// env: GH_TOKEN(Actions write) · YETA_R2(R2 바인딩) · YETA_PIN_ADMIN(슈퍼관리자 PIN — 설정 SET 강제) · YETA_CALL_MAX_PER_DAY(선택·기본 3 — 유료 TTS 가드)
+// 게이트: Cloudflare Access(도메인 전체 자동 계승) + originOk(CSRF) + 일 상한 = D4 무제한(env YETA_MAX_PER_DAY 양수로만 발동).
+// env: GH_TOKEN(Actions write) · YETA_R2(R2 바인딩) · YETA_MAX_PER_DAY(선택) · YETA_CALL_MAX_PER_DAY(선택·기본 3 — 유료 TTS 가드)
 //      AI(선택 · Workers AI 바인딩 = op stt) · VAPI_API_KEY+VAPI_PHONE_ID+YETA_PHONE_TO(선택 3종 = op phone · 번호는 시크릿 — 코드 박제 금지)
 //      YETA_PHONE_MAX_PER_DAY(선택·기본 2 — 실전화 분당 과금 가드).
 const REPO = 'muteno/yeta';
@@ -181,53 +177,6 @@ export async function onRequestPost({ request, env }) {
     return json({ error: `GitHub dispatch ${st}` }, 502);
   }
 
-  if (op === 'auth') {   // PIN 로그인(운영자 260706 권한 2계층) — admin = Pages env YETA_PIN_ADMIN(레포 무노출·서버 강제) · guest = apps/yeta/users.json(깃 SSOT — 사용자 추가 = 커밋). 반환 = 역할뿐(민감필드 0)
-    const pin = String(body.pin || '');
-    if (!/^\d{4,8}$/.test(pin)) return json({ ok: false });
-    const APIN = String(env.YETA_PIN_ADMIN || '');
-    if (APIN && pin === APIN) return json({ ok: true, role: 'admin', name: '운영자' });
-    try {   // users.json 대조 — pin_h = sha256('<PIN>:yeta') (뷰어 잠금 해시 규약과 동일)
-      const u = await fetch(`https://raw.githubusercontent.com/${REPO}/main/apps/yeta/users.json`,
-        { headers: { 'user-agent': 'nomute-viewer' }, cf: { cacheTtl: 60, cacheEverything: true } });
-      if (u.ok) {
-        const db = await u.json();
-        const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`${pin}:yeta`));
-        const h = [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
-        const hit = (db.users || []).find(x => x && x.pin_h === h);
-        if (hit) return json({ ok: true, role: hit.role === 'admin' ? 'guest' : String(hit.role || 'guest'), name: String(hit.name || '') });   // users.json의 admin 참칭 차단 — admin은 env 단일 경로
-      }
-    } catch {}
-    return json({ ok: false });
-  }
-
-  if (op === 'policy') {   // 3계층 정책(운영자 260706) — GET(정의+현재값 · 무인증) / SET(L0 토글+L1 축 = 관리자 PIN 필수 · enum 정수만 = 프롬프트 주입 원천 차단 · 라벨/문구 정본 = apps/yeta/policy.json, 러너가 직접 읽음)
-    const sess = await readSess();
-    if (body.p !== undefined) {   // SET — admin 가드 → {key: 0~2} 객체만 · key 화이트폼 · 최대 8축
-      const APIN = String(env.YETA_PIN_ADMIN || '');
-      if (!APIN) return json({ error: '관리자 PIN 미설정 — Cloudflare Pages env YETA_PIN_ADMIN 필요' }, 501);
-      if (String(body.pin || '') !== APIN) return json({ error: '권한 없음 — 관리자 PIN 필요' }, 403);
-      const raw = body.p;
-      if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return json({ error: '정책은 {key:0~2} 객체' }, 400);
-      const p = {};
-      for (const [k, v] of Object.entries(raw)) {
-        if (Object.keys(p).length >= 8) break;   // 8축 캡 도달 = 조기 종료(초대형 페이로드 전량 순회 컷 · 기틀검증 보안 권고)
-        if (!/^[a-z]{1,16}$/.test(k)) continue;
-        p[k] = Math.max(0, Math.min(2, Math.round(Number(v) || 0)));
-      }
-      sess.policy = p; sess.updated = Date.now();
-      await putSess(sess);
-      return json({ ok: true, p });
-    }
-    let def = null;   // GET — 정의(policy.json raw)+세션 현재값. 뷰어 설정 탭이 이걸로 렌더 = 축·라벨·문구 전부 문서 의존(뷰어 하드코딩 0)
-    try {
-      const d = await fetch(`https://raw.githubusercontent.com/${REPO}/main/apps/yeta/policy.json`,
-        { headers: { 'user-agent': 'nomute-viewer' }, cf: { cacheTtl: 60, cacheEverything: true } });
-      if (d.ok) def = await d.json();
-    } catch {}
-    if (!def) return json({ error: '정책 정의 로드 실패' }, 502);
-    return json({ ok: true, def, p: sess.policy || {} });
-  }
-
   if (op === 'tune') {   // 캐릭터별 성향 게이지(16축 0~10 · 운영자 260706) — 숫자 배열만 수용 = 프롬프트 주입 원천 차단(라벨은 러너 상수)
     const persona = String(body.persona || '');
     if (!ID_RE.test(persona)) return json({ error: '잘못된 페르소나 id' }, 400);
@@ -242,9 +191,9 @@ export async function onRequestPost({ request, env }) {
 
   if (op === 'reset') {
     const cur = await env.YETA_R2.get(KEY);   // 삭제 직전 1세대 백업(reset 비가역 완화 — R2엔 copy 없어 get→put) · 비공개 버킷
-    let keepTunes = {}, keepPolicy = {};
-    if (cur) { try { const buf = await cur.arrayBuffer(); await env.YETA_R2.put('sessions/main.prev.json', buf, { httpMetadata: { contentType: 'application/json' } }); const prev = JSON.parse(new TextDecoder().decode(buf)); keepTunes = prev.tunes || {}; keepPolicy = prev.policy || {}; } catch {} }
-    await putSess({ turns: [], note: '', state: 'idle', tunes: keepTunes, policy: keepPolicy, updated: Date.now() });   // 페르소나는 비움 → 재뽑기 · 게이지·시즌 정책은 설정이라 승계(운영자 260706)
+    let keepTunes = {};
+    if (cur) { try { const buf = await cur.arrayBuffer(); await env.YETA_R2.put('sessions/main.prev.json', buf, { httpMetadata: { contentType: 'application/json' } }); keepTunes = (JSON.parse(new TextDecoder().decode(buf)).tunes) || {}; } catch {} }
+    await putSess({ turns: [], note: '', state: 'idle', tunes: keepTunes, updated: Date.now() });   // 페르소나는 비움 → 재뽑기 · 게이지는 설정이라 승계(운영자 260706)
     return json({ ok: true });
   }
 
@@ -297,12 +246,14 @@ export async function onRequestPost({ request, env }) {
   if (!MODELS.has(model)) model = 'claude-opus-4-8';
   if (!EFFORTS.has(effort)) effort = 'low';
 
-  // 채팅 상한 폐지(운영자 260706 — env YETA_MAX_PER_DAY 축 제거·무제한. 사용자별 상한은 후속 보류) · 카운터는 관측용 상시 기록 유지(KST 일자 키)
+  // 일 상한 — D4 무제한(기본 0) · env YETA_MAX_PER_DAY(양수)로만 발동 · 카운터는 관측용 상시 기록(KST 일자 키)
+  const cap = parseInt(env.YETA_MAX_PER_DAY || '0', 10) || 0;
   const kst = new Date(Date.now() + 9 * 3600e3).toISOString().slice(2, 10).replace(/-/g, '');
   const qkey = `quota/${kst}.json`;
   let used = 0;
   const qo = await env.YETA_R2.get(qkey);
   if (qo) { try { used = (await qo.json()).n || 0; } catch { used = 0; } }
+  if (cap > 0 && used >= cap) return json({ error: `오늘 대화 상한(${cap}턴) 도달 — 내일 다시`, remain: 0 }, 429);
 
   const sess = await readSess();
   if (!ID_RE.test(String(sess.persona || ''))) return json({ error: '페르소나가 없어 — 🎲 먼저 뽑아줘' }, 409);
@@ -317,11 +268,12 @@ export async function onRequestPost({ request, env }) {
   await env.YETA_R2.put(qkey, JSON.stringify({ n: used + 1 }), { httpMetadata: { contentType: 'application/json' } });
 
   const st = await dispatch(env);
-  if (st === 204) return json({ ok: true });
+  const remain = cap > 0 ? cap - used - 1 : -1;
+  if (st === 204) return json({ ok: true, remain });
   // dispatch 실패 = 답장 올 런이 없음 → awaiting 고착 방지: state=error 롤백(평의회②)
   sess.state = 'error'; sess.err = `발사 실패(GitHub ${st}) — 다시 보내면 재시도`; delete sess.awaiting_since;
   await putSess(sess);
-  return json({ error: `GitHub dispatch ${st}` }, 502);
+  return json({ error: `GitHub dispatch ${st}`, remain }, 502);
 }
 
 async function dispatch(env, wf = 'yeta-chat.yml', inputs = { char: 'main' }) {   // 워크플로 기동(기본 = 챗 · 단일 스레드 = char 'main' 고정 → concurrency 직렬 / ring = yeta-call.yml)

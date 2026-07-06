@@ -1,0 +1,7 @@
+{
+  "version": 1,
+  "_comment": "사용자 DB(운영자 260706) — 깃이 SSOT: 사용자 추가/삭제 = 이 파일 커밋(플랫폼 무관·CF 불요). 레포가 public이라 여기엔 게스트·일반 사용자만(pin_h = sha256('<PIN>:yeta') — 4자리 PIN은 해시여도 역산 가능 = 낮은 권한 전용). ⚠️ 슈퍼관리자 PIN은 절대 여기 금지 — Cloudflare Pages env YETA_PIN_ADMIN 단 1개로 보관(서버 강제 축). 역할: admin = L0·L1 설정 + 전체 / guest = 대화 + L2(캐릭터 성향)만. 후속 예약 필드: cap(사용자별 채팅 상한 — 보류).",
+  "users": [
+    { "id": "guest", "name": "게스트", "pin_h": "de9cc1fb3b6923df170cba8ef92e8d37fc1603675cbedb8af9e2cdf7df906c5b", "role": "guest" }
+  ]
+}
