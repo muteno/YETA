@@ -3,7 +3,7 @@
 # 세션 = R2 비공개 sessions/main.json 단일 스레드(맥락 공유 · 화자 = sess.persona — 뽑기/재뽑기).
 # 다이얼 = 마지막 pending 유저 턴의 {model,effort}(턴별 박제 · 화이트리스트 재강제 · effort 거부 시 1회 폴백).
 # 웜 = 답장 후 WARM_WAIT 동안 R2 폴 대기 → 후속 메시지 같은 런 즉답(러너 재부팅 생략 = 30초 목표의 본체).
-# 규율: opus 기본 + effort low 기본(30초 컷) · 도구 0 · turns 1 · stdin · 폴오버 SSOT(3계정 로테이션 MUTENO→NOMUTEFB→EMS1130G · 운영자 260704).
+# 규율: opus 기본 + effort low 기본(30초 컷) · 도구 0 · turns 1 · stdin · 폴오버 SSOT(4계정 체인 MUTENO→NOMUTEFB→EMS1130G→MUTENONA · 로테이션 3 + MUTENONA 고정 꼬리 · 운영자 260704).
 set -uo pipefail
 
 ROOT="$(git rev-parse --show-toplevel)"
@@ -18,7 +18,7 @@ SAFE=""
 case "${YETA_SAFE:-1}" in 1|true|on) SAFE="--safe-mode" ;; esac   # 기본 ON — 런타임은 CLAUDE.md 미주입(개발 세션 전용 · 턴당 ~37k 토큰 절약 · 운영자 260704 · 회귀=YETA_SAFE=0) · ⚠️ --bare 절대 금지(OAuth 즉사)
 export CLAUDE_BARE=0              # 방어 명시 — 공유 기본값이 미래에 ON 회귀해도 챗은 불가(평의회①)
 RECENT_TURNS="${YETA_RECENT_TURNS:-8}"
-INLINE_TRIES=3
+INLINE_TRIES=4   # 4계정 폴오버 체인 깊이(서브3 MUTENONA까지 실호출) + 일시 과부하 흡수 — 4계정 확장 3→4(챗 안정성: 앞 3계정 쿼터 시 MUTENONA 실도달)
 WARM_WAIT="${YETA_WARM_WAIT:-300}"       # 웜 유휴 유예(s) — 무메시지면 조용히 종료
 WARM_POLL="${YETA_WARM_POLL:-5}"
 SESSION_MAX="${YETA_SESSION_MAX:-3300}"  # 55분(잡 timeout 60분보다 낮게 = mid-turn 킬 차단 · 아이데이션③)

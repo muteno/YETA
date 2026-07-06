@@ -200,7 +200,7 @@
 ## 🔑 인프라 (완전 신규)
 - **Cloudflare Pages**: build command **공란**(정적 서빙 · build-viewer 불필요) · output **`viewer`** · `functions/` 자동 인식.
 - **R2 바인딩** `YETA_R2`(비공개 세션 버킷) + Pages env `GH_TOKEN`(actions:write PAT) · `YETA_MAX_PER_DAY`(선택).
-- **GitHub Secrets**: `CLAUDE_CODE_OAUTH_TOKEN_MUTENO`(필수·가장 먼저) · `R2_ACCOUNT_ID`·`R2_ACCESS_KEY_ID`·`R2_SECRET_ACCESS_KEY`·`YETA_R2_BUCKET` · `VAPID_PRIVATE_KEY`/`VAPID_SUBJECT`(푸시). Variable `ACTIVE_ACCOUNT`(기본 MUTENO). **3계정 폴오버** MUTENO→NOMUTEFB→EMS1130G(운영자 260704·⚠️쿼터 nomute 공유).
+- **GitHub Secrets**: `CLAUDE_CODE_OAUTH_TOKEN_MUTENO`(필수·가장 먼저) · `R2_ACCOUNT_ID`·`R2_ACCESS_KEY_ID`·`R2_SECRET_ACCESS_KEY`·`YETA_R2_BUCKET` · `VAPID_PRIVATE_KEY`/`VAPID_SUBJECT`(푸시). Variable `ACTIVE_ACCOUNT`(기본 MUTENO). **4계정 폴오버 체인** MUTENO→NOMUTEFB→EMS1130G→MUTENONA(로테이션 3계정 + `_MUTENONA` 고정 꼬리 · 서브 시크릿 = `CLAUDE_CODE_OAUTH_TOKEN_NOMUTEFB`·`_EMS1130G`·`_MUTENONA` = env `_ALT`/`_ALT2`/`_ALT3` · 운영자 260704·⚠️쿼터 nomute 공유 · 미설정 슬롯 = no-op 하위호환).
 - **음성 축 시크릿(선택·⚠️전부 유료)**: `ELEVENLABS_API_KEY`(클로닝+프리미엄 TTS · Starter $5/월=IVC+30k자) · Pages env `YETA_CALL_MAX_PER_DAY`(기본3)/`YETA_PHONE_MAX_PER_DAY`(기본2) · 실전화 3종 `VAPI_API_KEY`·`VAPI_PHONE_ID`·`YETA_PHONE_TO`(등록 번호 — 번호는 시크릿만·코드 박제 금지) · 보이스톡 `VAPI_PUBLIC_KEY`(Pages env · 공개키 축 — Vapi Origins 제한 권장) · op `stt` = Pages **AI 바인딩**(Workers AI Whisper·무료 티어). 미설정 = 각 기능 조용히 비활성(무음 전화/501 안내).
 - **레포 = public**(roster raw fetch 전제). **첫 실행 순서**: OAuth 토큰을 R2보다 **먼저**(없으면 잡 RED).
 - ⚠️ **보안**: middleware 무력화 = `yeta.pages.dev` 무인증 공개. Access 없이 `YETA_R2` 바인딩하면 **대화 노출** → 커스텀 도메인+Cloudflare Access 후 배포(또는 pages.dev에 Access 직접 부착).
@@ -210,4 +210,4 @@
 - 답장 생성 = **opus 4.8**(`claude-opus-4-8`) 기본 · sonnet-5 다이얼 선택 · effort는 다이얼 · **무전기(PTT) 턴 = sonnet-5×low 고정**(응답속도).
 - 🔒 **런타임은 CLAUDE.md 미참조**(운영자 260704): CLAUDE.md = Claude Code **개발 세션 전용**. 생성 경로(`claude -p`)는 `--safe-mode` **기본**(auto-discovery 스킵 = 턴당 ~37k 토큰 절약 · 회귀 노브 `YETA_SAFE=0`). 파이프라인 코드가 CLAUDE.md 를 읽거나 프롬프트에 싣는 것 금지.
 - ⚠️ **`--bare` 절대 금지**(OAuth 안 읽어 인증 즉사 — `--safe-mode`와 별개 축).
-- 폴오버 = 3계정 로테이션 MUTENO→NOMUTEFB→EMS1130G(⚠️쿼터 nomute 공유·운영자 260704). 세션 작업자·검증은 opus 4.8 유지(= §모델 정책의 현행 인스턴스).
+- 폴오버 = 4계정 체인 MUTENO→NOMUTEFB→EMS1130G→MUTENONA(로테이션 3계정 + `_MUTENONA` 고정 꼬리·⚠️쿼터 nomute 공유·운영자 260704). 세션 작업자·검증은 opus 4.8 유지(= §모델 정책의 현행 인스턴스).
