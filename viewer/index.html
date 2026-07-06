@@ -105,6 +105,16 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
     background-image:linear-gradient(rgba(0,0,0,.3),rgba(0,0,0,.3)), var(--bg-scrim), url(assets/brand/yeta-bg.webp); background-size:cover, cover, 130%; background-position:center; background-repeat:no-repeat; background-color:var(--bg); color:var(--fg); overflow:hidden; --yeta-ac:var(--bubble-me);   /* 배경 이미지 가운데 기준 30% 확대(운영자 260705 #14 · 130%) · 딤/스크림은 cover 유지 */
     backdrop-filter:none; -webkit-backdrop-filter:none; }   /* 풀스크린 배경 이미지 = 글래스 표면이 비칠 base(불투명 --yeta-bg 폐지) */
   #yetadlg::backdrop { background:rgba(0,0,0,.6); }
+  /* 챗 진입 촤르륵(운영자 260706 "메뉴2→3 넘어가는 게 어색 → 자연스럽게 촤르륵 나오게") — showModal 즉발 팝 제거. 원샷 .ydlg-in(openYeta가 열 때만 부여·내부 뷰 토글 재트리거 방지) = 창·배경 페이드 → 헤더·무대·입력 계단 부상(ypickIn/ynavRise 결 계승·--ease). reduce=즉시. */
+  @keyframes ydlgIn { from { opacity:0; } }
+  @keyframes ydlgBd { from { opacity:0; } }
+  @keyframes ydlgUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:none; } }
+  #yetadlg.ydlg-in { animation:ydlgIn .26s var(--ease) both; }
+  #yetadlg.ydlg-in::backdrop { animation:ydlgBd .3s var(--ease) both; }
+  #yetadlg.ydlg-in .yeta-h { animation:ydlgUp .44s var(--ease) .05s both; }
+  #yetadlg.ydlg-in .yeta-stage { animation:ydlgUp .46s var(--ease) .12s both; }
+  #yetadlg.ydlg-in .yeta-in:not([hidden]) { animation:ydlgUp .44s var(--ease) .19s both; }
+  @media (prefers-reduced-motion:reduce){ #yetadlg.ydlg-in, #yetadlg.ydlg-in::backdrop, #yetadlg.ydlg-in .yeta-h, #yetadlg.ydlg-in .yeta-stage, #yetadlg.ydlg-in .yeta-in { animation:none !important; } }
   .yeta-wrap { display:flex; flex-direction:column; height:100%; }
   /* 챗 헤더 = 플로팅 알약(운영자 260705 "상하단 네비처럼 감싸서 띄워" · 레퍼런스 결) — [←뒤로][프사+이름 전폭][수화기] · 상대가 좌우 한 폭 차지 */
   .yeta-h { position:absolute; top:calc(10px + env(safe-area-inset-top)); left:10px; right:10px; z-index:3; display:flex; align-items:center; gap:8px; padding:7px 9px;
@@ -988,7 +998,8 @@ $('#ycdCard').addEventListener('click', e => {
   const g = e.target.closest('.ycd-gear'); if (g) { yShowSet(g.dataset.set); return; }
   const b = e.target.closest('.ycd-cta'); if (!b) return; yHideDetail(); openYeta(b.dataset.id); });
 async function openYeta(charId) {
-  if (!yetadlg.open) { yetadlg.showModal(); try { document.activeElement && document.activeElement.blur(); } catch {} document.documentElement.style.overflow = 'hidden'; history.pushState({ ydlg: 1 }, ''); _yLastN = -1; _yTypOn = false; _yFailOn = false; }   // 재진입 = 촤르륵 키드 리셋 · showModal 자동 포커스 해제(첫 버튼[전화]에 UA 포커스 링 뜨던 것 — 키보드 탐색 시엔 :focus-visible 라임 링 정상 작동)
+  if (!yetadlg.open) { yetadlg.showModal(); yetadlg.classList.add('ydlg-in'); setTimeout(() => yetadlg.classList.remove('ydlg-in'), 720);   // 열 때만 촤르륵 진입 애니(원샷 · 720ms = 최장 시퀀스보다 여유 후 클래스 회수 = 내부 뷰 토글 재트리거 방지)
+    try { document.activeElement && document.activeElement.blur(); } catch {} document.documentElement.style.overflow = 'hidden'; history.pushState({ ydlg: 1 }, ''); _yLastN = -1; _yTypOn = false; _yFailOn = false; }   // 재진입 = 촤르륵 키드 리셋 · showModal 자동 포커스 해제(첫 버튼[전화]에 UA 포커스 링 뜨던 것 — 키보드 탐색 시엔 :focus-visible 라임 링 정상 작동)
   yStair.pause();   // 챗 열림 중 계단 정지(top layer 투과 아티팩트 + GPU 낭비 차단) — 닫힘 핸들러가 resume
   const log = $('#yetaLog');
   if (!YCHARS.length) {
@@ -1248,7 +1259,7 @@ $('#yetaText').addEventListener('input', e => { const t = e.target; t.style.heig
 $('#yetaBack').addEventListener('click', () => yetadlg.close());   // ← 뒤로가기(X 폐지 · 운영자 260705) = close → 메뉴2(대화 목록) 복귀
 let _yCloseTo = null;   // 도킹 네비 목적지(닫힘 핸들러가 소비 · 기본 = 대화 목록)
 $('#ydock').addEventListener('click', e => { const b = e.target.closest('button[data-go]'); if (!b) return; _yCloseTo = b.dataset.go; yetadlg.close(); });
-yetadlg.addEventListener('close', () => { document.documentElement.style.overflow = ''; yStopPoll(); yPickToggle(false); yStair.resume();   // 챗 닫힘 = 계단 재쌓기 재개
+yetadlg.addEventListener('close', () => { document.documentElement.style.overflow = ''; yetadlg.classList.remove('ydlg-in'); yStopPoll(); yPickToggle(false); yStair.resume();   // 챗 닫힘 = 계단 재쌓기 재개
   if (document.getElementById('ymain').classList.contains('unlocked')) yTab(_yCloseTo || 'list');   // 뒤로 = 대화 목록 · 도킹 네비 = 그 메뉴로(운영자 260705 안2)
   _yCloseTo = null;
   if (_yetaPop) { _yetaPop = false; } else if (history.state && history.state.ydlg) { try { history.back(); } catch {} } });   // X·백드롭 닫힘 = push 칸 회수(#dlg 패턴)
