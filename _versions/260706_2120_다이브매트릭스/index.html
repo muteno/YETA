@@ -105,16 +105,6 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
     background-image:linear-gradient(rgba(0,0,0,.3),rgba(0,0,0,.3)), var(--bg-scrim), url(assets/brand/yeta-bg.webp); background-size:cover, cover, 130%; background-position:center; background-repeat:no-repeat; background-color:var(--bg); color:var(--fg); overflow:hidden; --yeta-ac:var(--bubble-me);   /* 배경 이미지 가운데 기준 30% 확대(운영자 260705 #14 · 130%) · 딤/스크림은 cover 유지 */
     backdrop-filter:none; -webkit-backdrop-filter:none; }   /* 풀스크린 배경 이미지 = 글래스 표면이 비칠 base(불투명 --yeta-bg 폐지) */
   #yetadlg::backdrop { background:rgba(0,0,0,.6); }
-  /* 챗 진입 촤르륵(운영자 260706 "메뉴2→3 넘어가는 게 어색 → 자연스럽게 촤르륵 나오게") — showModal 즉발 팝 제거. 원샷 .ydlg-in(openYeta가 열 때만 부여·내부 뷰 토글 재트리거 방지) = 창·배경 페이드 → 헤더·무대·입력 계단 부상(ypickIn/ynavRise 결 계승·--ease). reduce=즉시. */
-  @keyframes ydlgIn { from { opacity:0; } }
-  @keyframes ydlgBd { from { opacity:0; } }
-  @keyframes ydlgUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:none; } }
-  #yetadlg.ydlg-in { animation:ydlgIn .26s var(--ease) both; }
-  #yetadlg.ydlg-in::backdrop { animation:ydlgBd .3s var(--ease) both; }
-  #yetadlg.ydlg-in .yeta-h { animation:ydlgUp .44s var(--ease) .05s both; }
-  #yetadlg.ydlg-in .yeta-stage { animation:ydlgUp .46s var(--ease) .12s both; }
-  #yetadlg.ydlg-in .yeta-in:not([hidden]) { animation:ydlgUp .44s var(--ease) .19s both; }
-  @media (prefers-reduced-motion:reduce){ #yetadlg.ydlg-in, #yetadlg.ydlg-in::backdrop, #yetadlg.ydlg-in .yeta-h, #yetadlg.ydlg-in .yeta-stage, #yetadlg.ydlg-in .yeta-in { animation:none !important; } }
   .yeta-wrap { display:flex; flex-direction:column; height:100%; }
   /* 챗 헤더 = 플로팅 알약(운영자 260705 "상하단 네비처럼 감싸서 띄워" · 레퍼런스 결) — [←뒤로][프사+이름 전폭][수화기] · 상대가 좌우 한 폭 차지 */
   .yeta-h { position:absolute; top:calc(10px + env(safe-area-inset-top)); left:10px; right:10px; z-index:3; display:flex; align-items:center; gap:8px; padding:7px 9px;
@@ -368,13 +358,6 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   .ymain.bye .ym-stage { transform-origin:48.8% 36%; animation:ymDive 1s var(--ease) both; }
   @keyframes ymDive { 0% { transform:translateX(-50%) scale(1); filter:brightness(1); } 12% { filter:brightness(1.45); }
     100% { transform:translateX(-50%) scale(1.9); filter:brightness(.12); } }
-  /* 매트릭스 형상(운영자 260706 "들어가면서 사람 안 형상을 매트릭스로") — 승인 시 캐릭터 실루엣에만 초록 코드 레인(canvas, destination-in 마스크) · 스테이지와 별도 레이어라 다이브 어둠(brightness .12)에 안 먹혀 코드가 발광 · 눈 방향 동기 줌 · mix-blend screen */
-  .ym-matrix { position:absolute; left:50%; bottom:0; transform:translateX(-50%); width:100%; width:max(100%, calc(100dvh * 9 / 16)); aspect-ratio:9/16; z-index:3; pointer-events:none; opacity:0; mix-blend-mode:screen; transform-origin:48.8% 36%;
-    -webkit-mask:url('assets/brand/yeta-main-boy.webp') center/contain no-repeat; mask:url('assets/brand/yeta-main-boy.webp') center/contain no-repeat; }   /* 실루엣 클립 = 소년 알파 CSS 마스크(.ymb contain 동일 정렬 · canvas는 풀레인만 · taint 없음) */
-  .ymain.bye .ym-matrix { animation:ymMatrixDive 1s var(--ease) both; }
-  @keyframes ymMatrixDive { 0% { opacity:0; transform:translateX(-50%) scale(1); } 22% { opacity:1; } 100% { opacity:.92; transform:translateX(-50%) scale(1.9); } }
-  .ymain.unlocked .ym-matrix { display:none; }
-  @media (prefers-reduced-motion:reduce){ .ym-matrix { display:none !important; } }
   @keyframes ymcHit { 35% { opacity:1; } }
   .ymain.strike .ymb.main { animation:ymbHolo calc(3.1s/var(--st-amp)) linear infinite, ymHit .2s var(--ease) .3s; }   /* 착지 반동 */
   @keyframes ymHit { 30% { transform:translateY(.9%); } 65% { transform:translateY(-.4%); } 100% { transform:none; } }
@@ -677,7 +660,6 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
 <!-- ═══ YETA 메인 화면 (라이트·PIN 게이트 · 260704 재디자인 V1) ═══ -->
 <div class="ymain" id="ymain">
   <div class="ym-stage" aria-hidden="true"><div class="ymc"></div><div class="ym-band"></div><div class="ywm ym-wm" id="ywmLock"></div><div class="ymb g1"></div><div class="ymb g2"></div><div class="ymb main"></div><div class="ym-flash"></div></div>   <!-- 잠금 레이어 스택 = 포스터 층위(원 → 라벨 → 대형 로고 → 소년[튜프트가 로고·라벨 가림] → 번개 플래시 · 260706) -->
-  <canvas class="ym-matrix" id="ymMatrix" aria-hidden="true"></canvas>   <!-- 승인 다이브 = 캐릭터 실루엣에 초록 매트릭스 코드 레인(운영자 260706) -->
   <div class="ym-ovl" aria-hidden="true"></div>   <!-- 잠금 스포티파이 블랙 67% 오버레이 -->
   <div class="ym-zap" aria-hidden="true"><i></i><i></i></div>   <!-- PIN 승인 = 전뇌 글리치 1회 -->
   <div class="ystair" aria-hidden="true"><div class="ys-glow"></div><div class="ys-sc" id="ysSc"><div class="ys-scene"><div class="ys-world" id="ysWorld"></div></div></div></div>   <!-- CSS 3D 계단 배경(언락 후 · 10초 주기 재쌓기 · 운영자 260705 확정) -->
@@ -713,9 +695,10 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:Pretendar
   </div>
   <div class="ywm" id="ywm" role="img" aria-label="YETA"></div>   <!-- 좌상단 상시 로고(운영자 260705 확정 조합 · 겹층 JS 조립 · 언락 후 표시) -->
   <button class="yprof has-img" id="yprof" type="button" aria-label="내 프로필"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0112 0v1"/></svg></button>   <!-- 우상단 개인 프로필 = 기본 캐릭터 얼굴(has-img 기본 · 커스텀 이미지 주입 축 후속) -->
-  <nav class="ynav" id="ynav">   <!-- 메뉴(운영자 260706 재편): 1=캐릭터 · 2=대화(목록 — 대화 탭이 곧 진입점, 행 눌러 챗) · 3=설정. 옛 '지금' 탭 폐지 = 챗은 메뉴2 대화 목록으로 편입(진입 = 대화 행 탭) · lockdot 폐지(네비 = 언락 후에만 표시) -->
+  <nav class="ynav" id="ynav">   <!-- 메뉴 재편(운영자 260705): 1=캐릭터 · 2=대화 목록 · 3=지금 대화(임시·2와 통합 예정) · 4=설정 · 메인 화면 폐지(언락=바로 캐릭터) · lockdot 폐지(네비 = 언락 후에만 표시) -->
     <button class="on" data-tab="char" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0112 0v1"/></svg><span>캐릭터</span></button>
     <button data-tab="list" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 01-12 7.7L3 21l1.8-6A8.5 8.5 0 1121 11.5z"/></svg><span>대화</span></button>
+    <button data-tab="chat" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 01-12 7.7L3 21l1.8-6A8.5 8.5 0 1121 11.5z"/><circle cx="8.6" cy="11.5" r=".9" fill="currentColor" stroke="none"/><circle cx="12" cy="11.5" r=".9" fill="currentColor" stroke="none"/><circle cx="15.4" cy="11.5" r=".9" fill="currentColor" stroke="none"/></svg><span>지금</span></button>
     <button data-tab="settings" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.11-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.55-1.11 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h.02a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v.02a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1z"/></svg><span>설정</span></button>   <!-- 기어 = 표준 풀패스(옛 조각 패스가 'о.'처럼 깨져 보이던 것 교체 · 운영자 260705 재량 위임) -->
   </nav>
 </div>
@@ -822,49 +805,6 @@ const yStair = (() => {
   start.pause = () => { if (paused) return; paused = true; clearTimeout(timer); const el = document.querySelector('.ystair'); if (el) el.classList.add('ys-hold'); };
   start.resume = () => { if (!paused) return; paused = false; const el = document.querySelector('.ystair'); if (el) el.classList.remove('ys-hold'); if (started) build(); };
   return start;
-})();
-// ── 매트릭스 형상(승인 다이브) — 캐릭터 실루엣에만 초록 코드 레인(운영자 260706 "사람 안 형상을 매트릭스로") ──
-// 트리거 = document 'yeta:dive' 이벤트(승인 성공 시 dispatch) · ~1.1s canvas 레인 후 자동 정지(리소스 회수).
-(() => {
-  const cv = document.getElementById('ymMatrix'); if (!cv || !cv.getContext) return;
-  const ctx = cv.getContext('2d');
-  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || 'lime';   // 값 SSOT 토큰 계승(폴백 = raw 강조색 금지 → CSS 키워드) · 실루엣 클립은 CSS 마스크가 담당
-  const GLYPH = 'ｱｲｳｴｵｶｷｸｹｺ0123456789ﾊﾋﾌﾍﾎ<>/\\=+*'.split('');
-  const DPR = Math.min(1.5, window.devicePixelRatio || 1);
-  let raf = 0, cols = [], fs = 16, t0 = 0;
-  function layout() {
-    const w = cv.clientWidth, h = cv.clientHeight; if (!w || !h) return false;
-    cv.width = Math.round(w * DPR); cv.height = Math.round(h * DPR);
-    fs = Math.max(10, Math.round(w / 32));   // 조밀 코드(폭/32열)
-    cols = Array.from({ length: Math.ceil(w / fs) }, () => Math.random() * h * 1.3 - h * 0.3);   // 시작부터 실루엣 상당분 채움([-0.3h,h] 분포 · 성긴 진입 프레임 제거)
-    return true;
-  }
-  function frame(ts) {
-    if (!t0) t0 = ts; const el = ts - t0;
-    const w = cv.clientWidth, h = cv.clientHeight;
-    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-    ctx.clearRect(0, 0, w, h);
-    ctx.font = '700 ' + fs + 'px ui-monospace,Menlo,monospace'; ctx.textBaseline = 'top';
-    for (let i = 0; i < cols.length; i++) {
-      const x = i * fs, head = cols[i];
-      for (let k = 0; k < 8; k++) {   // 꼬리 8글자(머리 흰빛 밝고 아래로 라임 페이드)
-        const y = head - k * fs; if (y < -fs || y > h) continue;
-        const g = GLYPH[(i * 8 + k + (el / 80 | 0)) % GLYPH.length];
-        ctx.fillStyle = k === 0 ? '#fff' : accent;
-        ctx.globalAlpha = k === 0 ? 1 : Math.max(0, 1 - k / 8);
-        ctx.fillText(g, x, y);
-      }
-      cols[i] = head > h + fs * 8 ? Math.random() * -h * .5 : head + fs * .85;   // 낙하(실루엣 클립 = CSS 마스크)
-    }
-    ctx.globalAlpha = 1;
-    if (el < 1150) raf = requestAnimationFrame(frame);
-    else { cancelAnimationFrame(raf); raf = 0; t0 = 0; ctx.clearRect(0, 0, w, h); }
-  }
-  document.addEventListener('yeta:dive', () => {
-    if (reduce || raf) return;
-    if (!layout()) return; t0 = 0; raf = requestAnimationFrame(frame);
-  });
 })();
 // 우상단 프로필 = 기본 캐릭터 얼굴 고정(CSS 기본 이미지 · 운영자 260706 "따로 설정 안 하면 기본 캐릭터") — 옛 페르소나 얼굴 주입(yProfImg) 폐지 · 사용자 커스텀 이미지 축은 후속
 // YETA 워드마크 조립(운영자 260705 확정 로고) — 레터 4장(포스터 추출) × 레이어 6겹(halo·판B·몸체·판A·스캔·플래시) · 좌상단 상시(#ywm) + 잠금 화면 대형(#ywmLock · 포스터 위치 스트라이크) 이중 조립(260706)
@@ -1048,8 +988,7 @@ $('#ycdCard').addEventListener('click', e => {
   const g = e.target.closest('.ycd-gear'); if (g) { yShowSet(g.dataset.set); return; }
   const b = e.target.closest('.ycd-cta'); if (!b) return; yHideDetail(); openYeta(b.dataset.id); });
 async function openYeta(charId) {
-  if (!yetadlg.open) { yetadlg.showModal(); yetadlg.classList.add('ydlg-in'); setTimeout(() => yetadlg.classList.remove('ydlg-in'), 720);   // 열 때만 촤르륵 진입 애니(원샷 · 720ms = 최장 시퀀스보다 여유 후 클래스 회수 = 내부 뷰 토글 재트리거 방지)
-    try { document.activeElement && document.activeElement.blur(); } catch {} document.documentElement.style.overflow = 'hidden'; history.pushState({ ydlg: 1 }, ''); _yLastN = -1; _yTypOn = false; _yFailOn = false; }   // 재진입 = 촤르륵 키드 리셋 · showModal 자동 포커스 해제(첫 버튼[전화]에 UA 포커스 링 뜨던 것 — 키보드 탐색 시엔 :focus-visible 라임 링 정상 작동)
+  if (!yetadlg.open) { yetadlg.showModal(); try { document.activeElement && document.activeElement.blur(); } catch {} document.documentElement.style.overflow = 'hidden'; history.pushState({ ydlg: 1 }, ''); _yLastN = -1; _yTypOn = false; _yFailOn = false; }   // 재진입 = 촤르륵 키드 리셋 · showModal 자동 포커스 해제(첫 버튼[전화]에 UA 포커스 링 뜨던 것 — 키보드 탐색 시엔 :focus-visible 라임 링 정상 작동)
   yStair.pause();   // 챗 열림 중 계단 정지(top layer 투과 아티팩트 + GPU 낭비 차단) — 닫힘 핸들러가 resume
   const log = $('#yetaLog');
   if (!YCHARS.length) {
@@ -1309,7 +1248,7 @@ $('#yetaText').addEventListener('input', e => { const t = e.target; t.style.heig
 $('#yetaBack').addEventListener('click', () => yetadlg.close());   // ← 뒤로가기(X 폐지 · 운영자 260705) = close → 메뉴2(대화 목록) 복귀
 let _yCloseTo = null;   // 도킹 네비 목적지(닫힘 핸들러가 소비 · 기본 = 대화 목록)
 $('#ydock').addEventListener('click', e => { const b = e.target.closest('button[data-go]'); if (!b) return; _yCloseTo = b.dataset.go; yetadlg.close(); });
-yetadlg.addEventListener('close', () => { document.documentElement.style.overflow = ''; yetadlg.classList.remove('ydlg-in'); yStopPoll(); yPickToggle(false); yStair.resume();   // 챗 닫힘 = 계단 재쌓기 재개
+yetadlg.addEventListener('close', () => { document.documentElement.style.overflow = ''; yStopPoll(); yPickToggle(false); yStair.resume();   // 챗 닫힘 = 계단 재쌓기 재개
   if (document.getElementById('ymain').classList.contains('unlocked')) yTab(_yCloseTo || 'list');   // 뒤로 = 대화 목록 · 도킹 네비 = 그 메뉴로(운영자 260705 안2)
   _yCloseTo = null;
   if (_yetaPop) { _yetaPop = false; } else if (history.state && history.state.ydlg) { try { history.back(); } catch {} } });   // X·백드롭 닫힘 = push 칸 회수(#dlg 패턴)
@@ -1368,7 +1307,6 @@ try { if (new URLSearchParams(location.search).get('yeta')) setTimeout(() => ope
           errEl.textContent = ''; errEl.className = 'lk-err';
           slotsEl.classList.add('ok');   // 승인 = 4원 순차 라임 파동 + 자물쇠 박살(crack4) + 로고 전격 병행(진동 없음)
           ymain.classList.add('bye');   // 타격 스파이크 → 눈 방향 줌 다이브(ymDive 1s · 어둠 속으로)
-          document.dispatchEvent(new Event('yeta:dive'));   // 캐릭터 실루엣 매트릭스 코드 레인 발동(운영자 260706)
           setTimeout(() => { ymain.classList.add('zap'); setTimeout(() => ymain.classList.remove('zap'), 310); }, 500);   // VHS 지지직 = 다이브 중반(500ms) — 끝날 쯤 메뉴 전환(운영자 260706 "메타버스 로그인")
           setTimeout(() => setUnlocked(true), 1000);   // 전환(1000ms · 운영자 확정)
         } else {
@@ -1385,8 +1323,9 @@ try { if (new URLSearchParams(location.search).get('yeta')) setTimeout(() => ope
     const b = e.target.closest('button'); if (!b) return;
     const tab = b.dataset.tab;
     if (!unlocked) { ymEnterPin(); slotsEl.classList.add('shake'); setTimeout(() => slotsEl.classList.remove('shake'), 450); return; }
-    if (tab === 'char' || tab === 'list') { yTab(tab); return; }   // 메뉴1 캐릭터 · 메뉴2 대화(목록 — 행 눌러 챗 진입 · 운영자 260706 재편)
-    miniToast('준비중 — 곧 열려');   // 설정(다음 머지) · 옛 'chat' 탭 폐지 = 챗은 메뉴2 대화 목록으로만 진입
+    if (tab === 'char' || tab === 'list') { yTab(tab); return; }   // 메뉴1 캐릭터 · 메뉴2 대화 목록(운영자 260705 재편)
+    if (tab === 'chat') { openYeta(); return; }   // 메뉴3 지금 대화(임시 · 메뉴2와 통합 예정)
+    miniToast('준비중 — 곧 열려');   // 설정(다음 머지)
   };
   const _yprofEl = $('#yprof'); if (_yprofEl) _yprofEl.onclick = () => miniToast('내 프로필 — 준비중');   // 우상단 개인 프로필(이미지 주입 축 후속)
 })();
