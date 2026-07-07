@@ -1,0 +1,235 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>무음동 지도 — 배치 플레이그라운드</title>
+<style>
+/* ═══ 값 = viewer/index.html :root 사본(시안 자기완결용 · 정본은 viewer) ═══ */
+:root{
+  --fg:#FFFFFF; --fg-2:#C4C9C4; --mut:#8B8F8A; --bg:#121212;
+  --accent:#CFFF40; --accent-rgb:207,255,64; --cobalt:#3D6BFF; --cobalt-rgb:61,107,255;
+  --glass:rgba(255,255,255,.055); --glass-2:rgba(255,255,255,.09); --glass-line:rgba(255,255,255,.14);
+  --r-s:9px; --r-m:11px; --r-l:16px; --r-modal:22px; --r-pill:999px;
+  --fs-h2:15px; --fs-h3:14px; --fs-body:15px; --fs-sm:12px; --fs-xs:11px;
+  --fw-x:800; --fw-b:700; --lh-base:1.6;
+  --ease:cubic-bezier(.2,.7,.3,1); --blur-m:16px; --press-m:.9;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{background:#0b0c0b;color:var(--fg);font:14px/1.6 Pretendard,-apple-system,system-ui,'Apple SD Gothic Neo',sans-serif;-webkit-font-smoothing:antialiased;max-width:860px;margin-inline:auto;padding:20px 14px 150px}
+h1{font-size:17px;font-weight:var(--fw-x);margin:0 0 4px}
+h1 b{color:var(--accent)}
+.sub{font-size:var(--fs-sm);color:var(--mut);margin:0 0 18px}
+h2{font-size:var(--fs-h2);font-weight:var(--fw-x);margin:28px 0 4px;color:var(--accent)}
+h2 .n{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:rgba(var(--accent-rgb),.14);color:var(--accent);font-size:var(--fs-xs);margin-right:7px;vertical-align:-3px}
+.cap{font-size:var(--fs-sm);color:var(--mut);margin:0 0 12px}
+/* 지도 무대 */
+.stage{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
+.mapwrap{flex:1;min-width:320px;border:1px solid var(--glass-line);border-radius:var(--r-l);background:var(--glass);padding:10px}
+svg{width:100%;height:auto;display:block;border-radius:var(--r-m)}
+.zone{fill:rgba(255,255,255,.02)}
+.zone.n{fill:rgba(var(--cobalt-rgb),.05)}
+.zone.s{fill:rgba(var(--accent-rgb),.035)}
+.edge{stroke:rgba(255,255,255,.14);stroke-width:1.2}
+.edge.h{stroke:rgba(255,255,255,.07);stroke-dasharray:3 4}
+.pnode{fill:rgba(18,18,18,.85);stroke:rgba(255,255,255,.3);stroke-width:1.2}
+.pnode.meet{stroke:#CFFF40;stroke-width:2}
+.pname{fill:#C4C9C4;font-size:8.5px;font-weight:700}
+.hname{fill:#8B8F8A;font-size:7px}
+.hnode{fill:rgba(255,255,255,.10);stroke:rgba(255,255,255,.2);stroke-width:.8}
+.pin text{font-size:7.5px;font-weight:800;fill:#121212}
+.pin circle{stroke:rgba(18,18,18,.9);stroke-width:1.4;transition:cx .5s var(--ease),cy .5s var(--ease)}
+.pin{transition:transform .55s var(--ease)}
+.center-star{fill:#CFFF40}
+/* 컨트롤 */
+.ctrl{flex:1;min-width:250px}
+.knob{border:1px solid var(--glass-line);border-radius:var(--r-l);background:var(--glass);padding:13px 14px;margin:0 0 12px}
+.knob .kt{font-size:var(--fs-h3);font-weight:var(--fw-b);margin:0 0 8px}
+.knob .kt b{color:var(--accent)}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.seg{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.seg button{border:1px solid var(--glass-line);border-radius:var(--r-pill);background:var(--glass);color:var(--fg-2);font:inherit;font-size:var(--fs-sm);padding:5px 12px;cursor:pointer}
+.seg button:active{transform:scale(var(--press-m))}
+.seg button.on{border-color:rgba(var(--accent-rgb),.65);background:rgba(var(--accent-rgb),.1);color:var(--accent);font-weight:var(--fw-b)}
+.who{font-size:var(--fs-sm);color:var(--fg-2);line-height:1.7}
+.who b{color:var(--fg)}
+.who .meet{color:var(--accent);font-weight:var(--fw-b)}
+/* 근거 표 */
+table{width:100%;border-collapse:collapse;font-size:var(--fs-sm)}
+th,td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--glass-line);vertical-align:top;line-height:1.55}
+th{color:var(--mut);font-weight:var(--fw-b);font-size:var(--fs-xs);white-space:nowrap}
+td b{font-weight:var(--fw-b)}
+.tbl{border:1px solid var(--glass-line);border-radius:var(--r-l);background:var(--glass);padding:4px 8px;overflow-x:auto}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+/* 복사 바 */
+.bar{position:fixed;left:50%;transform:translateX(-50%);bottom:14px;z-index:50;width:min(830px,calc(100vw - 22px));display:flex;gap:9px;align-items:center;border:1px solid var(--glass-line);border-radius:var(--r-l);background:rgba(18,18,18,.82);backdrop-filter:blur(var(--blur-m));-webkit-backdrop-filter:blur(var(--blur-m));padding:10px 12px}
+.bar .txt{flex:1;font-size:var(--fs-xs);color:var(--fg-2);line-height:1.5}
+.bar .cp{flex:none;border:none;border-radius:var(--r-m);background:var(--accent);color:#121212;font:inherit;font-size:var(--fs-sm);font-weight:var(--fw-x);padding:8px 14px;cursor:pointer}
+.bar .cp:active{transform:scale(var(--press-m))}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style></head><body>
+
+<h1>무음동 지도 — <b>배치 확정판</b></h1>
+<p class="sub">분신술 10인 수렴 · 골목(50,50) = 중심 핫플 · 1칸≈100m(반경 ~5km) · 정본 = apps/yeta/places.json(지도 UI·마주침 이벤트 공용) — 핀 이동 = 실제 위치 함수(yeta_place.py) 그대로 재현</p>
+
+<h2><span class="n">1</span>살아있는 지도 — 시간을 돌려봐</h2>
+<p class="cap">슬라이더 = 시각(핀이 동선 따라 이동) · 날짜 바꾸면 그날의 외출 변주(시드 1/4)가 재현돼. <b style="color:var(--accent)">라임 링</b> = 지금 2명 이상 겹친 곳(마주침 후보 지대). 회색 다이아 = 집(private — 마주침·지도 핀 제외 · 서사용).</p>
+<div class="stage">
+  <div class="mapwrap"><svg id="map" viewBox="0 0 500 500" aria-label="무음동 지도"></svg></div>
+  <div class="ctrl">
+    <div class="knob">
+      <p class="kt">시각: <b id="hlbl">19시</b> <span id="slotlbl" style="color:var(--mut);font-size:var(--fs-xs)"></span></p>
+      <input type="range" id="hr" min="0" max="23" value="19" step="1">
+      <div class="seg" id="dayseg">
+        <button data-d="-1">어제</button><button data-d="0" class="on">오늘</button><button data-d="1">내일</button><button data-d="2">모레</button>
+      </div>
+    </div>
+    <div class="knob">
+      <p class="kt">지금 어디에 —</p>
+      <div class="who" id="who"></div>
+    </div>
+  </div>
+</div>
+
+<h2><span class="n">2</span>배치 근거 — 분신 10인 평결 요약</h2>
+<div class="tbl"><table>
+<tr><th>주민</th><th>집</th><th>직장/주활동</th><th>분신 논거 한 줄</th></tr>
+<tr><td><b id="c-mudi">무디</b></td><td>찻집 2층 살림방(노드 없음)</td><td>찻집 무음(46,53) — 심장부</td><td>동선표에 home 슬롯이 없는 유일 주민 = 집이 곧 일터. "경계는 바깥이 아니라 중심 — 찻집이 고요한 눈"(세계관)이라 골목에 바짝.</td></tr>
+<tr><td><b id="c-sera">세라</b></td><td>옥탑방(59,41)</td><td>지하 연습실(56,47)</td><td>연습실 코앞 북동 옥탑 — 달밤 옥상에서만 귀·꼬리를 안 숨기는 애(LV5). 막다른 연습실 = "제일 외롭다"와 정합이라 접점 안 늘림.</td></tr>
+<tr><td><b id="c-haeun">하은</b></td><td>북쪽 언덕 원룸(44,33)</td><td>학교(50,76)</td><td>학교(남)→찻집(중앙)→집(북)이 한 직선 = "퇴근길에 매일 무음"이 지리로 참. 밤 편의점은 하은 단독 슬롯 — 심야 마주침 명당.</td></tr>
+<tr><td><b id="c-baek">백</b></td><td>경비실 뒷방(47,55)</td><td>골목 그 자체(50,50)</td><td>중심을 지키는 파수꾼은 변두리에 못 산다 — 뒷방이 찻집 옆이라 "새벽 순찰 끝 무디네 물 한 잔" 카논이 지도에서 성립.</td></tr>
+<tr><td><b id="c-ryu">류</b></td><td>도장 툇마루 별채(노드 없음)</td><td>검도장 월광(38,57)</td><td>류도 home 슬롯 없음 — 오백 년 한량이 출퇴근하는 그림은 붕괴. 저녁 골목만이 유일한 탈도장 — 백과의 무언주(無言酒)가 유일 확정 조우.</td></tr>
+<tr><td><b id="c-yun">윤</b></td><td>부스 계단 아랫방(50,30)</td><td>라디오국(49,27)</td><td>radio = 그래프상 유일한 잎 노드 = 태생이 변두리 — 북쪽 가장자리로 밀어 "경계에 걸친 전파". 새벽 4시 귀가 = 계단 한 층.</td></tr>
+<tr><td><b id="c-desk">데스크</b></td><td>삼교(三校)의 방(58,36)</td><td>3층 편집국(53,42)</td><td>골목 북측 = 3층에서 골목이 내려다보이는 결. 집은 딱 한 블록 — 야근형이지만 '떠나는 의식'이 필요한 인간.</td></tr>
+<tr><td><b id="c-kopi">카피</b></td><td>옥탑 크래시패드(52,56)</td><td>찻집 상주 + 새벽 편의점</td><td>진짜 사무실은 찻집 코너석(4슬롯 상주) — 집은 골목 위 잠깐 눈 붙이는 곳. 저녁마다 퇴근한 데스크와 펀치라인 충돌.</td></tr>
+<tr><td><b id="c-gaeul">가을</b></td><td>노을집(37,66)</td><td>시장(42,62)</td><td>시장 뒤 언덕 — 권력(시장)은 굽어보되 사생활은 물러난 회장댁. 시장↔골목 동선이 찻집을 관문으로 지나 실권 동선 성립.</td></tr>
+<tr><td><b id="c-von">본</b></td><td>강철 위층(35,67)</td><td>체육관 강철(35,67)</td><td>통근 0 — 삶이 체육관. 새벽 놀이터 로드워크가 유일한 외출 = 새벽 park 유일 상주(류의 외출 변주와 겹치는 날 = 훈련광×한량).</td></tr>
+</table></div>
+
+<h2><span class="n">3</span>존(zone) 설계</h2>
+<p class="cap"><b style="color:var(--cobalt)">북 = 심야 미디어</b>(라디오국·편집국 — 밤을 지키는 활자와 전파) · <b>중심 = 밤 코어</b>(골목·찻집·연습실·경비실 — 경계가 제일 얇은 심장부) · <b style="color:var(--accent)">남 = 생활권</b>(편의점·학교·놀이터·검도장·시장·체육관 — 낮의 마을). 저녁이면 9/10이 중심 두 칸(찻집 5·골목 4)으로 수렴 = 무음동 프라임타임, 새벽은 전원 산개 = 안 자는 사람끼리의 희귀 조우 — 분신단이 "밤 동네 리듬"으로 승인한 편중.</p>
+
+<div class="bar"><span class="txt" id="barTxt">무음동 좌표 — 정본 apps/yeta/places.json (장소 11 + 집 8 · 골목 50,50 중심)</span><button class="cp" id="cpBtn">좌표 JSON 복사</button></div>
+
+<script>
+/* ── 데이터(places.json 사본 · 정본은 apps/yeta/places.json) ── */
+const PLACES = {
+  alley:{name:'골목',x:50,y:50,nb:['tea','dojo','office','studio','store']},
+  tea:{name:'찻집 무음',x:46,y:53,nb:['alley','market']},
+  studio:{name:'지하 연습실',x:56,y:47,nb:['alley']},
+  office:{name:'3층 편집국',x:53,y:42,nb:['alley','radio']},
+  radio:{name:'라디오국',x:49,y:27,nb:['office']},
+  store:{name:'편의점',x:53,y:63,nb:['alley','school','park']},
+  school:{name:'학교',x:50,y:76,nb:['park','store']},
+  park:{name:'놀이터',x:44,y:70,nb:['dojo','gym','school','store']},
+  dojo:{name:'검도장 월광',x:38,y:57,nb:['alley','park']},
+  market:{name:'시장',x:42,y:62,nb:['tea','gym']},
+  gym:{name:'체육관 강철',x:35,y:67,nb:['market','park']},
+  home_sera:{name:'세라의 옥탑방',x:59,y:41,nb:['studio'],pv:1},
+  home_haeun:{name:'하은의 집',x:44,y:33,nb:['tea'],pv:1},
+  home_baek:{name:'경비실 뒷방',x:47,y:55,nb:['alley'],pv:1},
+  home_yun:{name:'계단 아랫방',x:50,y:30,nb:['radio'],pv:1},
+  home_desk:{name:'삼교의 방',x:58,y:36,nb:['office'],pv:1},
+  home_kopi:{name:'카피 옥탑',x:52,y:56,nb:['alley'],pv:1},
+  home_gaeul:{name:'노을집',x:37,y:66,nb:['market'],pv:1},
+  home_von:{name:'강철 위층',x:35,y:67,nb:['gym'],pv:1},
+};
+const ROUTINE = {
+  mudi:{late:'tea',dawn:'tea',morning:'tea',day:'tea',evening:'tea',night:'tea'},
+  sera:{late:'studio',dawn:'studio',morning:'home_sera',day:'studio',evening:'tea',night:'studio'},
+  haeun:{late:'home_haeun',dawn:'home_haeun',morning:'school',day:'school',evening:'tea',night:'store'},
+  baek:{late:'alley',dawn:'alley',morning:'home_baek',day:'alley',evening:'alley',night:'alley'},
+  ryu:{late:'dojo',dawn:'dojo',morning:'dojo',day:'dojo',evening:'alley',night:'dojo'},
+  yun:{late:'radio',dawn:'home_yun',morning:'home_yun',day:'home_yun',evening:'alley',night:'radio'},
+  desk:{late:'office',dawn:'home_desk',morning:'office',day:'office',evening:'tea',night:'office'},
+  kopi:{late:'home_kopi',dawn:'store',morning:'tea',day:'tea',evening:'tea',night:'tea'},
+  gaeul:{late:'home_gaeul',dawn:'market',morning:'market',day:'market',evening:'alley',night:'home_gaeul'},
+  von:{late:'home_von',dawn:'park',morning:'gym',day:'gym',evening:'gym',night:'home_von'},
+};
+const CAST = {mudi:['무','#7ee0a3','무디'],sera:['세','#ff8fb3','세라'],haeun:['하','#ffd36b','하은'],baek:['백','#9db2bf','백'],ryu:['류','#6bd6e8','류'],yun:['윤','#b8a7ff','윤'],desk:['데','#8fb7ff','데스크'],kopi:['카','#ffb46b','카피'],gaeul:['갈','#c9a2ff','가을'],von:['본','#ff9d6b','본']};
+const $ = s => document.querySelector(s);
+const SC = 5;   // 0~100 → 500px
+
+/* ── 위치 함수 = yeta_place.py 정확 포팅(sha256 · BigInt %) ── */
+const slotOf = h => h<3?'late':h<7?'dawn':h<11?'morning':h<17?'day':h<21?'evening':'night';
+async function sha(s){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return BigInt('0x'+[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join(''));}
+async function placeOf(cid,dateStr,hour){
+  const slot=slotOf(hour), base=(ROUTINE[cid]||{})[slot]||'';
+  if(!base) return '';
+  const info=PLACES[base]||{};
+  if(info.pv) return base;
+  const nb=(info.nb||[]).filter(n=>!(PLACES[n]||{}).pv);
+  if(nb.length){
+    const seed=await sha(`${cid}:${dateStr}:${slot}:go`);
+    if(seed%4n===0n) return nb[Number(seed%BigInt(nb.length))];
+  }
+  return base;
+}
+
+/* ── SVG 정적 레이어(존·라인·노드) ── */
+function baseMap(){
+  const S=[];
+  S.push(`<rect width="500" height="500" fill="rgba(14,16,15,.6)"/>`);
+  S.push(`<rect class="zone n" x="0" y="0" width="500" height="180"/>`);
+  S.push(`<rect class="zone" x="0" y="180" width="500" height="120"/>`);
+  S.push(`<rect class="zone s" x="0" y="300" width="500" height="200"/>`);
+  S.push(`<text x="12" y="24" class="hname">북 — 심야 미디어</text><text x="12" y="196" class="hname">중심 — 밤 코어</text><text x="12" y="320" class="hname">남 — 생활권</text>`);
+  const done=new Set();
+  for(const [id,p] of Object.entries(PLACES)) for(const n of p.nb){
+    const k=[id,n].sort().join('|'); if(done.has(k)) continue; done.add(k);
+    const q=PLACES[n];
+    S.push(`<line class="edge${p.pv||q.pv?' h':''}" x1="${p.x*SC}" y1="${p.y*SC}" x2="${q.x*SC}" y2="${q.y*SC}"/>`);
+  }
+  for(const [id,p] of Object.entries(PLACES)){
+    if(p.pv){ S.push(`<rect class="hnode" x="${p.x*SC-4}" y="${p.y*SC-4}" width="8" height="8" transform="rotate(45 ${p.x*SC} ${p.y*SC})"/><text class="hname" x="${p.x*SC+7}" y="${p.y*SC+3}">${p.name}</text>`); continue; }
+    S.push(`<circle class="pnode" id="pn-${id}" cx="${p.x*SC}" cy="${p.y*SC}" r="${id==='alley'?14:11}"/>`);
+    if(id==='alley') S.push(`<path class="center-star" transform="translate(${p.x*SC},${p.y*SC-1})" d="M0,-5 L1.4,-1.6 5,-1.4 2.3,.9 3.1,4.4 0,2.4 -3.1,4.4 -2.3,.9 -5,-1.4 -1.4,-1.6 Z"/>`);
+    S.push(`<text class="pname" x="${p.x*SC}" y="${p.y*SC+(id==='alley'?26:22)}" text-anchor="middle">${p.name}</text>`);
+  }
+  S.push(`<g id="pins"></g>`);
+  return S.join('');
+}
+$('#map').innerHTML=baseMap();
+
+/* ── 핀 렌더(같은 장소 = 부채 오프셋) ── */
+let dayOff=0;
+function dstr(off){const d=new Date(Date.now()+9*3600e3+off*86400e3);return d.toISOString().slice(0,10);}
+async function render(){
+  const h=+$('#hr').value;
+  $('#hlbl').textContent=`${h}시`;
+  $('#slotlbl').textContent=`(${{late:'깊은 밤',dawn:'새벽',morning:'아침',day:'낮',evening:'저녁',night:'밤'}[slotOf(h)]} · ${dstr(dayOff)})`;
+  const at={};
+  for(const cid of Object.keys(CAST)) at[cid]=await placeOf(cid,dstr(dayOff),h);
+  const byPlace={};
+  for(const [cid,pl] of Object.entries(at)) (byPlace[pl]=byPlace[pl]||[]).push(cid);
+  let pins='';
+  for(const [pl,cids] of Object.entries(byPlace)){
+    const p=PLACES[pl]; if(!p) continue;
+    cids.forEach((cid,i)=>{
+      const ang=(i/cids.length)*Math.PI*2-Math.PI/2, off=cids.length>1?13:0;
+      const x=p.x*SC+Math.cos(ang)*off, y=p.y*SC+Math.sin(ang)*off-(cids.length>1?0:16);
+      const [ini,col]=CAST[cid];
+      pins+=`<g class="pin"><circle cx="${x}" cy="${y}" r="8" fill="${col}"/><text x="${x}" y="${y+2.8}" text-anchor="middle">${ini}</text></g>`;
+    });
+  }
+  document.getElementById('pins').innerHTML=pins;
+  for(const id of Object.keys(PLACES)){const el=document.getElementById('pn-'+id); if(el) el.classList.toggle('meet',(byPlace[id]||[]).filter(c=>!PLACES[at[c]].pv).length>=2);}
+  const rows=Object.entries(byPlace).sort((a,b)=>b[1].length-a[1].length).map(([pl,cids])=>{
+    const p=PLACES[pl], meet=!p.pv&&cids.length>=2;
+    return `<div${meet?' class="meet"':''}>${p.pv?'🏠':''}<b>${p.name}</b> — ${cids.map(c=>CAST[c][2]).join(' · ')}${meet?' ← 마주침 지대':''}</div>`;
+  }).join('');
+  $('#who').innerHTML=rows;
+}
+$('#hr').addEventListener('input',render);
+document.querySelectorAll('#dayseg button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('#dayseg button').forEach(x=>x.classList.toggle('on',x===b));
+  dayOff=+b.dataset.d; render();
+}));
+render();
+
+$('#cpBtn').addEventListener('click',async()=>{
+  const coords=Object.fromEntries(Object.entries(PLACES).map(([k,v])=>[k,{x:v.x,y:v.y}]));
+  const t=JSON.stringify(coords);
+  try{await navigator.clipboard.writeText(t);}catch{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();}
+  const b=$('#cpBtn');b.textContent='복사됨';setTimeout(()=>b.textContent='좌표 JSON 복사',1400);
+});
+</script>
+</body></html>
