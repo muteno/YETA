@@ -673,7 +673,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   .ycd.on .ycd-card > *:nth-child(8){animation-delay:.35s} .ycd.on .ycd-card > *:nth-child(9){animation-delay:.4s}
   .ycd.on .ycd-card > *:nth-child(n+10){animation-delay:.44s}
   .ymain.cd-open > .ywm, .ymain.cd-open .yprof, .ymain.cd-open .ynav { display:none; }   /* 디테일·설정 열림 = 로고·프로필·하단 네비 숨김(오버레이 가림 방지 — 스택 컨텍스트가 달라 z로 못 이김) */
-  .ymain.cd-open .ychar, .ymain.cd-open .ylist, .ymain.cd-open .ymapp { visibility:hidden; }   /* 시트 열림 = 뒤 탭 패널 숨김 — 라이브 시트(.ycd-live) 투명 배경일 때 char/list/map 대신 영상만 비치게(불투명 시트엔 무해) · 260707 · 지도 탭 추가분 누락 보강(설정 뒤 지도 비침 버그픽) */
+  .ymain.cd-open .ychar, .ymain.cd-open .ylist { visibility:hidden; }   /* 시트 열림 = 뒤 탭 패널 숨김 — 라이브 시트(.ycd-live) 투명 배경일 때 char/list 대신 영상만 비치게(불투명 시트엔 무해) · 260707 */
   .ymain.cd-open .ymain-body::before { display:none; }   /* NAV 아래 구분선도 시트 뒤로 안 비침 */
   .ycd-top { display:flex; align-items:center; gap:6px; margin-bottom:10px; }
   .ycd-back { width:var(--btn); height:var(--btn); display:grid; place-items:center; background:var(--glass); border:1px solid var(--glass-line); border-radius:50%; color:var(--fg-2); cursor:pointer; touch-action:manipulation; }
