@@ -6,7 +6,7 @@ OpenAI Images API(gpt-image) → `viewer/assets/yeta_bg/var_<slug>.png` 커밋(g
 멱등: 이미 있는 slug는 skip(FORCE=1 재생성). 게이트 = OPENAI_API_KEY(없으면 no-op).
 활용: 뷰어 무드/장면 배경 후보 — roster `bg` 교체나 씬 연출은 운영자 선택 후 별도 배선.
 """
-import base64, json, os, shutil, subprocess, sys, time, urllib.request
+import base64, json, os, sys, time, urllib.request
 
 KEY = os.environ.get("OPENAI_API_KEY", "") or os.environ.get("OPENAI_API_KEY_nomute", "")
 MODEL = (os.environ.get("OPENAI_IMAGE_MODEL") or "gpt-image-2").strip()
@@ -54,9 +54,6 @@ SCENES = [
     ("bandage_bench", "an empty bench with a first-aid kit left open and a roll of bandages, under a flickering lamp, someone was patched up here minutes ago"),
     ("missing_flyer", "a utility pole layered with missing-person and missing-cat flyers fluttering in night wind, tape peeling, one flyer glowing oddly"),
     ("thin_boundary", "the dead end of the alley where the air itself ripples like heat haze at 3am, a faint cold blue glow seeping through, a single traffic cone as a warning"),
-    # ── 페르소나 고유 무대(운영자 260707 "대화 시작 = 캐릭터 고유 이미지 · 없으면 하나씩 뽑아") — bg 중복 2인{하은=tea(무디와 공유)·가을=alley(백과 공유)} 전용 씬 ──
-    ("persona_haeun",  "the tree-lined street in front of a small Korean neighborhood school at dusk just after the teachers left, one classroom window still warmly lit, ginkgo trees over the gate, a chalk-dusted tote bag resting on the low wall, playful yet tender after-work air"),
-    ("persona_gaeul",  "the merchants' association office window above the market lane at night, a crisp warm desk lamp on stacked ledgers and a neighborhood map pinned with notes, the market banner fluttering outside, composed and quietly in charge"),
 ]
 
 
@@ -80,17 +77,6 @@ def openai_image(prompt):
     return None
 
 
-def webp(path):
-    """뷰어 서빙용 webp 사본(768w·q82 — png ~2MB → ~90KB · 뷰어는 .webp만 참조). ffmpeg 없으면 조용히 생략(png 원본은 남음)."""
-    if not shutil.which("ffmpeg"):
-        return
-    try:
-        subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-i", path, "-vf", "scale=768:-2",
-                        "-quality", "82", path[:-4] + ".webp"], check=True, timeout=120)
-    except Exception as e:
-        print(f"  ⚠️ webp 변환 실패(비치명): {e}", flush=True)
-
-
 def main():
     if not KEY:
         print("OPENAI_API_KEY 없음 — 배경 생성 생략(no-op)"); return 0
@@ -105,7 +91,6 @@ def main():
         if not png:
             continue
         open(path, "wb").write(png)
-        webp(path)
         made += 1
         print(f"  ✓ {path} ({len(png)//1024}KB)", flush=True)
         time.sleep(2)
