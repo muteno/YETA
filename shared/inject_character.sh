@@ -12,7 +12,8 @@ _yc_files() {
   # 세계관(월드 바이블) = 존재할 때만 자동 활성(운영자가 _TEMPLATE_세계관.md 채워 이 이름으로 승격하면 켜짐 · 260703).
   # ⚠️ 순서 계약: 00(하드룰) → 10(세계 공통 — 페르소나 불변 = 캐시 접두 안정) → 카드(맨 뒤·말투 제1규칙이 최종 우선).
   [ -f "apps/yeta/10_세계관.md" ] && echo "apps/yeta/10_세계관.md"
-  echo "apps/yeta/characters/${id}.md"
+  if [ -f "apps/yeta/characters/${id}.md" ]; then echo "apps/yeta/characters/${id}.md"
+  else echo "viewer/characters/epic/${id}/CLAUDE.md"; fi   # 에픽 캐릭터 = 자산 폴더 동거 카드(운영자 260707 — 카드+이미지 한 폴더 · characters/epic/<id>/)
 }
 
 character_block() {
