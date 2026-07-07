@@ -374,18 +374,12 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   .ym-access { width:72px; height:72px; border-radius:50%; border:1px solid var(--glass-line); cursor:pointer; display:grid; place-items:center;
     background:var(--glass-2); backdrop-filter:blur(var(--blur-l)) saturate(1.05); -webkit-backdrop-filter:blur(var(--blur-l)) saturate(1.05);
     color:var(--accent); box-shadow:inset 0 1px 0 var(--glass-line), var(--shadow-card), 0 0 26px rgba(var(--accent-rgb),.16);
-    transition:transform .28s var(--ease), box-shadow .3s var(--ease), border-color .3s var(--ease); touch-action:manipulation; }
+    transition:transform .28s var(--ease), box-shadow .3s var(--ease); touch-action:manipulation; }
   .ym-access:active { transform:scale(var(--press-m)); }
   .ym-access svg { width:24px; height:24px; }
   /* 텍스트 라벨 대신 자물쇠가 숨쉬듯 커졌다 작아지며(작을 때 약하게 디밍) "눌러" 신호 = 접속 어포던스(운영자 260705) · 등장 페이드는 아래 .ym-access-card 블록 */
   @keyframes ymLockBreathe { 0%,100% { transform:scale(.96); opacity:.78; } 50% { transform:scale(1.12); opacity:1; } }   /* 최대 1.12(잠금 안무 플그 운영자 확정) */
-  .ym-access.unlocking { animation:ymLockIgnite .5s var(--ease) both; opacity:1; }   /* 누르면 숨쉬기 → 점화 원샷: 현재 숨쉬기 프레임(--ig-s/--ig-o = JS 주입)에서 그대로 이어받아 살짝 눌림 → 팍 발광 → 확정 글로우(40px .42) 안착. animation:none 즉살 때 중간 프레임 스냅(최대 scale .12·opacity .22 툭 튐) 제거 — 운영자 확정 안무(260/280/790·31°·숨쉬기 파라미터)는 불변 */
-  @keyframes ymLockIgnite {   /* 키프레임 안무 % · 발광 box-shadow = 토큰 없는 축(raw 예외) · 색은 --accent-rgb 계승 */
-    0% { transform:scale(var(--ig-s,1.02)); opacity:var(--ig-o,.9); box-shadow:inset 0 1px 0 var(--glass-line), var(--shadow-card), 0 0 26px rgba(var(--accent-rgb),.16); filter:brightness(1); }
-    28% { transform:scale(.93); }
-    58% { transform:scale(1.07); opacity:1; box-shadow:inset 0 1px 0 var(--glass-line), var(--shadow-card), 0 0 62px rgba(var(--accent-rgb),.8), 0 0 20px rgba(var(--accent-rgb),.5); filter:brightness(1.4); }
-    100% { transform:scale(1); opacity:1; box-shadow:inset 0 1px 0 var(--glass-line), var(--shadow-card), 0 0 40px rgba(var(--accent-rgb),.42); filter:brightness(1); }
-  }
+  .ym-access.unlocking { animation:none; opacity:1; }   /* 누르면 펄스 멈추고 락 열림 모션으로 전환 */
   /* 접속 누름 = 잠금해제 액티브 — 고리가 힌지 축으로 들려 열리고 라임 글로우 점등(운영자 260704 "락이 풀리는 모션") · 고리 회전=기하 raw 예외축 */
   .ym-shackle { transform-box:fill-box; transform-origin:86% 100%; transition:transform .5s var(--ease); }
   .ym-access.unlocking .ym-shackle { transform:translateY(-2px) rotate(-31deg); }   /* 31°(잠금 안무 플그 운영자 확정) */
@@ -2071,7 +2065,6 @@ try { const _q = new URLSearchParams(location.search); if (_q.get('yeta')) { con
     if (unlocked) return;
     if (entered) { ymain.classList.add('go', 'strike', 'calm', 'pin-mode'); ymPinFocus(); return; }   // 시퀀스 중 재탭 = 세리머니 스킵(최종 상태 직행 · 평의회10)
     entered = true;
-    try { const cs = getComputedStyle(accessBtn), mt = new DOMMatrixReadOnly(cs.transform === 'none' ? undefined : cs.transform); accessBtn.style.setProperty('--ig-s', String(+(mt.a || 1).toFixed(3))); accessBtn.style.setProperty('--ig-o', cs.opacity); } catch {}   // 숨쉬기 현재 프레임(scale·opacity)을 점화 시작값으로 이어받기 — animation 교체 시 스냅 제거(실패 = 키프레임 기본값 폴백)
     accessBtn.classList.add('unlocking');
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) { ymain.classList.add('go', 'strike', 'calm', 'pin-mode'); ymPinFocus(); return; }   // 모션 최소화 = 최종 상태 직행
     setTimeout(() => ymain.classList.add('go'), 260);
