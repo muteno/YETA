@@ -80,9 +80,8 @@ export async function onRequestPost({ request, env }) {
   if (op === 'get') {   // 폴 — lazy 리퍼 동봉(운영자 260707 · 분신술 P1): awaiting 10분 초과 = 러너 미기동/사망 판정 → error 플립 = 뷰어 재시도 버튼 활성(영구 고착 탈출)
     const sess = await readSess();
     if (sess.state === 'awaiting' && sess.awaiting_since && Date.now() - sess.awaiting_since > 600000) {
-      if (sess.opening) { delete sess.opening; delete sess.awaiting_since; sess.state = 'idle'; }   // 멈춘 오프닝 = 정적 폴백(뷰어 yGreet)·error/재시도 배너 금지(409 죽은 버튼 차단 · 기틀검증 UX2)
-      else { sess.state = 'error'; sess.err = '응답이 오지 않았어 — 다시 보내면 재시도'; delete sess.awaiting_since; }
-      await putSess(sess);   // 러너가 뒤늦게 도착해도 무해 — finish가 앵커/nonce 검사로 자연 회복·폐기
+      sess.state = 'error'; sess.err = '응답이 오지 않았어 — 다시 보내면 재시도'; delete sess.awaiting_since;
+      await putSess(sess);   // 러너가 뒤늦게 도착해도 무해 — finish가 앵커 insert + state 갱신으로 자연 회복
     }
     return json({ ok: true, sess });
   }
@@ -265,40 +264,13 @@ export async function onRequestPost({ request, env }) {
     const greeting = sani(body.greeting).slice(0, 300);   // 첫인사 — 첫 진입 시 실제 assistant 턴으로 박제(증발·모델 문맥 누락 동시 해결)
     const sess = await readSess();
     sess.turns = sess.turns || [];
-    // 대화 중 교체(turns 有) = 합류 sys enter(현행 유지 · 변경 없음)
     if (sess.persona && sess.persona !== persona && sess.turns.length) {
-      sess.turns.push({ role: 'sys', text: enter || `${name || persona} 등장`, ts: Date.now() });   // 합류 신호(enter_line 연출 · 프롬프트 문맥에도 실림)
-      sess.persona = persona; sess.updated = Date.now();
-      await putSess(sess);
-      return json({ ok: true, sess });
+      sess.turns.push({ role: 'sys', text: enter || `${name || persona} 등장`, ts: Date.now() });   // 대화 중 교체 = 합류 신호(enter_line 연출 우선 · 프롬프트 문맥에도 실림)
+    } else if (!sess.turns.length && greeting) {
+      sess.turns.push({ role: 'assistant', text: greeting, persona, ts: Date.now() });   // 첫 진입 = 첫인사를 턴으로(뷰어 재렌더에도 유지 + HIST에 실려 캐릭터가 자기 인사를 앎)
     }
-    // 첫 진입(turns 빈) = 동적 오프닝 생성(운영자 260707 · 매번 새 첫마디 · 5인 기틀검증 반영)
-    if (!sess.turns.length) {
-      sess.persona = persona;   // 재드로 = 최신 persona(러너가 fresh-read로 픽업)
-      if (sess.state === 'awaiting' && sess.opening) {   // 멱등 가드 — 오프닝 인플라이트면 재dispatch 금지(과금 증폭·reset→draw 루프 차단 · 보안⑤·비용가드1)
-        sess.updated = Date.now(); await putSess(sess);
-        return json({ ok: true, sess });
-      }
-      if (env.GH_TOKEN) {   // 동적 오프닝 dispatch — nonce(opening) = reset/재드로 레이스 방어(러너 finish 일치검사)
-        const nonce = Date.now();
-        sess.state = 'awaiting'; sess.awaiting_since = nonce; sess.opening = nonce; delete sess.err;
-        await putSess(sess);
-        const st = await dispatch(env);
-        if (st === 204) return json({ ok: true, sess });
-        // dispatch 실패 = 정적 greeting 폴백 강등(turns 비-empty 보장 = 루프 차단 · 비용가드2)
-        sess.state = 'idle'; delete sess.opening; delete sess.awaiting_since;
-        if (greeting) sess.turns.push({ role: 'assistant', text: greeting, persona, ts: Date.now() });
-        await putSess(sess);
-        return json({ ok: true, sess });
-      }
-      // GH_TOKEN 無(로컬/프리뷰) = 정적 greeting 폴백(현행 동작 온존 · UX가드4)
-      if (greeting) sess.turns.push({ role: 'assistant', text: greeting, persona, ts: Date.now() });
-      sess.state = 'idle'; sess.updated = Date.now();
-      await putSess(sess);
-      return json({ ok: true, sess });
-    }
-    // turns 有 + 같은 persona(재진입) = persona만 확정
-    sess.persona = persona; sess.updated = Date.now();
+    sess.persona = persona;
+    sess.updated = Date.now();
     await putSess(sess);
     return json({ ok: true, sess });
   }

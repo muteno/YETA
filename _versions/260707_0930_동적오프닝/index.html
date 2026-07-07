@@ -581,8 +581,6 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   .ycd { position:fixed; inset:0; z-index:6; display:none; overflow-y:auto; background:radial-gradient(circle at 62% 12%, rgba(var(--accent-rgb),.08), transparent 52%), var(--bg);
     padding:calc(16px + env(safe-area-inset-top)) var(--sp-2) calc(28px + env(safe-area-inset-bottom)); }
   .ycd.on { display:block; animation:ypickIn .3s var(--ease) both; }
-  /* 설정·프로필 시트 = 배경 영상 계승(운영자 260707 "설정화면도 뒤에 영상 그대로 살려 · 글래스 메뉴1,2 동일 계승") — 불투명 bg 제거 → .ybgvid(z:0)+스크림(.38)이 그대로 비침(챗 dialog만 ys-hold=정지 · 시트는 재생 유지). 탭 상태 tab-settings = char/list 패널 미표시라 뒤는 영상뿐. 글래스 표면은 아래 --blur-m 계승. */
-  .ycd.ycd-live { background:transparent; }
   @keyframes ycdOut { to { opacity:0; transform:translateY(10px) scale(.995); } }   /* 시트 퇴장 = 은은(원칙6 · 북극성 "딱딱한 전환 금지" 260707) */
   .ycd.on.out { animation:ycdOut .22s var(--ease) both; }
   .ycd.on.out .ycd-card > * { animation:none; }   /* 퇴장 중 자식 stagger 재생 방지 */
@@ -594,8 +592,6 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   .ycd.on .ycd-card > *:nth-child(8){animation-delay:.35s} .ycd.on .ycd-card > *:nth-child(9){animation-delay:.4s}
   .ycd.on .ycd-card > *:nth-child(n+10){animation-delay:.44s}
   .ymain.cd-open > .ywm, .ymain.cd-open .yprof, .ymain.cd-open .ynav { display:none; }   /* 디테일·설정 열림 = 로고·프로필·하단 네비 숨김(오버레이 가림 방지 — 스택 컨텍스트가 달라 z로 못 이김) */
-  .ymain.cd-open .ychar, .ymain.cd-open .ylist { visibility:hidden; }   /* 시트 열림 = 뒤 탭 패널 숨김 — 라이브 시트(.ycd-live) 투명 배경일 때 char/list 대신 영상만 비치게(불투명 시트엔 무해) · 260707 */
-  .ymain.cd-open .ymain-body::before { display:none; }   /* NAV 아래 구분선도 시트 뒤로 안 비침 */
   .ycd-top { display:flex; align-items:center; gap:6px; margin-bottom:10px; }
   .ycd-back { width:var(--btn); height:var(--btn); display:grid; place-items:center; background:var(--glass); border:1px solid var(--glass-line); border-radius:50%; color:var(--fg-2); cursor:pointer; touch-action:manipulation; }
   .ycd-back:active { transform:scale(var(--press-m,.9)); }
@@ -626,8 +622,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   .ycd-card.card-left { align-items:stretch; text-align:left; gap:10px; }   /* 설정/프로필 = 좌측 리스트(디테일 중앙정렬과 별개) */
   .yset-sec { font-size:var(--fs-label); font-weight:var(--fw-b); color:var(--mut); padding:8px 4px 2px; }
   .yset-item { display:flex; align-items:center; gap:11px; width:100%; padding:13px 14px; background:var(--glass-0); border:1px solid var(--glass-line-0); border-radius:var(--r-l);
-    color:var(--fg); font:inherit; text-align:left; cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent; box-shadow:inset 0 1px 0 var(--glass-line-0);
-    backdrop-filter:blur(var(--blur-m)); -webkit-backdrop-filter:blur(var(--blur-m)); }   /* 글래스 = 메뉴1 .ycrow 동일 계승(운영자 260707 "글래스 메뉴1,2 동일") — 영상 위 프로스트 성립 */
+    color:var(--fg); font:inherit; text-align:left; cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent; box-shadow:inset 0 1px 0 var(--glass-line-0); }
   .yset-item:active { transform:scale(var(--press-l,.95)); }
   .yset-item .si-ic { flex:none; width:22px; height:22px; color:var(--fg-2); display:grid; place-items:center; }
   .yset-item .si-ic svg { width:21px; height:21px; }
@@ -646,8 +641,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
     box-shadow:0 0 18px rgba(var(--accent-rgb),.18); background-size:cover; background-position:center; }
   .yprof-ava svg { width:44px; height:44px; }
   .yprof-stats { display:flex; width:100%; gap:8px; margin:2px 0 4px; }
-  .yprof-stat { flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; padding:12px 6px; background:var(--glass-0); border:1px solid var(--glass-line-0); border-radius:var(--r-l);
-    backdrop-filter:blur(var(--blur-m)); -webkit-backdrop-filter:blur(var(--blur-m)); }   /* 글래스 = 메뉴 카드 동일 계승(영상 위 프로스트) */
+  .yprof-stat { flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; padding:12px 6px; background:var(--glass-0); border:1px solid var(--glass-line-0); border-radius:var(--r-l); }
   .yprof-stat b { font-size:var(--fs-h3); font-weight:var(--fw-x); color:var(--accent); }
   .yprof-stat span { font-size:var(--fs-xs); color:var(--mut); }
   #ycset.locked .yset-range { opacity:.45; }   /* 대화 시작 후 성향 잠금 = 은은한 딤(운영자 260706 "너무 강조 말고 은은하게") */
@@ -759,11 +753,11 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
       <div class="ycd-top"><button type="button" class="ycd-back" id="ycsetBack" aria-label="뒤로"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><button type="button" class="ycd-gear" id="ysetReset" aria-label="기본값 복원" title="기본값 복원"></button></div>   <!-- 기본값 복원 = 헤더 행 우측 승격(디테일 ⚙와 쌍 골격 통일 · 운영자 260707 '한수 ㄱ') · 아이콘 = UNDO_SVG(nm-svg SSOT) JS 주입 -->
       <div class="ycd-card" id="ycsetCard"></div>
     </div>
-    <div class="ycd ycd-live" id="ycsettings" aria-modal="true" role="dialog">   <!-- 설정 화면(메뉴3 · 배경 영상 계승 260707) -->
+    <div class="ycd" id="ycsettings" aria-modal="true" role="dialog">   <!-- 설정 화면(메뉴3 · 목업 · 운영자 260706 "목업만 구성") -->
       <div class="ycd-top"><button type="button" class="ycd-back" id="ycsettingsBack" aria-label="뒤로"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button></div>
       <div class="ycd-card card-left" id="ycsettingsCard"></div>
     </div>
-    <div class="ycd ycd-live" id="ycprofile" aria-modal="true" role="dialog">   <!-- 내 프로필 화면(우상단 · 배경 영상 계승 260707) -->
+    <div class="ycd" id="ycprofile" aria-modal="true" role="dialog">   <!-- 내 프로필 화면(우상단 · 목업 · 운영자 260706 "프로필도 목업만") -->
       <div class="ycd-top"><button type="button" class="ycd-back" id="ycprofileBack" aria-label="뒤로"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button></div>
       <div class="ycd-card card-left" id="ycprofileCard"></div>
     </div>
@@ -1024,11 +1018,7 @@ async function yListRender() {
   if (ssn) ssn.innerHTML = ySsnHtml();
   const s = YSESS || {}, turns = s.turns || [], p = s.persona ? yPersona(s.persona) : null;
   if (p) yNavName(p.name);   // 세션 상대 확인 즉시 메뉴3 라벨 동기화(프로필 = 기본 캐릭터 고정 260706)
-  if (!p || !turns.length) {
-    const op = !!(p && s.state === 'awaiting' && s.opening);   // 동적 오프닝 생성 중 = "곧 말을 걸어와"(진행 대화 없음 오표시 차단 · 기틀검증 UX3)
-    box.innerHTML = op ? `<div class="yeta-setup">${esc(p.name)}이(가) 곧 말을 걸어와<span class="gdots"><i>.</i><i>.</i><i>.</i></span></div>` : '<div class="yeta-setup">진행 중인 대화가 없어 — 캐릭터 탭에서 말을 걸어봐.</div>';
-    return;
-  }
+  if (!p || !turns.length) { box.innerHTML = '<div class="yeta-setup">진행 중인 대화가 없어 — 캐릭터 탭에서 말을 걸어봐.</div>'; return; }
   const last = turns[turns.length - 1], prev = turns[turns.length - 2], unread = Math.max(0, turns.length - yReadN());
   const line = t => t ? `<span class="ylist-last">${t.role === 'user' ? '나 · ' : ''}${esc(ySnip(t.text, 40) || '…')}</span>` : '';   // 최근 대화 2줄(운영자 260706 "이 2개만") · 내 턴 = '나 ·' 접두
   box.innerHTML = `<div class="ylist-group"><div class="ylr-wrap"><button type="button" class="ylist-row" id="ylistCur">`
@@ -1078,9 +1068,7 @@ function ySideRender() {
   const curId = YCUR && YCUR.id, turns = (YSESS && YSESS.turns) || [];
   side.innerHTML = YCHARS.map(c => {
     const isCur = c.id === curId;
-    const lastMine = isCur && turns.length ? ySnip(turns[turns.length - 1].text, 7)
-      : (isCur && YSESS && YSESS.state === 'awaiting' && YSESS.opening ? '곧 말을 걸어와' : ySnip(c.tagline || '', 7));   // 현 상대 실대화·오프닝 생성 중 표식·나머지 태그라인
-
+    const lastMine = isCur && turns.length ? ySnip(turns[turns.length - 1].text, 7) : ySnip(c.tagline || '', 7);   // 최근대화 ~5음절대(현 상대만 실대화·나머지 태그라인)
     return `<button type="button" class="ys-row${isCur ? ' cur' : ''}" data-id="${esc(c.id)}">${yAva(c)}<span class="ys-nm">${esc(c.name)}</span><span class="ys-last">${esc(lastMine)}…</span></button>`;
   }).join('');
   side.hidden = false;
@@ -1393,44 +1381,17 @@ function yMoodUrl(bg, mood) {   // base URL → 배리언트 규약 파생(…/t
   if (!bg || !mood) return bg || '';
   return bg.split('?')[0].replace(/\.png$/, `_${mood}.png`);
 }
-// ── 맥락 씬 풀(운영자 260707 "배경 상황에 맞게") — 배리에이션 32장(yeta_bg_var)을 무드×시간대(KST)×계절로 매핑. base(무드 없음) = 페르소나 고유 bg 유지. t=어울리는 시간대(any=무관) · se=계절 한정 ──
-const Y_SCENE_POOL = {
-  warm: [ {s:'cvs_dawn',t:['dawn']}, {s:'stream_dawn',t:['dawn']}, {s:'karaoke_back',t:['dawn']}, {s:'noon_summer',t:['day'],se:'summer'},
-          {s:'tea_sunset',t:['dusk']}, {s:'market_close',t:['dusk','night']}, {s:'laundromat',t:['night']}, {s:'arcade_glow',t:['night']},
-          {s:'heatnight',t:['night'],se:'summer'}, {s:'snow_night',t:['night'],se:'winter'} ],
-  tense:[ {s:'police_line',t:['dawn','night']}, {s:'typhoon_eve',t:['any'],se:'summer'}, {s:'thunder_flash',t:['night']}, {s:'underpass',t:['any']},
-          {s:'broken_wall',t:['night']}, {s:'claw_shutter',t:['night']}, {s:'dead_lamp',t:['night']}, {s:'firetruck_after',t:['night']}, {s:'thin_boundary',t:['night']} ],
-  blue: [ {s:'dawn_mist',t:['dawn']}, {s:'autumn_dusk',t:['dusk'],se:'autumn'}, {s:'busstop_fog',t:['night']}, {s:'alley_rain',t:['night']},
-          {s:'crosswalk_rain',t:['night']}, {s:'rooftop_mid',t:['night']}, {s:'playground_3am',t:['night']}, {s:'moon_stairs',t:['night']},
-          {s:'blackout',t:['night']}, {s:'missing_flyer',t:['night']}, {s:'bandage_bench',t:['night']}, {s:'after_hail',t:['night'],se:'winter'} ],
-};
-function ySceneFor(mood) {   // 결정적 픽(페르소나×KST 날짜×무드 시드) = 렌더마다 안 바뀜 · 무드나 날이 바뀌면 새 씬
-  const pool = Y_SCENE_POOL[mood]; if (!pool) return '';
-  const d = new Date(Date.now() + 9 * 3600e3), h = d.getUTCHours(), mo = d.getUTCMonth() + 1;   // KST(§표기표준 — 기기 TZ 무관)
-  const slot = h < 4 ? 'night' : h < 8 ? 'dawn' : h < 17 ? 'day' : h < 20 ? 'dusk' : 'night';
-  const season = (mo >= 6 && mo <= 8) ? 'summer' : (mo >= 9 && mo <= 11) ? 'autumn' : (mo === 12 || mo <= 2) ? 'winter' : 'spring';
-  let cand = pool.filter(x => (!x.se || x.se === season) && (x.t.includes(slot) || x.t.includes('any')));
-  if (!cand.length) cand = pool.filter(x => !x.se || x.se === season);   // 시간대 안 맞으면 계절만 · 그래도 없으면 전체
-  if (!cand.length) cand = pool;
-  const key = `${YCUR ? YCUR.id : ''}|${d.getUTCFullYear()}${d.getUTCMonth()}${d.getUTCDate()}|${mood}`;
-  let hsh = 0; for (const ch of key) hsh = (hsh * 31 + ch.charCodeAt(0)) >>> 0;
-  return `assets/yeta_bg/var_${cand[hsh % cand.length].s}.webp`;
-}
-function yStage(mood) {   // 무대: base = 페르소나 고유 bg / 무드 = 맥락 씬 → (폴백) 구 R2 배리언트 → base — 전부 프리로드 성공 시에만 페인트
+function yStage(mood) {   // 무대 = 페르소나 bg × 무드 — 키 같으면 no-op, 배리언트는 프리로드 성공 시에만(실패 = base 유지)
   if (!YCUR) return;
   const key = `${YCUR.id}|${mood || ''}`;
   if (key === _yStageKey) return;
   _yStageKey = key;
   const tint = YCUR.color || '#7c5cfc';
-  if (!mood) { yPaintBg(YCUR.bg || '', tint); return; }
-  const tries = [ySceneFor(mood), YCUR.bg ? yMoodUrl(YCUR.bg, mood) : '', YCUR.bg || ''].filter(Boolean);
-  (function tryNext(i) {
-    if (i >= tries.length) { yPaintBg('', tint); return; }
-    const im = new Image();
-    im.onload = () => { if (_yStageKey === key) yPaintBg(tries[i], tint); };   // 늦게 로드돼도 무대가 바뀌었으면 폐기
-    im.onerror = () => { if (_yStageKey === key) tryNext(i + 1); };
-    im.src = tries[i];
-  })(0);
+  if (!YCUR.bg || !mood) { yPaintBg(YCUR.bg || '', tint); return; }
+  const vurl = yMoodUrl(YCUR.bg, mood), im = new Image();
+  im.onload = () => { if (_yStageKey === key) yPaintBg(vurl, tint); };   // 늦게 로드돼도 무대가 바뀌었으면 폐기
+  im.onerror = () => { if (_yStageKey === key) yPaintBg(YCUR.bg, tint); };   // 배리언트 미생성 = base 폴백
+  im.src = vurl;
 }
 function yApply(c) {   // 페르소나 적용 — 이름·태그·포인트색·배경이 스르륵 전환(캐릭터 따라 톤 변화 = 운영자 컨셉)
   YCUR = c;
@@ -1542,9 +1503,7 @@ function yRender() {
   const turns = staged ? all.slice(0, _yPaceN) : all;
   let h = '';
   // 소개 카드(yintro) = 대화창에서 스킵(운영자 260705 #11 · 인물 프사·이름·소개는 헤더에만)
-  const openingPending = !!(s.state === 'awaiting' && s.opening);   // 동적 오프닝 생성 중(운영자 260707) — 정적 인사 억제·타이핑만(딱딱한 전환 차단 · 기틀검증 UX1)
-  const openingStuck = openingPending && (Date.now() - (s.awaiting_since || 0)) > 300000;   // 5분 초과 = 정적 폴백(재시도 배너 대신 yGreet)
-  if (!turns.length && YCUR && (!openingPending || openingStuck)) h += yAiMsg({ text: yGreet(YCUR), persona: YCUR.id });   // 첫인사 폴백 — 오프닝 인플라이트면 억제(타이핑만) · 미설정/막힘 시 정적 표시
+  if (!turns.length && YCUR) h += yAiMsg({ text: yGreet(YCUR), persona: YCUR.id });   // 첫인사 — 서버 draw가 greeting 턴을 박기 전(레이스)이나 미설정 세션의 임시 표시(정상 경로는 서버 턴)
   h += turns.map((t, i) => {
     const fresh = !first && i >= prevN;   // 신규 턴만 촤르륵
     const pv = turns[i - 1];              // 직전 턴 = 같은 화자면 그룹핑(cont)
@@ -1558,9 +1517,9 @@ function yRender() {
   const awaiting = !!(s.state === 'awaiting');   // 판정 = state(클록스큐 함정 회피 · 평의회③)
   const zlim = 300000;   // 좀비 임계 5분(effort low 고정 · 가짜 실패 → 중복 쿼터 방지)
   const waitMs = awaiting ? Math.max(0, Date.now() - (s.awaiting_since || 0)) : -1;
-  const failMsg = (s.state === 'error' && !s.opening) ? `답장을 못 만들었어 — 다시 보내면 재시도야. (${(s.err || '').slice(0, 80)})`
-    : (awaiting && !openingPending && waitMs > zlim ? '답장이 너무 늦네 — 러너가 밀렸거나 실패한 듯. 다시 보내면 재시도야.' : '');   // 오프닝은 error/zombie 배너 제외(재시도 409 죽은 버튼 차단 · 기틀검증 UX2) — 지연 시 정적 폴백(openingStuck)
-  const typing = !failMsg && !openingStuck && (awaiting || staged) && !!YCUR && Date.now() >= _yTypHold;   // staged = 답장 페이스 홀드 · _yTypHold = 읽는 시간 경과 후에만 "입력 중"(운영자 260707) · 오프닝 인플라이트 = 타이핑 유지(첫인사 생성 중)
+  const failMsg = s.state === 'error' ? `답장을 못 만들었어 — 다시 보내면 재시도야. (${(s.err || '').slice(0, 80)})`
+    : (awaiting && waitMs > zlim ? '답장이 너무 늦네 — 러너가 밀렸거나 실패한 듯. 다시 보내면 재시도야.' : '');
+  const typing = !failMsg && (awaiting || staged) && !!YCUR && Date.now() >= _yTypHold;   // staged = 답장 페이스 홀드 · _yTypHold = 읽는 시간 경과 후에만 "입력 중"(운영자 260707)
   if (failMsg) h += `<div class="yb fail${_yFailOn ? '' : ' in'}">${esc(failMsg)}<button type="button" class="yfail-retry" aria-label="다시 보내기">다시 보내기</button></div>`;   // 원탭 재시도(재타이핑 0 · retry op)
   else if (typing) h += yTypingHtml(!_yTypOn);
   _yFailOn = !!failMsg; _yTypOn = typing;
