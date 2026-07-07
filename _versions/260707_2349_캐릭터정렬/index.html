@@ -648,9 +648,6 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
     color:var(--fg); font:inherit; text-align:left; cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent;
     backdrop-filter:blur(var(--blur-m)); -webkit-backdrop-filter:blur(var(--blur-m)); box-shadow:inset 0 1px 0 var(--glass-line); }   /* 표면 1단 상향 glass-0→glass·라인 0단→기본(운영자 260707 "불투명도 좀 더 올려") · 블러 --blur-m·패딩 --sp-2·라운드 --r-m 유지 */
   .ycrow:active { transform:scale(var(--press-l,.95)); }
-  .ycrow.talking { opacity:.55; }   /* 이미 대화 중 = 흐림(대화 안 하는 애를 고르게 · 운영자 260707) — 클릭 = 재진입 가능(비활성 아님) · 라벨이 진행 중임을 명시 */
-  .ycrow.talking:active { transform:scale(var(--press-l,.95)); opacity:.72; }
-  .ycrow-on { flex:none; margin-left:6px; padding:0 7px; border-radius:var(--r-pill); background:var(--glass-2); color:var(--mut); font-size:var(--fs-xs); font-weight:var(--fw-b); white-space:nowrap; }   /* "대화 중" 라벨 = 뉴트럴 글래스(등급 배지와 색 구분·무채) */
   .ycrow .yava { flex:none; width:41px; height:41px; border-radius:50%; display:grid; place-items:center; font-size:var(--fs-h3); font-weight:var(--fw-x);
     background:rgba(255,255,255,.06); border:1px solid var(--glass-line); color:var(--yeta-ac); background-size:cover; background-position:center;
     box-shadow:0 0 6px rgba(var(--accent-rgb),.21); }   /* 아바타 라임 글로우 .26(언락 밝기 플그 운영자 확정) · cover 재선언 = background 축약이 .yava.has-img cover를 리셋하던 프사 깨짐 교정(.ylist-ava 관례 동형 · 운영자 260707) */
@@ -1539,7 +1536,7 @@ async function yOpenThread(t) {   // 행 탭 = 그 방으로(스레드 전환 �
 function ySideRender() {
   const side = $('#yside'); if (!YCHARS.length) { side.hidden = true; return; }
   const curId = YCUR && YCUR.id, turns = (YTH() || {}).turns || [];
-  side.innerHTML = ySortChars(YCHARS).map(c => {
+  side.innerHTML = YCHARS.map(c => {
     const isCur = c.id === curId;
     const lastMine = isCur && turns.length ? ySnip(turns[turns.length - 1].text, 7)
       : (isCur && (YTH() || {}).state === 'awaiting' && (YTH() || {}).opening ? '곧 말을 걸어와' : ySnip(c.tagline || '', 7));   // 현 상대 실대화·오프닝 생성 중 표식·나머지 태그라인
@@ -1581,9 +1578,8 @@ async function yCharRender() {   // 메뉴1 = 시즌 세계관 헤더 + 캐릭�
   if (!YCHARS.length) { grid.innerHTML = ''; return; }   // 실패 = 조용히 빈 화면(문구 폐지 · 운영자 260705)
   if (!YSESS) yApi('get').then(r => { if (r && r.ok) { YSESS = r.sess || {}; const p = YSESS.cur ? yPersona(YSESS.cur) : null; if (p) yNavName(p.name); } }).catch(() => {});   // 언락 첫 화면부터 상대 이름 동기화(비차단 · 프로필 = 기본 캐릭터 고정 260706)
   $('#yworldHead').innerHTML = YWORLD ? `<div class="yssn">${ySsnHtml()}</div>` : '';   // 시즌 표기 = 대화 탭 .yssn 정본 계승(운영자 통일 지시 — 구 .yworld 폐지)
-  const act = yActiveIds();   // 대화 중 구분(운영자 260707) — 흐림 + "대화 중" 라벨
-  grid.innerHTML = ySortChars(YCHARS).map(c => `<button type="button" class="ycrow${act.has(c.id) ? ' talking' : ''}" data-id="${esc(c.id)}">${yAva(c)}`
-    + `<span class="ycrow-mid">${(g => g ? `<span class="ycrow-grade">${g}</span>` : '')(`${yGradeBadge(c)}${window.yPremBadge ? yPremBadge(c) : ''}`)}<span class="ycrow-nm"><i class="ynm-t">${esc(c.name)}</i>${act.has(c.id) ? '<span class="ycrow-on">대화 중</span>' : ''}</span><span class="ycrow-desc">${esc(c.desc || c.tagline || '')}</span><span class="ycrow-quote">“${esc(c.quote || '')}”</span></span>`
+  grid.innerHTML = YCHARS.map(c => `<button type="button" class="ycrow" data-id="${esc(c.id)}">${yAva(c)}`
+    + `<span class="ycrow-mid">${(g => g ? `<span class="ycrow-grade">${g}</span>` : '')(`${yGradeBadge(c)}${window.yPremBadge ? yPremBadge(c) : ''}`)}<span class="ycrow-nm"><i class="ynm-t">${esc(c.name)}</i></span><span class="ycrow-desc">${esc(c.desc || c.tagline || '')}</span><span class="ycrow-quote">“${esc(c.quote || '')}”</span></span>`
     + `<span class="ycrow-sep"></span>${yHexSvg(c.stats)}</button>`).join('');
 }
 $('#ycharGrid').addEventListener('click', e => { const b = e.target.closest('.ycrow'); if (b) yShowDetail(b.dataset.id); });
@@ -1822,7 +1818,7 @@ function yView(mode) {   // 'list' ↔ 'chat' 헤더·영역 토글
   if (list) { $('#yetaTitle').textContent = '무음동 사람들'; $('#yetaTag').textContent = '대화할 상대를 골라'; yStopPoll(); yPickToggle(false); yInvToggle(false); }
 }
 function yRenderList() {   // 캐릭터 = SNS 리스트(.ypick-row 계승) + 🎲 랜덤
-  $('#yetaList').innerHTML = ySortChars(YCHARS).map(c => `<button type="button" class="ypick-row" data-id="${esc(c.id)}">${yAva(c)}<span class="yp-col"><span class="yp-name">${esc(c.name)}${yGradeBadge(c)}${window.yPremBadge ? yPremBadge(c) : ''}</span><span class="yp-tag">${esc(c.tagline || '')}</span></span></button>`).join('')
+  $('#yetaList').innerHTML = YCHARS.map(c => `<button type="button" class="ypick-row" data-id="${esc(c.id)}">${yAva(c)}<span class="yp-col"><span class="yp-name">${esc(c.name)}${yGradeBadge(c)}${window.yPremBadge ? yPremBadge(c) : ''}</span><span class="yp-tag">${esc(c.tagline || '')}</span></span></button>`).join('')
     + `<button type="button" class="yl-dice" id="ylDice">🎲 랜덤으로 만나기</button>`;
 }
 function yShowList() { yRenderList(); yView('list'); }
@@ -1866,9 +1862,6 @@ async function yDraw() {   // 랜덤 뽑기/재뽑기 — 맥락 유지·화자 
 const YGRADE = { epic: '에픽', idol: 'IDOL' };   // 스페셜 등급(훈장 · 운영자 260707) — 시즌 특전 · 동렬(높낮이 없음)·상호배타(grade 슬롯 1개) · 보이스 = 별개 기능 아이콘(.yprem)
 const YGEM_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12l4 6-10 12L2 9z"/><path d="M2 9h20L12 21z" opacity=".45"/></svg>';   // 보석 젬(외곽+하단 파셋 컷 = 양각 결) — 파형(.yprem 보이스)과 실루엣 차별
 function yGradeBadge(c) { const g = c && YGRADE[c.grade]; return g ? `<span class="ygrade ${esc(c.grade)}" title="스페셜 등급 — ${g}">${YGEM_SVG}${g}</span>` : ''; }   // grade 미정·미등록 값 = 일반(옵트인 가드)
-function yCharRank(c) { return (c && c.voice) ? 0 : c && c.grade === 'epic' ? 1 : c && c.grade === 'idol' ? 2 : 3; }   // 고르는 창 정렬 우선순위(운영자 260707): 보이스 → 에픽(시즌 주인공) → IDOL → 나머지
-function ySortChars(list) { return (list || []).map((c, i) => [c, i]).sort((a, b) => yCharRank(a[0]) - yCharRank(b[0]) || a[1] - b[1]).map(x => x[0]); }   // 안정 정렬 = 동급은 로스터 순서 유지(index 타이브레이커)
-function yActiveIds() { const t = (YSESS || {}).threads || {}; return new Set(Object.keys(t).filter(id => (t[id].turns || []).length || (t[id].state === 'awaiting' && t[id].opening))); }   // 이미 대화 중(진행 스레드) — 고르는 창에서 흐림 구분(운영자 260707 "대화 안 하는 애를 고르게" · 클릭 = 재진입 가능)
 function yAgo(ts) {   // 상대시간(운영자 260707) — <1분 = 방금 · 1~9 = N분 전 · 10~59 = N0분 전(십분 내림) · 1~6시간 = N시간 전 · 초과 = 미표시 · 흰색(.ylist-ago)
   if (!ts) return '';
   const m = Math.floor((Date.now() - ts) / 60000);
@@ -2053,7 +2046,7 @@ function yPickToggle(force) {
   const open = force !== undefined ? force : pk.hidden;
   if (!open) { pk.hidden = true; return; }
   if (!YCHARS.length) return;
-  pk.innerHTML = ySortChars(YCHARS).map(c => `<button type="button" class="ypick-row${YCUR && YCUR.id === c.id ? ' cur' : ''}" data-id="${esc(c.id)}">${yAva(c)}<span class="yp-col"><span class="yp-name">${esc(c.name)}</span><span class="yp-tag">${esc(c.tagline || '')}</span></span></button>`).join('');
+  pk.innerHTML = YCHARS.map(c => `<button type="button" class="ypick-row${YCUR && YCUR.id === c.id ? ' cur' : ''}" data-id="${esc(c.id)}">${yAva(c)}<span class="yp-col"><span class="yp-name">${esc(c.name)}</span><span class="yp-tag">${esc(c.tagline || '')}</span></span></button>`).join('');
   pk.hidden = false;
 }
 // 헤더 이름 = 표시 전용(운영자 260705 #12 · 이름탭 캐릭터 전환 제거 — 이 대화창에 다른 인물 개입 불가)
@@ -2083,7 +2076,7 @@ function yInvToggle(force) {
   const roomIds = room.map(c => c.id);
   const mem = full ? room.map(c => `<div class="ypick-row" data-mem="1">${yAva(c)}<span class="yp-col"><span class="yp-name">${esc(c.name)}</span><span class="yp-tag">${esc(c.tagline || '')}</span></span><button type="button" class="yinv-x" data-kick="${esc(c.id)}">보내기</button></div>`).join('') : '';
   pk.innerHTML = `<div class="yinv-cap">${esc(cap)}</div>` + mem +
-    ySortChars(YCHARS).filter(c => !roomIds.includes(c.id)).map(c => `<button type="button" class="ypick-row" data-inv="${esc(c.id)}"${full || inv ? ' disabled' : ''}>${yAva(c)}<span class="yp-col"><span class="yp-name">${esc(c.name)}</span><span class="yp-tag">${esc(c.tagline || '')}</span></span></button>`).join('');
+    YCHARS.filter(c => !roomIds.includes(c.id)).map(c => `<button type="button" class="ypick-row" data-inv="${esc(c.id)}"${full || inv ? ' disabled' : ''}>${yAva(c)}<span class="yp-col"><span class="yp-name">${esc(c.name)}</span><span class="yp-tag">${esc(c.tagline || '')}</span></span></button>`).join('');
   pk.hidden = false;
 }
 $('#yetaPlus').addEventListener('click', e => { e.stopPropagation(); $('#yetaFile').click(); });   // 입력행 + = 파일 첨부(항목11 · 초대는 헤더 픽토로 이설)
