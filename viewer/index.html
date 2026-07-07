@@ -1163,7 +1163,7 @@ function yLMenuOpen(row) {
   box.addEventListener('pointermove', e => { if (_ylMenuT && (Math.abs(e.clientX - x0) > 10 || Math.abs(e.clientY - y0) > 10)) cancel(); });
   box.addEventListener('pointerup', cancel); box.addEventListener('pointercancel', cancel);
   $('#ylist') && $('#ylist').addEventListener('scroll', cancel, { passive: true });
-  box.addEventListener('contextmenu', e => { const row = e.target.closest('.ylist-row'); if (row) { e.preventDefault(); _ylJustLong = true; yLMenuOpen(row); } });   // 데스크톱 우클릭 = 동일 메뉴(길게누름 콜아웃 대체)
+  box.addEventListener('contextmenu', e => { const row = e.target.closest('.ylist-row'); if (row) { e.preventDefault(); yLMenuOpen(row); } });   // 우클릭 = 합성 click 없음 → 래치 미세팅(다음 좌클릭 삼킴 방지 · 재검증 관찰)   // 데스크톱 우클릭 = 동일 메뉴(길게누름 콜아웃 대체)
   box.addEventListener('click', e => {
     if (_ylJustLong) { _ylJustLong = false; e.stopImmediatePropagation(); e.preventDefault(); return; }   // 롱프레스 릴리스 합성 click 소비 — 메뉴 위 챗 오발 진입 차단
     if (_ylMenuEl && !e.target.closest('.ylmenu')) { yLMenuClose(); e.stopImmediatePropagation(); e.preventDefault(); return; }   // 바깥 탭 = 닫기(navBack 경유)
@@ -1804,7 +1804,7 @@ yetadlg.addEventListener('close', () => { document.documentElement.style.overflo
   if (document.getElementById('ymain').classList.contains('unlocked')) yTab(_yCloseTo || 'list');   // 뒤로 = 대화 목록 · 도킹 네비 = 그 메뉴로(운영자 260705 안2)
   _yCloseTo = null; });   // history 회수 = 통합 레이어 스택(navBack/_navPopClose)이 담당 — 챗 개별 reconciliation 폐지(260707)
 const _yetaBtnEl = $('#yetaBtn'); if (_yetaBtnEl) _yetaBtnEl.addEventListener('click', e => { e.stopPropagation(); hidePmenu(); openYeta(); });   // pmenu 진입(stopPropagation = #msgbtn 패턴)
-try { const _q = new URLSearchParams(location.search); if (_q.get('yeta')) { const _t = _q.get('t') || ''; setTimeout(() => openYeta(_t && yPersona(_t) ? _t : undefined), 400); } } catch {}   // 답장 웹푸시 딥링크(/?yeta=main — sw.js notificationclick)
+try { const _q = new URLSearchParams(location.search); if (_q.get('yeta')) { const _t = _q.get('t') || ''; setTimeout(() => openYeta(_t || undefined), 400); } } catch {}   // t = openYeta가 chars 로드 후 자체 검증(콜드 로드 가드 폐기 = 푸시 오배송 차단 · v3 재검증⑦)   // 답장 웹푸시 딥링크(/?yeta=main — sw.js notificationclick)
 
 /* ═══ YETA 메인 PIN 게이트 (nomute lk- 이식 · SHA-256·5회=10분 잠금 · 260704 V1) ═══ */
 (function () {
