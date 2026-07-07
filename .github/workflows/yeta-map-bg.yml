@@ -1,0 +1,47 @@
+name: yeta-map-bg
+
+# 무음동 지도 배경 생성(운영자 260707 "이런 느낌으로 · 제미나이 통해서 뽑아버리셈" — 카툰 마을 전경 밤/낮 2버전).
+# ⚠️ Gemini 유료 = 수동 dispatch 전용(자동 트리거 금지 · 이미지 파이프 공통 규약).
+# 산출 = viewer/assets/yeta_map/map_night.png · map_day.png 을 main에 직접 커밋(git 정본 · bg-var 결).
+on:
+  workflow_dispatch:
+    inputs:
+      force:
+        description: '1 = 기존 것도 재생성'
+        required: false
+        default: ''
+
+concurrency:
+  group: yeta-map-bg
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  mapbg:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+
+      - name: 지도 배경 생성
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          FORCE: ${{ inputs.force }}
+        run: python3 .github/scripts/yeta_map_bg.py
+
+      - name: 커밋 (신규 있을 때만)
+        run: |
+          git config user.name "yeta-map-bg[bot]"
+          git config user.email "actions@users.noreply.github.com"
+          git add viewer/assets/yeta_map/ 2>/dev/null || true
+          git diff --cached --quiet && { echo "신규 없음 — 커밋 생략"; exit 0; }
+          git commit -m "무음동 지도 배경 생성 — yeta-map-bg 수동 dispatch"
+          for i in 1 2 3 4 5; do
+            git pull --rebase origin main && git push && exit 0
+            echo "push 재시도 ${i}/5 …"; sleep $((i*5))
+          done
+          echo "::error::push 5회 실패 — main 전진 과다"; exit 1
