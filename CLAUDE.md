@@ -157,8 +157,8 @@
 ---
 
 ## 🎬 앱 개요
-- **말벗 제타** = 무음동 6인 페르소나와의 랜덤 톡방(260706 판타지 개편 — 각 카드 = 판타지·무협 주인공 서사 본따기 · 하은 = 전화 배선 유지 원본). 세션 = R2 비공개 **단일 스레드**(맥락·관계노트 공유).
-- 페르소나 = **랜덤 뽑기 + 🎲 재뽑기**(고정 선택 없음·화자만 교체·맥락 승계). 내 버블 = 브랜드 라임(`--bubble-me`=`--accent`). *나레이션* = 이탤릭.
+- **말벗 제타** = 무음동 페르소나들과의 **캐릭터별 다중 채팅방**(260707 v3 · 카톡식 — 방 = 캐릭터·고정(pin)·최근순 정렬·롱프레스 액티브[고정·나가기]). 세션 = R2 비공개 단일 객체 `sessions/main.json` 안 `threads[<id>]` 스레드들(기억 note_pub/notes·tunes·policy = 전 방 공유 · 쓰기 = etag CAS). 260706 판타지 개편(각 카드 = 판타지·무협 주인공 서사 본따기 · 하은 = 전화 배선 유지 원본).
+- 페르소나 = 캐릭터 탭/🎲에서 **그 캐릭터의 방 열기**(v3 — "화자 교체" 개념 소멸 · 방마다 맥락 독립·기억은 공유). 내 버블 = 브랜드 라임(`--bubble-me`=`--accent`). *나레이션* = 이탤릭.
 - **단톡·합석**(운영자 260707 · 방 신설 아닌 `합석` 모델 — 시안 = `docs/reports/260707_단톡난입_아이데이션_플레이그라운드.html`): `sess.room` 최대 2명. 초대 = 뷰어 + 버튼(#yetaPlus) → op `invite` → **캐릭터가 카드·시각·관계로 수락/거절**(거절 = 콘텐츠 · `declined` 마커 = 난입 회수 떡밥). 난입 = 러너 `barge_check`{일 1 상한·결정적 시드·**대사 생성 0** = enter_line sys 합류만·첫 마디는 다음 턴 데뷔}. 내보내기 = 난입 직후 원탭 pill(소멸형) + 만석 패널 [보내기] = op `kick`. 화자 사다리 = **호명 > 난입 데뷔 > 직전 화자(2연속 독주 = 교대)**. **위치 마주침**(운영자 260707 "주변에 인물이 있으면 만나는"): 위치 SSOT = `apps/yeta/places.json`(장소 그래프+10인 동선 — 지도 UI 인수 시 x·y만 얹기) · 판정 = `.github/scripts/yeta_place.py`(동선표+시드 1/4 인접 외출 = 결정적·무저장) · 난입 후보 4축 = 거절 회수 > 자주 대면 > 언급 > **같은 장소(1/2)·인접(1/3) 마주침**(sys = "{장소} — 지나가던 {이름}과 마주쳤다") · 화자 지금 장소는 STATE_BLOCK 배경 라인으로도 주입(장소 낭독 금지·대화 흐름 우선). **비용 불변 = 턴당 dispatch 1회**: 한 호출이 `[동행명]` 프리픽스 대본 최대 2대사 → 러너 분할(실패 = 통짜 폴백 · 동행 = 말투 절만 주입·기억 갱신 없음).
 - 답장 = `claude -p`(구독 OAuth) · GitHub Actions dispatch · **웜 세션 루프**(답장 후 대기 → 후속 메시지 같은 런 즉답).
 - 다이얼 = model(opus 4.8 / sonnet-5) × effort(low/''/max) — 턴별 박제. 기본 = opus×low(30초 컷).
@@ -176,7 +176,7 @@
 
 ## 🗺 구조
 - `viewer/` = 뷰어. `index.html`(값 SSOT `:root` + yeta UI) · `tokens.css`(구조토큰 거울) · `nm-svg.js`(아이콘 SSOT) · `call.js`(**음성 모듈** — 아래 ☎️) · `_headers`(정적 no-cache)
-- `functions/api/yeta.js` = Cloudflare Pages Function 게이트웨이. 18 op = `auth`(PIN 로그인 — admin=Pages env `YETA_PIN_ADMIN`·guest=`apps/yeta/users.json` 해시)·`chars`(로스터)·`get`(세션)·`send`(유저턴+dispatch — 채팅 상한 폐지·운영자 260706·관측 카운터만)·`draw`(페르소나 뽑기 — room=[persona] 리셋)·`invite`(합석 초대 — `sess.invite` 마커+sys+dispatch · 정원 `MAX_ROOM`=2 · 판정 = 러너)·`kick`(합석 내보내기/초대 철회 — 마지막 1명 가드)·`warm`(프리웜)·`retry`(재시도)·`ring`(인앱 전화 dispatch — ⚠️유료 TTS 가드 = 일 상한 기본 3 `YETA_CALL_MAX_PER_DAY`)·`voice`(통화 음성 스트림 — 비공개 R2 `voice/`만)·`stt`(무전 STT 폴백 · Workers AI Whisper)·`phone`(실전화 PSTN·Vapi 아웃바운드 · env 3종 · 일 상한 2)·`vapikey`(보이스톡 공개키)·`calllog`(🩺 통화 진단 — 메타데이터만·transcript 반환 금지 §운영 태도 g))·`tune`(캐릭터 성향 L2 — 숫자 배열만)·`policy`(3계층 정책 — GET 정의+현재값 무인증 / SET enum 정수만 = **관리자 PIN 필수**)·`reset`(tunes·policy 승계). ⚠️ 무인증 공개(originOk=CSRF만) → 조회 op는 민감필드 반환 금지·설정 op는 숫자/enum만 수용(클라이언트발 텍스트 = 프롬프트 주입 원천 차단). `REPO='muteno/yeta'`·`originOk`=`.pages.dev`+`soong.kr`.
+- `functions/api/yeta.js` = Cloudflare Pages Function 게이트웨이. 18 op = `auth`(PIN 로그인 — admin=Pages env `YETA_PIN_ADMIN`·guest=`apps/yeta/users.json` 해시)·`chars`(로스터)·`get`(세션)·`send`(유저턴+dispatch — 채팅 상한 폐지·운영자 260706·관측 카운터만)·`draw`(캐릭터 방 열기 — 신설 = 로스터 대조·캡 12·동적 오프닝)·`pin`(방 고정 토글)·`invite`(합석 초대 — `sess.invite` 마커+sys+dispatch · 정원 `MAX_ROOM`=2 · 판정 = 러너)·`kick`(합석 내보내기/초대 철회 — 마지막 1명 가드)·`warm`(프리웜)·`retry`(재시도)·`ring`(인앱 전화 dispatch — ⚠️유료 TTS 가드 = 일 상한 기본 3 `YETA_CALL_MAX_PER_DAY`)·`voice`(통화 음성 스트림 — 비공개 R2 `voice/`만)·`stt`(무전 STT 폴백 · Workers AI Whisper)·`phone`(실전화 PSTN·Vapi 아웃바운드 · env 3종 · 일 상한 2)·`vapikey`(보이스톡 공개키)·`calllog`(🩺 통화 진단 — 메타데이터만·transcript 반환 금지 §운영 태도 g))·`tune`(캐릭터 성향 L2 — 숫자 배열만)·`policy`(3계층 정책 — GET 정의+현재값 무인증 / SET enum 정수만 = **관리자 PIN 필수**)·`reset`({t}=그 방만 나가기 / 무t=전체 · tunes·policy 승계). ⚠️ 무인증 공개(originOk=CSRF만) → 조회 op는 민감필드 반환 금지·설정 op는 숫자/enum만 수용(클라이언트발 텍스트 = 프롬프트 주입 원천 차단). `REPO='muteno/yeta'`·`originOk`=`.pages.dev`+`soong.kr`.
 - 🎚 **3계층 정책**(운영자 260706 신설 · 정의 정본 = `apps/yeta/policy.json` · 지침 정본 = `apps/yeta/00_지침_캐릭터챗.md` v4): **L0 코어**{절대선 4종(미성년 성적 맥락·자해조장·실존비방·범죄조력)·출력 계약 = 하드 불변(레포 커밋만) / 메타발화 차단·헛소리 방지 = 관리자 PIN 웹 토글} > **L1 시즌 = 수위·금기**{성적 표현·욕설·폭력·어두운 주제 4축 × 3단 — 뷰어 설정 탭 → op `policy` → `sess.policy` → 러너가 policy.json 문구 조립 주입 · 기본값 축 = 생략 = 00_지침 기본} > **L2 캐릭터 = 성향**{op `tune`·카드 ⚙ — 게스트 가능}. **권한 2계층(운영자 260706)**: 슈퍼관리자 = Pages env `YETA_PIN_ADMIN`(레포 무노출 · L0 토글+L1 설정) / 게스트 = `apps/yeta/users.json`(깃 SSOT — 사용자 추가 = 커밋 · 해시 박제 = 낮은 권한 전용 · L2만). 뷰어 잠금 PIN 판정 = op `auth` 서버 단일 경로(클라 해시 폐지). 라벨·문구는 전부 policy.json(레포 문서) 정본 — 뷰어·게이트웨이 하드코딩 0·세션엔 숫자만.
 - `functions/_middleware.js` = pages.dev 우회차단 리다이렉트 **자리(현재 무력화)**. 커스텀 도메인+Access 붙일 때 재활성(⚠️ `yeta.js` originOk도 **동시** 수정 — 안 하면 403 자폭). **현재 = originOk가 `.pages.dev`+`soong.kr`(루트+서브) 허용**(260704 · nomute 도메인 미사용)·**라이브 = `https://yeta.soong.kr`**(+ `soong.kr` 루트 · 둘 다 활성·SSL·실측 통과 260704)·**무인증 공개**(운영자 260704 '공개 유지' — 언제든 Zero Trust Access로 잠금 가능).
 - `.github/workflows/yeta-chat.yml` + `.github/scripts/yeta_chat.sh` = 답장 생성(claude -p·페르소나 카드 주입·웜 루프). `push_send.py` = 실패 웹푸시.
@@ -196,7 +196,7 @@
 
 ## 📰 파이프라인 (한 답장 = 이 체인)
 뷰어 `send` → `functions/api/yeta.js`(R2 세션 append + `dispatch`) → `yeta-chat.yml` → `yeta_chat.sh`(claude -p · 카드 주입 · 앵커-ts insert) → R2 세션 → 뷰어 폴(적응형 4s).
-- 세션 = R2 비공개 `sessions/main.json`. ⚠️ **대화는 레포에 커밋 금지**(public 레포 = 공개 박제 · `contents:read`).
+- 세션 = R2 비공개 `sessions/main.json`(v3 = `threads[<id>]` 캐릭터별 스레드 · 러너 = 통합 age 큐로 스레드 순차 처리 · **dispatch `char:main` 단일 그룹 불변 = 비용 상한 근거 — 스레드별 dispatch 분기 절대 금지**). ⚠️ **대화는 레포에 커밋 금지**(public 레포 = 공개 박제 · `contents:read`).
 - 지침 강제주입 = `inject_character.sh`가 `00→10→카드` 전문 cat(해시 도장 = 지침 바뀌면 재생성).
 
 ## 🔑 인프라 (완전 신규)
