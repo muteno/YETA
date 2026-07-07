@@ -16,21 +16,26 @@ API = "https://generativelanguage.googleapis.com/v1beta/models/{}:generateConten
 OUT_DIR = "viewer/assets/yeta_map"
 FORCE = os.environ.get("FORCE", "").strip() == "1"
 
-# 동네 골격(places.json 좌표의 언어화 · 골목 50,50 중심 — 북 = 심야 미디어 · 중심 = 밤 코어 · 남 = 생활권)
-# v2(운영자 260707 "산에 둘러싸인 거 아님 — 중소도시·힙한 도시"): 숲 테두리 폐기 → 힙한 동네 + 원경 도시 블록.
+# 동네 골격(places.json 좌표·look 특색의 언어화 · 골목 50,50 중심 — places.json look 필드와 수동 동기)
+# v2(운영자 260707 "산 아님 — 중소도시·힙한 도시") · v3(운영자 260707 "상가 밀집 전경 · 출입금지 지대 · 학교 · 건물마다 특색 · 도로에 차").
 LAYOUT = (
     "Neighborhood layout (top of image = north): "
     "at the very center, a small crossroads plaza with street lamps and benches (the Alley - the neighborhood hotspot). "
-    "Just southwest of the plaza, a small warm traditional-style tea house with glowing windows, tucked between modern shops. "
-    "Northeast of the plaza, a narrow 3-story brick editorial office building; further north on a low rise, a small radio station with a tall antenna tower on its roof. "
-    "East of the plaza, a stairway entrance going down to a basement practice studio. "
-    "South zone (daily-life belt): a 24h convenience store, a small school with a schoolyard, a little playground with swings, "
-    "a traditional swordsmanship dojo with tiled roof and courtyard squeezed between buildings to the southwest, "
-    "a lively open-air market street with colorful awning stalls, and a boxy gym building. "
-    "Between the spots: low-rise brick shops and multi-family houses with rooftop terraces and water tanks, cafes, small signboard-covered storefronts. "
-    "A narrow urban stream crosses a corner with a small footbridge. "
-    "The neighborhood edges show more city: bigger buildings, distant mid-rise skyline blocks, street trees and tiny parks - NOT forest, NOT mountains. "
-    "Paved roads and alleys connect everything through the central plaza."
+    "Just southwest of the plaza, a small warm traditional tea house with low tiled roof, lantern-lit windows and a steaming chimney, tucked between modern shops. "
+    "Northeast of the plaza, a narrow 3-story brick editorial office building with an empty signboard frame on its rooftop, only the top floor lit. "
+    "Further north on a low rise, a small radio station with a tall steel antenna tower and a blinking red light. "
+    "East of the plaza, a stairway entrance going down to a basement practice studio, marked by a small neon arrow. "
+    "South zone (daily-life belt): a 24h convenience store with a lime-green neon sign, "
+    "a clear 3-story school with a wide schoolyard, assembly podium and flagpole in its own corner of the neighborhood, "
+    "a little playground with swings and a slide, "
+    "a traditional swordsmanship dojo with tiled roof, wooden porch and walled courtyard squeezed between buildings to the southwest, "
+    "a lively open-air market street with rows of colorful awning stalls, and a boxy gym building with a boxing-glove sign. "
+    "DENSE shopping streets: rows of small shops packed side by side with layered signboards, cafes, snack bars, "
+    "multi-family houses with rooftop terraces and water tanks filling every block. "
+    "Northeast near the stream, one fenced-off abandoned construction zone with barricades and yellow-black warning tape, unnaturally dark inside. "
+    "A narrow urban stream crosses the corner with a small footbridge. "
+    "The neighborhood edges show more city: bigger buildings, distant mid-rise skyline blocks, street trees - NOT forest, NOT mountains. "
+    "Clear paved roads with lane markings and crosswalks connect everything through the central plaza; a few tiny parked cars along the curbs."
 )
 STYLE = (
     "Cozy hand-drawn cartoon city-neighborhood map, top-down bird's-eye view with a slight isometric tilt, "
