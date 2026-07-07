@@ -206,8 +206,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   /* 시각 = 버블 밖·꼬리쪽 하단(카톡 결 · 운영자 260705 "4s 대신 KST 오전 11:00") — 캐릭터=버블 우하단·내 것=좌하단 · 동적 숫자 tabular */
   .ybrow { display:flex; align-items:flex-end; gap:6px; min-width:0; }
   .ytime { flex:none; font-size:var(--fs-xs); color:var(--mut); font-variant-numeric:tabular-nums; white-space:nowrap; padding-bottom:2px; }
-  .ymrow.me { display:flex; align-items:flex-end; gap:6px; align-self:flex-end; justify-content:flex-end; max-width:86%; }   /* 내 메시지 행 = [1][시각][버블] 우측 정렬 */
-  .yb-un { flex:none; align-self:flex-end; margin-bottom:3px; font-size:var(--fs-xs); font-weight:var(--fw-x); color:var(--accent); line-height:1; transition:opacity .3s var(--ease); }   /* 안읽음 '1'(항목14A · 카톡 결) — 라임 숫자 · 상대가 읽으면(_yTypHold 경과) 소멸 */
+  .ymrow.me { display:flex; align-items:flex-end; gap:6px; align-self:flex-end; justify-content:flex-end; max-width:86%; }   /* 내 메시지 행 = [시각][버블] 우측 정렬 */
   /* 타이핑 = 캐릭터 버블(카톡·제타 결 — 아바타+이름+점 3개 바운스 버블 · 운영자 260703 "입력하는 게 자연스럽게·오래 걸려도 입력 중 느낌 확실히") */
   .ymsg.ytyp .yb.ai { padding:13px 16px; }
   .ytdots { display:inline-flex; gap:5px; align-items:center; height:1.2em; }
@@ -2026,15 +2025,7 @@ function yAiMsg(t, fresh, cont) {   // 캐릭터 메시지 = 아바타 + 이름 
 }
 let _yLastN = -1, _yTypOn = false, _yFailOn = false, _yTypHold = 0, _yTypT = null;   // 촤르륵 키드 + 타이핑 지연 홀드(읽는 시간 · 운영자 260707)
 let _yKickOn = false;   // 난입 내보내기 pill 등장 래치(_yFailOn 동형 — 재렌더 재애니 방지 · 합석 260707)
-let _yPaceN = -1, _yPaceT = 0;   // 답장 페이스 — 공개 승인된 턴 수(꼬리 답장 런은 길이 비례 타이핑 모션 후 공개 · 운영자 260706 "바로 대답 어색" · 항목13)
-let _lastUserI = -1, _meUnread = false;   // 인챗 '1' 읽음표시(항목14A) — 마지막 미읽음 내 턴 인덱스 + 미읽음 래치(_yTypHold 경과 = 읽음)
-function _yTune() { return ((YSESS || {}).tunes && YSESS.tunes[YCUR && YCUR.id]) || (YCUR && YCUR.tune) || []; }   // 성향 소스 = 세션 tunes 우선 → roster 폴백(둘 다 클라 보유·세션 무변경)
-function yReadMs() {   // 페르소나 읽는 속도(항목14B) — 초기친밀도↑ 빨리 / 삐짐·질투·경계↑ 늦게(러너 jeal=tune[7] 결 일관) · 결정적 지터(Math.random 아님)
-  const tn = _yTune(), v = i => +tn[i] || 0;
-  const ms = 1600 - v(9) * 90 + v(7) * 140 + v(11) * 60;
-  let seed = 0; for (const ch of (YCUR && YCUR.id) || 'x') seed = (seed * 31 + ch.charCodeAt(0)) >>> 0;
-  return Math.max(500, Math.min(5000, ms + seed % 500));
-}
+let _yPaceN = -1, _yPaceT = 0;   // 답장 페이스 — 공개 승인된 턴 수(꼬리 답장 런은 ~1초 타이핑 모션 후 공개 · 운영자 260706 "바로 대답 어색")
 function yTypingHtml(fresh, p, lbl) {   // 타이핑 = 캐릭터 버블(점 3개 바운스 · 카톡/제타 결) — 등장만 촤르륵 · p/lbl = 초대 판정 변형("올지 생각 중")
   p = p || YCUR || {};
   lbl = lbl || '입력 중';
@@ -2056,17 +2047,10 @@ function yRender() {
   else if (all.length > _yPaceN) {
     let cut = all.length; while (cut > 0 && all[cut - 1].role === 'assistant') cut--;   // 꼬리 답장 런 직전까지는 즉시 공개(낙관 내 버블 소실 방지)
     _yPaceN = Math.max(_yPaceN, cut);
-    if (all.length > _yPaceN && !_yPaceT) {
-      const tail = all.slice(_yPaceN).filter(t => t.role === 'assistant');   // 답변 길이 비례 타이핑 지연(항목13) — 긴 답장일수록 오래 "입력 중"(BASE 600 + 자당 18ms · 상한 4.2s = QoE)
-      const chars = tail.reduce((a, t) => a + (t.text || '').length, 0);
-      const tn = _yTune(); let per = 18; if (tn[3] != null) per *= (0.7 + (+tn[3] || 0) / 10 * 0.6);   // tune[3] 답장 길이 = 페이스 결합
-      const holdMs = Math.min(4200, 600 + chars * per);
-      _yPaceT = setTimeout(() => { _yPaceT = 0; _yPaceN = ((YTH() || {}).turns || []).length; if (yetadlg.open) yRender(); }, holdMs);
-    }
+    if (all.length > _yPaceN && !_yPaceT) _yPaceT = setTimeout(() => { _yPaceT = 0; _yPaceN = ((YTH() || {}).turns || []).length; if (yetadlg.open) yRender(); }, 1000);
   }
   const staged = all.length > _yPaceN;              // 홀드 중 = 타이핑 유지
   const turns = staged ? all.slice(0, _yPaceN) : all;
-  _lastUserI = (() => { for (let i = turns.length - 1; i >= 0; i--) { if (turns[i].role === 'assistant') return -1; if (turns[i].role === 'user') return i; } return -1; })();   // 마지막 내 턴(뒤에 답장 있으면 -1 = 이미 읽힘)
   let h = '';
   // 소개 카드(yintro) = 대화창에서 스킵(운영자 260705 #11 · 인물 프사·이름·소개는 헤더에만)
   const openingPending = !!(s.state === 'awaiting' && s.opening);   // 동적 오프닝 생성 중(운영자 260707) — 정적 인사 억제·타이핑만(딱딱한 전환 차단 · 기틀검증 UX1)
@@ -2075,13 +2059,12 @@ function yRender() {
   h += turns.map((t, i) => {
     const fresh = !first && i >= prevN;   // 신규 턴만 촤르륵
     const pv = turns[i - 1];              // 직전 턴 = 같은 화자면 그룹핑(cont)
-    if (t.role === 'user') { const tm = yTime(t.ts); const un = i === _lastUserI && _meUnread; return `<div class="ymrow me${fresh ? ' in' : ''}${pv && pv.role === 'user' ? ' cont' : ''}">${un ? '<span class="yb-un">1</span>' : ''}${tm ? `<time class="ytime">${tm}</time>` : ''}<div class="yb me">${yFmt(t.text)}</div></div>`; }   // 내 메시지 = [1][시각][버블] · 1 = 마지막 미읽음 내 턴(항목14A)
+    if (t.role === 'user') { const tm = yTime(t.ts); return `<div class="ymrow me${fresh ? ' in' : ''}${pv && pv.role === 'user' ? ' cont' : ''}">${tm ? `<time class="ytime">${tm}</time>` : ''}<div class="yb me">${yFmt(t.text)}</div></div>`; }   // 내 메시지 = [시각][버블](좌하단 = 카톡 결 · 운영자 260705)
     if (t.role === 'assistant') return yAiMsg(t, fresh, pv && pv.role === 'assistant' && (pv.persona || '') === (t.persona || ''));
     return `<div class="yb sys${fresh ? ' in' : ''}">${esc(t.text)}</div>`;   // sys = 페르소나 합류 등(그룹 끊음)
   }).join('');
   _yLastN = turns.length;
   if (turns.length) yMarkRead((YSESS || {}).cur, turns[turns.length - 1].ts || 0);   // 읽음 = 마지막 턴 ts(스레드별 · 트리밍 내성)
-  if (_meUnread && Date.now() >= _yTypHold) _meUnread = false;   // 읽는 시간 경과 = '1' 소멸 확정(재렌더 시 반영)
   if (_yView === 'chat' && YCHARS.length) { $('#yside').hidden = false; ySideRender(); }   // 좌 레일 = 챗뷰면 항상 표시·스니펫 최신화(_yView 초기값 'chat'이라 yView 스킵돼도 보장)
   const awaiting = !!(s.state === 'awaiting');   // 판정 = state(클록스큐 함정 회피 · 평의회③)
   const zlim = 300000;   // 좀비 임계 5분(effort low 고정 · 가짜 실패 → 중복 쿼터 방지)
@@ -2122,12 +2105,9 @@ async function ySend() {
   const btn = $('#yetaSend'); btn.disabled = true;
   ta.value = ''; ta.style.height = '';
   const log = $('#yetaLog');   // 낙관적 표시(확정은 폴이 대체) — 내 버블 즉시 · 타이핑은 "읽는 시간" 뒤(운영자 260707 "보내자마자 1초도 안 돼 입력 중 = 어색")
-  log.insertAdjacentHTML('beforeend', `<div class="ymrow me in"><span class="yb-un">1</span><time class="ytime">${yTime(Date.now())}</time><div class="yb me">${yFmt(text)}</div></div>`);
+  log.insertAdjacentHTML('beforeend', `<div class="ymrow me in"><time class="ytime">${yTime(Date.now())}</time><div class="yb me">${yFmt(text)}</div></div>`);
   const _meEl = log.lastElementChild; let _typEl = null;
-  const readMs = yReadMs();   // 페르소나별 읽는 속도(항목14B)
-  _yTypOn = false; _meUnread = true; _yTypHold = Date.now() + readMs;   // 읽는 시간 후에야 "입력 중" · 그 전 = 내 버블 '1'(미읽음)
-  const _unEl = _meEl.querySelector('.yb-un');
-  setTimeout(() => { if (_unEl && _unEl.isConnected) { _unEl.style.opacity = '0'; setTimeout(() => { if (_unEl) _unEl.remove(); }, 320); } }, readMs);   // 읽음 순간 '1' 소멸(폴 무관 DOM 직접 = 낙관 버블 보존)
+  _yTypOn = false; _yTypHold = Date.now() + 1100 + Math.random() * 1700;   // 상대가 읽는 시간 1.1~2.8s — 그 후에야 "입력 중"
   clearTimeout(_yTypT); _yTypT = setTimeout(() => { if (Date.now() >= _yTypHold && !_yTypOn && YSESS) { log.insertAdjacentHTML('beforeend', yTypingHtml(true)); _typEl = log.lastElementChild; _yTypOn = true; log.scrollTop = log.scrollHeight; } }, 1150 + Math.random() * 1700);
   log.scrollTop = log.scrollHeight;
   const r = await yApi('send', { t: (YSESS || {}).cur || (YCUR && YCUR.id) || '', text, model: YDIAL.model, effort: YDIAL.effort }).catch(() => ({ error: '네트워크 실패 — 다시 보내줘' }));
