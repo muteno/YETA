@@ -1,0 +1,110 @@
+# yeta 무음동 지도 배경 생성 — 수동 dispatch 전용(⚠️ Gemini 유료 = 자동 트리거 금지 · 이미지 파이프 공통 규약 · 260707)
+# 산출 = viewer/assets/yeta_map/map_night.png · map_day.png (git 정본 커밋 — bg-var 결).
+# 배치 정본 = apps/yeta/places.json(분신술 10인 수렴 좌표) — 프롬프트의 방위 서술이 그 좌표를 따름.
+#   이미지는 지형·건물 "분위기"용이고 노드·핀·라벨은 지도 UI의 SVG 오버레이가 정본 좌표로 찍는다(글자 생성 금지).
+# 멱등: 이미 있으면 skip · FORCE=1 재생성. 게이트 = GEMINI_API_KEY(없으면 no-op 종료).
+import base64
+import json
+import os
+import time
+import urllib.error
+import urllib.request
+
+KEY = os.environ.get("GEMINI_API_KEY", "").strip()
+MODEL = "gemini-3.1-flash-image-preview"   # yeta_bg.py와 동일 모델 · 실제 ID 바뀌면 함께 교체
+API = "https://generativelanguage.googleapis.com/v1beta/models/{}:generateContent".format(MODEL)
+OUT_DIR = "viewer/assets/yeta_map"
+FORCE = os.environ.get("FORCE", "").strip() == "1"
+
+# 마을 골격(places.json 좌표의 언어화 · 골목 50,50 중심 — 북 = 심야 미디어 · 중심 = 밤 코어 · 남 = 생활권)
+LAYOUT = (
+    "Village layout (top of image = north): "
+    "at the very center, a small crossroads plaza with old street lamps (the Alley - the village hotspot). "
+    "Just southwest of the plaza, a tiny warm traditional tea house with glowing windows. "
+    "Northeast of the plaza, a narrow 3-story editorial office building; further north on a low hill, a small radio station with a tall antenna tower. "
+    "East of the plaza, a stairway entrance going underground (basement practice studio). "
+    "South zone (daily-life belt): a 24h convenience store, further south a small school with a schoolyard, a little playground with swings, "
+    "a traditional swordsmanship dojo with tiled roof and a wooden porch yard to the southwest, an open-air market street with awning stalls, "
+    "and a boxy gym building at the southwest edge. "
+    "Scattered small houses with rooftop rooms between the spots. "
+    "A narrow stream crosses a corner of the village with a tiny bridge; dense forest and hills wrap the village edges. "
+    "Clear dirt paths connect the places through the central plaza."
+)
+STYLE = (
+    "Cozy hand-drawn cartoon village map, top-down bird's-eye view with a slight isometric tilt, "
+    "cute tiny detailed buildings, storybook mobile life-sim game style, soft rounded shapes, clean composition, "
+    "square 1:1 full-bleed map. Absolutely no text, no letters, no labels, no UI, no watermark, no characters or people."
+)
+VARIANTS = {
+    "map_night": ("Night scene: deep dark charcoal-navy ambience, quiet late-night mood, "
+                  "warm lamplight pools, glowing windows, a few neon signs with lime-green accent glow, "
+                  "moonlit forest edge. Dark enough to sit behind a dark-themed app UI. "),
+    "map_day":   ("Warm late-afternoon scene: bright pastel palette, soft golden light, gentle shadows, "
+                  "lush green forest, inviting and peaceful. "),
+}
+
+_USAGE = []
+
+
+def gemini_image(prompt, aspect="1:1"):
+    """Gemini 이미지 1장 → PNG bytes(실패 None · fail-soft). yeta_bg.py gemini_image 동형(자립형 규약)."""
+    payload = {
+        "contents": [{"parts": [{"text": prompt}]}],
+        "generationConfig": {"responseModalities": ["IMAGE"],
+                             "imageConfig": {"aspectRatio": aspect, "imageSize": "1K"}},
+    }
+    data = json.dumps(payload).encode()
+    req = urllib.request.Request(API + "?key=" + KEY, data=data, headers={"Content-Type": "application/json"})
+    for attempt in range(2):
+        try:
+            with urllib.request.urlopen(req, timeout=120) as r:
+                j = json.loads(r.read().decode())
+            um = j.get("usageMetadata") or {}
+            if isinstance(um, dict):
+                _USAGE.append(int(um.get("totalTokenCount") or 0))
+            for cand in j.get("candidates", []):
+                for p in cand.get("content", {}).get("parts", []):
+                    inl = p.get("inlineData") or p.get("inline_data")
+                    if inl and inl.get("data"):
+                        return base64.b64decode(inl["data"])
+            print("  ⚠️ 이미지 파트 없음(inlineData 부재)", flush=True)
+            return None
+        except urllib.error.HTTPError as e:
+            print("  ⚠️ HTTP {} — {}".format(e.code, e.read().decode()[:250]), flush=True)
+            if e.code in (429, 500, 503) and attempt == 0:
+                time.sleep(4); continue
+            return None
+        except Exception as e:
+            print("  ⚠️ 호출 실패: {}".format(e), flush=True)
+            if attempt == 0:
+                time.sleep(4); continue
+            return None
+    return None
+
+
+def main():
+    if not KEY:
+        print("GEMINI_API_KEY 없음 — no-op 종료(게이트)")
+        return
+    os.makedirs(OUT_DIR, exist_ok=True)
+    made = 0
+    for name, mood in VARIANTS.items():
+        path = os.path.join(OUT_DIR, name + ".png")
+        if os.path.exists(path) and not FORCE:
+            print("skip(존재): {}".format(path), flush=True)
+            continue
+        prompt = mood + STYLE + " " + LAYOUT
+        print("생성: {} …".format(name), flush=True)
+        png = gemini_image(prompt)
+        if not png:
+            print("  ⚠️ {} 생성 실패 — 계속(fail-soft)".format(name), flush=True)
+            continue
+        with open(path, "wb") as f:
+            f.write(png)
+        made += 1
+        print("  ✅ {} ({:.0f}KB)".format(path, len(png) / 1024), flush=True)
+    print("완료 — 신규 {}장 · Gemini 토큰 합 {}".format(made, sum(_USAGE)), flush=True)
+
+
+if __name__ == "__main__":
+    main()
