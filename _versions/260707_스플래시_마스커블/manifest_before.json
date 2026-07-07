@@ -26,7 +26,7 @@
       "purpose": "any"
     },
     {
-      "src": "assets/brand/yeta-splash-maskable-512.png",
+      "src": "assets/brand/yeta-icon-maskable-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
