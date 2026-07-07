@@ -298,6 +298,7 @@ export async function onRequestPost({ request, env }) {
     sess.invite = { to: persona, ts: Date.now() };
     sess.turns = sess.turns || [];
     sess.turns.push({ role: 'sys', text: `${name}${josa(name, '을', '를')} 불렀어…`, ts: Date.now(), kind: 'invite' });
+    if (sess.turns.length > 400) sess.turns = sess.turns.slice(-400);   // send와 동일 트림(세션 블로트 가드 · 5인검증③)
     sess.updated = Date.now();
     await putSess(sess);
     const st = await dispatch(env);
@@ -328,6 +329,7 @@ export async function onRequestPost({ request, env }) {
     if (sess.persona === persona) sess.persona = sess.room[0];   // 주 화자가 나가면 남은 사람이 이어받음
     if (sess.barged && sess.barged.id === persona) delete sess.barged;
     sess.turns.push({ role: 'sys', text: `${name}${josa(name, '은', '는')} 다음을 기약하며 물러갔다`, ts: Date.now() });
+    if (sess.turns.length > 400) sess.turns = sess.turns.slice(-400);   // send와 동일 트림(5인검증③)
     sess.updated = Date.now();
     await putSess(sess);
     return json({ ok: true, sess });

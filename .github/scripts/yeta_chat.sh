@@ -217,16 +217,19 @@ if kind == "ok":
     # 프리픽스 미발견·동행이 방에 없음 = 통짜 폴백(안전) · 동행 턴은 기억(NOTE) 갱신 없음(조연은 대사만).
     co_id, co_name = os.environ.get("CO_ID", ""), os.environ.get("CO_NAME", "")
     co_text = ""
+    turn_persona = persona_env
     if co_id and co_name and co_id in (s.get("room") or []):
         cm = re.search(r'^\s*\[\s*' + re.escape(co_name) + r'\s*\]\s*', text, flags=re.M)
         if cm:
             co_text = text[cm.end():].strip()[:500]
             text = text[:cm.start()].strip()
+    if not text and co_text:
+        text, co_text, turn_persona = co_text, "", co_id   # 화자가 물러나고 동행만 말한 턴 — 동행 턴으로 승격(정상 답 폐기 방지 · 5인검증①). 기억(ME)은 원 화자 관점 유지.
     if not text:
         s["state"] = "error"; s["err"] = "빈 대사 — 다시 보내면 재시도"; empty = True
     else:
         turn = {"role": "assistant", "text": text, "ts": now,
-                "persona": persona_env,
+                "persona": turn_persona,
                 "model": os.environ.get("MODEL", ""),
                 "effort": os.environ.get("EFF", ""),
                 "gen_s": int(os.environ.get("GEN_S", "0") or 0)}   # 다이얼·소요 박제 = 뷰어 체감 캡션(아이데이션④)
@@ -241,10 +244,10 @@ if kind == "ok":
             s["note_pub"] = notes_found["PUB"]; s.pop("note", None)   # 레거시 단일 note 는 승계 후 정리
         if "ME" in notes_found and persona_env:
             s.setdefault("notes", {})[persona_env] = notes_found["ME"]
-        if persona_env:
-            s["persona"] = persona_env                 # 마지막 화자 갱신(단톡 화자 사다리 '직전 화자' 기준 · 합석 260707)
-        if (s.get("barged") or {}).get("id") == persona_env:
-            s.pop("barged", None)                      # 난입 데뷔 완료 = 마커 소거(뷰어 내보내기 pill 회수)
+        if turn_persona and len([r for r in (s.get("room") or []) if r]) > 1:
+            s["persona"] = turn_persona                # 마지막 화자 갱신 = 단톡(fresh room 2명)에서만 — 1:1은 무갱신(draw 경합 회귀 차단 · 5인검증⑤)
+        if (s.get("barged") or {}).get("id") == turn_persona:
+            s.pop("barged", None)                      # 난입 데뷔 완료 = 마커 소거(뷰어 내보내기 pill 회수 · 승격 턴 포함)
         if s.get("invite") and now - ((s.get("invite") or {}).get("ts") or 0) > 600000:
             s.pop("invite", None)                      # 스테일 초대 lazy 정리(판정 러너 유실 대비)
         s["state"] = "awaiting" if any(t.get("role") == "user" for t in turns[ins + k:]) else "idle"
@@ -276,6 +279,7 @@ import re, sys
 t = sys.argv[1]
 t = re.split(r'<<\s*NOTE(?:\s*:\s*\w+)?\s*>>', t, flags=re.I)[0]
 t = re.sub(r'<<\s*/?\s*(?:NOTE|MOOD)(?:\s*:\s*\w+)?\s*>>', '', t, flags=re.I)
+t = re.split(r'^\s*\[[^\]\n]{1,24}\]\s', t, maxsplit=1, flags=re.M)[0]   # 단톡 대본([동행명] 이하) = 내 음색으로 낭독 금지(5인검증⑤ LOW)
 t = re.sub(r'\*[^*\n]{1,200}\*', '', t)          # *지문* = 소리 아님(finish 턴 텍스트에는 유지 — 화면용)
 t = re.sub(r'[`*_]', '', t)
 t = re.sub(r'\s+', ' ', t).strip()
@@ -426,10 +430,19 @@ s.pop("invite", None)
 raw = os.environ.get("VERDICT_RAW", "").strip()
 first, _, rest = raw.partition("\n")
 rest = rest.strip()
-accept = bool(re.match(r"\s*accept\b", first, flags=re.I))
-decline = bool(re.match(r"\s*decline\b", first, flags=re.I))
-if not accept and not decline:
-    accept, rest = True, raw                              # 계약 미준수 = 전문을 첫 마디로 보고 수락(합류가 기본 결)
+fl = first.strip()
+m = re.match(r"(?:ACCEPT\w*|수락)[\s:,.…\-—~!]*", fl, flags=re.I)
+md = re.match(r"(?:DECLINE\w*|거절)[\s:,.…\-—~!]*", fl, flags=re.I) if not m else None
+accept, decline = bool(m), bool(md)
+if m and not rest and fl[m.end():].strip():
+    rest = fl[m.end():].strip()                           # 한 줄 출력(ACCEPT 인사…) = 판정어 뗀 잔여를 첫 마디로 회수(5인검증①-③)
+elif md and not rest and fl[md.end():].strip():
+    rest = fl[md.end():].strip()
+if not accept and not decline:                            # 계약 미준수 — 거절 신호 휴리스틱(한국어 대화체) 먼저, 아니면 수락 폴백(합류가 기본 결 · 5인검증①-②)
+    if re.search(r"거절|안 가|못 가|안 갈|못 갈|다음에 갈?게|지금은 안 되", raw[:120]):
+        decline, rest = True, raw
+    else:
+        accept, rest = True, raw
 turns = s.setdefault("turns", [])
 now = int(time.time() * 1000)
 def josa(w, a, b):
@@ -444,6 +457,8 @@ if accept and len(room) < 2 and to not in room:
     if greet:
         turns.insert(pos + 1, {"role": "assistant", "text": greet, "ts": now + 1, "persona": to})
         s["persona"] = to                                 # 방금 들어온 사람 = 마지막 화자(다음 턴 사다리 기준)
+    if (s.get("declined") or {}).get("id") == to:
+        s.pop("declined", None)                           # 수락 합류 = 옛 거절 떡밥 소거(kick 후 유령 난입 방지 · 5인검증②)
     print("ACCEPT")
 else:
     line = re.sub(r"\s+", " ", rest).strip()[:80]
