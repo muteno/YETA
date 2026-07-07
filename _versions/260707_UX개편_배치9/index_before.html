@@ -781,13 +781,8 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   .ynm-t { font-style:normal; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }   /* 이름 텍스트 래퍼 — flex 안 ellipsis는 실요소에만 걸림 */
   .ylist-last { display:block; font-size:var(--fs-sm); color:var(--mut); margin-top:2px; line-height:1.675; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }   /* 줄간격 = 현행 실측 16.75px×1.2=20.1px(운영자 260707 항목8) */
   .ylist-last.on { color:var(--fg); }   /* 마지막 줄 = 최근 대사 흰색 · 위 줄(상황·이전)은 muted 유지(항목8) */
-  .ylist-r { flex:none; display:flex; flex-direction:column; align-items:flex-end; align-self:stretch; justify-content:flex-start; padding-top:3px; gap:5px; }   /* 우측 = [최근 장소|장소명]/[최근 메세지|시간] 2행(운영자 260707 항목18) */
+  .ylist-r { flex:none; display:flex; flex-direction:column; align-items:flex-end; align-self:stretch; justify-content:flex-start; padding-top:3px; gap:5px; }   /* 시간 = 행 우측 "상단"(운영자 260706 카톡 뉘앙스) */
   .ylist-t { font-size:var(--fs-xs); color:var(--mut); font-variant-numeric:tabular-nums; }
-  .ylr-meta { display:flex; align-items:center; gap:5px; font-size:var(--fs-xs); }   /* 메타 행 = [흐린 레이블][구분자][값] */
-  .ylr-meta .lb { color:var(--mut); font-size:10px; }
-  .ylr-meta .sep { width:1px; height:9px; background:var(--glass-line); opacity:.55; }   /* .ycrow-sep 결(행 내부 전용 세로 구분자) */
-  .ylr-meta .vl { color:var(--mut); font-variant-numeric:tabular-nums; }   /* 기본 = 흐림(알 수 없음 · 항목21) */
-  .ylr-meta .vl.on { color:var(--fg); }   /* 판명 = 흰색(항목21) */
   .ylist-badge { flex:none; min-width:19px; height:19px; padding:0 6px; margin-left:6px; border-radius:var(--r-s); background:var(--accent); color:var(--bg); font-size:var(--fs-xs); font-weight:var(--fw-x); display:grid; place-items:center; }   /* 안읽음 = 이름 옆 라임 둥근네모(--r-s · 2자리 신축 · 운영자 260707 항목19·20) · 간격 6px = .yprem margin 관례 동일 */
   /* 내 상태 행(운영자 260707 항목22·23) — 강조색 라임 글래스(고투명 · 알파 = .ydock.on(.16)~glass-2(.09) 사이 관례 인라인) · 탭 = 장소 이동 팝오버 */
   .ymerow { display:flex; align-items:center; gap:11px; padding:var(--sp-2); margin-bottom:var(--sp-3); border-radius:var(--r-l);
@@ -1375,26 +1370,6 @@ document.addEventListener('click', e => {
   }
   if (!pop.contains(e.target)) yMePop(false);   // 바깥 탭 = 닫힘(픽커 정본 패턴)
 });
-// ── 캐릭터 최근 장소(운영자 260707 항목18·21) — ymPlaceOf 결정적(러너 프롬프트 장소 등가) · 친밀도(턴수)·경과 시간으로 '알 수 없음' 판정 ──
-let _yLocs = { key: '', map: {} };
-async function yLocsSync(ids) {   // 시간 슬롯 단위 일괄 해석 — 완료 시 리스트 1회 재렌더(sig 리셋)
-  const k = new Date(Date.now() + 9 * 3600e3);
-  const key = `${k.toISOString().slice(0, 10)}|${k.getUTCHours()}`;
-  if (_yLocs.key === key) return;
-  if (!YMAPD) { const d = await yMeMap(); if (!d) return; }
-  const map = {};
-  for (const id of ids) { try { map[id] = await ymPlaceOf(id, k.toISOString().slice(0, 10), k.getUTCHours()); } catch { map[id] = ''; } }
-  _yLocs = { key, map };
-  _ylSig = ''; if ($('#ymain').classList.contains('tab-list')) yListRender();
-}
-function yLocOf(r) {   // 행별 장소 표기(항목21 색 위계) — 저대화(<6턴)·장기 미접촉(>24h)·private 장소 = '알 수 없음'(흐림 · 사생활 서사)
-  const pl = _yLocs.map[r.id];
-  const knowable = ((r.turns || []).length >= 6) && (Date.now() - (r.updated || 0) < 86400e3);
-  if (!knowable || !pl) return { nm: '알 수 없음', on: false };
-  const info = (YMAPD && YMAPD.places[pl]) || {};
-  if (info.private || info.offlimits) return { nm: '알 수 없음', on: false };
-  return { nm: info.name || pl, on: true };
-}
 async function yListRender() {
   const box = $('#ylistRows');
   if (!YSESS) {   // 세션 미로드 = 서버에서 한 번
@@ -1413,7 +1388,6 @@ async function yListRender() {
   const curP = s.cur ? yPersona(s.cur) : null;
   if (curP) yNavName(curP.name);
   if (!rows.length) { _ylSig = ''; box.innerHTML = '<div class="yeta-setup">진행 중인 대화가 없어 — 캐릭터 탭에서 말을 걸어봐.</div>'; return; }
-  yLocsSync(rows.map(r => r.id));   // 최근 장소 일괄 해석(항목18 · 슬롯 키 가드 = 시간당 1회 · 완료 시 재렌더)
   const sig = rows.map(r => `${r.id}:${r.pin ? 1 : 0}:${r.updated || 0}:${(r.turns || []).length}:${r.state}:${yReadTs(r.id)}`).join('|');
   if (sig === _ylSig) return;   // 렌더 시그니처 가드 — 무변경 재호출 = no-op(전행 stagger 재트리거·리스트 튐 차단 · UX감사③A)
   const firstPaint = !_ylSig; _ylSig = sig;
@@ -1431,8 +1405,7 @@ async function yListRender() {
       + `<span class="ylist-ava${p.avatar ? ' has-img' : ''}"${p.avatar ? ` style="background-image:url('${esc(p.avatar)}')"` : ''}>${p.avatar ? '' : esc(p.initial || p.name[0])}</span>`
       + `<span class="ylist-mid"><span class="ylist-nm">${r.pin ? '<svg class="ylist-pin" viewBox="0 0 24 24" fill="currentColor" aria-label="고정됨"><path d="M16 3l5 5-5.5 2 -1 6.5L12 14l-6 7-1-1 7-6-2.5-2.5L16 10l-2-1.5z"/></svg>' : ''}<i class="ynm-t">${esc(p.name)}</i>${unTxt ? `<span class="ylist-badge">${unTxt}</span>` : ''}${yGradeBadge(p)}${window.yPremBadge ? yPremBadge(p) : ''}</span>`
       + (opPend ? `<span class="ylist-last">곧 말을 걸어와…</span>` : line(prev) + line(last, 1)) + `</span>`
-      + `<span class="ylist-r">${(() => { const L = yLocOf(r); return `<span class="ylr-meta"><span class="lb">최근 장소</span><span class="sep"></span><span class="vl${L.on ? ' on' : ''}">${esc(L.nm)}</span></span>`; })()}`
-      + `<span class="ylr-meta"><span class="lb">최근 메세지</span><span class="sep"></span><span class="vl${last ? ' on' : ''}">${last ? yTime(last.ts) : '—'}</span></span></span></button></div>`;   // 우측 2행 재배치(항목18) · 색 위계 = 항목21
+      + `<span class="ylist-r"><span class="ylist-t">${last ? yTime(last.ts) : ''}</span></span></button></div>`;   // 안읽음 배지 = 이름 옆으로 이설(항목19) — 우측 = 시간만(18 재배치 대비)
   }).join('') + `</div>`;
   if (firstPaint) box.querySelectorAll('.ylist-row').forEach((el, i) => { el.style.animationDelay = (i * 0.04) + 's'; });   // 첫 진입만 stagger(재렌더 무애니)
   else box.querySelectorAll('.ylist-row').forEach(el => { el.style.animation = 'none'; });
