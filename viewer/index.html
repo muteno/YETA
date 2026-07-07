@@ -423,8 +423,8 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   .ym-pin { position:absolute; left:50%; top:63%; z-index:3; width:100%; max-width:300px; display:flex; flex-direction:column; align-items:center;   /* 71.5→63% 상향 — 번호 슬롯 폐지로 아래 처짐 교정(운영자 260707 "더 위로") */
     opacity:0; visibility:hidden; transform:translate(-50%, calc(-50% + 94px)); pointer-events:none;
     transition:opacity .4s var(--ease) .12s, transform .4s var(--ease) .12s, visibility 0s .52s; }   /* 부상 .4s·거리 94px(잠금 안무 플그 운영자 확정) */   /* visibility = 비활성 시 탭 순서·AT에서 제거(비가시 조작가능 창 차단 · 평의회8) */
-  /* PIN 단계 자물쇠 = 잔류·축소(72→46px) · 숨쉬기 정지 · 입력마다 크랙(해킹+박살 · 매트릭스 결 — 운영자 260706) */
-  .ymain.pin-mode .ym-access { opacity:1; pointer-events:none; animation:none; width:46px; height:46px;
+  /* PIN 단계 자물쇠 = 눌러 진입하면 사라짐(운영자 260707 — 260706 '잔류·해킹 서사' 폐지 · 페이드아웃) */
+  .ymain.pin-mode .ym-access { opacity:0; visibility:hidden; pointer-events:none; animation:none; width:46px; height:46px;
     transition:width .5s var(--ease), height .5s var(--ease), transform .25s var(--ease), filter .25s var(--ease), opacity .4s var(--ease), box-shadow .3s var(--ease); }
   .ymain.pin-mode .ym-access svg { width:19px; height:19px; transition:width .5s var(--ease), height .5s var(--ease); }
   .ym-access[data-crack="1"] { transform:skewX(-3deg) rotate(-1.5deg) scale(.97); filter:brightness(1.12); }
@@ -439,7 +439,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
     transition:opacity .4s var(--ease) .12s, transform .4s var(--ease) .12s, visibility 0s; }
   /* PIN 키패드 = nomute lk- 이식 · 다크+라임 리컬러(260704) */
   /* 'PIN 입력' 텍스트 라벨 폐지(운영자 260706 — aria-label 대체) · 핀칸 = 스포티파이 블랙 10% 알약 스크림으로 감싸기(첨부 nomute 결) */
-  .lk-slots { display:flex; justify-content:center; gap:15px; margin:22px 0 2px; padding:13px 26px; background:rgba(18,18,18,.1); border-radius:var(--r-pill); }
+  .lk-slots { display:none; justify-content:center; gap:15px; margin:22px 0 2px; padding:13px 26px; background:rgba(18,18,18,.1); border-radius:var(--r-pill); }   /* 4자리 음영칸 = 패턴(지그재그) 전환으로 잉여 → 숨김(운영자 260707 · 진행표시는 패턴 자체) */
   .lk-slot { width:18px; height:20px; display:grid; place-items:center; font:800 20px/1 Pretendard,sans-serif; color:var(--pin-ac); opacity:.5; transition:opacity .15s, transform .15s; }
   .lk-slot::before { content:''; grid-area:1/1; width:13px; height:13px; box-sizing:border-box; border-radius:50%; border:2px solid var(--mut); transition:border-color .15s, background .15s; }
   .lk-slot.on { opacity:1; }
