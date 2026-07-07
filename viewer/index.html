@@ -473,6 +473,31 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   /* ═══ 캐릭터 탭(메뉴2) — OpenAI 얼굴(roster avatar) 전원 갤러리(운영자 260705) · 카드 탭 = 그 캐릭터 챗 진입 · 챗 닫기 = 이 탭 복귀 ═══ */
   .ychar { position:absolute; inset:0; z-index:2; display:none; overflow-y:auto; padding:calc(88px + env(safe-area-inset-top)) var(--sp-2) 96px; }   /* 상단 88 = 로고 NAV 클리어런스 64 + 여유 숨 24(운영자 260706 "DIV 간 간격 여유롭게") */
   .ymain.tab-char .ychar { display:block; animation:ypickIn .3s var(--ease) both; }   /* 탭 전환 = 즉발 금지(북극성 260707) — 패널 진입 페이드 */
+  /* ── 지도 탭(운영자 260707 "앱에 다 반영") — 무음동 살아있는 지도: 밤 배경 + 워커 10인(현재 시각 실위치 = places.json SSOT) + 차량 60fps(rAF·transform만) ── */
+  .ymapp { position:absolute; inset:0; z-index:2; display:none; flex-direction:column; gap:10px; overflow-y:auto; padding:calc(88px + env(safe-area-inset-top)) var(--sp-2) 96px; }
+  .ymain.tab-map .ymapp { display:flex; animation:ypickIn .3s var(--ease) both; }
+  .ymain.tab-map .ym-fit, .ymain.tab-map .ym-stage, .ymain.tab-map .ym-access-card, .ymain.tab-map .ym-pin { display:none; }
+  .ymain.tab-map::before { background:linear-gradient(rgba(0,0,0,.73), rgba(0,0,0,.47)); }
+  .ymap-head { display:flex; align-items:baseline; gap:8px; padding:0 4px; }
+  .ymap-head b { font-size:var(--fs-h2); font-weight:var(--fw-x); }
+  .ymap-head i { font-style:normal; font-size:var(--fs-xs); color:var(--mut); }
+  .ymap-frame { border:1px solid var(--glass-line); border-radius:var(--r-l); background:var(--glass); overflow:hidden;
+    backdrop-filter:blur(var(--blur-m)); -webkit-backdrop-filter:blur(var(--blur-m)); }
+  .ymap-frame svg { display:block; width:100%; height:auto; touch-action:manipulation; }
+  .ymap-cap { font-size:var(--fs-xs); color:var(--mut); padding:0 4px; line-height:1.6; }
+  .ymp-name { fill:var(--fg-2); font-size:9px; font-weight:var(--fw-b); paint-order:stroke; stroke:rgba(18,18,18,.85); stroke-width:2.6px; }
+  .ymp-node { fill:rgba(18,18,18,.4); stroke:rgba(255,255,255,.28); stroke-width:1; }
+  .ymp-node.meet { stroke:var(--accent); stroke-width:1.6; }
+  .ymp-off { fill:rgba(var(--danger-rgb),.08); stroke:rgba(var(--danger-rgb),.55); stroke-dasharray:5 4; stroke-width:1.2; }
+  .ymp-offtxt { fill:var(--danger); font-size:8px; font-weight:var(--fw-x); letter-spacing:.14em; }
+  .ymp-walker { cursor:pointer; }
+  .ymp-walker .wimg { animation:ymbob 1.05s ease-in-out infinite; }
+  .ymp-walker circle.fb { stroke:rgba(18,18,18,.9); stroke-width:1.4; }
+  .ymp-walker text.fb { font-size:8px; font-weight:var(--fw-x); fill:#121212; }
+  @keyframes ymbob { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-1.6px); } }
+  .ymp-car .body { stroke:rgba(18,18,18,.75); stroke-width:.8; }
+  .ymp-car .lite { fill:rgba(var(--accent-rgb),.9); }
+  @media (prefers-reduced-motion:reduce) { .ymp-walker .wimg { animation:none; } }
   .ymain.tab-char .ym-fit, .ymain.tab-char .ym-stage, .ymain.tab-char .ym-access-card, .ymain.tab-char .ym-pin { display:none; }   /* 홈 히어로·PIN 퇴장 */
   .ymain.tab-char::before { background:linear-gradient(rgba(0,0,0,.73), rgba(0,0,0,.47)); }   /* 갤러리 딤 = 상단 진하게·하단 열어 계단 노출(언락 밝기 플그 운영자 확정 · ::before 전환 재사용) */
   /* ═══ YETA 워드마크 로고(운영자 260705 확정: 오프셋×전뇌 반반 — 코발트+라임 반전판 · 코발트 글로우 · 글래스 80% · 모션 6종 · 자간 -22%·엇갈림) ═══
@@ -769,6 +794,11 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
       <div id="yworldHead"></div>
       <div class="ychar-grid" id="ycharGrid"></div>
     </div>
+    <div class="ymapp" id="ymapp">   <!-- 지도 탭(운영자 260707) — 위치 SSOT = apps/yeta/places.json(raw) · 워커 탭 = 그 캐릭터와 대화 -->
+      <div class="ymap-head"><b>무음동</b><i id="ymapClock"></i></div>
+      <div class="ymap-frame"><svg id="ymapSvg" viewBox="0 0 500 500" aria-label="무음동 지도"></svg></div>
+      <div class="ymap-cap">지금 이 시각의 동네 — 쪼만한 주민을 탭하면 바로 대화. <span style="color:var(--accent)">라임 링</span> = 지금 붐비는 곳.</div>
+    </div>
     <div class="ycd" id="ycdetail" aria-modal="true" role="dialog">   <!-- 캐릭터 세부 디테일 → [대화 시작](운영자 260706) -->
       <div class="ycd-top"><button type="button" class="ycd-back" id="ycdBack" aria-label="뒤로"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><button type="button" class="ycd-gear" id="ycdGear" aria-label="성향 설정" title="성향 설정"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33h.01a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51h.01a1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82v.01a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></button></div>   <!-- ⚙ = 헤더 행 우측(뒤로가기와 쌍 · 운영자 260707 "마진 좋게") -->
       <div class="ycd-card" id="ycdCard"></div>
@@ -811,6 +841,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   <nav class="ynav" id="ynav">   <!-- 메뉴(운영자 260706 재편): 1=캐릭터 · 2=대화(목록 — 대화 탭이 곧 진입점, 행 눌러 챗) · 3=설정. 옛 '지금' 탭 폐지 = 챗은 메뉴2 대화 목록으로 편입(진입 = 대화 행 탭) · lockdot 폐지(네비 = 언락 후에만 표시) -->
     <button class="on" data-tab="char" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0112 0v1"/></svg><span>캐릭터</span></button>
     <button data-tab="list" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 01-12 7.7L3 21l1.8-6A8.5 8.5 0 1121 11.5z"/></svg><span>대화</span></button>
+    <button data-tab="map" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg><span>지도</span></button>
     <button data-tab="settings" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.11-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.55-1.11 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h.02a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v.02a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1z"/></svg><span>설정</span></button>   <!-- 기어 = 표준 풀패스(옛 조각 패스가 'о.'처럼 깨져 보이던 것 교체 · 운영자 260705 재량 위임) -->
   </nav>
 </div>
@@ -918,11 +949,140 @@ function yTab(tab) {   // 'char' | 'list' | 'settings' — 네비 활성·패널
   ['#ycdetail', '#ycset', '#ycsettings', '#ycprofile'].forEach(yCdHide);   // 탭 전환 = 모든 시트 애니 퇴장(북극성 — 즉발 금지)
   m.classList.toggle('tab-char', tab === 'char');
   m.classList.toggle('tab-list', tab === 'list');
+  m.classList.toggle('tab-map', tab === 'map');
   m.classList.toggle('tab-settings', tab === 'settings');
   document.querySelectorAll('#ynav button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
   if (tab === 'char') yCharRender();
   if (tab === 'list') yListRender();
+  if (tab === 'map') yMapEnter(); else yMapLeave();   // 지도 = 진입 시 rAF 시작 · 이탈 시 정지(60fps 예산 보호 · 260707)
   if (tab === 'settings') ySettingRender();
+}
+// ── 지도 탭(운영자 260707 "앱에 다 반영") — 위치 SSOT = apps/yeta/places.json(raw) · 판정 = yeta_place.py의 JS 등가 포팅(sha256 BigInt · 플레이그라운드 대조 검증 100%) ──
+//    워커 10인 = 현재 KST 실위치 + 어슬렁 · 차량 = 엣지(길) 순회 · 전부 rAF + style.transform(합성만 = 60fps · 운영자 260707) · 탭 이탈 = 루프 정지.
+let YMAPD = null, _ymapRaf = 0, _ymapIv = 0, _ymapWalkers = [], _ymapCars = [], _ymapLast = 0;
+const YMAP_SC = 5, YMAP_RM = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+const ymSlot = h => h < 3 ? 'late' : h < 7 ? 'dawn' : h < 11 ? 'morning' : h < 17 ? 'day' : h < 21 ? 'evening' : 'night';
+async function ymSha(s) { const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)); return BigInt('0x' + [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join('')); }
+async function ymPlaceOf(cid, dateStr, hour) {   // yeta_place.place_of 등가(동선표 + 시드 1/4 인접 외출 · private 변주 없음)
+  const R = (YMAPD.routine || {})[cid] || {}, base = R[ymSlot(hour)] || '';
+  if (!base) return '';
+  const info = YMAPD.places[base] || {};
+  if (info.private) return base;
+  const nb = (info.neighbors || []).filter(n => !(YMAPD.places[n] || {}).private);
+  if (nb.length) { const seed = await ymSha(`${cid}:${dateStr}:${ymSlot(hour)}:go`); if (seed % 4n === 0n) return nb[Number(seed % BigInt(nb.length))]; }
+  return base;
+}
+function ymKst() { return new Date(Date.now() + 9 * 3600e3); }
+function yMapLeave() { if (_ymapRaf) cancelAnimationFrame(_ymapRaf); _ymapRaf = 0; if (_ymapIv) clearInterval(_ymapIv); _ymapIv = 0; }
+async function yMapEnter() {
+  const svg = $('#ymapSvg'); if (!svg) return;
+  if (!YMAPD) {
+    try { YMAPD = await fetch('https://raw.githubusercontent.com/muteno/yeta/main/apps/yeta/places.json').then(r => r.json()); }
+    catch { svg.innerHTML = `<text x="250" y="250" text-anchor="middle" class="ymp-name">지도를 못 불러왔어 — 잠시 후 다시</text>`; return; }
+  }
+  if (!YCHARS.length) { const c = await yApi('chars').catch(() => null); if (c && c.ok) { YCHARS = c.chars || []; } }
+  ymBuild(svg);
+  await ymPlaceAll();
+  yMapLeave();
+  _ymapIv = setInterval(ymPlaceAll, 60000);   // 실시간 위치 = 1분 재판정(시드·동선 = 결정적이라 잦을 필요 없음)
+  if (!YMAP_RM()) { _ymapLast = performance.now(); _ymapRaf = requestAnimationFrame(ymTick); }
+}
+function ymBuild(svg) {   // 정적 레이어 — 배경(밤) · 길(엣지) · 출입금지 · 장소 노드 · 워커/차 그룹
+  const P = YMAPD.places, S = [];
+  S.push(`<rect width="500" height="500" fill="rgba(14,16,15,.8)"/>`);
+  S.push(`<image href="assets/yeta_map/map_night.png" x="0" y="0" width="500" height="500" preserveAspectRatio="xMidYMid slice"/>`);
+  const done = new Set();
+  for (const [id, p] of Object.entries(P)) for (const n of (p.neighbors || [])) {   // 길 = 인접 엣지(차량 궤도와 동일 데이터)
+    const k = [id, n].sort().join('|'); if (done.has(k) || !P[n]) continue; done.add(k);
+    if (p.private || P[n].private) continue;
+    S.push(`<line x1="${p.x * YMAP_SC}" y1="${p.y * YMAP_SC}" x2="${P[n].x * YMAP_SC}" y2="${P[n].y * YMAP_SC}" stroke="rgba(255,255,255,.05)" stroke-width="7" stroke-linecap="round"/>`);
+  }
+  for (const [id, p] of Object.entries(P)) {
+    if (p.offlimits) {   // 출입금지 지대(운영자 260707) — 위험 테이프 결
+      S.push(`<g><rect class="ymp-off" x="${p.x * YMAP_SC - 34}" y="${p.y * YMAP_SC - 24}" width="68" height="48" rx="6"/><text class="ymp-offtxt" x="${p.x * YMAP_SC}" y="${p.y * YMAP_SC + 3}" text-anchor="middle">출입금지</text></g>`);
+      continue;
+    }
+    if (p.private) continue;
+    S.push(`<circle class="ymp-node" id="ymn-${esc(id)}" cx="${p.x * YMAP_SC}" cy="${p.y * YMAP_SC}" r="${id === 'alley' ? 12 : 9}"/>`);
+    S.push(`<text class="ymp-name" x="${p.x * YMAP_SC}" y="${p.y * YMAP_SC + (id === 'alley' ? 24 : 20)}" text-anchor="middle">${esc(p.name)}</text>`);
+  }
+  S.push(`<g id="ymCars"></g><g id="ymWalkers"></g>`);
+  svg.innerHTML = S.join('');
+  _ymapWalkers = (YCHARS || []).map(c => ({ id: c.id, name: c.name, initial: c.initial || (c.name || '?')[0], color: c.color || '#8fb7bf',
+    x: 250, y: 250, bx: 250, by: 250, tx: 250, ty: 250, next: 0, el: null }));
+  const wg = svg.querySelector('#ymWalkers');
+  for (const w of _ymapWalkers) {
+    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    g.setAttribute('class', 'ymp-walker');
+    g.innerHTML = `<image class="wimg" href="assets/yeta_map/char_${esc(w.id)}.png" x="-11" y="-22" width="22" height="22" preserveAspectRatio="xMidYMax meet"/>`;
+    g.addEventListener('click', () => openYeta(w.id));   // 쪼만한 주민 탭 = 그 캐릭터와 대화(지도 → 방 직행)
+    const im = g.querySelector('image');
+    im.addEventListener('error', () => { g.innerHTML = `<circle class="fb" cx="0" cy="-8" r="8" fill="${esc(w.color)}"/><text class="fb" x="0" y="-5.2" text-anchor="middle">${esc(w.initial)}</text>`; }, { once: true });
+    wg.appendChild(g); w.el = g;
+  }
+  _ymapCars = [];
+  if (!YMAP_RM()) {   // 차량(운영자 260707 "도로 위에 차 · 60fps") — 공공 노드 그래프 랜덤 워크 · reduce-motion = 미생성
+    const pub = Object.keys(P).filter(k => !P[k].private && !P[k].offlimits && (P[k].neighbors || []).length);
+    const cg = svg.querySelector('#ymCars');
+    const tones = ['#8fb7ff', '#c4c9c4', '#ffb46b', '#9db2bf'];
+    for (let i = 0; i < 4 && pub.length > 1; i++) {
+      const a = pub[(i * 3) % pub.length];
+      const nbs = (P[a].neighbors || []).filter(n => P[n] && !P[n].private);
+      if (!nbs.length) continue;
+      const b = nbs[i % nbs.length];
+      const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      g.setAttribute('class', 'ymp-car');
+      g.innerHTML = `<rect class="body" x="-3.6" y="-7" width="7.2" height="14" rx="2.4" fill="${tones[i % tones.length]}"/><rect x="-2.6" y="-3.4" width="5.2" height="4.6" rx="1.4" fill="rgba(18,18,18,.55)"/><circle class="lite" cx="-2" cy="-6.2" r="1"/><circle class="lite" cx="2" cy="-6.2" r="1"/>`;
+      cg.appendChild(g);
+      _ymapCars.push({ a, b, t: Math.random() * .8, v: 26 + Math.random() * 16, el: g });   // v = px/s(등속 · 골목길 서행 결)
+    }
+  }
+}
+async function ymPlaceAll() {   // 현재 시각 실위치 재판정 → 워커 base 갱신 + 붐빔 링 + 시계
+  if (!YMAPD || !_ymapWalkers.length) return;
+  const k = ymKst(), dateStr = k.toISOString().slice(0, 10), h = k.getUTCHours();
+  const cl = $('#ymapClock'); if (cl) cl.textContent = `${yTime(Date.now())} · ${{ late: '깊은 밤', dawn: '새벽', morning: '아침', day: '낮', evening: '저녁', night: '밤' }[ymSlot(h)]}`;
+  const at = {};
+  for (const w of _ymapWalkers) at[w.id] = await ymPlaceOf(w.id, dateStr, h);
+  const byPlace = {};
+  for (const [cid, pl] of Object.entries(at)) (byPlace[pl] = byPlace[pl] || []).push(cid);
+  for (const w of _ymapWalkers) {
+    const p = YMAPD.places[at[w.id]]; if (!p) continue;
+    const grp = byPlace[at[w.id]], i = grp.indexOf(w.id);
+    const ang = (i / grp.length) * Math.PI * 2 - Math.PI / 2, off = grp.length > 1 ? 12 : 0;
+    w.bx = p.x * YMAP_SC + Math.cos(ang) * off; w.by = p.y * YMAP_SC + Math.sin(ang) * off;
+    if (!w.placed || YMAP_RM()) { w.x = w.tx = w.bx; w.y = w.ty = w.by; w.placed = 1; w.next = 0; }
+    if (YMAP_RM() && w.el) w.el.style.transform = `translate(${w.x}px,${w.y}px)`;
+  }
+  for (const id of Object.keys(YMAPD.places)) {
+    const el = document.getElementById('ymn-' + id);
+    if (el) el.classList.toggle('meet', ((byPlace[id] || []).length) >= 2);
+  }
+}
+function ymTick(now) {   // 60fps 루프 — 워커 어슬렁 + 차량 주행 · style.transform만(레이아웃 0 · 합성 전용)
+  const dt = Math.min(.05, (now - _ymapLast) / 1000); _ymapLast = now;
+  for (const w of _ymapWalkers) {
+    if (!w.el || !w.placed) continue;
+    if (now >= w.next) { w.tx = w.bx + (Math.random() * 18 - 9); w.ty = w.by + (Math.random() * 10 - 5); w.next = now + 2200 + Math.random() * 2600; }
+    const dx = w.tx - w.x, dy = w.ty - w.y, d = Math.hypot(dx, dy);
+    if (d > .4) { const sp = Math.min(d, 30 * dt + d * 1.4 * dt); w.x += dx / d * sp; w.y += dy / d * sp; }
+    w.el.style.transform = `translate(${w.x}px,${w.y}px) scaleX(${w.tx > w.x + .2 ? -1 : 1})`;
+  }
+  const P = YMAPD.places;
+  for (const c of _ymapCars) {
+    const A = P[c.a], B = P[c.b], len = Math.hypot((B.x - A.x) * YMAP_SC, (B.y - A.y) * YMAP_SC) || 1;
+    c.t += c.v * dt / len;
+    if (c.t >= 1) {   // 교차로 도착 = 다음 길(직전 길 제외 우선 · 결정 없음 = 시각 연출)
+      const nbs = (B.neighbors || []).filter(n => P[n] && !P[n].private && n !== c.a);
+      const nx = nbs.length ? nbs[Math.floor(Math.random() * nbs.length)] : c.a;
+      c.a = c.b; c.b = nx; c.t = 0;
+    }
+    const ax = P[c.a].x * YMAP_SC, ay = P[c.a].y * YMAP_SC, bx = P[c.b].x * YMAP_SC, by = P[c.b].y * YMAP_SC;
+    const x = ax + (bx - ax) * c.t, y = ay + (by - ay) * c.t;
+    const ang = Math.atan2(by - ay, bx - ax) * 180 / Math.PI + 90;
+    c.el.style.transform = `translate(${x}px,${y}px) rotate(${ang}deg)`;
+  }
+  _ymapRaf = requestAnimationFrame(ymTick);
 }
 // ── 설정 탭(메뉴4) — 3계층 정책(운영자 260706): 역할 게이팅{admin(env PIN) = L0 토글+L1 편집 / guest(users.json) = read-only+L2 안내} ·
 //    SET = op policy에 admin PIN 동봉(서버 강제) · 축·라벨·문구 정본 = apps/yeta/policy.json → 뷰어 하드코딩 0 ──
@@ -1880,7 +2040,7 @@ try { const _q = new URLSearchParams(location.search); if (_q.get('yeta')) { con
     const b = e.target.closest('button'); if (!b) return;
     const tab = b.dataset.tab;
     if (!unlocked) { ymEnterPin(); slotsEl.classList.add('shake'); setTimeout(() => slotsEl.classList.remove('shake'), 450); return; }
-    if (tab === 'char' || tab === 'list') { yTab(tab); return; }   // 메뉴1 캐릭터 · 메뉴2 대화(목록 — 행 눌러 챗 진입 · 운영자 260706 재편)
+    if (tab === 'char' || tab === 'list' || tab === 'map') { yTab(tab); return; }   // 메뉴1 캐릭터 · 메뉴2 대화 · 메뉴3 지도(운영자 260707 "앱에 다 반영")
     if (tab === 'settings') { yShowSettings(); return; }   // 설정 화면(목업 · 운영자 260706) · 옛 'chat' 탭 폐지 = 챗은 메뉴2 대화 목록으로만 진입
     miniToast('준비중 — 곧 열려');
   };
