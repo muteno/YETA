@@ -1018,11 +1018,7 @@ async function yListRender() {
   if (ssn) ssn.innerHTML = ySsnHtml();
   const s = YSESS || {}, turns = s.turns || [], p = s.persona ? yPersona(s.persona) : null;
   if (p) yNavName(p.name);   // 세션 상대 확인 즉시 메뉴3 라벨 동기화(프로필 = 기본 캐릭터 고정 260706)
-  if (!p || !turns.length) {
-    const op = !!(p && s.state === 'awaiting' && s.opening);   // 동적 오프닝 생성 중 = "곧 말을 걸어와"(진행 대화 없음 오표시 차단 · 기틀검증 UX3)
-    box.innerHTML = op ? `<div class="yeta-setup">${esc(p.name)}이(가) 곧 말을 걸어와<span class="gdots"><i>.</i><i>.</i><i>.</i></span></div>` : '<div class="yeta-setup">진행 중인 대화가 없어 — 캐릭터 탭에서 말을 걸어봐.</div>';
-    return;
-  }
+  if (!p || !turns.length) { box.innerHTML = '<div class="yeta-setup">진행 중인 대화가 없어 — 캐릭터 탭에서 말을 걸어봐.</div>'; return; }
   const last = turns[turns.length - 1], prev = turns[turns.length - 2], unread = Math.max(0, turns.length - yReadN());
   const line = t => t ? `<span class="ylist-last">${t.role === 'user' ? '나 · ' : ''}${esc(ySnip(t.text, 40) || '…')}</span>` : '';   // 최근 대화 2줄(운영자 260706 "이 2개만") · 내 턴 = '나 ·' 접두
   box.innerHTML = `<div class="ylist-group"><div class="ylr-wrap"><button type="button" class="ylist-row" id="ylistCur">`
@@ -1072,9 +1068,7 @@ function ySideRender() {
   const curId = YCUR && YCUR.id, turns = (YSESS && YSESS.turns) || [];
   side.innerHTML = YCHARS.map(c => {
     const isCur = c.id === curId;
-    const lastMine = isCur && turns.length ? ySnip(turns[turns.length - 1].text, 7)
-      : (isCur && YSESS && YSESS.state === 'awaiting' && YSESS.opening ? '곧 말을 걸어와' : ySnip(c.tagline || '', 7));   // 현 상대 실대화·오프닝 생성 중 표식·나머지 태그라인
-
+    const lastMine = isCur && turns.length ? ySnip(turns[turns.length - 1].text, 7) : ySnip(c.tagline || '', 7);   // 최근대화 ~5음절대(현 상대만 실대화·나머지 태그라인)
     return `<button type="button" class="ys-row${isCur ? ' cur' : ''}" data-id="${esc(c.id)}">${yAva(c)}<span class="ys-nm">${esc(c.name)}</span><span class="ys-last">${esc(lastMine)}…</span></button>`;
   }).join('');
   side.hidden = false;
@@ -1387,44 +1381,17 @@ function yMoodUrl(bg, mood) {   // base URL → 배리언트 규약 파생(…/t
   if (!bg || !mood) return bg || '';
   return bg.split('?')[0].replace(/\.png$/, `_${mood}.png`);
 }
-// ── 맥락 씬 풀(운영자 260707 "배경 상황에 맞게") — 배리에이션 32장(yeta_bg_var)을 무드×시간대(KST)×계절로 매핑. base(무드 없음) = 페르소나 고유 bg 유지. t=어울리는 시간대(any=무관) · se=계절 한정 ──
-const Y_SCENE_POOL = {
-  warm: [ {s:'cvs_dawn',t:['dawn']}, {s:'stream_dawn',t:['dawn']}, {s:'karaoke_back',t:['dawn']}, {s:'noon_summer',t:['day'],se:'summer'},
-          {s:'tea_sunset',t:['dusk']}, {s:'market_close',t:['dusk','night']}, {s:'laundromat',t:['night']}, {s:'arcade_glow',t:['night']},
-          {s:'heatnight',t:['night'],se:'summer'}, {s:'snow_night',t:['night'],se:'winter'} ],
-  tense:[ {s:'police_line',t:['dawn','night']}, {s:'typhoon_eve',t:['any'],se:'summer'}, {s:'thunder_flash',t:['night']}, {s:'underpass',t:['any']},
-          {s:'broken_wall',t:['night']}, {s:'claw_shutter',t:['night']}, {s:'dead_lamp',t:['night']}, {s:'firetruck_after',t:['night']}, {s:'thin_boundary',t:['night']} ],
-  blue: [ {s:'dawn_mist',t:['dawn']}, {s:'autumn_dusk',t:['dusk'],se:'autumn'}, {s:'busstop_fog',t:['night']}, {s:'alley_rain',t:['night']},
-          {s:'crosswalk_rain',t:['night']}, {s:'rooftop_mid',t:['night']}, {s:'playground_3am',t:['night']}, {s:'moon_stairs',t:['night']},
-          {s:'blackout',t:['night']}, {s:'missing_flyer',t:['night']}, {s:'bandage_bench',t:['night']}, {s:'after_hail',t:['night'],se:'winter'} ],
-};
-function ySceneFor(mood) {   // 결정적 픽(페르소나×KST 날짜×무드 시드) = 렌더마다 안 바뀜 · 무드나 날이 바뀌면 새 씬
-  const pool = Y_SCENE_POOL[mood]; if (!pool) return '';
-  const d = new Date(Date.now() + 9 * 3600e3), h = d.getUTCHours(), mo = d.getUTCMonth() + 1;   // KST(§표기표준 — 기기 TZ 무관)
-  const slot = h < 4 ? 'night' : h < 8 ? 'dawn' : h < 17 ? 'day' : h < 20 ? 'dusk' : 'night';
-  const season = (mo >= 6 && mo <= 8) ? 'summer' : (mo >= 9 && mo <= 11) ? 'autumn' : (mo === 12 || mo <= 2) ? 'winter' : 'spring';
-  let cand = pool.filter(x => (!x.se || x.se === season) && (x.t.includes(slot) || x.t.includes('any')));
-  if (!cand.length) cand = pool.filter(x => !x.se || x.se === season);   // 시간대 안 맞으면 계절만 · 그래도 없으면 전체
-  if (!cand.length) cand = pool;
-  const key = `${YCUR ? YCUR.id : ''}|${d.getUTCFullYear()}${d.getUTCMonth()}${d.getUTCDate()}|${mood}`;
-  let hsh = 0; for (const ch of key) hsh = (hsh * 31 + ch.charCodeAt(0)) >>> 0;
-  return `assets/yeta_bg/var_${cand[hsh % cand.length].s}.webp`;
-}
-function yStage(mood) {   // 무대: base = 페르소나 고유 bg / 무드 = 맥락 씬 → (폴백) 구 R2 배리언트 → base — 전부 프리로드 성공 시에만 페인트
+function yStage(mood) {   // 무대 = 페르소나 bg × 무드 — 키 같으면 no-op, 배리언트는 프리로드 성공 시에만(실패 = base 유지)
   if (!YCUR) return;
   const key = `${YCUR.id}|${mood || ''}`;
   if (key === _yStageKey) return;
   _yStageKey = key;
   const tint = YCUR.color || '#7c5cfc';
-  if (!mood) { yPaintBg(YCUR.bg || '', tint); return; }
-  const tries = [ySceneFor(mood), YCUR.bg ? yMoodUrl(YCUR.bg, mood) : '', YCUR.bg || ''].filter(Boolean);
-  (function tryNext(i) {
-    if (i >= tries.length) { yPaintBg('', tint); return; }
-    const im = new Image();
-    im.onload = () => { if (_yStageKey === key) yPaintBg(tries[i], tint); };   // 늦게 로드돼도 무대가 바뀌었으면 폐기
-    im.onerror = () => { if (_yStageKey === key) tryNext(i + 1); };
-    im.src = tries[i];
-  })(0);
+  if (!YCUR.bg || !mood) { yPaintBg(YCUR.bg || '', tint); return; }
+  const vurl = yMoodUrl(YCUR.bg, mood), im = new Image();
+  im.onload = () => { if (_yStageKey === key) yPaintBg(vurl, tint); };   // 늦게 로드돼도 무대가 바뀌었으면 폐기
+  im.onerror = () => { if (_yStageKey === key) yPaintBg(YCUR.bg, tint); };   // 배리언트 미생성 = base 폴백
+  im.src = vurl;
 }
 function yApply(c) {   // 페르소나 적용 — 이름·태그·포인트색·배경이 스르륵 전환(캐릭터 따라 톤 변화 = 운영자 컨셉)
   YCUR = c;
@@ -1536,9 +1503,7 @@ function yRender() {
   const turns = staged ? all.slice(0, _yPaceN) : all;
   let h = '';
   // 소개 카드(yintro) = 대화창에서 스킵(운영자 260705 #11 · 인물 프사·이름·소개는 헤더에만)
-  const openingPending = !!(s.state === 'awaiting' && s.opening);   // 동적 오프닝 생성 중(운영자 260707) — 정적 인사 억제·타이핑만(딱딱한 전환 차단 · 기틀검증 UX1)
-  const openingStuck = openingPending && (Date.now() - (s.awaiting_since || 0)) > 300000;   // 5분 초과 = 정적 폴백(재시도 배너 대신 yGreet)
-  if (!turns.length && YCUR && (!openingPending || openingStuck)) h += yAiMsg({ text: yGreet(YCUR), persona: YCUR.id });   // 첫인사 폴백 — 오프닝 인플라이트면 억제(타이핑만) · 미설정/막힘 시 정적 표시
+  if (!turns.length && YCUR) h += yAiMsg({ text: yGreet(YCUR), persona: YCUR.id });   // 첫인사 — 서버 draw가 greeting 턴을 박기 전(레이스)이나 미설정 세션의 임시 표시(정상 경로는 서버 턴)
   h += turns.map((t, i) => {
     const fresh = !first && i >= prevN;   // 신규 턴만 촤르륵
     const pv = turns[i - 1];              // 직전 턴 = 같은 화자면 그룹핑(cont)
@@ -1552,9 +1517,9 @@ function yRender() {
   const awaiting = !!(s.state === 'awaiting');   // 판정 = state(클록스큐 함정 회피 · 평의회③)
   const zlim = 300000;   // 좀비 임계 5분(effort low 고정 · 가짜 실패 → 중복 쿼터 방지)
   const waitMs = awaiting ? Math.max(0, Date.now() - (s.awaiting_since || 0)) : -1;
-  const failMsg = (s.state === 'error' && !s.opening) ? `답장을 못 만들었어 — 다시 보내면 재시도야. (${(s.err || '').slice(0, 80)})`
-    : (awaiting && !openingPending && waitMs > zlim ? '답장이 너무 늦네 — 러너가 밀렸거나 실패한 듯. 다시 보내면 재시도야.' : '');   // 오프닝은 error/zombie 배너 제외(재시도 409 죽은 버튼 차단 · 기틀검증 UX2) — 지연 시 정적 폴백(openingStuck)
-  const typing = !failMsg && !openingStuck && (awaiting || staged) && !!YCUR && Date.now() >= _yTypHold;   // staged = 답장 페이스 홀드 · _yTypHold = 읽는 시간 경과 후에만 "입력 중"(운영자 260707) · 오프닝 인플라이트 = 타이핑 유지(첫인사 생성 중)
+  const failMsg = s.state === 'error' ? `답장을 못 만들었어 — 다시 보내면 재시도야. (${(s.err || '').slice(0, 80)})`
+    : (awaiting && waitMs > zlim ? '답장이 너무 늦네 — 러너가 밀렸거나 실패한 듯. 다시 보내면 재시도야.' : '');
+  const typing = !failMsg && (awaiting || staged) && !!YCUR && Date.now() >= _yTypHold;   // staged = 답장 페이스 홀드 · _yTypHold = 읽는 시간 경과 후에만 "입력 중"(운영자 260707)
   if (failMsg) h += `<div class="yb fail${_yFailOn ? '' : ' in'}">${esc(failMsg)}<button type="button" class="yfail-retry" aria-label="다시 보내기">다시 보내기</button></div>`;   // 원탭 재시도(재타이핑 0 · retry op)
   else if (typing) h += yTypingHtml(!_yTypOn);
   _yFailOn = !!failMsg; _yTypOn = typing;
