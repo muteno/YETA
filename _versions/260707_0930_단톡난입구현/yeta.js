@@ -4,9 +4,7 @@
 //   chars {}                       : 페르소나 로스터(apps/yeta/characters/roster.json raw · 5분 캐시)
 //   get   {}                       : 세션 반환(뷰어 폴)
 //   send  {text, model, effort}    : 유저 턴 append(다이얼 턴별 박제 · 화이트리스트) → yeta-chat.yml dispatch
-//   draw  {persona, name}          : 페르소나 뽑기/재뽑기 — sess.persona 갱신(+대화 중이면 sys 턴) · room=[persona] 리셋(단톡 해산)
-//   invite {persona, name}         : 합석 초대(단톡 · 정원 MAX_ROOM) — sess.invite 마커+sys 턴 → dispatch(수락/거절 판정 = 러너가 카드·상태로)
-//   kick  {persona, name}          : 합석 내보내기/초대 철회 — room 제거·invite 취소 + 퇴장 sys(dispatch 없음)
+//   draw  {persona, name}          : 페르소나 뽑기/재뽑기 — sess.persona 갱신(+대화 중이면 sys 턴)
 //   warm  {}                       : 프리웜 — dispatch만(러너 선부팅 → 첫 답장 30초 목표 · 쿼터 소비 0[NOPENDING 웜대기])
 //   retry {}                       : 원탭 재시도 — 실패(state=error) pending 유저 턴 재발사(새 턴 추가 X)
 //   ring  {persona?}               : 걸려오는 전화 요청 → yeta-call.yml dispatch(⚠️ TTS 유료 → 일 상한 기본 3 · YETA_CALL_MAX_PER_DAY)
@@ -28,9 +26,6 @@
 const REPO = 'muteno/yeta';
 const ID_RE = /^[a-z0-9_-]{1,24}$/;
 const KEY = 'sessions/main.json';
-const MAX_ROOM = 2;                 // 합석 정원(나 제외 캐릭터 수 · 운영자 260707 "한 명 정도는") — 3 확장은 실험 축
-const INVITE_TTL = 600000;          // 초대 pending 10분 — 러너 사망 시 스테일 마커가 다음 초대를 영구 차단하지 않게
-const josa = (s, a, b) => { const c = String(s || '').charCodeAt(String(s || '').length - 1); return c >= 0xAC00 && c <= 0xD7A3 && (c - 0xAC00) % 28 > 0 ? a : b; };   // 받침 → 을/은, 무받침 → 를/는
 const MODELS = new Set(['claude-opus-4-8', 'claude-sonnet-5']);          // §기틀 정확 ID — 집합 확장은 운영자 확인
 const EFFORTS = new Set(['', 'low', 'medium', 'high', 'max']);           // '' = --effort 생략(CLI 기본)
 
@@ -275,59 +270,6 @@ export async function onRequestPost({ request, env }) {
       sess.turns.push({ role: 'assistant', text: greeting, persona, ts: Date.now() });   // 첫 진입 = 첫인사를 턴으로(뷰어 재렌더에도 유지 + HIST에 실려 캐릭터가 자기 인사를 앎)
     }
     sess.persona = persona;
-    sess.room = [persona];           // 뽑기/재뽑기 = 단톡 해산·1:1 재시작(시안 260707 — 방 전체 교체가 단순·예측 가능)
-    delete sess.invite; delete sess.barged;
-    sess.updated = Date.now();
-    await putSess(sess);
-    return json({ ok: true, sess });
-  }
-
-  if (op === 'invite') {   // 합석 초대(단톡 · 운영자 260707) — 마커+sys만 서버가 쓰고, 올지 말지는 러너가 그 캐릭터 카드·시각·관계로 판정(거절 = 콘텐츠)
-    if (!env.GH_TOKEN) return json({ error: '서버 미설정 — GH_TOKEN 필요' }, 500);
-    const persona = String(body.persona || '');
-    if (!ID_RE.test(persona)) return json({ error: '잘못된 페르소나 id' }, 400);
-    const sani = s => String(s || '').replace(/<<\s*\/?\s*(?:NOTE|MOOD)(?:\s*:\s*\w+)?\s*>>/gi, '').replace(/<\/?user_message>/gi, '');
-    const name = sani(body.name).slice(0, 24) || persona;
-    const sess = await readSess();
-    if (!ID_RE.test(String(sess.persona || ''))) return json({ error: '먼저 대화 상대를 뽑아줘' }, 409);
-    const room = Array.isArray(sess.room) && sess.room.length ? sess.room : [sess.persona];   // 구세션 폴백(마이그레이션 0)
-    if (room.includes(persona)) return json({ error: '이미 같이 있어' }, 409);
-    if (room.length >= MAX_ROOM) return json({ error: '자리가 없어 — 한 명을 보내고 불러줘' }, 409);
-    if (sess.invite && Date.now() - (sess.invite.ts || 0) < INVITE_TTL) return json({ error: '이미 누굴 부르는 중이야' }, 409);
-    sess.room = room;
-    sess.invite = { to: persona, ts: Date.now() };
-    sess.turns = sess.turns || [];
-    sess.turns.push({ role: 'sys', text: `${name}${josa(name, '을', '를')} 불렀어…`, ts: Date.now(), kind: 'invite' });
-    sess.updated = Date.now();
-    await putSess(sess);
-    const st = await dispatch(env);
-    if (st === 204) return json({ ok: true, sess });
-    delete sess.invite;   // 판정 런이 안 뜨면 마커 즉시 회수(스테일 pending 방지) — sys 턴은 남겨도 무해(러너 무시)
-    await putSess(sess);
-    return json({ error: `GitHub dispatch ${st}` }, 502);
-  }
-
-  if (op === 'kick') {   // 합석 내보내기/초대 철회 — 유저 쪽 거절권(난입의 대칭). 퇴장도 세계관 연출(sys)
-    const persona = String(body.persona || '');
-    if (!ID_RE.test(persona)) return json({ error: '잘못된 페르소나 id' }, 400);
-    const sani = s => String(s || '').replace(/<<\s*\/?\s*(?:NOTE|MOOD)(?:\s*:\s*\w+)?\s*>>/gi, '').replace(/<\/?user_message>/gi, '');
-    const name = sani(body.name).slice(0, 24) || persona;
-    const sess = await readSess();
-    sess.turns = sess.turns || [];
-    if (sess.invite && sess.invite.to === persona) {   // 아직 판정 전 = 부르기 취소
-      delete sess.invite;
-      sess.turns.push({ role: 'sys', text: `부르기를 관뒀어`, ts: Date.now() });
-      sess.updated = Date.now();
-      await putSess(sess);
-      return json({ ok: true, sess });
-    }
-    const room = Array.isArray(sess.room) && sess.room.length ? sess.room : (sess.persona ? [sess.persona] : []);
-    if (!room.includes(persona)) return json({ error: '지금 방에 없는 사람이야' }, 409);
-    if (room.length <= 1) return json({ error: '마지막 한 명은 못 내보내 — 갤러리에서 상대를 바꿔줘' }, 409);
-    sess.room = room.filter(id => id !== persona);
-    if (sess.persona === persona) sess.persona = sess.room[0];   // 주 화자가 나가면 남은 사람이 이어받음
-    if (sess.barged && sess.barged.id === persona) delete sess.barged;
-    sess.turns.push({ role: 'sys', text: `${name}${josa(name, '은', '는')} 다음을 기약하며 물러갔다`, ts: Date.now() });
     sess.updated = Date.now();
     await putSess(sess);
     return json({ ok: true, sess });
