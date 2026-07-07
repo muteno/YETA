@@ -47,13 +47,7 @@ fi
 # ── 2) 재료 추출 + 발신자 선정 — BUSY(대화 중) | JSON{persona,name,switch,note_pub,note_me,hist} ──
 mat="$(YETA_CALL_PERSONA="${YETA_CALL_PERSONA:-}" python3 - "$SESS" "$ROSTER" "$RECENT_TURNS" <<'PY'
 import json, os, random, sys
-sys.path.insert(0, ".github/scripts")
-from yeta_v3 import migrate_v3
-S_ROOT = migrate_v3(json.load(open(sys.argv[1], encoding="utf-8")))
-_cur = S_ROOT.get("cur") or ""
-s = dict((S_ROOT.get("threads") or {}).get(_cur) or {})   # 현재 방 뷰(없으면 빈 방 = 랜덤 발신)
-s["persona"] = _cur
-for _k in ("note_pub", "note", "notes"): s[_k] = S_ROOT.get(_k)
+s = json.load(open(sys.argv[1], encoding="utf-8"))
 roster = json.load(open(sys.argv[2], encoding="utf-8"))
 n = int(sys.argv[3])
 turns = s.get("turns") or []
@@ -177,30 +171,28 @@ fi
 LINE_TEXT="$LINE_TEXT" PERSONA="$PERSONA" CNAME="$CNAME" SWITCH="$SWITCH" VKEY="$VKEY" MODEL="$MODEL" EFF="$EFF" GEN_S="$GEN_S" \
 python3 - "$SESS" <<'PY'
 import json, os, sys, time
-sys.path.insert(0, ".github/scripts")
-from yeta_v3 import migrate_v3
-S = migrate_v3(json.load(open(sys.argv[1], encoding="utf-8")))
-persona, name = os.environ["PERSONA"], os.environ.get("CNAME") or os.environ["PERSONA"]
-th = (S.get("threads") or {}).setdefault(persona, {"turns": [], "state": "idle", "opening": 0, "awaiting_since": 0, "err": "",
-      "room": [persona], "invite": None, "barged": 0, "declined": {}, "pin": 0, "updated": 0, "last_sp": persona, "char_ver": "", "nudge": None})
-turns = th.setdefault("turns", [])
+s = json.load(open(sys.argv[1], encoding="utf-8"))
+turns = s.setdefault("turns", [])
 last_a = max([i for i, t in enumerate(turns) if t.get("role") == "assistant"], default=-1)
 if any(t.get("role") == "user" for t in turns[last_a + 1:]):
     print("반영 직전 유저 메시지 감지 — 통화 폐기(챗 우선)"); sys.exit(2)
 now = int(time.time() * 1000)
+persona, name = os.environ["PERSONA"], os.environ.get("CNAME") or os.environ["PERSONA"]
+if os.environ.get("SWITCH") == "True" and turns:
+    turns.append({"role": "sys", "text": "{}에게서 전화가 걸려왔다".format(name), "ts": now})   # 화자 교체 신호(draw 동형)
 turn = {"role": "assistant", "kind": "call", "text": os.environ["LINE_TEXT"], "ts": now + 1,
         "persona": persona, "model": os.environ.get("MODEL", ""), "effort": os.environ.get("EFF", ""),
         "gen_s": int(os.environ.get("GEN_S", "0") or 0)}
 if os.environ.get("VKEY"):
     turn["voice"] = os.environ["VKEY"]                 # 뷰어 재생 키(op voice 로 스트림)
 turns.append(turn)
-if len(turns) > 200:
-    th["turns"] = turns = turns[-200:]
-S["cur"] = persona                                     # 발신자의 방 = 현재 방(전화 = 등장 · v3)
-S["call"] = {"ts": now + 1, "persona": persona, "text": os.environ["LINE_TEXT"][:200],
-             "voice": os.environ.get("VKEY", "")}      # 수신 UI 훅 = top-level(마이그감사 스키마)
-th["updated"] = S["updated"] = now + 1
-json.dump(S, open(sys.argv[1], "w", encoding="utf-8"), ensure_ascii=False)
+if len(turns) > 400:
+    s["turns"] = turns = turns[-400:]
+s["persona"] = persona                                 # 발신자가 현재 화자(전화 = 등장)
+s["call"] = {"ts": now + 1, "persona": persona, "text": os.environ["LINE_TEXT"][:200],
+             "voice": os.environ.get("VKEY", "")}      # 미래 수신 UI 훅 — 뷰어가 소비(수신 화면)할 마커
+s["updated"] = now + 1
+json.dump(s, open(sys.argv[1], "w", encoding="utf-8"), ensure_ascii=False)
 PY
 _rc=$?
 [ "$_rc" = 2 ] && exit 0
