@@ -190,7 +190,7 @@
   - **보이스톡(브라우저 실시간 통화)** — 챗 헤더 수화기(모듈 주입·2탭 재확인=유료 가드) → 벨 연출 → 받기 → **Vapi Web SDK**(esm.sh 동적 import·받기 후에만 로드) 실시간 대화(타이머·말하는 중 표시·끊기). assistant = roster `"phone"` 재사용 · 공개키 = op `vapikey`(Pages env `VAPI_PUBLIC_KEY` — 공개 축이지만 **Vapi 대시보드 Origins 를 yeta.soong.kr 로 제한 권장**) · 전화망 불요 = iOS 설치형 PWA 도 마이크 OK. phone 미배선 캐릭터 = op `ring` 폴백(인앱 걸려오는 전화).
   - **뷰어 모듈 계약**(`viewer/call.js` = 플러그인·제거=훅 삭제): 훅① `yLoad`의 `YCALL.onSess(YSESS)` · 훅② `<script src="call.js" defer>` · 훅③ 이름 옆 `yPremBadge(c)` · 주입 2종(본체 무수정) = 입력행 마이크(`#yetaMic`)+헤더 수화기(`#yetaCallBtn`). 소비 규약 = localStorage `yeta_call_seen`·벨 TTL 120s·타임아웃 45s·자체 폴 20s(챗 폴 비활성 시만).
 - `shared/` = `claude_transient.sh`(폴오버 SSOT)·`claude_meter.sh`·`inject_character.sh`(카드 강제주입) · `check_refs.py`(게이트)·`build_design_mirror.py`(거울 빌드).
-- `apps/yeta/` = 캐릭터 **10인 로스터**(`characters/*.md` · 260707 복원)·`roster.json`(뷰어 표시 SSOT)·`places.json`(**위치 SSOT** — 장소 그래프+동선 · 마주침·지도 공용 · 판정 = `.github/scripts/yeta_place.py`)·`apps/yeta/00_지침_캐릭터챗.md`·`apps/yeta/10_세계관.md`·`apps/yeta/PEXELS_배경_큐레이션_설계.md`.
+- `apps/yeta/` = 캐릭터 **10인 로스터**(`characters/*.md` · 260707 복원)·`roster.json`(뷰어 표시 SSOT)·`places.json`(**위치 SSOT** — 장소 그래프+동선+**좌표 확정**(260707 분신술 10인 수렴 · 골목 50,50 중심·북 미디어/중심 밤코어/남 생활권 존) · 집 = `home_<id>` private 8곳(무디·류 = 일터가 집이라 노드 없음) · 마주침·지도 공용 · 판정 = `.github/scripts/yeta_place.py` · 지도 시각화 = `docs/reports/260707_무음동지도_배치_플레이그라운드.html`)·`apps/yeta/00_지침_캐릭터챗.md`·`apps/yeta/10_세계관.md`·`apps/yeta/PEXELS_배경_큐레이션_설계.md`.
 - `구성도/`·`docs/CII_컴포넌트계승인덱스.md` = 디자인 블루프린트·계승 인덱스.
 - `docs/작업이력.md`(원장·append-only)·`docs/reports/`(보고서)·`_versions/`(백업) = §기록SSOT.
 
