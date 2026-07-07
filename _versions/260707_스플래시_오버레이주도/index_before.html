@@ -584,29 +584,6 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   @keyframes ywmPulse { from { opacity:.2; } to { opacity:.75; } }
   @keyframes ywmFlick { 0%,91% { opacity:1; } 92% { opacity:.6; } 93% { opacity:1; } 96% { opacity:.82; } 97%,100% { opacity:1; } }
   @media (prefers-reduced-motion:reduce){ .ywm, .ywm .wl, .ywm .wl span { animation:none !important; } }
-  /* ═══ 첫 진입 스플래시 오버레이(운영자 260707 확정: 웹이 스플래시 주도 · 플그 확정값 top 40.5%·66vw·화이트·자간 -5%·광원 5%·페이드업) — OS 스플래시(순검정 아이콘)와 --bg 동색 이음새 → YETA 페이드업 → 앱 준비 시 .gone 페이드아웃 → hidden 제거
-     로고 배치 top/--w = 기하 raw 예외축(잠금 대형 로고 top:19.7%·--w:63.66% 관례 계승) · 색 = --bg/--fg 토큰 계승 · 워드마크 레이어 = #ywm 6겹 재사용(화이트 = 코발트/라임 반전판 소등) */
-  .yspl { position:fixed; inset:0; z-index:120; background:var(--bg); opacity:1; transition:opacity .5s var(--ease); }   /* z:120 = --z-float(60) 상위 · 초기 로드 전용(챗 dialog top-layer와 시점 무겹침) */
-  .yspl.gone { opacity:0; pointer-events:none; }
-  .yspl[hidden] { display:none; }
-  .yspl-wm { position:absolute; top:40.5%; left:50%; transform:translate(-50%,-50%); --w:66vw; width:var(--w); aspect-ratio:3.6356/1;
-    filter:drop-shadow(0 6px 14px rgba(0,0,0,.45)) drop-shadow(0 0 14px rgba(var(--cobalt-rgb),.4)); animation:ysplIn .82s var(--ease) both; }
-  .yspl-wm .wl { position:absolute; inset:0; display:flex; justify-content:center; align-items:stretch; pointer-events:none; }
-  .yspl-wm .wl span { flex:none; height:100%; aspect-ratio:var(--ar); -webkit-mask:var(--m) center/100% 100% no-repeat; mask:var(--m) center/100% 100% no-repeat; }
-  .yspl-wm .wl span + span { margin-left:calc(var(--w) * -.05); }   /* 자간 -5%(플그 확정) */
-  .yspl-wm .wl span:nth-child(even) { transform:translateY(4.5%); }
-  .yspl-wm .wl span:nth-child(odd) { transform:translateY(-2.5%); }
-  .yspl-wm .w-halo { z-index:-1; filter:blur(var(--blur-m)); opacity:.62; }
-  .yspl-wm .w-halo span { background:rgba(255,255,255,.32); }   /* 화이트 헤일로 */
-  .yspl-wm .w-cb, .yspl-wm .w-ca { display:none; }   /* 화이트 스타일 = 코발트/라임 반전판 소등 */
-  .yspl-wm .w-body span { background:var(--fg); }   /* 흰 단색(--fg 계승) */
-  .yspl-wm .w-light { mix-blend-mode:screen; opacity:.05; }   /* 내부 광원 5%(플그 확정) */
-  .yspl-wm .w-light span { background:radial-gradient(ellipse 60% 90% at 50% 32%, rgba(255,255,255,.64) 0%, rgba(var(--accent-rgb),.3) 45%, transparent 75%); }
-  .yspl-wm .w-scan { mix-blend-mode:screen; opacity:.6; }
-  .yspl-wm .w-scan span { background:repeating-linear-gradient(0deg, transparent 0 4px, rgba(255,255,255,.26) 4px 5px); background-size:100% 240%; }
-  .yspl-wm .w-flash { display:none; }
-  @keyframes ysplIn { from { opacity:0; transform:translate(-50%,-50%) translateY(9px) scale(.975); } to { opacity:1; transform:translate(-50%,-50%); } }
-  @media (prefers-reduced-motion:reduce){ .yspl-wm { animation:none; } }
   .ychar-h { font-size:var(--fs-h2); font-weight:var(--fw-x); padding:2px 4px 12px; }
   .ychar-h small { display:block; font-size:var(--fs-xs); color:var(--mut); font-weight:var(--fw-b); margin-top:2px; }
   /* 캐릭터별 성향 설정(운영자 260706 — 디테일 ⚙ 진입 · 16축 슬라이더 · 프리셋 · 라이브 육각) */
@@ -836,8 +813,6 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
 </style>
 </head>
 <body>
-<!-- ═══ 첫 진입 스플래시(웹 오버레이가 스플래시 주도 — 운영자 260707 "웹 오버레이가 OS 스플래시를 대신해야 해") — OS 스플래시 = 순검정 아이콘(yeta-splash-* 단색)으로 무존재화 · 오버레이(검정 --bg + 화이트 YETA 페이드업)가 이어받아 한 흐름 ═══ -->
-<div class="yspl" id="yspl" aria-hidden="true"><div class="yspl-wm" id="ywmSplash"></div></div>
 <!-- ═══ YETA 메인 화면 (라이트·PIN 게이트 · 260704 재디자인 V1) ═══ -->
 <div class="ymain video-lock" id="ymain">
   <div class="ym-stage" aria-hidden="true"><video class="ym-video" id="ymVideo" autoplay loop muted playsinline preload="auto" poster="assets/brand/lock-hero-poster.jpg"><source src="assets/brand/lock-hero.mp4" type="video/mp4"></video><div class="ywm ym-wm" id="ywmLock"></div><div class="ym-flash"></div></div>   <!-- 잠금 스테이지 = 영상 히어로 베이스(운영자 260706) + 대형 로고 글래스모피즘 + 번개 플래시 (소년 원/보이/라벨 폐지) -->
@@ -1274,14 +1249,9 @@ const yStair = (() => {
   const spans = [['y', 1.11502], ['e', 0.90096], ['t', 1.02236], ['a', 1.15335]]
     .map(([n, ar]) => `<span style="--m:url('assets/brand/yeta-wm-${n}.png');--ar:${ar}"></span>`).join('');
   const layers = ['w-halo', 'w-cb', 'w-body', 'w-ca', 'w-light', 'w-scan', 'w-flash'].map(c => `<div class="wl ${c}">${spans}</div>`).join('');   // w-light = 내부 광원(잠금 대형 로고만 점등 · 좌상단은 opacity 0)
-  ['ywm', 'ywmLock', 'ywmSplash'].forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = layers; });   // ywmSplash = 첫 진입 스플래시 로고(화이트 스타일 = CSS 스코프)
+  ['ywm', 'ywmLock'].forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = layers; });
 })();
-// 첫 진입 스플래시 해제(운영자 260707 웹 주도 확정) — 페이드업 감상 후(1.4s) .gone 페이드아웃 → hidden 제거(뒤 잠금화면 노출). OS 스플래시 = 순검정 아이콘이라 오버레이가 스플래시의 유일 시각 주체.
-(() => {
-  const spl = document.getElementById('yspl');
-  if (!spl) return;
-  setTimeout(() => { spl.classList.add('gone'); setTimeout(() => { spl.hidden = true; }, 550); }, 1400);
-})();
+// 첫 진입 웹 오버레이 스플래시 폐지(운영자 260707 "화면만 하나 늘었어") — 검정+YETA는 OS 스플래시 아이콘(manifest any = yeta-splash-*.png 워드마크판)이 담당 · 웹 화면 추가 금지.
 // ── 대화 목록(메뉴2 · 카톡 결) — 단일 세션 = 진행 대화 1행(아바타·이름·미리보기·시간·라임 안읽음 배지) ──
 const YTH = t => (((YSESS || {}).threads) || {})[t || (YSESS || {}).cur] || null;   // v3 스레드 뷰(260707 다중 채팅방 — 미지정 = 현재 방)
 const yReadTs = t => { try { return +localStorage.getItem('yeta_read_' + t) || 0; } catch { return 0; } };   // unread = 스레드별 "마지막 읽은 턴 ts"(카운트 폐지 = 200캡 트리밍 내성 · UX감사④1)
