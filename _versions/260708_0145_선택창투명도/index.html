@@ -645,9 +645,9 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   /* ═══ 시즌제 세계관 헤더 + 캐릭터 리스트(1행 1명 · 운영자 260706 "롤토체스식 시즌" — 성격 불변·역할군 리스킨) ═══
      행 = [아바타][이름/표현/대사 3줄][연한 세로 구분자][육각 성향 레이더(라임)] · 탭 = 세부 디테일 → 대화 진입 · 전부 글래스 계승 */
   /* 시즌 헤더 = .yssn 정본 공용(구 .yworld 폐지 — 운영자 시즌 표기 통일 지시) */
-  .ycrow { display:flex; align-items:center; gap:11px; width:100%; padding:var(--sp-2); background:var(--glass-0); border:1px solid var(--glass-line-0); border-radius:var(--r-m);
+  .ycrow { display:flex; align-items:center; gap:11px; width:100%; padding:var(--sp-2); background:var(--glass); border:1px solid var(--glass-line); border-radius:var(--r-m);
     color:var(--fg); font:inherit; text-align:left; cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent;
-    backdrop-filter:blur(var(--blur-l)); -webkit-backdrop-filter:blur(var(--blur-l)); box-shadow:inset 0 1px 0 var(--glass-line-0); }   /* 투명도 상향(운영자 260707 재조정 "투명도 더 높여도" · 3안 중 ③채택) — 표면 glass→glass-0(.02 = 배경 인물 확 비침)·라인 0단·블러 --blur-m→--blur-l(24 = 비친 뒤 정리·가독) · 패딩·라운드 유지 */
+    backdrop-filter:blur(var(--blur-m)); -webkit-backdrop-filter:blur(var(--blur-m)); box-shadow:inset 0 1px 0 var(--glass-line); }   /* 표면 1단 상향 glass-0→glass·라인 0단→기본(운영자 260707 "불투명도 좀 더 올려") · 블러 --blur-m·패딩 --sp-2·라운드 --r-m 유지 */
   .ycrow:active { transform:scale(var(--press-l,.95)); }
   .ycrow.talking { opacity:.55; }   /* 이미 대화 중 = 흐림(대화 안 하는 애를 고르게 · 운영자 260707) — 클릭 = 재진입 가능(비활성 아님) · 라벨이 진행 중임을 명시 */
   .ycrow.talking:active { transform:scale(var(--press-l,.95)); opacity:.72; }
