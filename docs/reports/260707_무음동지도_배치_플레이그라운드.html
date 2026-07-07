@@ -38,6 +38,9 @@ svg{width:100%;height:auto;display:block;border-radius:var(--r-m)}
 .pin text{font-size:7.5px;font-weight:800;fill:#121212}
 .pin circle{stroke:rgba(18,18,18,.9);stroke-width:1.4;transition:cx .5s var(--ease),cy .5s var(--ease)}
 .pin{transition:transform .55s var(--ease)}
+.walker{transition-property:transform;transition-timing-function:linear}
+.walker image{animation:wbob 1.05s ease-in-out infinite}
+@keyframes wbob{0%,100%{transform:translateY(0)}50%{transform:translateY(-1.6px)}}
 .center-star{fill:#CFFF40}
 /* 컨트롤 */
 .ctrl{flex:1;min-width:250px}
@@ -88,6 +91,10 @@ td b{font-weight:var(--fw-b)}
         <button data-bg="" class="on">지형도만</button><button data-bg="night">밤</button><button data-bg="day">낮</button>
       </div>
       <p class="cap" style="margin:8px 0 0">밤/낮 = viewer/assets/yeta_map/*.png(raw) 위에 노드·핀 오버레이 — 그림 건물과 좌표 정합 검토용.</p>
+      <div class="seg" id="wseg" style="margin-top:8px">
+        <button data-w="pin" class="on">이니셜 핀</button><button data-w="walk">🚶 걸어다니기(스프라이트)</button>
+      </div>
+      <p class="cap" style="margin:8px 0 0">스프라이트 = char_&lt;id&gt;.png(yeta-map-bg 파이프 산출·개성 반영) — 장소 주변을 어슬렁거리고 시간이 바뀌면 걸어서 이동. 미생성/로드 실패 캐릭터 = 핀 폴백.</p>
     </div>
     <div class="knob">
       <p class="kt">지금 어디에 —</p>
@@ -198,9 +205,19 @@ function baseMap(){
 }
 $('#map').innerHTML=baseMap();
 
-/* ── 핀 렌더(같은 장소 = 부채 오프셋) ── */
-let dayOff=0;
+/* ── 핀/스프라이트 렌더(같은 장소 = 부채 오프셋) ── */
+let dayOff=0, wmode='pin';
+const SPR_OK={};   // 스프라이트 로드 캐시(true/false — 실패 = 핀 폴백)
 function dstr(off){const d=new Date(Date.now()+9*3600e3+off*86400e3);return d.toISOString().slice(0,10);}
+function sprUrl(cid){return RAW+'char_'+cid+'.png';}
+function sprProbe(cid){   // 1회 프로브 — 로드 성공 여부 캐시 후 재렌더
+  if(cid in SPR_OK) return;
+  SPR_OK[cid]=null;
+  const im=new Image();
+  im.onload=()=>{SPR_OK[cid]=true;render();};
+  im.onerror=()=>{SPR_OK[cid]=false;render();};
+  im.src=sprUrl(cid);
+}
 async function render(){
   const h=+$('#hr').value;
   $('#hlbl').textContent=`${h}시`;
@@ -216,10 +233,16 @@ async function render(){
       const ang=(i/cids.length)*Math.PI*2-Math.PI/2, off=cids.length>1?13:0;
       const x=p.x*SC+Math.cos(ang)*off, y=p.y*SC+Math.sin(ang)*off-(cids.length>1?0:16);
       const [ini,col]=CAST[cid];
-      pins+=`<g class="pin"><circle cx="${x}" cy="${y}" r="8" fill="${col}"/><text x="${x}" y="${y+2.8}" text-anchor="middle">${ini}</text></g>`;
+      if(wmode==='walk'){ sprProbe(cid); }
+      if(wmode==='walk'&&SPR_OK[cid]){
+        pins+=`<g class="pin walker" id="wk-${cid}" data-x="${x}" data-y="${y}"><image href="${sprUrl(cid)}" x="-13" y="-26" width="26" height="26" preserveAspectRatio="xMidYMax meet"/></g>`;
+      }else{
+        pins+=`<g class="pin"><circle cx="${x}" cy="${y}" r="8" fill="${col}"/><text x="${x}" y="${y+2.8}" text-anchor="middle">${ini}</text></g>`;
+      }
     });
   }
   document.getElementById('pins').innerHTML=pins;
+  wander(true);
   for(const id of Object.keys(PLACES)){const el=document.getElementById('pn-'+id); if(el) el.classList.toggle('meet',(byPlace[id]||[]).filter(c=>!PLACES[at[c]].pv).length>=2);}
   const rows=Object.entries(byPlace).sort((a,b)=>b[1].length-a[1].length).map(([pl,cids])=>{
     const p=PLACES[pl], meet=!p.pv&&cids.length>=2;
@@ -227,7 +250,25 @@ async function render(){
   }).join('');
   $('#who').innerHTML=rows;
 }
+/* 어슬렁 — 워커마다 장소 주변 ±9px 목표를 주기 갱신(진행 방향 = 좌우 플립 · 이동은 CSS transition) */
+function wander(reset){
+  document.querySelectorAll('.walker').forEach(g=>{
+    const bx=+g.dataset.x, by=+g.dataset.y;
+    const tx=bx+(Math.random()*18-9), ty=by+(Math.random()*10-5);
+    const prev=g._tx===undefined?bx:g._tx;
+    g._tx=tx;
+    const flip=tx>prev?-1:1;   // 스프라이트 기본 = 왼쪽 보기 → 오른쪽 이동 = 플립
+    g.style.transform=`translate(${tx}px,${ty}px) scaleX(${flip})`;
+    if(reset) g.style.transitionDuration=(1.2+Math.random()*.8)+'s';
+    else g.style.transitionDuration=(2.4+Math.random()*2)+'s';
+  });
+}
+setInterval(()=>{ if(wmode==='walk') wander(false); },3200);
 $('#hr').addEventListener('input',render);
+document.querySelectorAll('#wseg button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('#wseg button').forEach(x=>x.classList.toggle('on',x===b));
+  wmode=b.dataset.w; render();
+}));
 document.querySelectorAll('#bgseg button').forEach(b=>b.addEventListener('click',()=>{
   document.querySelectorAll('#bgseg button').forEach(x=>x.classList.toggle('on',x===b));
   const im=document.getElementById('bgimg'), z=document.getElementById('zones');
