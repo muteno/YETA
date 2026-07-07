@@ -872,14 +872,6 @@ const YDIAL = { model: 'claude-opus-4-8', effort: 'low' };   // 모델 = 항상 
 let _yView = 'chat';   // 'list'(SNS식 캐릭터 선택) | 'chat'(대화방) — 첫 진입/이름탭 = 리스트(운영자 260703)
 const yApi = (op, extra) => fetch('api/yeta', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ op, ...(extra || {}) }) }).then(r => r.json());
 const yFmt = t => esc(t).replace(/\*([^*\n]{1,200}?)\*/g, '<i class="yn">$1</i>');   // *지문* → 이탤릭(제타 대화 폰트 결)
-function yVvFit() {   // 키보드 개폐 = 창 유지 가드(운영자 260707 "입력할 때 창 내려감"): 챗 프레임을 키보드 위 보이는 영역에 정확히 맞춤(높이+팬 오프셋) + 로그 바닥 재고정. 뷰포트 메타(resizes-content)를 안 쓰는 이유 = dvh 축소가 9:16 레터박스 쿼리를 폰에서 오발동 · 임계 120 = 온스크린 키보드 판정(OS 뷰포트 축 = raw 예외)
-  if (!yetadlg.open) { yetadlg.style.height = yetadlg.style.top = ''; return; }
-  const kb = window.innerHeight - visualViewport.height > 120;
-  yetadlg.style.height = kb ? visualViewport.height + 'px' : '';
-  yetadlg.style.top = kb ? visualViewport.offsetTop + 'px' : '';
-  if (kb) { const log = $('#yetaLog'); log.scrollTop = log.scrollHeight; }
-}
-if (window.visualViewport) { visualViewport.addEventListener('resize', yVvFit); visualViewport.addEventListener('scroll', yVvFit); }
 const yPersona = id => YCHARS.find(x => x.id === id);
 // ── 탭 패널(운영자 260705 재편: 1=캐릭터 · 2=대화 목록 · 3=지금 대화[dialog] · 메인 화면 폐지) ──
 function yTab(tab) {   // 'char' | 'list' | 'settings' — 네비 활성·패널 토글(chat=dialog)
