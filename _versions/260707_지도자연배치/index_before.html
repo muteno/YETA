@@ -498,11 +498,6 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   .ymp-car .body { stroke:rgba(18,18,18,.75); stroke-width:.8; }
   .ymp-car .lite { fill:rgba(var(--accent-rgb),.9); }
   @media (prefers-reduced-motion:reduce) { .ymp-walker .wimg { animation:none; } }
-  /* 실내 캐릭터 = 건물 위 이름표(운영자 260707 "건물 안이면 모습 가려지고 이름표") · 이름 3글자↑ = 축약(roster short) */
-  .ymp-tag rect { fill:rgba(18,18,18,.8); stroke:rgba(255,255,255,.22); stroke-width:.6; }
-  .ymp-tag text { fill:var(--fg); font-size:8px; font-weight:var(--fw-b); paint-order:stroke; stroke:rgba(18,18,18,.92); stroke-width:2px; }
-  .ymp-tag.meet rect { stroke:var(--accent); stroke-width:1; }
-  .ymp-light circle { transition:fill .3s var(--ease); }   /* 신호등 — 광장 교차로(차량 정지 축) */
   .ymain.tab-char .ym-fit, .ymain.tab-char .ym-stage, .ymain.tab-char .ym-access-card, .ymain.tab-char .ym-pin { display:none; }   /* 홈 히어로·PIN 퇴장 */
   .ymain.tab-char::before { background:linear-gradient(rgba(0,0,0,.73), rgba(0,0,0,.47)); }   /* 갤러리 딤 = 상단 진하게·하단 열어 계단 노출(언락 밝기 플그 운영자 확정 · ::before 전환 재사용) */
   /* ═══ YETA 워드마크 로고(운영자 260705 확정: 오프셋×전뇌 반반 — 코발트+라임 반전판 · 코발트 글로우 · 글래스 80% · 모션 6종 · 자간 -22%·엇갈림) ═══
@@ -966,14 +961,6 @@ function yTab(tab) {   // 'char' | 'list' | 'settings' — 네비 활성·패널
 //    워커 10인 = 현재 KST 실위치 + 어슬렁 · 차량 = 엣지(길) 순회 · 전부 rAF + style.transform(합성만 = 60fps · 운영자 260707) · 탭 이탈 = 루프 정지.
 let YMAPD = null, _ymapRaf = 0, _ymapIv = 0, _ymapWalkers = [], _ymapCars = [], _ymapLast = 0;
 const YMAP_SC = 5, YMAP_RM = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
-// ── 맵 시각 레이어(운영자 260707 "자연스럽게 배치 · 차는 차도로 · 신호등 정지 · 건물 안이면 이름표") — map_night.png 좌표계(0~100) · 논리 SSOT(places.json)와 별개 축.
-//    건물 draw 위치(논리좌표는 중앙 뭉침이라 이미지와 불일치 → 실측 트레이스), 도로 링(회색길), 신호등, 실내/야외.
-const YMAP_POS = { radio:[50,14], office:[56,33], studio:[61,44], alley:[50,50], tea:[30,52], store:[50,63], dojo:[20,78], market:[35,71], gym:[11,60], park:[46,84], school:[65,75] };
-const YMAP_SPOT = { alley:[50,50], park:[46,84], market:[35,71] };   // 야외 지상 스팟(오프로드 · 캐릭터 안착) — 나머지 = 실내 이름표
-const YMAP_INDOOR = new Set(['tea','studio','office','radio','gym','dojo','school','store']);
-const YMAP_RING = [[47,51],[50,50],[48,56],[46,65],[44,75],[43,83],[26,85],[14,86],[11,76],[12,67],[22,62],[33,58],[42,54]];   // 차량 도로 링(회색길 실측 · 폐곡선)
-const YMAP_PLAZA_I = 1;   // 링에서 광장(신호등) 정점 인덱스 — 여기서 red면 차량 정지
-const ymRed = now => Math.floor(now / 1000) % 12 < 5;   // 신호 주기 = red 5s / green 7s
 const ymSlot = h => h < 3 ? 'late' : h < 7 ? 'dawn' : h < 11 ? 'morning' : h < 17 ? 'day' : h < 21 ? 'evening' : 'night';
 async function ymSha(s) { const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)); return BigInt('0x' + [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join('')); }
 async function ymPlaceOf(cid, dateStr, hour) {   // yeta_place.place_of 등가(동선표 + 시드 1/4 인접 외출 · private 변주 없음)
@@ -1000,44 +987,58 @@ async function yMapEnter() {
   _ymapIv = setInterval(ymPlaceAll, 60000);   // 실시간 위치 = 1분 재판정(시드·동선 = 결정적이라 잦을 필요 없음)
   if (!YMAP_RM()) { _ymapLast = performance.now(); _ymapRaf = requestAnimationFrame(ymTick); }
 }
-function ymBuild(svg) {   // 정적 레이어 — 배경(밤) · 장소 노드/라벨(맵 실측 좌표 YMAP_POS) · 신호등 · 워커/차 그룹 (도로선 = 이미지 내장이라 미표시)
-  const P = YMAPD.places, S = [], NS = 'http://www.w3.org/2000/svg';
-  const px = id => (YMAP_POS[id] ? YMAP_POS[id][0] : (P[id] || {}).x) * YMAP_SC;
-  const py = id => (YMAP_POS[id] ? YMAP_POS[id][1] : (P[id] || {}).y) * YMAP_SC;
+function ymBuild(svg) {   // 정적 레이어 — 배경(밤) · 길(엣지) · 출입금지 · 장소 노드 · 워커/차 그룹
+  const P = YMAPD.places, S = [];
   S.push(`<rect width="500" height="500" fill="rgba(14,16,15,.8)"/>`);
   S.push(`<image href="assets/yeta_map/map_night.png" x="0" y="0" width="500" height="500" preserveAspectRatio="xMidYMid slice"/>`);
-  for (const [id, p] of Object.entries(P)) {
-    if (p.offlimits) { S.push(`<g><rect class="ymp-off" x="${px(id) - 34}" y="${py(id) - 24}" width="68" height="48" rx="6"/><text class="ymp-offtxt" x="${px(id)}" y="${py(id) + 3}" text-anchor="middle">출입금지</text></g>`); continue; }
-    if (p.private || !YMAP_POS[id]) continue;   // 집(private)·맵 미등재 노드 = 지도 제외
-    S.push(`<circle class="ymp-node" id="ymn-${esc(id)}" cx="${px(id)}" cy="${py(id)}" r="${id === 'alley' ? 10 : 7}"/>`);
-    S.push(`<text class="ymp-name" x="${px(id)}" y="${py(id) + (id === 'alley' ? 20 : 17)}" text-anchor="middle">${esc(p.name)}</text>`);
+  const done = new Set();
+  for (const [id, p] of Object.entries(P)) for (const n of (p.neighbors || [])) {   // 길 = 인접 엣지(차량 궤도와 동일 데이터)
+    const k = [id, n].sort().join('|'); if (done.has(k) || !P[n]) continue; done.add(k);
+    if (p.private || P[n].private) continue;
+    S.push(`<line x1="${p.x * YMAP_SC}" y1="${p.y * YMAP_SC}" x2="${P[n].x * YMAP_SC}" y2="${P[n].y * YMAP_SC}" stroke="rgba(255,255,255,.05)" stroke-width="7" stroke-linecap="round"/>`);
   }
-  S.push(`<g id="ymLights"></g><g id="ymCars"></g><g id="ymWalkers"></g>`);
+  for (const [id, p] of Object.entries(P)) {
+    if (p.offlimits) {   // 출입금지 지대(운영자 260707) — 위험 테이프 결
+      S.push(`<g><rect class="ymp-off" x="${p.x * YMAP_SC - 34}" y="${p.y * YMAP_SC - 24}" width="68" height="48" rx="6"/><text class="ymp-offtxt" x="${p.x * YMAP_SC}" y="${p.y * YMAP_SC + 3}" text-anchor="middle">출입금지</text></g>`);
+      continue;
+    }
+    if (p.private) continue;
+    S.push(`<circle class="ymp-node" id="ymn-${esc(id)}" cx="${p.x * YMAP_SC}" cy="${p.y * YMAP_SC}" r="${id === 'alley' ? 12 : 9}"/>`);
+    S.push(`<text class="ymp-name" x="${p.x * YMAP_SC}" y="${p.y * YMAP_SC + (id === 'alley' ? 24 : 20)}" text-anchor="middle">${esc(p.name)}</text>`);
+  }
+  S.push(`<g id="ymCars"></g><g id="ymWalkers"></g>`);
   svg.innerHTML = S.join('');
-  const L = svg.querySelector('#ymLights'), lx = px('alley') + 15, ly = py('alley') - 12;   // 신호등 = 광장 교차로
-  L.innerHTML = `<g class="ymp-light" transform="translate(${lx},${ly})"><rect x="-3.4" y="-9" width="6.8" height="18" rx="3" fill="rgba(18,18,18,.88)" stroke="rgba(255,255,255,.25)" stroke-width=".5"/><circle id="ymLR" cx="0" cy="-4.4" r="2.3" fill="#3a1414"/><circle id="ymLG" cx="0" cy="4.4" r="2.3" fill="#153a1a"/></g>`;
-  _ymapWalkers = (YCHARS || []).map(c => { const nm = c.name || '?'; return { id: c.id, name: nm, short: c.short || (nm.length >= 3 ? nm.slice(0, 2) : nm), initial: c.initial || nm[0], color: c.color || '#8fb7bf', x: 250, y: 250, bx: 250, by: 250, mode: '', placed: 0, el: null, spr: null, tag: null }; });
+  _ymapWalkers = (YCHARS || []).map(c => ({ id: c.id, name: c.name, initial: c.initial || (c.name || '?')[0], color: c.color || '#8fb7bf',
+    x: 250, y: 250, bx: 250, by: 250, tx: 250, ty: 250, next: 0, el: null }));
   const wg = svg.querySelector('#ymWalkers');
   for (const w of _ymapWalkers) {
-    const g = document.createElementNS(NS, 'g'); g.setAttribute('class', 'ymp-walker');
-    g.innerHTML = `<image class="wimg" href="assets/yeta_map/char_${esc(w.id)}.png" x="-11" y="-22" width="22" height="22" preserveAspectRatio="xMidYMax meet"/><g class="ymp-tag" style="display:none"><rect x="-15" y="-13" width="30" height="13" rx="6.5"/><text x="0" y="-3.4" text-anchor="middle">${esc(w.short)}</text></g>`;
+    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    g.setAttribute('class', 'ymp-walker');
+    g.innerHTML = `<image class="wimg" href="assets/yeta_map/char_${esc(w.id)}.png" x="-11" y="-22" width="22" height="22" preserveAspectRatio="xMidYMax meet"/>`;
     g.addEventListener('click', () => openYeta(w.id));   // 쪼만한 주민 탭 = 그 캐릭터와 대화(지도 → 방 직행)
-    w.spr = g.querySelector('.wimg'); w.tag = g.querySelector('.ymp-tag');
-    w.spr.addEventListener('error', () => { const cc = document.createElementNS(NS, 'circle'); cc.setAttribute('class', 'fb'); cc.setAttribute('cx', 0); cc.setAttribute('cy', -8); cc.setAttribute('r', 8); cc.setAttribute('fill', w.color); const tt = document.createElementNS(NS, 'text'); tt.setAttribute('class', 'fb'); tt.setAttribute('x', 0); tt.setAttribute('y', -5.2); tt.setAttribute('text-anchor', 'middle'); tt.textContent = w.initial; w.spr.replaceWith(cc); cc.after(tt); w.spr = cc; }, { once: true });
+    const im = g.querySelector('image');
+    im.addEventListener('error', () => { g.innerHTML = `<circle class="fb" cx="0" cy="-8" r="8" fill="${esc(w.color)}"/><text class="fb" x="0" y="-5.2" text-anchor="middle">${esc(w.initial)}</text>`; }, { once: true });
     wg.appendChild(g); w.el = g;
   }
   _ymapCars = [];
-  if (!YMAP_RM()) {   // 차량(운영자 260707 "차도로만·서행·신호 정지") — 도로 링 주행 · reduce-motion = 미생성
-    const cg = svg.querySelector('#ymCars'), tones = ['#8fb7ff', '#c4c9c4', '#ffb46b'];
-    for (let i = 0; i < 3; i++) {
-      const g = document.createElementNS(NS, 'g'); g.setAttribute('class', 'ymp-car');
-      g.innerHTML = `<rect class="body" x="-3.1" y="-6" width="6.2" height="12" rx="2.1" fill="${tones[i % 3]}"/><rect x="-2.2" y="-2.8" width="4.4" height="3.8" rx="1.2" fill="rgba(18,18,18,.55)"/><circle class="lite" cx="-1.7" cy="-5.3" r=".85"/><circle class="lite" cx="1.7" cy="-5.3" r=".85"/>`;
+  if (!YMAP_RM()) {   // 차량(운영자 260707 "도로 위에 차 · 60fps") — 공공 노드 그래프 랜덤 워크 · reduce-motion = 미생성
+    const pub = Object.keys(P).filter(k => !P[k].private && !P[k].offlimits && (P[k].neighbors || []).length);
+    const cg = svg.querySelector('#ymCars');
+    const tones = ['#8fb7ff', '#c4c9c4', '#ffb46b', '#9db2bf'];
+    for (let i = 0; i < 4 && pub.length > 1; i++) {
+      const a = pub[(i * 3) % pub.length];
+      const nbs = (P[a].neighbors || []).filter(n => P[n] && !P[n].private);
+      if (!nbs.length) continue;
+      const b = nbs[i % nbs.length];
+      const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      g.setAttribute('class', 'ymp-car');
+      g.innerHTML = `<rect class="body" x="-3.6" y="-7" width="7.2" height="14" rx="2.4" fill="${tones[i % tones.length]}"/><rect x="-2.6" y="-3.4" width="5.2" height="4.6" rx="1.4" fill="rgba(18,18,18,.55)"/><circle class="lite" cx="-2" cy="-6.2" r="1"/><circle class="lite" cx="2" cy="-6.2" r="1"/>`;
       cg.appendChild(g);
-      _ymapCars.push({ seg: Math.floor(i * YMAP_RING.length / 3), t: Math.random(), v: 12 + Math.random() * 5, el: g });   // v = px/s(서행)
+      _ymapCars.push({ a, b, t: Math.random() * .8, v: 26 + Math.random() * 16, el: g });   // v = px/s(등속 · 골목길 서행 결)
     }
   }
 }
-async function ymPlaceAll() {   // 현재 시각 실위치 재판정 → 워커 실내/야외 모드·앵커 갱신 + 붐빔 링 + 시계
+async function ymPlaceAll() {   // 현재 시각 실위치 재판정 → 워커 base 갱신 + 붐빔 링 + 시계
   if (!YMAPD || !_ymapWalkers.length) return;
   const k = ymKst(), dateStr = k.toISOString().slice(0, 10), h = k.getUTCHours();
   const cl = $('#ymapClock'); if (cl) cl.textContent = `${yTime(Date.now())} · ${{ late: '깊은 밤', dawn: '새벽', morning: '아침', day: '낮', evening: '저녁', night: '밤' }[ymSlot(h)]}`;
@@ -1046,49 +1047,39 @@ async function ymPlaceAll() {   // 현재 시각 실위치 재판정 → 워커 
   const byPlace = {};
   for (const [cid, pl] of Object.entries(at)) (byPlace[pl] = byPlace[pl] || []).push(cid);
   for (const w of _ymapWalkers) {
-    const pl = at[w.id], grp = byPlace[pl] || [w.id], i = grp.indexOf(w.id);
-    if (YMAP_SPOT[pl] && !YMAP_INDOOR.has(pl)) {   // 야외 = 지상 스팟 안착(오프로드) · 여럿이면 옆으로 벌림(배회 없음)
-      w.mode = 'out';
-      const off = grp.length > 1 ? 9 : 0, ang = (i / grp.length) * Math.PI * 2 - Math.PI / 2;
-      w.bx = YMAP_SPOT[pl][0] * YMAP_SC + Math.cos(ang) * off; w.by = YMAP_SPOT[pl][1] * YMAP_SC + Math.sin(ang) * off;
-    } else if (YMAP_POS[pl]) {   // 실내 = 건물 위 이름표 · 여럿이면 세로 스택
-      w.mode = 'in'; w.bx = YMAP_POS[pl][0] * YMAP_SC; w.by = YMAP_POS[pl][1] * YMAP_SC - 12 - i * 12;
-    } else { w.mode = 'hide'; }   // 집(private)·미등재 = 지도 밖
-    if (!w.placed) { w.x = w.bx; w.y = w.by; w.placed = 1; }
-    ymApplyMode(w);
+    const p = YMAPD.places[at[w.id]]; if (!p) continue;
+    const grp = byPlace[at[w.id]], i = grp.indexOf(w.id);
+    const ang = (i / grp.length) * Math.PI * 2 - Math.PI / 2, off = grp.length > 1 ? 12 : 0;
+    w.bx = p.x * YMAP_SC + Math.cos(ang) * off; w.by = p.y * YMAP_SC + Math.sin(ang) * off;
+    if (!w.placed || YMAP_RM()) { w.x = w.tx = w.bx; w.y = w.ty = w.by; w.placed = 1; w.next = 0; }
+    if (YMAP_RM() && w.el) w.el.style.transform = `translate(${w.x}px,${w.y}px)`;
   }
-  for (const id of Object.keys(YMAPD.places)) { const el = document.getElementById('ymn-' + id); if (el) el.classList.toggle('meet', ((byPlace[id] || []).length) >= 2); }
+  for (const id of Object.keys(YMAPD.places)) {
+    const el = document.getElementById('ymn-' + id);
+    if (el) el.classList.toggle('meet', ((byPlace[id] || []).length) >= 2);
+  }
 }
-function ymApplyMode(w) {   // 스프라이트(야외)/이름표(실내)/숨김(집) 토글 + rAF 미가동(reduce) 시 정적 배치
-  if (!w.el) return;
-  if (w.mode === 'hide') { w.el.style.display = 'none'; return; }
-  w.el.style.display = '';
-  const inTag = w.mode === 'in';
-  if (w.spr) w.spr.style.display = inTag ? 'none' : '';
-  if (w.tag) w.tag.style.display = inTag ? '' : 'none';
-  if (YMAP_RM()) { w.x = w.bx; w.y = w.by; w.el.style.transform = `translate(${w.x}px,${w.y}px)`; }
-}
-function ymTick(now) {   // 루프 — 워커 스팟 안착(배회 없음) + 신호등 + 차량 도로 링 주행 · style.transform만(합성 전용)
+function ymTick(now) {   // 60fps 루프 — 워커 어슬렁 + 차량 주행 · style.transform만(레이아웃 0 · 합성 전용)
   const dt = Math.min(.05, (now - _ymapLast) / 1000); _ymapLast = now;
   for (const w of _ymapWalkers) {
-    if (!w.el || !w.placed || w.mode === 'hide') continue;
-    const dx = w.bx - w.x, dy = w.by - w.y, d = Math.hypot(dx, dy);   // 스팟으로 부드럽게 안착 후 정지(둥둥 배회 제거)
-    if (d > .3) { const sp = Math.min(d, 26 * dt + d * 2 * dt); w.x += dx / d * sp; w.y += dy / d * sp; }
-    w.el.style.transform = `translate(${w.x}px,${w.y}px)`;
+    if (!w.el || !w.placed) continue;
+    if (now >= w.next) { w.tx = w.bx + (Math.random() * 18 - 9); w.ty = w.by + (Math.random() * 10 - 5); w.next = now + 2200 + Math.random() * 2600; }
+    const dx = w.tx - w.x, dy = w.ty - w.y, d = Math.hypot(dx, dy);
+    if (d > .4) { const sp = Math.min(d, 30 * dt + d * 1.4 * dt); w.x += dx / d * sp; w.y += dy / d * sp; }
+    w.el.style.transform = `translate(${w.x}px,${w.y}px) scaleX(${w.tx > w.x + .2 ? -1 : 1})`;
   }
-  const red = ymRed(now), lr = document.getElementById('ymLR'), lg = document.getElementById('ymLG');
-  if (lr) lr.setAttribute('fill', red ? '#ff4d4d' : '#3a1414');
-  if (lg) lg.setAttribute('fill', red ? '#153a1a' : '#49e06a');
-  const N = YMAP_RING.length;
+  const P = YMAPD.places;
   for (const c of _ymapCars) {
-    const A = YMAP_RING[c.seg], B = YMAP_RING[(c.seg + 1) % N];
-    const len = Math.hypot((B[0] - A[0]) * YMAP_SC, (B[1] - A[1]) * YMAP_SC) || 1;
-    const toPlaza = (c.seg + 1) % N === YMAP_PLAZA_I, stopT = 1 - 9 / len;   // 광장 정점 9px 앞 = 정지선
-    const adv = c.v * dt / len;
-    if (red && toPlaza && c.t + adv >= stopT) { c.t = Math.min(c.t, stopT); }   // 빨간불 = 정지선서 대기
-    else { c.t += adv; if (c.t >= 1) { c.seg = (c.seg + 1) % N; c.t = 0; } }
-    const x = (A[0] + (B[0] - A[0]) * c.t) * YMAP_SC, y = (A[1] + (B[1] - A[1]) * c.t) * YMAP_SC;
-    const ang = Math.atan2(B[1] - A[1], B[0] - A[0]) * 180 / Math.PI + 90;
+    const A = P[c.a], B = P[c.b], len = Math.hypot((B.x - A.x) * YMAP_SC, (B.y - A.y) * YMAP_SC) || 1;
+    c.t += c.v * dt / len;
+    if (c.t >= 1) {   // 교차로 도착 = 다음 길(직전 길 제외 우선 · 결정 없음 = 시각 연출)
+      const nbs = (B.neighbors || []).filter(n => P[n] && !P[n].private && n !== c.a);
+      const nx = nbs.length ? nbs[Math.floor(Math.random() * nbs.length)] : c.a;
+      c.a = c.b; c.b = nx; c.t = 0;
+    }
+    const ax = P[c.a].x * YMAP_SC, ay = P[c.a].y * YMAP_SC, bx = P[c.b].x * YMAP_SC, by = P[c.b].y * YMAP_SC;
+    const x = ax + (bx - ax) * c.t, y = ay + (by - ay) * c.t;
+    const ang = Math.atan2(by - ay, bx - ax) * 180 / Math.PI + 90;
     c.el.style.transform = `translate(${x}px,${y}px) rotate(${ang}deg)`;
   }
   _ymapRaf = requestAnimationFrame(ymTick);
