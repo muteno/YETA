@@ -163,8 +163,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   .ys-nm { font-size:var(--fs-xs); font-weight:var(--fw-x); max-width:88px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .ys-last { font-size:10px; color:var(--mut); max-width:88px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }   /* 최근대화 스니펫(5음절대 + …) */
   .ybg { position:absolute; inset:0; background-size:cover; background-position:center; opacity:0; transition:opacity .6s var(--ease); pointer-events:none; }
-  .ybg.on { opacity:.92; }   /* 시그니처/무드 배경 전경화(운영자 260707 항목9 "배경 항상 나오게" — 은은한 .32 반려) · 가독 = yPaintBg 딤 그라데(.72~.86)가 스크림 담당 · 버블은 글래스라 위에 뜸 */
-  .ybg { transition:opacity .6s var(--ease), background-position-x .05s linear; }   /* 좌우 드래그 패닝(항목5) = position-x 즉응 */
+  .ybg.on { opacity:.32; }   /* 페르소나/무드 = 라임 글래스 base 위 은은한 베일(운영자 260705 "배경은 준 이미지로" → 통일 backdrop 유지·무드 시스템[<<MOOD>>·yeta_bg.py]은 기틀 보존) */
   @media (prefers-reduced-motion:reduce) { .ybg { transition:none; } }
   .yeta-log { position:relative; flex:1; min-width:0; overflow-y:auto; padding:calc(64px + env(safe-area-inset-top)) var(--sp-2) calc(76px + env(safe-area-inset-bottom)) 6px; display:flex; flex-direction:column; gap:10px; }   /* 상하 패딩 = 플로팅 알약(헤더·입력) 클리어런스(운영자 260705) */
   .ymsg { display:flex; gap:8px; align-items:flex-start; max-width:86%; }   /* 캐릭터 메시지 = 아바타+이름+버블(제타 결) */
@@ -252,11 +251,6 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   .yeta-plus:active { transform:scale(var(--press-m,.9)); }
   /* 페르소나 픽커 — 헤더 이름 탭 → 주민 직접 선택(msgpop 무채 글래스 계승 · saturate(0)=뒤 색 비침 차단 · §🎨 무채 크롬) */
   .yeta-who { flex:1; display:flex; align-items:center; gap:8px; min-width:0; color:inherit; font:inherit; padding:0; text-align:left; }   /* 상대 = 좌우 한 폭 차지(운영자 260705 · flex:1) · 표시 전용(전환 제거) */
-  /* 대화상대 초대 = 헤더 프로필 옆 픽토(운영자 260707 항목12 "버튼 말고 픽토그램만 · 누르면 액티브 지속") — 입력행 +에서 이설 */
-  .yh-inv { flex:none; width:30px; height:30px; display:grid; place-items:center; background:none; border:none; padding:0; color:var(--fg-2); cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent; transition:transform .2s var(--ease), color .2s var(--ease); }
-  .yh-inv svg { width:20px; height:20px; }
-  .yh-inv:active { transform:scale(var(--press-m,.9)); }
-  .yh-inv.on { color:var(--accent); }   /* 액티브 지속 = 초대 팝오버 열린 동안 라임 점등 */
   .yh-ava { flex:none; width:34px; height:34px; border-radius:50%; display:grid; place-items:center; font-size:var(--fs-sm); font-weight:var(--fw-x);
     background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10); color:var(--yeta-ac); }   /* 헤더 상주 프로필 — 스크롤·긴 대화에도 캐릭터가 계속 보임(운영자 260703) · .yava 동형 */
   .yeta-who:active { transform:scale(var(--press-l,.95)); }
@@ -928,7 +922,6 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
     <div class="yeta-h">   <!-- 플로팅 알약 헤더(운영자 260705) = [←뒤로][상대 전폭][수화기(call.js 주입)] · X 폐지 -->
       <button class="yeta-back" id="yetaBack" type="button" aria-label="뒤로 — 대화 목록으로"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
       <div class="yeta-who" id="yetaWho"><span class="yh-ava" id="yetaAva" aria-hidden="true">y</span><b id="yetaTitle">yeta</b><span class="yh-tag" id="yetaTag"></span></div>   <!-- 지금 대화하는 상대 = 좌우 한 폭(운영자 260705) -->
-      <button class="yh-inv" id="yetaInvPlus" type="button" aria-label="대화상대 초대"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M20 8v6M23 11h-6"/></svg></button>   <!-- 초대 = 프로필 옆 픽토(항목12) -->
       <span class="yh-r"></span>   <!-- 수화기 = call.js가 이 래퍼 첫 자리에 주입(옵셔널 축) -->
     </div>
     <div class="yeta-stage">
@@ -945,8 +938,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
         <button type="button" class="on" aria-label="지금 대화 — 현재 화면"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 01-12 7.7L3 21l1.8-6A8.5 8.5 0 1121 11.5z"/><circle cx="8.6" cy="11.5" r=".9" fill="currentColor" stroke="none"/><circle cx="12" cy="11.5" r=".9" fill="currentColor" stroke="none"/><circle cx="15.4" cy="11.5" r=".9" fill="currentColor" stroke="none"/></svg></button>
       </nav>
       <textarea id="yetaText" rows="1" placeholder="메시지" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="send"></textarea>
-      <input type="file" id="yetaFile" accept="image/*,application/pdf,.txt,.docx" hidden>   <!-- 첨부 파일 선택(항목11) -->
-      <button class="yeta-plus" id="yetaPlus" type="button" aria-label="파일 첨부"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></button>   <!-- + = 파일 첨부(운영자 260707 항목11 · 초대는 헤더 픽토로 이설) -->
+      <button class="yeta-plus" id="yetaPlus" type="button" aria-label="더보기"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></button>   <!-- + 더보기 = 향후 기능 진입점(운영자 260705 #13) -->
       <button class="yeta-send" id="yetaSend" type="button" aria-label="전송" data-motion="rise"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2 15 22 11 13 2 9z"/></svg></button>   <!-- 종이비행기 픽토(강조색 · 운영자 260703·260705) -->
     </div>
   </div>
@@ -1860,8 +1852,7 @@ function yApply(c) {   // 페르소나 적용 — 이름·태그·포인트색·
   $('#yetaTitle').textContent = c.name; $('#yetaTag').textContent = c.tagline || ''; yNavName(c.name);
   yAvaSet($('#yetaAva'), c);   // 헤더 상주 프로필 — avatar(얼굴) 있으면 이미지, 없으면 이니셜(색은 --yeta-ac 자동)
   // 강조색(--yeta-ac)은 네온보라 고정 — 페르소나 구분은 아바타 이니셜색·배경으로만(운영자 260703). CSS 기본값(:root --yeta-ac) 사용, 런타임 주입 제거.
-  const fresh = !((YTH() || {}).turns || []).some(t => t.role === 'user');   // 프레시 스레드(내 발화 전) = 시그니처 배경 강제(항목9 · 무드 무시 = 계단 대신 캐릭터 고유 무대)
-  yStage(fresh ? '' : yLastMood());   // 무대 전환 — 첫 진입=시그니처 / 지속=대화의 공기(마지막 답장 무드 · 화자 바뀌어도 이어짐)
+  yStage(yLastMood());   // 무대 전환 — 대화의 공기(마지막 답장 무드)는 화자 바뀌어도 이어짐(같은 방)
 }
 function yHeadRoom() {   // 단톡 헤더(합석 260707) — room 2명 = 아바타 스택 + 이름 나열 + '단톡' 태그 · 1명 = yApply 단일 원복(멱등 · yRender마다 호출)
   if (_yView !== 'chat' || !YCUR) return;
@@ -1909,10 +1900,8 @@ yetadlg.addEventListener('click', e => { const pk = $('#yetaPick'); if (!pk.hidd
 function yInvToggle(force) {
   const pk = $('#yetaInv');
   const open = force !== undefined ? force : pk.hidden;
-  const ip = $('#yetaInvPlus');
-  if (!open) { pk.hidden = true; if (ip) ip.classList.remove('on'); return; }
+  if (!open) { pk.hidden = true; return; }
   if (!YCHARS.length || !YCUR || _yView !== 'chat') return;
-  if (ip) ip.classList.add('on');   // 액티브 지속(항목12) — 팝오버 열림 = 헤더 픽토 라임 점등
   const s = YTH() || {};   // v3 = 현재 방 스코프
   const room = (s.room && s.room.length ? s.room : [YCUR.id]).map(yPersona).filter(Boolean);
   const inv = s.invite && Date.now() - (s.invite.ts || 0) < 600000 ? yPersona(s.invite.to) : null;
@@ -1924,34 +1913,7 @@ function yInvToggle(force) {
     YCHARS.filter(c => !roomIds.includes(c.id)).map(c => `<button type="button" class="ypick-row" data-inv="${esc(c.id)}"${full || inv ? ' disabled' : ''}>${yAva(c)}<span class="yp-col"><span class="yp-name">${esc(c.name)}</span><span class="yp-tag">${esc(c.tagline || '')}</span></span></button>`).join('');
   pk.hidden = false;
 }
-$('#yetaPlus').addEventListener('click', e => { e.stopPropagation(); $('#yetaFile').click(); });   // 입력행 + = 파일 첨부(항목11 · 초대는 헤더 픽토로 이설)
-$('#yetaFile').addEventListener('change', e => {   // 첨부 선택 — 전송 파이프(R2 업로드 op)는 후속 백엔드 · 지금은 진입점+선택까지
-  const f = e.target.files && e.target.files[0]; if (!f) return;
-  miniToast(`${esc(f.name).slice(0, 22)} 선택됨 — 첨부 전송은 준비 중`);
-  e.target.value = '';
-});
-$('#yetaInvPlus').addEventListener('click', e => { e.stopPropagation(); yInvToggle(); });   // 헤더 프로필 옆 + = 대화상대 초대(항목12)
-// 좌우 드래그/횡스크롤 = 배경 패닝(항목5 · 화살표 없이) — cover 크롭 슬랙 안에서 background-position-x 이동 · 세로는 로그 네이티브 스크롤 양보(축 잠금 8px) · reduce-motion 비활성
-(() => {
-  const log = $('#yetaLog'); if (!log) return;
-  const reduce = matchMedia('(prefers-reduced-motion:reduce)').matches;
-  let x0 = 0, y0 = 0, mode = 0, pos = 50, pid = null;
-  log.style.touchAction = 'pan-y';   // 세로만 네이티브 · 수평은 JS 캡처
-  log.addEventListener('pointerdown', e => { if (reduce) return; x0 = e.clientX; y0 = e.clientY; mode = 0; pid = e.pointerId; });
-  log.addEventListener('pointermove', e => {
-    if (reduce || pid === null || e.pointerId !== pid) return;
-    if (e.pointerType === 'mouse' && !e.buttons) { pid = null; return; }
-    const dx = e.clientX - x0, dy = e.clientY - y0;
-    if (!mode) { if (Math.abs(dx) > Math.abs(dy) + 8) mode = 1; else if (Math.abs(dy) > 8) mode = -1; }
-    if (mode === 1) {
-      pos = Math.max(0, Math.min(100, pos - dx / log.clientWidth * 55));
-      $('#ybgA').style.backgroundPositionX = pos + '%'; $('#ybgB').style.backgroundPositionX = pos + '%';
-      x0 = e.clientX;
-    }
-  });
-  const end = () => { pid = null; mode = 0; };
-  log.addEventListener('pointerup', end); log.addEventListener('pointercancel', end);
-})();
+$('#yetaPlus').addEventListener('click', e => { e.stopPropagation(); yInvToggle(); });   // + 더보기 = 초대 진입점(운영자 260705 #13 예약분 배선 · 시안 A안)
 $('#yetaInv').addEventListener('click', async e => {
   e.stopPropagation();
   const kb = e.target.closest('[data-kick]');
@@ -1969,7 +1931,7 @@ $('#yetaInv').addEventListener('click', async e => {
   if (r && r.ok) { YSESS = r.sess; yRender(); }   // 초대 sys 즉시 + '올지 생각 중' 타이핑 + 폴(yRender가 invite 감지)
   else miniToast((r && r.error) || '부르기 실패 — 잠시 후 다시');
 });
-yetadlg.addEventListener('click', e => { const pk = $('#yetaInv'); if (!pk.hidden && !pk.contains(e.target) && !$('#yetaInvPlus').contains(e.target)) yInvToggle(false); });   // 바깥 탭 = 닫힘(픽커 정본 패턴 · 앵커 = 헤더 초대 픽토)
+yetadlg.addEventListener('click', e => { const pk = $('#yetaInv'); if (!pk.hidden && !pk.contains(e.target) && !$('#yetaPlus').contains(e.target)) yInvToggle(false); });   // 바깥 탭 = 닫힘(픽커 정본 패턴)
 $('#yetaLog').addEventListener('click', async e => {   // 난입 원탭 내보내기 pill(소멸형) — 퇴장도 세계관 연출(op kick의 sys)
   const kp = e.target.closest('[data-kick-pill]'); if (!kp) return;
   const c = yPersona(kp.dataset.kickPill); if (!c) return;
