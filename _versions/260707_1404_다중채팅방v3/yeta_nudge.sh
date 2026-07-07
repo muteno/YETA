@@ -22,13 +22,7 @@ aws s3 cp "s3://${YETA_R2_BUCKET}/${KEY}" "$SESS" --endpoint-url "$EP" --only-sh
 # ── 판정(전부 만족해야 GO) ──
 GATE="$(python3 - "$SESS" "$NUDGE_AFTER_MIN" "$NUDGE_MAX_PER_DAY" <<'PY'
 import json, sys, time, datetime, zoneinfo
-sys.path.insert(0, ".github/scripts")
-from yeta_v3 import migrate_v3
-S_ROOT = migrate_v3(json.load(open(sys.argv[1], encoding="utf-8")))
-_cur = S_ROOT.get("cur") or ""
-s = dict((S_ROOT.get("threads") or {}).get(_cur) or {})
-s["persona"] = _cur if s else ""
-for _k in ("note_pub", "note", "notes"): s[_k] = S_ROOT.get(_k)
+s = json.load(open(sys.argv[1], encoding="utf-8"))
 after_min, max_day = int(sys.argv[2]), int(sys.argv[3])
 KST = zoneinfo.ZoneInfo("Asia/Seoul")
 today = datetime.datetime.now(KST).strftime("%y%m%d")
@@ -96,22 +90,17 @@ out="$(printf '%s' "$out" | sed -e 's/<<[^>]*>>//g' | awk 'NF' | head -4)"   # �
 aws s3 cp "s3://${YETA_R2_BUCKET}/${KEY}" "$SESS" --endpoint-url "$EP" --only-show-errors || { echo "::warning::fresh 재로드 실패 — 폐기"; exit 0; }
 APPLIED="$(python3 - "$SESS" "$PERSONA" "$TODAY" <<PY
 import json, sys, time
-sys.path.insert(0, ".github/scripts")
-from yeta_v3 import migrate_v3
-S = migrate_v3(json.load(open(sys.argv[1], encoding="utf-8")))
+s = json.load(open(sys.argv[1], encoding="utf-8"))
 persona, today = sys.argv[2], sys.argv[3]
-s = (S.get("threads") or {}).get(persona)
-if s is None: print("0"); sys.exit()
 turns = s.get("turns") or []
 last = turns[-1] if turns else {}
-if S.get("cur") != persona or not turns or last.get("role") != "assistant" or last.get("kind") == "nudge" or s.get("state") == "awaiting":
+if s.get("persona") != persona or not turns or last.get("role") != "assistant" or last.get("kind") == "nudge" or s.get("state") == "awaiting":
     print("0"); sys.exit()
 name = next((c.get("name") for c in json.load(open("apps/yeta/characters/roster.json", encoding="utf-8")) if c.get("id") == persona), persona)
 turns.append({"role": "assistant", "persona": persona, "name": name, "text": """${out}""", "ts": int(time.time()*1000), "kind": "nudge"})
 nd = s.get("nudge") or {}
 s["nudge"] = {"date": today, "count": (nd.get("count", 0) if nd.get("date") == today else 0) + 1}
-s["updated"] = S["updated"] = int(time.time()*1000)
-json.dump(S, open(sys.argv[1], "w", encoding="utf-8"), ensure_ascii=False)
+json.dump(s, open(sys.argv[1], "w", encoding="utf-8"), ensure_ascii=False)
 print("1")
 PY
 )"
