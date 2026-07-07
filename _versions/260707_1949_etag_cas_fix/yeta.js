@@ -93,9 +93,9 @@ export async function onRequestPost({ request, env }) {
   const readSessE = async () => {   // etag 동반 read + lazy 마이그레이션(메모리) — CAS 짝(레이스 감사① BLOCK 해제)
     const o = await env.YETA_R2.get(KEY);
     if (!o) return { sess: EMPTY(), etag: null, legacy: false };
-    let raw; try { raw = await o.json(); } catch { return { sess: EMPTY(), etag: o.etag, legacy: false }; }
+    let raw; try { raw = await o.json(); } catch { return { sess: EMPTY(), etag: o.httpEtag, legacy: false }; }
     const legacy = !(raw.v >= 3) && !raw.threads && !!(raw.turns || raw.persona);
-    return { sess: migrateV3(raw), etag: o.etag, legacy };   // etag = raw(따옴표 없음) — putSessIf의 onlyIf.etagMatches는 원시 etag 비교(httpEtag는 따옴표 포함이라 상시 불일치=조건부 put 전멸)
+    return { sess: migrateV3(raw), etag: o.httpEtag, legacy };
   };
   const readSess = async () => (await readSessE()).sess;   // 호환 셔틀(read-only 소비처)
   const putSessIf = async (s, etag) => {   // 조건부 put — etag 불일치 = false(호출부 재적용) · null etag = 최초 생성
