@@ -648,7 +648,7 @@ ${HIST:-"(없음)"}
 # 위치 축(운영자 260707 "주변에 인물이 있으면 만나는"): 화자의 지금 장소(동선 SSOT)와 같은 곳 = 시드 1/2 · 인접 = 1/3 — 지도 UI가 붙어도 같은 정본을 읽는다.
 barge_check() {
   r2get 2>/dev/null || return 0
-  if python3 - "$SESS" "$ROOT/apps/yeta/characters/roster.json" <<'PY'
+  if THREAD="${THREAD:-}" python3 - "$SESS" "$ROOT/apps/yeta/characters/roster.json" <<'PY'
 import hashlib, json, sys, time
 from datetime import datetime, timezone, timedelta
 sys.path.insert(0, ".github/scripts")
