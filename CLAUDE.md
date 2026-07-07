@@ -171,7 +171,7 @@
 4. 새 버튼·모달·입력칸·아이콘 = **CII 정본 셀렉터 계승**(재설계 금지). 버튼·눌림 패턴 = `구성도/00_가이드북_버튼인터랙션.html`. 눌림 scale = `--press-*` 토큰.
 5. `viewer/tokens.css`·`구성도/base.css` = **build 산출 거울**(직접 수정 금지·다음 build에 덮어씀).
 6. **3층 강제**: ① SessionStart/UI턴 = `.claude/hooks/design_digest.py`가 계약 자동 주입 ② UI 파일 저장 후 = `.claude/hooks/design_gate.py`가 check_refs 디자인 게이트(위반 exit 2) ③ 커밋 = `.githooks/pre-commit`이 `check_refs` 강제(`core.hooksPath=.githooks`는 design_digest가 세션마다 자동 설정). 타 모델 = `AGENTS.md`.
-7. **색 = yeta 브랜드 팔레트 v2**(260704 운영자 그린 전환): 강조1 브랜드 라임 `--accent:#CFFF40`·강조2 코발트 형광 `--cobalt:#3D6BFF`·뉴트럴 흰(`--fg`)/스포티파이블랙(`--bg:#121212`)·글래스모피즘(`--glass*`·`--blur-*`). 강조는 **이 2색만**, 나머지 흰/근흑. 옛 네온보라(`--bubble-me`)·라이트 코발트/오렌지(`--accent-1/2`·`--m-*`) 폐지 → 전체 다크·그린 통일(챗 버블 포함). 구조 토큰(반지름·간격·타이포·모션·눌림) 계승은 그대로.
+7. **색 = yeta 브랜드 팔레트 v2**(260704 운영자 그린 전환): 강조1 브랜드 라임 `--accent:#CFFF40`·강조2 코발트 형광 `--cobalt:#3D6BFF`·뉴트럴 흰(`--fg`)/스포티파이블랙(`--bg:#121212`)·글래스모피즘(`--glass*`·`--blur-*`). 강조(CTA)는 **이 2색만**, 나머지 흰/근흑. **+ 등급 축 에픽 퍼플 형광 `--epic:#B026FF`**(운영자 260707 신설 · 특별등급 배지·에픽 감정배경 **전용** — CTA 사용 금지 = 2색 제한의 취지[CTA 남발 방지]와 공존 · 기틀감사 5조건 APPROVE). 옛 네온보라(`--bubble-me`)·라이트 코발트/오렌지(`--accent-1/2`·`--m-*`) 폐지 → 전체 다크·그린 통일(챗 버블 포함). 구조 토큰(반지름·간격·타이포·모션·눌림) 계승은 그대로.
 8. **웹앱 UI/UX 디자인 폴리시 = `yeta-design` 스킬**(`.claude/skills/yeta-design/SKILL.md` · nomute-editor `nomute-design` 완전 이식·YETA화 260705 · 운영자 지시 "매번 클론 못하니 레포에 고정"). 인터페이스 "느낌 좋게/유려하게" 다듬기·컴포넌트 제작·프론트 리뷰·애니·hover/press·그림자·글래스·타이포·micro-interaction 작업 = **이 스킬 참조**(계승 16원칙 + 흔한실수표 + 체크리스트 · UI 트리거 시 자동 로드). 값=`viewer :root`·규칙=이 §🎨·컴포넌트=CII가 정본이고, 스킬은 그 위 디테일 보강(충돌 시 정본이 이김).
 
 ## 🗺 구조
