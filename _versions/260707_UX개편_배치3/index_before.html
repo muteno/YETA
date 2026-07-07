@@ -773,7 +773,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   .ylist-last.on { color:var(--fg); }   /* 마지막 줄 = 최근 대사 흰색 · 위 줄(상황·이전)은 muted 유지(항목8) */
   .ylist-r { flex:none; display:flex; flex-direction:column; align-items:flex-end; align-self:stretch; justify-content:flex-start; padding-top:3px; gap:5px; }   /* 시간 = 행 우측 "상단"(운영자 260706 카톡 뉘앙스) */
   .ylist-t { font-size:var(--fs-xs); color:var(--mut); font-variant-numeric:tabular-nums; }
-  .ylist-badge { flex:none; min-width:19px; height:19px; padding:0 6px; margin-left:6px; border-radius:var(--r-s); background:var(--accent); color:var(--bg); font-size:var(--fs-xs); font-weight:var(--fw-x); display:grid; place-items:center; }   /* 안읽음 = 이름 옆 라임 둥근네모(--r-s · 2자리 신축 · 운영자 260707 항목19·20) · 간격 6px = .yprem margin 관례 동일 */
+  .ylist-badge { min-width:19px; height:19px; padding:0 6px; border-radius:var(--r-pill); background:var(--accent); color:var(--bg); font-size:var(--fs-xs); font-weight:var(--fw-x); display:grid; place-items:center; }   /* 안읽음 = 라임 배지(강조 CTA축 · 레퍼런스 결) */
   @media (prefers-reduced-motion:reduce){ .ylist-row { animation:none; } }
   /* ═══ 대화 목록 재구성(운영자 260706): 상단 NAV 헤어라인 · 시즌 라인 · 스와이프 나가기 ═══ */
   /* 시즌 subnav(운영자 260707 플그 선택값 + 보정 5) — NAV(로고·프로필) 바로 아래 이어지는 크롬 구역("거기 두 개까지는 내용이 아님") · div 구역화 + 테마 오버레이 아주 살짝 · px 수치 = 플그 승인값 */
@@ -1302,9 +1302,9 @@ async function yListRender() {
     const unTxt = un > 0 ? (r.trim > turns.length && un >= turns.length ? un + '+' : (un > 99 ? '99+' : String(un))) : '';
     return `<div class="ylr-wrap"><button type="button" class="ylist-row" data-t="${esc(r.id)}">`
       + `<span class="ylist-ava${p.avatar ? ' has-img' : ''}"${p.avatar ? ` style="background-image:url('${esc(p.avatar)}')"` : ''}>${p.avatar ? '' : esc(p.initial || p.name[0])}</span>`
-      + `<span class="ylist-mid"><span class="ylist-nm">${r.pin ? '<svg class="ylist-pin" viewBox="0 0 24 24" fill="currentColor" aria-label="고정됨"><path d="M16 3l5 5-5.5 2 -1 6.5L12 14l-6 7-1-1 7-6-2.5-2.5L16 10l-2-1.5z"/></svg>' : ''}<i class="ynm-t">${esc(p.name)}</i>${unTxt ? `<span class="ylist-badge">${unTxt}</span>` : ''}${window.yPremBadge ? yPremBadge(p) : ''}</span>`
+      + `<span class="ylist-mid"><span class="ylist-nm">${r.pin ? '<svg class="ylist-pin" viewBox="0 0 24 24" fill="currentColor" aria-label="고정됨"><path d="M16 3l5 5-5.5 2 -1 6.5L12 14l-6 7-1-1 7-6-2.5-2.5L16 10l-2-1.5z"/></svg>' : ''}<i class="ynm-t">${esc(p.name)}</i>${window.yPremBadge ? yPremBadge(p) : ''}</span>`
       + (opPend ? `<span class="ylist-last">곧 말을 걸어와…</span>` : line(prev) + line(last, 1)) + `</span>`
-      + `<span class="ylist-r"><span class="ylist-t">${last ? yTime(last.ts) : ''}</span></span></button></div>`;   // 안읽음 배지 = 이름 옆으로 이설(항목19) — 우측 = 시간만(18 재배치 대비)
+      + `<span class="ylist-r"><span class="ylist-t">${last ? yTime(last.ts) : ''}</span>${unTxt ? `<span class="ylist-badge">${unTxt}</span>` : ''}</span></button></div>`;
   }).join('') + `</div>`;
   if (firstPaint) box.querySelectorAll('.ylist-row').forEach((el, i) => { el.style.animationDelay = (i * 0.04) + 's'; });   // 첫 진입만 stagger(재렌더 무애니)
   else box.querySelectorAll('.ylist-row').forEach(el => { el.style.animation = 'none'; });
