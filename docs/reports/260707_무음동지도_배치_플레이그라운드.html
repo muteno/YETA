@@ -83,6 +83,13 @@ td b{font-weight:var(--fw-b)}
       </div>
     </div>
     <div class="knob">
+      <p class="kt">배경 (yeta-map-bg 산출 · Gemini)</p>
+      <div class="seg" id="bgseg">
+        <button data-bg="" class="on">지형도만</button><button data-bg="night">밤</button><button data-bg="day">낮</button>
+      </div>
+      <p class="cap" style="margin:8px 0 0">밤/낮 = viewer/assets/yeta_map/*.png(raw) 위에 노드·핀 오버레이 — 그림 건물과 좌표 정합 검토용.</p>
+    </div>
+    <div class="knob">
       <p class="kt">지금 어디에 —</p>
       <div class="who" id="who"></div>
     </div>
@@ -165,13 +172,15 @@ async function placeOf(cid,dateStr,hour){
 }
 
 /* ── SVG 정적 레이어(존·라인·노드) ── */
+const RAW='https://raw.githubusercontent.com/muteno/yeta/main/viewer/assets/yeta_map/';
 function baseMap(){
   const S=[];
   S.push(`<rect width="500" height="500" fill="rgba(14,16,15,.6)"/>`);
-  S.push(`<rect class="zone n" x="0" y="0" width="500" height="180"/>`);
+  S.push(`<image id="bgimg" href="" x="0" y="0" width="500" height="500" style="display:none" preserveAspectRatio="xMidYMid slice"/>`);
+  S.push(`<g id="zones"><rect class="zone n" x="0" y="0" width="500" height="180"/>`);
   S.push(`<rect class="zone" x="0" y="180" width="500" height="120"/>`);
   S.push(`<rect class="zone s" x="0" y="300" width="500" height="200"/>`);
-  S.push(`<text x="12" y="24" class="hname">북 — 심야 미디어</text><text x="12" y="196" class="hname">중심 — 밤 코어</text><text x="12" y="320" class="hname">남 — 생활권</text>`);
+  S.push(`<text x="12" y="24" class="hname">북 — 심야 미디어</text><text x="12" y="196" class="hname">중심 — 밤 코어</text><text x="12" y="320" class="hname">남 — 생활권</text></g>`);
   const done=new Set();
   for(const [id,p] of Object.entries(PLACES)) for(const n of p.nb){
     const k=[id,n].sort().join('|'); if(done.has(k)) continue; done.add(k);
@@ -219,6 +228,12 @@ async function render(){
   $('#who').innerHTML=rows;
 }
 $('#hr').addEventListener('input',render);
+document.querySelectorAll('#bgseg button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('#bgseg button').forEach(x=>x.classList.toggle('on',x===b));
+  const im=document.getElementById('bgimg'), z=document.getElementById('zones');
+  if(b.dataset.bg){ im.setAttribute('href',RAW+'map_'+b.dataset.bg+'.png'); im.style.display=''; z.style.display='none'; }
+  else { im.style.display='none'; z.style.display=''; }
+}));
 document.querySelectorAll('#dayseg button').forEach(b=>b.addEventListener('click',()=>{
   document.querySelectorAll('#dayseg button').forEach(x=>x.classList.toggle('on',x===b));
   dayOff=+b.dataset.d; render();
