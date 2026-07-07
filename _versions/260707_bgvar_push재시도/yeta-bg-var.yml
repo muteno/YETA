@@ -42,9 +42,4 @@ jobs:
           git add viewer/assets/yeta_bg/ 2>/dev/null || true
           git diff --cached --quiet && { echo "신규 없음 — 커밋 생략"; exit 0; }
           git commit -m "무음동 배경 배리에이션 생성 — yeta-bg-var 수동 dispatch"
-          # 장시간 런 중 main 전진 대비 — pull --rebase 후 push 재시도(run#2 rejected 재발 방지 · 신규 파일뿐이라 충돌 없음)
-          for i in 1 2 3 4 5; do
-            git pull --rebase origin main && git push && exit 0
-            echo "push 재시도 ${i}/5 …"; sleep $((i*5))
-          done
-          echo "::error::push 5회 실패 — main 전진 과다"; exit 1
+          git push
