@@ -16,31 +16,34 @@ API = "https://generativelanguage.googleapis.com/v1beta/models/{}:generateConten
 OUT_DIR = "viewer/assets/yeta_map"
 FORCE = os.environ.get("FORCE", "").strip() == "1"
 
-# 마을 골격(places.json 좌표의 언어화 · 골목 50,50 중심 — 북 = 심야 미디어 · 중심 = 밤 코어 · 남 = 생활권)
+# 동네 골격(places.json 좌표의 언어화 · 골목 50,50 중심 — 북 = 심야 미디어 · 중심 = 밤 코어 · 남 = 생활권)
+# v2(운영자 260707 "산에 둘러싸인 거 아님 — 중소도시·힙한 도시"): 숲 테두리 폐기 → 힙한 동네 + 원경 도시 블록.
 LAYOUT = (
-    "Village layout (top of image = north): "
-    "at the very center, a small crossroads plaza with old street lamps (the Alley - the village hotspot). "
-    "Just southwest of the plaza, a tiny warm traditional tea house with glowing windows. "
-    "Northeast of the plaza, a narrow 3-story editorial office building; further north on a low hill, a small radio station with a tall antenna tower. "
-    "East of the plaza, a stairway entrance going underground (basement practice studio). "
-    "South zone (daily-life belt): a 24h convenience store, further south a small school with a schoolyard, a little playground with swings, "
-    "a traditional swordsmanship dojo with tiled roof and a wooden porch yard to the southwest, an open-air market street with awning stalls, "
-    "and a boxy gym building at the southwest edge. "
-    "Scattered small houses with rooftop rooms between the spots. "
-    "A narrow stream crosses a corner of the village with a tiny bridge; dense forest and hills wrap the village edges. "
-    "Clear dirt paths connect the places through the central plaza."
+    "Neighborhood layout (top of image = north): "
+    "at the very center, a small crossroads plaza with street lamps and benches (the Alley - the neighborhood hotspot). "
+    "Just southwest of the plaza, a small warm traditional-style tea house with glowing windows, tucked between modern shops. "
+    "Northeast of the plaza, a narrow 3-story brick editorial office building; further north on a low rise, a small radio station with a tall antenna tower on its roof. "
+    "East of the plaza, a stairway entrance going down to a basement practice studio. "
+    "South zone (daily-life belt): a 24h convenience store, a small school with a schoolyard, a little playground with swings, "
+    "a traditional swordsmanship dojo with tiled roof and courtyard squeezed between buildings to the southwest, "
+    "a lively open-air market street with colorful awning stalls, and a boxy gym building. "
+    "Between the spots: low-rise brick shops and multi-family houses with rooftop terraces and water tanks, cafes, small signboard-covered storefronts. "
+    "A narrow urban stream crosses a corner with a small footbridge. "
+    "The neighborhood edges show more city: bigger buildings, distant mid-rise skyline blocks, street trees and tiny parks - NOT forest, NOT mountains. "
+    "Paved roads and alleys connect everything through the central plaza."
 )
 STYLE = (
-    "Cozy hand-drawn cartoon village map, top-down bird's-eye view with a slight isometric tilt, "
-    "cute tiny detailed buildings, storybook mobile life-sim game style, soft rounded shapes, clean composition, "
+    "Cozy hand-drawn cartoon city-neighborhood map, top-down bird's-eye view with a slight isometric tilt, "
+    "a trendy hip small-city district (like a cool urban neighborhood), cute tiny detailed buildings, "
+    "storybook mobile life-sim game style, soft rounded shapes, clean composition, "
     "square 1:1 full-bleed map. Absolutely no text, no letters, no labels, no UI, no watermark, no characters or people."
 )
 VARIANTS = {
-    "map_night": ("Night scene: deep dark charcoal-navy ambience, quiet late-night mood, "
-                  "warm lamplight pools, glowing windows, a few neon signs with lime-green accent glow, "
-                  "moonlit forest edge. Dark enough to sit behind a dark-themed app UI. "),
+    "map_night": ("Night scene: deep dark charcoal-navy ambience, quiet late-night city mood, "
+                  "warm lamplight pools, glowing windows, neon signs with lime-green accent glow on shopfronts, "
+                  "distant city lights at the edges. Dark enough to sit behind a dark-themed app UI. "),
     "map_day":   ("Warm late-afternoon scene: bright pastel palette, soft golden light, gentle shadows, "
-                  "lush green forest, inviting and peaceful. "),
+                  "lively hip-neighborhood vibe, inviting and peaceful. "),
 }
 
 _USAGE = []
