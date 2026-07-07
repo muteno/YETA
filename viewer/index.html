@@ -442,9 +442,25 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   .lk-key:focus:not(:focus-visible) { outline:none; }   /* 프로그램 포커스(pin-mode 진입 이동)는 링 없음 · 키보드 탐색은 UA 링 유지 */
   .lk-key.back svg { width:25px; height:25px; stroke:var(--fg-2); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; transition:stroke .15s; }
   .lk-key.back.hit svg { stroke:var(--pin-ac); }
-  @media (prefers-reduced-motion:reduce){ .lk-slots.shake{animation-duration:.01s} .lk-key:active{transform:none} .lk-slot.pop, .lk-key.hit, .lk-slots.ok .lk-slot{animation:none} }
+  /* ── 패턴 잠금(번호 숨김) — 키패드 대체 · 3×3 점 잇기 = 방문 순서가 PIN(1~9 키패드 매핑) · 서버 auth 무변경 · 색/글래스/반지름/모션 = 토큰 계승 · 패턴 기하(px·글로우) = 토큰 없는 raw 예외축(box-shadow 계보) ── */
+  .lk-pat { position:relative; width:240px; height:240px; margin:20px auto 0; touch-action:none; }
+  .lk-pat svg { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; overflow:visible; }
+  .lk-pat .lk-line, .lk-pat .lk-drag { fill:none; stroke:var(--pin-ac); stroke-width:5px; stroke-linejoin:round; stroke-linecap:round; filter:drop-shadow(0 0 6px rgba(var(--pin-ac-rgb),.55)); }
+  .lk-pat .lk-drag { opacity:.5; }
+  .lk-nodes { position:absolute; inset:0; }
+  .lk-node { position:absolute; width:20px; height:20px; transform:translate(-50%,-50%); padding:0; border:none; border-radius:var(--r-pill);
+    background:var(--glass-2); box-shadow:inset 0 0 0 1px var(--glass-line); cursor:pointer; -webkit-tap-highlight-color:transparent; touch-action:none;
+    transition:transform .18s var(--ease), background .18s var(--ease), box-shadow .18s var(--ease); }
+  .lk-node::after { content:''; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:46px; height:46px; border-radius:var(--r-pill); }   /* 히트 확장 ≥40px(§🎨 16) */
+  .lk-node.on { background:rgba(var(--pin-ac-rgb),.2); box-shadow:inset 0 0 0 1px rgba(var(--pin-ac-rgb),.6), 0 0 16px rgba(var(--pin-ac-rgb),.55);
+    transform:translate(-50%,-50%) scale(1.35); }
+  .lk-pat.ok .lk-node.on { background:rgba(var(--pin-ac-rgb),.32); box-shadow:inset 0 0 0 1px var(--pin-ac), 0 0 22px rgba(var(--pin-ac-rgb),.8); }
+  .lk-pat.bad .lk-node.on { background:rgba(var(--danger-rgb),.22); box-shadow:inset 0 0 0 1px var(--danger), 0 0 16px rgba(var(--danger-rgb),.55); }
+  .lk-pat.bad .lk-line { stroke:var(--danger); filter:drop-shadow(0 0 6px rgba(var(--danger-rgb),.55)); }
+  .lk-node:focus:not(:focus-visible){ outline:none; }
+  @media (prefers-reduced-motion:reduce){ .lk-slots.shake{animation-duration:.01s} .lk-key:active{transform:none} .lk-slot.pop, .lk-key.hit, .lk-slots.ok .lk-slot{animation:none} .lk-node{transition:none} }
   /* 짧은 세로 프레임(가로모드 폰·분할창) = PIN 블록 압축 — '0'·백스페이스가 프레임 밖으로 잘려 언락 불가하던 사전존재 결함 방어(평의회3 H-1 · 임계 Hf<~550px) · lk- 베이스 뒤 선언 = 캐스케이드 승리 보장 */
-  @media (max-height:560px) { .ym-pin { top:58%; } .lk-key { height:38px; font-size:18px; } .lk-slots { margin:6px 0 0; padding:9px 20px; } .lk-err { margin-top:4px; min-height:12px; } .lk-pad { margin-top:6px; max-width:216px; } }
+  @media (max-height:560px) { .ym-pin { top:58%; } .lk-key { height:38px; font-size:18px; } .lk-slots { margin:6px 0 0; padding:9px 20px; } .lk-err { margin-top:4px; min-height:12px; } .lk-pad { margin-top:6px; max-width:216px; } .lk-pat { margin-top:8px; width:196px; height:196px; } }
   /* 하단 네비 = 플로팅 알약(운영자 260705 레퍼런스 결) — 활성 탭 = 라임 확장 필(GIF 레퍼런스 260705: 아이콘만 → 탭하면 필이 늘어나며 라벨 등장 · 비활성 = 픽토-온리) · 투명도 아주 높게(--glass = 뒤 비침) · PIN 전 = 메인만 */
   .ynav { display:none; position:absolute; left:50%; bottom:calc(14px + env(safe-area-inset-bottom)); transform:translateX(-50%); z-index:4;
     background:var(--glass); background:color-mix(in srgb, var(--glass) 50%, transparent); border:1px solid var(--glass-line); border-radius:var(--r-pill); padding:6px 10px; gap:8px;
@@ -869,7 +885,8 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
     <div class="ym-pin" role="group" aria-label="PIN 입력">
       <div class="lk-slots" id="ymSlots"><span class="lk-slot"></span><span class="lk-slot"></span><span class="lk-slot"></span><span class="lk-slot"></span></div>
       <div class="lk-err" id="ymErr" role="alert"></div>   <!-- 오류 = 스크린리더 즉시 낭독(평의회8) -->
-      <div class="lk-pad" id="ymPad"></div>
+      <div class="lk-pat" id="ymPad" role="group" aria-label="패턴 잠금 — 점을 이어 그려"></div>   <!-- 패턴 그리드(번호 숨김) = 키패드 대체 · 3×3 점 잇기 = 방문 순서가 PIN(1~9 키패드 매핑) · JS가 노드+SVG 채움 -->
+
     </div>
   </div>
   <div class="ywm" id="ywm" role="img" aria-label="YETA"></div>   <!-- 좌상단 상시 로고(운영자 260705 확정 조합 · 겹층 JS 조립 · 언락 후 표시) -->
@@ -2024,11 +2041,13 @@ try { const _q = new URLSearchParams(location.search); if (_q.get('yeta')) { con
   const ymain = $('#ymain'), slotsEl = $('#ymSlots'), padEl = $('#ymPad'), errEl = $('#ymErr'), accessBtn = $('#ymAccess'), nav = $('#ynav');
   // PIN 판정 = 서버 op auth 단일 경로(운영자 260706 권한 2계층 — 클라 해시 대조 폐지: 4자리 해시 박제 = 역산 = admin PIN 노출이라 admin은 Pages env, guest는 apps/yeta/users.json[깃 SSOT])
   const YM_LEN = 4, YM_MAX = 5, YM_OUT_MS = 600000;
-  const BSVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 5H9l-6 7 6 7h11a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1z"/><path d="M16 9l-4 4M12 9l4 4"/></svg>';
-  const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', 'back'];
   let val = '', unlocked = false;
   const ymHash = async p => { const d = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(p + ':yeta')); return [...new Uint8Array(d)].map(b => b.toString(16).padStart(2, '0')).join(''); };
-  padEl.innerHTML = KEYS.map(k => k === '' ? '<button class="lk-key empty" tabindex="-1"></button>' : k === 'back' ? `<button class="lk-key back" data-back="1" aria-label="지우기">${BSVG}</button>` : `<button class="lk-key" data-n="${k}">${k}</button>`).join('');
+  // 패턴 그리드(번호 숨김) — 3×3 점, 키패드 순서 1~9 매핑(방문 순서 = PIN 숫자열) · 서버 auth 무변경
+  const PNODE = [1, 2, 3, 4, 5, 6, 7, 8, 9].map((n, i) => ({ n, x: (i % 3) * 100 + 50, y: ((i / 3 | 0)) * 100 + 50 }));   // SVG 좌표(0~300) 셀 중심 50/150/250
+  padEl.innerHTML = '<svg viewBox="0 0 300 300" aria-hidden="true"><polyline class="lk-line" points=""></polyline><line class="lk-drag" x1="0" y1="0" x2="0" y2="0" style="display:none"></line></svg><div class="lk-nodes"></div>';
+  const lineEl = padEl.querySelector('.lk-line'), dragEl = padEl.querySelector('.lk-drag'), nodesWrap = padEl.querySelector('.lk-nodes'), nodeEl = {};
+  PNODE.forEach(nd => { const b = document.createElement('button'); b.type = 'button'; b.className = 'lk-node'; b.dataset.n = nd.n; b.tabIndex = -1; b.setAttribute('aria-label', '패턴 점'); b.style.left = (nd.x / 3) + '%'; b.style.top = (nd.y / 3) + '%'; nodesWrap.appendChild(b); nodeEl[nd.n] = b; });
   const slots = [...slotsEl.children];
   const fill = () => { slots.forEach((s, i) => s.classList.toggle('on', i < val.length));
     if (val.length) accessBtn.dataset.crack = String(val.length); else accessBtn.removeAttribute('data-crack'); };   // 자물쇠 크랙 = 입력 길이 동기(백스페이스 = 복구 · 운영자 260706 해킹 서사)
@@ -2041,7 +2060,7 @@ try { const _q = new URLSearchParams(location.search); if (_q.get('yeta')) { con
   }
   const yVib = p => { try { navigator.vibrate && navigator.vibrate(p); } catch {} };   // 폰 진동(미지원 = 무해 no-op · iOS Safari 미지원)
   let entered = false;
-  const ymPinFocus = () => { const k = padEl.querySelector('.lk-key'); if (k) try { k.focus({ preventScroll: true }); } catch {} };   // pin-mode 전환 통지 = 첫 키로 포커스 이동(평의회8)
+  const ymPinFocus = () => {};   // 패턴 = 드래그 입력(키 포커스 불요) · pin-mode 전환은 자물쇠 잔류 + PIN 블록 부상 시각만
   function ymEnterPin() {   // 잠금 터치 = 진입 시퀀스(운영자 260706): 락 열림 → 라벨 각도 유지 퇴장+줌 복귀(.go) → 로고 번개 스트라이크(.strike) → 사람 효과 정지·원 디밍만(.calm)+PIN 부상
     if (unlocked) return;
     if (entered) { ymain.classList.add('go', 'strike', 'calm', 'pin-mode'); ymPinFocus(); return; }   // 시퀀스 중 재탭 = 세리머니 스킵(최종 상태 직행 · 평의회10)
@@ -2053,41 +2072,58 @@ try { const _q = new URLSearchParams(location.search); if (_q.get('yeta')) { con
     setTimeout(() => { ymain.classList.add('calm', 'pin-mode'); ymPinFocus(); }, 790);   // 260/280/790(잠금 안무 플그 운영자 확정 — 낙하 즉시 시작·PIN 조기 부상)
   }
   accessBtn.onclick = () => { yVib([50, 40, 90]); ymEnterPin(); };   // 탭 언락 복귀(운영자 260706 "처음처럼 누르는 거") · 진동 유지
-  padEl.onclick = async e => {
-    const b = e.target.closest('.lk-key'); if (!b || unlocked || !ymain.classList.contains('pin-mode')) return;   // pin-mode 게이트 = 비가시 패드 입력 차단(평의회8)
-    if (b.dataset.back) { flash(b); yVib(8); val = val.slice(0, -1); errEl.textContent = ''; errEl.className = 'lk-err'; slotsEl.classList.remove('bad'); fill(); return; }
-    if (outLeft()) { errEl.className = 'lk-err'; errEl.textContent = `PIN 오류 ${YM_MAX}회 — ${Math.ceil(outLeft() / 60000)}분 후 다시`; return; }
-    if (b.dataset.n && val.length < YM_LEN) {
-      flash(b); yVib(8); val += b.dataset.n; fill();   // 키 입력 = 짧은 진동(운영자 260706 "핀 입력하면 진동 + 기존 입력 그대로")
-      { const s9 = slots[val.length - 1]; if (s9) { s9.classList.remove('pop'); void s9.offsetWidth; s9.classList.add('pop'); } }   // 입력 = 채워진 원 + 통통(숫자 노출 폐지 · 운영자 260706)
-      lockGlitch();   // 자물쇠 지지직 + 크랙 단계(fill이 data-crack 동기)
-      if (val.length === YM_LEN) {
-        const attempt = val;
-        const ar = await yApi('auth', { pin: attempt }).catch(() => null);   // 서버 판정(admin=env·guest=users.json) — 오프라인/서버 다운 = 언락 불가(대화도 어차피 서버 필수)
-        if (val !== attempt) return;   // 판정 대기 중 입력 변경 = 낡은 판정 폐기(평의회2 레이스 가드)
-        if (ar === null || (ar && ar.setup)) {   // 네트워크·서버 미설정 = 오답 아님 — 실패 카운트 없이 안내만
-          errEl.className = 'lk-err'; errEl.textContent = '서버 연결 실패 — 잠시 후 다시';
-          setTimeout(() => { val = ''; fill(); if (!outLeft()) errEl.textContent = ''; }, 1400);
-          return;
-        }
-        if (ar && ar.ok) {
-          YROLE = ar.role === 'admin' ? 'admin' : 'guest'; _ypin = attempt;   // 역할·PIN = 메모리만(언락 미저장 규약과 동형 — 새로고침 = 재입력)
-          try { localStorage.removeItem('yeta_pin_fails'); localStorage.removeItem('yeta_pin_until'); } catch {}   // 언락 기억 안 함(yeta_pin_ok 미저장 = 매번 PIN · 운영자 260705) · 실패/잠금 카운터만 리셋
-          errEl.textContent = ''; errEl.className = 'lk-err';
-          slotsEl.classList.add('ok');   // 승인 = 4원 순차 라임 파동 + 자물쇠 박살(crack4) + 로고 전격 병행(진동 없음)
-          ymain.classList.add('bye');   // 타격 스파이크 → 눈 방향 줌 다이브(ymDive 1s · 어둠 속으로)
-          document.dispatchEvent(new Event('yeta:dive'));   // 캐릭터 실루엣 매트릭스 코드 레인 발동(운영자 260706)
-          setTimeout(() => { ymain.classList.add('zap'); setTimeout(() => ymain.classList.remove('zap'), 310); }, 500);   // VHS 지지직 = 다이브 중반(500ms) — 끝날 쯤 메뉴 전환(운영자 260706 "메타버스 로그인")
-          setTimeout(() => setUnlocked(true), 1000);   // 전환(1000ms · 운영자 확정)
-        } else {
-          lockGlitch();   // 오답 = 자물쇠 지지직 → 1400ms 리셋(fill)에서 크랙 복구(운영자 260706 "지지직하며 복구")
-          let n = 0; try { n = (+localStorage.getItem('yeta_pin_fails') || 0) + 1; localStorage.setItem('yeta_pin_fails', String(n)); if (n >= YM_MAX) localStorage.setItem('yeta_pin_until', String(Date.now() + YM_OUT_MS)); } catch {}
-          slotsEl.classList.add('bad', 'shake'); errEl.className = 'lk-err'; errEl.textContent = n >= YM_MAX ? `PIN 오류 ${YM_MAX}회 — 10분 후 다시` : `PIN 번호가 틀립니다 (${n}/${YM_MAX})`;
-          setTimeout(() => { val = ''; fill(); slotsEl.classList.remove('bad', 'shake'); if (!outLeft()) { errEl.textContent = ''; } }, 1400);
-        }
-      }
+  // ── 패턴 입력(드래그로 점 잇기) — 방문 순서 = val(숫자열) · 재방문 불가 · YM_LEN(4)점 완성 = 자동 판정 ──
+  let path = [], drawing = false;
+  const patPt = e => { const r = padEl.getBoundingClientRect(); return { x: (e.clientX - r.left) / r.width * 300, y: (e.clientY - r.top) / r.height * 300 }; };
+  const patHit = p => { for (const nd of PNODE) if (Math.hypot(p.x - nd.x, p.y - nd.y) < 46) return nd; return null; };   // 히트 반경 46(SVG 단위 · 셀 100의 ~46%)
+  const patDraw = () => { lineEl.setAttribute('points', path.map(n => n.x + ',' + n.y).join(' ')); PNODE.forEach(nd => nodeEl[nd.n].classList.toggle('on', path.some(p => p.n === nd.n))); };
+  const patReset = () => { path = []; val = ''; drawing = false; padEl.classList.remove('ok', 'bad'); dragEl.style.display = 'none'; slotsEl.classList.remove('bad'); patDraw(); fill(); };
+  function patAdd(nd) {
+    if (val.length >= YM_LEN) return;               // 4점 도달 후 = 판정 진행 중(추가 입력 차단)
+    if (path.some(p => p.n === nd.n)) return;        // 재방문 불가(표준 패턴 · 중복 숫자 PIN 미지원 = 시안 각주)
+    path.push(nd); val = path.map(n => n.n).join(''); fill(); patDraw();   // val = 방문 순서 숫자열(키패드 매핑) — 기존 auth 계약 그대로
+    { const s9 = slots[val.length - 1]; if (s9) { s9.classList.remove('pop'); void s9.offsetWidth; s9.classList.add('pop'); } }   // 슬롯 통통(숫자 노출 없음)
+    yVib(8); lockGlitch();   // 진동 + 자물쇠 크랙 단계(fill이 data-crack 동기)
+    if (val.length >= YM_LEN) patDone();
+  }
+  async function patDone() {
+    drawing = false; dragEl.style.display = 'none';
+    const attempt = val;
+    const ar = await yApi('auth', { pin: attempt }).catch(() => null);   // 서버 판정(admin=env·guest=users.json) — 오프라인/서버 다운 = 언락 불가
+    if (val !== attempt) return;   // 판정 대기 중 재입력 = 낡은 판정 폐기(레이스 가드)
+    if (ar === null || (ar && ar.setup)) {   // 네트워크·서버 미설정 = 오답 아님 — 실패 카운트 없이 안내만
+      errEl.className = 'lk-err'; errEl.textContent = '서버 연결 실패 — 잠시 후 다시';
+      setTimeout(() => { if (!outLeft()) errEl.textContent = ''; patReset(); }, 1400); return;
     }
-  };
+    if (ar && ar.ok) {
+      YROLE = ar.role === 'admin' ? 'admin' : 'guest'; _ypin = attempt;   // 역할·PIN = 메모리만(언락 미저장 규약과 동형)
+      try { localStorage.removeItem('yeta_pin_fails'); localStorage.removeItem('yeta_pin_until'); } catch {}   // 언락 기억 안 함 · 실패/잠금 카운터만 리셋
+      errEl.textContent = ''; errEl.className = 'lk-err';
+      padEl.classList.add('ok'); slotsEl.classList.add('ok');   // 승인 = 선·노드 라임 강조 + 4원 파동 + 자물쇠 박살(crack4) 병행
+      ymain.classList.add('bye'); document.dispatchEvent(new Event('yeta:dive'));   // 줌 다이브 + 매트릭스 코드 레인(운영자 260706)
+      setTimeout(() => { ymain.classList.add('zap'); setTimeout(() => ymain.classList.remove('zap'), 310); }, 500);   // VHS 지지직 = 다이브 중반
+      setTimeout(() => setUnlocked(true), 1000);   // 전환(1000ms · 운영자 확정)
+    } else {
+      padEl.classList.add('bad'); lockGlitch();   // 오답 = 선 붉게 + 자물쇠 지지직 → 1400ms 리셋에서 복구
+      let n = 0; try { n = (+localStorage.getItem('yeta_pin_fails') || 0) + 1; localStorage.setItem('yeta_pin_fails', String(n)); if (n >= YM_MAX) localStorage.setItem('yeta_pin_until', String(Date.now() + YM_OUT_MS)); } catch {}
+      slotsEl.classList.add('bad', 'shake'); errEl.className = 'lk-err'; errEl.textContent = n >= YM_MAX ? `PIN 오류 ${YM_MAX}회 — 10분 후 다시` : `패턴이 맞지 않아요 (${n}/${YM_MAX})`;
+      setTimeout(() => { slotsEl.classList.remove('shake'); if (!outLeft()) errEl.textContent = ''; patReset(); }, 1400);
+    }
+  }
+  padEl.addEventListener('pointerdown', e => {
+    if (unlocked || !ymain.classList.contains('pin-mode')) return;   // pin-mode 게이트 = 비가시 조작 차단(평의회8)
+    if (outLeft()) { errEl.className = 'lk-err'; errEl.textContent = `PIN 오류 ${YM_MAX}회 — ${Math.ceil(outLeft() / 60000)}분 후 다시`; return; }
+    e.preventDefault(); try { padEl.setPointerCapture(e.pointerId); } catch {}
+    patReset(); drawing = true; const nd = patHit(patPt(e)); if (nd) patAdd(nd);
+  });
+  padEl.addEventListener('pointermove', e => {
+    if (!drawing || unlocked) return;
+    const p = patPt(e), nd = patHit(p); if (nd) patAdd(nd);
+    if (path.length) { const last = path[path.length - 1]; dragEl.style.display = ''; dragEl.setAttribute('x1', last.x); dragEl.setAttribute('y1', last.y); dragEl.setAttribute('x2', p.x); dragEl.setAttribute('y2', p.y); }
+  });
+  const patEnd = () => { if (!drawing) return; drawing = false; dragEl.style.display = 'none';
+    if (val.length > 0 && val.length < YM_LEN) { slotsEl.classList.add('shake'); setTimeout(() => { slotsEl.classList.remove('shake'); patReset(); }, 450); } };   // 미완(4점 미만) = 흔들고 리셋
+  padEl.addEventListener('pointerup', patEnd); padEl.addEventListener('pointercancel', patEnd);
   // 자동 pin-mode 폐지(운영자 260706 플로우 복원): 진입 = 소년 촤르륵+라벨 스윕 → 잠금 터치가 시퀀스 시작 · 언락 기억 없음은 유지(매 리로드 = 잠금 화면부터)
   nav.onclick = e => {
     const b = e.target.closest('button'); if (!b) return;
