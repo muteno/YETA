@@ -313,7 +313,6 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   .ymain.unlocked .ybgvid { display:block; }
   .ymain.unlocked .ybgvid.ys-hold { display:none; }   /* 챗(dialog) 열림 중 영상 정지+숨김(GPU 절약 · 계단 pause 계약 승계) */
   .ybgvid video { width:100%; height:100%; object-fit:cover; object-position:center; }
-  .ybgvid::before { content:''; position:absolute; inset:0; background:rgba(18,18,18,.2); }   /* 배경 영상 바로 위 = 스포티파이 블랙 20% 균일 틴트(운영자 "맨 뒤 배경 바로 위 20% 레이어") — 배경 텍스처 가라앉혀 앱 스포티파이 블랙 통일·옅은 글래스(설정 등) 구분감 확보 · ::after 검정 처리와 병행(전 탭 공유) */
   .ybgvid::after { content:''; position:absolute; inset:0; background:rgba(18,18,18,.38); }   /* 적당한 검정 처리(--bg 계열 38%) — 위 글래스·텍스트 가독 확보하되 영상은 살림 · 탭 딤과 병행 */
   /* PIN 모드 전면 글래스 딤 — 포스터 타이포(PLAY a Episode/YETA) 위에 PIN 라벨·슬롯이 겹쳐 뒤죽박죽 되던 것 차단(운영자 스샷 260704).
      딤 값 = dialog ::backdrop 동값 계승 · blur = --blur-m · z = 로컬(절대1 예외축) */
@@ -607,7 +606,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   .yset-chip { padding:7px 16px; border:1px solid var(--glass-line); border-radius:var(--r-pill); background:var(--glass); color:var(--fg-2); font:inherit; font-size:var(--fs-xs); font-weight:var(--fw-b); cursor:pointer; touch-action:manipulation; }
   .yset-chip:active { transform:scale(var(--press-m,.9)); }
   .yset-chip.on { color:var(--bg); background:var(--accent); border-color:transparent; font-weight:var(--fw-x); }
-  details.yset-grp { align-self:stretch; background:var(--glass); border:1px solid var(--glass-line); border-radius:var(--r-m); padding:0 14px; margin-bottom:11px; backdrop-filter:blur(var(--blur-m)); -webkit-backdrop-filter:blur(var(--blur-m)); }   /* 라운드 --r-m·그룹간격 11·블러 --blur-m · 표면 glass-0→glass 승격(운영자 확정 "설정 구분감" — .ycrow 동일단 · 배경 위 프로스트 또렷) */
+  details.yset-grp { align-self:stretch; background:var(--glass-0); border:1px solid var(--glass-line); border-radius:var(--r-m); padding:0 14px; margin-bottom:11px; backdrop-filter:blur(var(--blur-m)); -webkit-backdrop-filter:blur(var(--blur-m)); }   /* 라운드 --r-m·유리 --glass-0·그룹간격 11·블러 --blur-m = 운영자 260707 플그 선택값(설정 통일) */
   details.yset-grp summary { cursor:pointer; padding:12px 2px; font-size:var(--fs-sm); font-weight:var(--fw-x); color:var(--fg); display:flex; align-items:center; gap:8px; }
   details.yset-grp summary .ys-cnt { margin-left:auto; min-width:18px; height:18px; padding:0 5px; border-radius:var(--r-pill); background:var(--accent); color:var(--bg); font-size:var(--fs-xs); font-weight:var(--fw-x); display:grid; place-items:center; }
   details.yset-grp summary .ys-cnt[hidden] { display:none; }   /* display:grid가 [hidden]을 이기는 것 차단 */
@@ -699,9 +698,9 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   /* ═══ 설정·프로필 목업(운영자 260706 "목업만 구성") — .ycd 풀스크린 글래스 시트 계승 · 행 = .ylist-row 글래스 결 · 토큰만 ═══ */
   .ycd-card.card-left { align-items:stretch; text-align:left; gap:10px; }   /* 설정/프로필 = 좌측 리스트(디테일 중앙정렬과 별개) */
   .yset-sec { font-size:var(--fs-label); font-weight:var(--fw-b); color:var(--mut); padding:8px 4px 2px; }
-  .yset-item { display:flex; align-items:center; gap:11px; width:100%; padding:13px 14px; background:var(--glass); border:1px solid var(--glass-line); border-radius:var(--r-l);
-    color:var(--fg); font:inherit; text-align:left; cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent; box-shadow:inset 0 1px 0 var(--glass-line);
-    backdrop-filter:blur(var(--blur-m)); -webkit-backdrop-filter:blur(var(--blur-m)); }   /* 글래스 = 메뉴1 .ycrow 동일 계승(운영자 260707 "글래스 메뉴1,2 동일") — glass-0→glass 승격으로 실제 동일단 완성(운영자 확정 "설정 구분감" · 배경 위 프로스트 또렷) */
+  .yset-item { display:flex; align-items:center; gap:11px; width:100%; padding:13px 14px; background:var(--glass-0); border:1px solid var(--glass-line-0); border-radius:var(--r-l);
+    color:var(--fg); font:inherit; text-align:left; cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent; box-shadow:inset 0 1px 0 var(--glass-line-0);
+    backdrop-filter:blur(var(--blur-m)); -webkit-backdrop-filter:blur(var(--blur-m)); }   /* 글래스 = 메뉴1 .ycrow 동일 계승(운영자 260707 "글래스 메뉴1,2 동일") — 영상 위 프로스트 성립 */
   .yset-item:active { transform:scale(var(--press-l,.95)); }
   .yset-item .si-ic { flex:none; width:22px; height:22px; color:var(--fg-2); display:grid; place-items:center; }
   .yset-item .si-ic svg { width:21px; height:21px; }
@@ -720,8 +719,8 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
     box-shadow:0 0 18px rgba(var(--accent-rgb),.18); background-size:cover; background-position:center; }
   .yprof-ava svg { width:44px; height:44px; }
   .yprof-stats { display:flex; width:100%; gap:8px; margin:2px 0 4px; }
-  .yprof-stat { flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; padding:12px 6px; background:var(--glass); border:1px solid var(--glass-line); border-radius:var(--r-l);
-    backdrop-filter:blur(var(--blur-m)); -webkit-backdrop-filter:blur(var(--blur-m)); }   /* 글래스 = 메뉴 카드 동일 계승(영상 위 프로스트) — glass-0→glass 승격으로 동일단 완성(운영자 확정 "설정 구분감") */
+  .yprof-stat { flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; padding:12px 6px; background:var(--glass-0); border:1px solid var(--glass-line-0); border-radius:var(--r-l);
+    backdrop-filter:blur(var(--blur-m)); -webkit-backdrop-filter:blur(var(--blur-m)); }   /* 글래스 = 메뉴 카드 동일 계승(영상 위 프로스트) */
   .yprof-stat b { font-size:var(--fs-h3); font-weight:var(--fw-x); color:var(--accent); }
   .yprof-stat span { font-size:var(--fs-xs); color:var(--mut); }
   #ycset.locked .yset-range { opacity:.45; }   /* 대화 시작 후 성향 잠금 = 은은한 딤(운영자 260706 "너무 강조 말고 은은하게") */
