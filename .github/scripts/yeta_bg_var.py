@@ -57,6 +57,15 @@ SCENES = [
     # ── 페르소나 고유 무대(운영자 260707 "대화 시작 = 캐릭터 고유 이미지 · 없으면 하나씩 뽑아") — bg 중복 2인{하은=tea(무디와 공유)·가을=alley(백과 공유)} 전용 씬 ──
     ("persona_haeun",  "the tree-lined street in front of a small Korean neighborhood school at dusk just after the teachers left, one classroom window still warmly lit, ginkgo trees over the gate, a chalk-dusted tote bag resting on the low wall, playful yet tender after-work air"),
     ("persona_gaeul",  "the merchants' association office window above the market lane at night, a crisp warm desk lamp on stacked ledgers and a neighborhood map pinned with notes, the market banner fluttering outside, composed and quietly in charge"),
+    # ── 나머지 8인 고유 대화-시작 배경(운영자 260707 "각각에 어울리는 고유 배경 하나씩 다 · 대화 시작하면 나올 수 있는거") — no people·시그니처 장소 + 카드 포인트색 저광 ──
+    ("persona_mudi",   "the interior of a centuries-old 24-hour teahouse at deep night, no people, a worn wooden counter with a single cup releasing luminous jade-green steam curling into glowing wisps, rows of aged tea jars, warm amber paper lanterns, a timeless hush, faint mint-green glow"),
+    ("persona_sera",   "the innermost underground dance-practice room at 4am, no people, a mirrored wall and a single heavy door faintly outlined in incandescent hot-pink light, a towel and water bottles on the floor, cool fluorescent haze with a pink awakened shimmer, a distant looming spire barely visible in a dark window"),
+    ("persona_baek",   "the narrow boundary alley in the last dark hour before dawn, no people, faint protective runes dimly glowing on a wet brick wall, a sheathed blade leaning by a doorway, steel-blue mist, the quiet edge of the neighborhood where the night thins"),
+    ("persona_ryu",    "the moonlit wooden veranda of a kendo dojo at night, no people, a sword rack and a folding fan left on the floor, bamboo swaying, a faint luminous silver-teal blade-glow lingering in the air, a full moon over the tiled roof"),
+    ("persona_yun",    "a late-night radio booth at 2am, no people, a vintage microphone on a boom, a red ON-AIR sign glowing, translucent violet sound-waves and starlight rippling out the window across a distant boundary, headphones resting on the mixing desk"),
+    ("persona_desk",   "a third-floor newsroom at deep night, no people, rows of dim monitors, a corkboard layered with pinned notes and clippings faintly lit, a cold coffee cup, cool-blue glow, faint luminous lines of hovering text — the keeper of the town's true records"),
+    ("persona_kopi",   "a cozy corner nook of a teahouse at night, no people, an open laptop and a teacup under a warm desk lamp, a single glowing punch-line phrase drifting in the air as light-letters, warm-orange bokeh, scattered notebooks"),
+    ("persona_von",    "a boxing gym at 5am, no people, a worn ring under a single hanging lamp, heavy punching bags, hand-wrap tape and a towel on a bench, cool blue pre-dawn light with faint drifting embers of strength"),
 ]
 
 
