@@ -533,17 +533,11 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   @keyframes ymbob { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-1.6px); } }
   .ymp-car .body { stroke:rgba(18,18,18,.75); stroke-width:.8; }
   .ymp-car .lite { fill:rgba(var(--accent-rgb),.9); }
-  .ymp-car .tail { fill:rgba(var(--danger-rgb),.6); }   /* 후미등 = 기존 danger 토큰(밤 지도 깊이감 · 분신 앵글5) */
   @media (prefers-reduced-motion:reduce) { .ymp-walker .wimg { animation:none; } }
   /* 실내 캐릭터 = 건물 위 이름표(운영자 260707 "건물 안이면 모습 가려지고 이름표") · 이름 3글자↑ = 축약(roster short) */
   .ymp-tag rect { fill:rgba(18,18,18,.8); stroke:rgba(255,255,255,.22); stroke-width:.6; }
   .ymp-tag text { fill:var(--fg); font-size:8px; font-weight:var(--fw-b); paint-order:stroke; stroke:rgba(18,18,18,.92); stroke-width:2px; }
   .ymp-tag.meet rect { stroke:var(--accent); stroke-width:1; }
-  /* 안개(운영자 260707 "친한 인물만 보이고 나머지 = ? 점선 · 호기심") — T1 목격 = 점선 ? 마커(야외) · 실내 = 이름표가 ? · T3 단골 = 발밑 라임 링 + 야외 이름표 상시 */
-  .ymp-mist circle { fill:rgba(18,18,18,.4); stroke:rgba(255,255,255,.38); stroke-width:1; stroke-dasharray:2.6 2.2; }   /* 점선 = .ymp-off 대시 결 계승 · 색 = .ymp-node 로컬 관례(SVG 지도 = 토큰 없는 축) */
-  .ymp-mist text { fill:var(--fg-2); font-size:9px; font-weight:var(--fw-x); paint-order:stroke; stroke:rgba(18,18,18,.85); stroke-width:2px; }
-  .ymp-walker.arm .ymp-mist circle, .ymp-walker.arm .ymp-tag rect { stroke:var(--accent); stroke-width:1.2; }   /* 다가가기 2탭 armed = 라임 점등(.yset-reset.armed 계보) */
-  .ymp-t3 { fill:none; stroke:var(--accent); stroke-width:1; opacity:.8; }
   .ymp-light circle { transition:fill .3s var(--ease); }   /* 신호등 — 광장 교차로(차량 정지 축) */
   .ymain.tab-char .ym-fit, .ymain.tab-char .ym-stage, .ymain.tab-char .ym-access-card, .ymain.tab-char .ym-pin { display:none; }   /* 홈 히어로·PIN 퇴장 */
   .ymain.tab-char::before { background:linear-gradient(rgba(0,0,0,.73), rgba(0,0,0,.47)); }   /* 갤러리 딤 = 상단 진하게·하단 열어 계단 노출(언락 밝기 플그 운영자 확정 · ::before 전환 재사용) */
@@ -782,8 +776,6 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   .ylist-mid { flex:1; min-width:0; }
   .ylist-nm { display:flex; align-items:center; min-width:0; font-weight:var(--fw-x); font-size:var(--fs-h3); }   /* flex 중앙축 = 이름·보이스 배지 동일 높이(baseline 어긋남 교정 · 운영자 260707 항목7) */
   .ynm-t { font-style:normal; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }   /* 이름 텍스트 래퍼 — flex 안 ellipsis는 실요소에만 걸림 */
-  .ynm-role { flex:0 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--mut); font-size:var(--fs-xs); margin-left:6px; }   /* 이명(직업 한줄평) = 이름 우측 무채 라벨(운영자 260707 "이름 우측 한줄 평") — 넘치면 이명만 … 양보 · 6px = .yprem margin 관례 */
-  .ylist-nm .ynm-t, .ycrow-nm .ynm-t { flex:none; }   /* 이름(1~3자) 불수축 → 말줄임 타깃 = 이명 단독(배지·시간 불변) */
   .ylist-last { display:block; font-size:var(--fs-sm); color:var(--mut); margin-top:2px; line-height:1.675; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }   /* 줄간격 = 현행 실측 16.75px×1.2=20.1px(운영자 260707 항목8) */
   .ylist-last.on { color:var(--fg); }   /* 마지막 줄 = 최근 대사 흰색 · 위 줄(상황·이전)은 muted 유지(항목8) */
   .ylist-r { flex:none; display:flex; flex-direction:column; align-items:flex-end; align-self:stretch; justify-content:flex-start; padding-top:3px; gap:5px; }   /* 시간 = 행 우측 "상단"(운영자 260706 카톡 뉘앙스) */
@@ -879,7 +871,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
     <div class="ymapp" id="ymapp">   <!-- 지도 탭(운영자 260707) — 위치 SSOT = apps/yeta/places.json(raw) · 워커 탭 = 그 캐릭터와 대화 -->
       <div class="ymap-head"><b>무음동</b><i id="ymapClock"></i></div>
       <div class="ymap-frame"><svg id="ymapSvg" viewBox="0 0 500 500" aria-label="무음동 지도"></svg></div>
-      <div class="ymap-cap">지금 이 시각의 동네 — 쪼만한 주민을 탭하면 바로 대화. <span style="color:var(--accent)">라임 링</span> = 지금 붐비는 곳 · 점선 <b>?</b> = 아직 모르는 사람(두 번 탭 = 다가가기) · 친해질수록 지도에 얼굴이 늘어난다.</div>
+      <div class="ymap-cap">지금 이 시각의 동네 — 쪼만한 주민을 탭하면 바로 대화. <span style="color:var(--accent)">라임 링</span> = 지금 붐비는 곳.</div>
     </div>
     <div class="ycd" id="ycdetail" aria-modal="true" role="dialog">   <!-- 캐릭터 세부 디테일 → [대화 시작](운영자 260706) -->
       <div class="ycd-top"><button type="button" class="ycd-back" id="ycdBack" aria-label="뒤로"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><button type="button" class="ycd-gear" id="ycdGear" aria-label="성향 설정" title="성향 설정"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33h.01a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51h.01a1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82v.01a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></button></div>   <!-- ⚙ = 헤더 행 우측(뒤로가기와 쌍 · 운영자 260707 "마진 좋게") -->
@@ -1053,13 +1045,10 @@ const YMAP_SC = 5, YMAP_RM = () => matchMedia('(prefers-reduced-motion: reduce)'
 const YMAP_POS = { radio:[50,14], office:[56,33], studio:[61,44], alley:[50,50], tea:[30,52], store:[50,63], dojo:[20,78], market:[35,71], gym:[11,60], park:[46,84], school:[65,75] };
 const YMAP_SPOT = { alley:[50,50], park:[46,84], market:[35,71] };   // 야외 지상 스팟(오프로드 · 캐릭터 안착) — 나머지 = 실내 이름표
 const YMAP_INDOOR = new Set(['tea','studio','office','radio','gym','dojo','school','store']);
-const YMAP_ROAD = [[45,54],[38,59],[32,62],[25,66],[18,69],[11,73],[5,76],[15,81],[22,85],[29,89],[36,93],[43,97],[48,100],[54,100],[63,95],[72,90],[82,84],[89,78],[83,73],[76,69],[69,64],[61,59],[56,55],[51,57]];
-// ↑ 차도 폐곡선(260707 격자 오버레이 픽셀 재트레이스 — 차선 점선·횡단보도 실측 합치): 광장 SW 횡단보도(45,54) → 찻집앞 사선길{점선 (43,56)·(38,59)·(33,61)} → 체육관 아래 합류(5,76) → 남서대로{점선 (25,87)·(31,91)·(37,94)} → 바닥변 → 남동대로{점선 (63,95)·(72,90)·(82,84)} → 학교앞길{횡단보도 (83,72)} → 광장 SE(56,55) 복귀. 옛 링(시장·검도장·체육관 관통) 폐기 = 건물 관통 0.
-const YMAP_STOPN = new Set([0, 22, 23]);   // 광장 어귀 정점(횡단보도 3곳) — 빨간불 = 진입 9px 앞 정지선 대기(양방향 공용)
+const YMAP_RING = [[47,51],[50,50],[48,56],[46,65],[44,75],[43,83],[26,85],[14,86],[11,76],[12,67],[22,62],[33,58],[42,54]];   // 차량 도로 링(회색길 실측 · 폐곡선)
+const YMAP_PLAZA_I = 1;   // 링에서 광장(신호등) 정점 인덱스 — 여기서 red면 차량 정지
 const ymRed = now => Math.floor(now / 1000) % 12 < 5;   // 신호 주기 = red 5s / green 7s
 const ymSlot = h => h < 3 ? 'late' : h < 7 ? 'dawn' : h < 11 ? 'morning' : h < 17 ? 'day' : h < 21 ? 'evening' : 'night';
-const ymBaseImg = sl => (sl === 'morning' || sl === 'day') ? 'map_day.png' : 'map_night.png';   // 낮/밤 지도 스왑 — 잠자던 map_day.png 실사용(미구현 개선 260707)
-let _ymSegLen = [], _ymSegOff = [], _ymRoadTot = 1;   // 차도 세그 길이 캐시(차간 유지 아크 좌표용) — ymBuild서 1회 산출
 async function ymSha(s) { const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)); return BigInt('0x' + [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join('')); }
 async function ymPlaceOf(cid, dateStr, hour) {   // yeta_place.place_of 등가(동선표 + 시드 1/4 인접 외출 · private 변주 없음)
   const R = (YMAPD.routine || {})[cid] || {}, base = R[ymSlot(hour)] || '';
@@ -1079,7 +1068,6 @@ async function yMapEnter() {
     catch { svg.innerHTML = `<text x="250" y="250" text-anchor="middle" class="ymp-name">지도를 못 불러왔어 — 잠시 후 다시</text>`; return; }
   }
   if (!YCHARS.length) { const c = await yApi('chars').catch(() => null); if (c && c.ok) { YCHARS = c.chars || []; } }
-  if (!YSESS) { const r = await yApi('get').catch(() => null); if (r && r.ok) YSESS = r.sess || {}; }   // 안개 티어 = 세션 기반 — 목록 미방문 선진입 시 초보 오판 방지
   ymBuild(svg);
   await ymPlaceAll();
   yMapLeave();
@@ -1091,7 +1079,7 @@ function ymBuild(svg) {   // 정적 레이어 — 배경(밤) · 장소 노드/�
   const px = id => (YMAP_POS[id] ? YMAP_POS[id][0] : (P[id] || {}).x) * YMAP_SC;
   const py = id => (YMAP_POS[id] ? YMAP_POS[id][1] : (P[id] || {}).y) * YMAP_SC;
   S.push(`<rect width="500" height="500" fill="rgba(14,16,15,.8)"/>`);
-  S.push(`<image id="ymBase" href="assets/yeta_map/${ymBaseImg(ymSlot(ymKst().getUTCHours()))}" x="0" y="0" width="500" height="500" preserveAspectRatio="xMidYMid slice"/>`);
+  S.push(`<image href="assets/yeta_map/map_night.png" x="0" y="0" width="500" height="500" preserveAspectRatio="xMidYMid slice"/>`);
   for (const [id, p] of Object.entries(P)) {
     if (p.offlimits) { S.push(`<g><rect class="ymp-off" x="${px(id) - 34}" y="${py(id) - 24}" width="68" height="48" rx="6"/><text class="ymp-offtxt" x="${px(id)}" y="${py(id) + 3}" text-anchor="middle">출입금지</text></g>`); continue; }
     if (p.private || !YMAP_POS[id]) continue;   // 집(private)·맵 미등재 노드 = 지도 제외
@@ -1102,53 +1090,37 @@ function ymBuild(svg) {   // 정적 레이어 — 배경(밤) · 장소 노드/�
   svg.innerHTML = S.join('');
   const L = svg.querySelector('#ymLights'), lx = px('alley') + 15, ly = py('alley') - 12;   // 신호등 = 광장 교차로
   L.innerHTML = `<g class="ymp-light" transform="translate(${lx},${ly})"><rect x="-3.4" y="-9" width="6.8" height="18" rx="3" fill="rgba(18,18,18,.88)" stroke="rgba(255,255,255,.25)" stroke-width=".5"/><circle id="ymLR" cx="0" cy="-4.4" r="2.3" fill="#3a1414"/><circle id="ymLG" cx="0" cy="4.4" r="2.3" fill="#153a1a"/></g>`;
-  _ymapWalkers = (YCHARS || []).map(c => { const nm = c.name || '?'; return { id: c.id, name: nm, short: c.short || (nm.length >= 3 ? nm.slice(0, 2) : nm), initial: c.initial || nm[0], color: c.color || '#8fb7bf', x: 250, y: 250, bx: 250, by: 250, mode: '', placed: 0, tier: 2, seedN: 0, armT: 0, plName: '', el: null, spr: null, tag: null, q: null, t3r: null }; });
+  _ymapWalkers = (YCHARS || []).map(c => { const nm = c.name || '?'; return { id: c.id, name: nm, short: c.short || (nm.length >= 3 ? nm.slice(0, 2) : nm), initial: c.initial || nm[0], color: c.color || '#8fb7bf', x: 250, y: 250, bx: 250, by: 250, mode: '', placed: 0, el: null, spr: null, tag: null }; });
   const wg = svg.querySelector('#ymWalkers');
   for (const w of _ymapWalkers) {
     const g = document.createElementNS(NS, 'g'); g.setAttribute('class', 'ymp-walker');
-    g.innerHTML = `<circle class="ymp-t3" cx="0" cy="-1.2" r="5.5" style="display:none"/><image class="wimg" href="assets/yeta_map/char_${esc(w.id)}.png" x="-11" y="-22" width="22" height="22" preserveAspectRatio="xMidYMax meet"/><g class="ymp-mist" style="display:none"><circle cx="0" cy="-8" r="8"/><text x="0" y="-4.8" text-anchor="middle">?</text></g><g class="ymp-tag" style="display:none"><rect x="-15" y="-13" width="30" height="13" rx="6.5"/><text x="0" y="-3.4" text-anchor="middle">${esc(w.short)}</text></g>`;
-    g.addEventListener('click', () => {   // 탭 = 대화(지도 → 방 직행) · T1 목격 = 2탭 다가가기(정본 armed 계약 — 1탭 = 호기심 문구)
-      if (w.tier === 1) {
-        if (w.armT && Date.now() - w.armT < 2600) { w.armT = 0; g.classList.remove('arm'); openYeta(w.id); return; }
-        w.armT = Date.now(); g.classList.add('arm');
-        setTimeout(() => { if (w.armT && Date.now() - w.armT >= 2500) { w.armT = 0; g.classList.remove('arm'); } }, 2600);
-        miniToast(ymMist(w));
-        return;
-      }
-      openYeta(w.id);
-    });
-    w.spr = g.querySelector('.wimg'); w.tag = g.querySelector('.ymp-tag'); w.q = g.querySelector('.ymp-mist'); w.t3r = g.querySelector('.ymp-t3');
+    g.innerHTML = `<image class="wimg" href="assets/yeta_map/char_${esc(w.id)}.png" x="-11" y="-22" width="22" height="22" preserveAspectRatio="xMidYMax meet"/><g class="ymp-tag" style="display:none"><rect x="-15" y="-13" width="30" height="13" rx="6.5"/><text x="0" y="-3.4" text-anchor="middle">${esc(w.short)}</text></g>`;
+    g.addEventListener('click', () => openYeta(w.id));   // 쪼만한 주민 탭 = 그 캐릭터와 대화(지도 → 방 직행)
+    w.spr = g.querySelector('.wimg'); w.tag = g.querySelector('.ymp-tag');
     w.spr.addEventListener('error', () => { const cc = document.createElementNS(NS, 'circle'); cc.setAttribute('class', 'fb'); cc.setAttribute('cx', 0); cc.setAttribute('cy', -8); cc.setAttribute('r', 8); cc.setAttribute('fill', w.color); const tt = document.createElementNS(NS, 'text'); tt.setAttribute('class', 'fb'); tt.setAttribute('x', 0); tt.setAttribute('y', -5.2); tt.setAttribute('text-anchor', 'middle'); tt.textContent = w.initial; w.spr.replaceWith(cc); cc.after(tt); w.spr = cc; }, { once: true });
     wg.appendChild(g); w.el = g;
   }
-  _ymSegLen = YMAP_ROAD.map((A, i) => { const B = YMAP_ROAD[(i + 1) % YMAP_ROAD.length]; return Math.hypot((B[0] - A[0]) * YMAP_SC, (B[1] - A[1]) * YMAP_SC) || 1; });
-  _ymSegOff = []; _ymRoadTot = 0; for (const L of _ymSegLen) { _ymSegOff.push(_ymRoadTot); _ymRoadTot += L; }
   _ymapCars = [];
-  if (!YMAP_RM()) {   // 차량(운영자 260707 "차도 지정 · 한국 운전자 체감 속도") — 실측 차도 폐곡선 · 양방향 2+2 = 우측통행 교행 · 이면도로 서행 · 신호 정지 · 차간 유지 · reduce-motion = 미생성
-    const cg = svg.querySelector('#ymCars'), tones = ['#8fb7ff', '#c4c9c4', '#ffb46b', '#9db2bf'];
-    const N = YMAP_ROAD.length;
-    for (let i = 0; i < 4; i++) {
+  if (!YMAP_RM()) {   // 차량(운영자 260707 "차도로만·서행·신호 정지") — 도로 링 주행 · reduce-motion = 미생성
+    const cg = svg.querySelector('#ymCars'), tones = ['#8fb7ff', '#c4c9c4', '#ffb46b'];
+    for (let i = 0; i < 3; i++) {
       const g = document.createElementNS(NS, 'g'); g.setAttribute('class', 'ymp-car');
-      g.innerHTML = `<rect class="body" x="-3.1" y="-6" width="6.2" height="12" rx="2.1" fill="${tones[i % 4]}"/><rect x="-2.2" y="-2.8" width="4.4" height="3.8" rx="1.2" fill="rgba(18,18,18,.55)"/><circle class="lite" cx="-1.7" cy="-5.3" r=".85"/><circle class="lite" cx="1.7" cy="-5.3" r=".85"/><circle class="tail" cx="-1.6" cy="5.4" r=".7"/><circle class="tail" cx="1.6" cy="5.4" r=".7"/>`;
+      g.innerHTML = `<rect class="body" x="-3.1" y="-6" width="6.2" height="12" rx="2.1" fill="${tones[i % 3]}"/><rect x="-2.2" y="-2.8" width="4.4" height="3.8" rx="1.2" fill="rgba(18,18,18,.55)"/><circle class="lite" cx="-1.7" cy="-5.3" r=".85"/><circle class="lite" cx="1.7" cy="-5.3" r=".85"/>`;
       cg.appendChild(g);
-      _ymapCars.push({ seg: (Math.floor(i * N / 4) + 3) % N, t: .5, v: 8.5 + (i * 1.17) % 3.5, dir: i < 2 ? 1 : -1, el: g });   // v ≈ 8.5~12px/s = 골목 서행 체감(~20km/h 결) · 초기 위치 4분산(고정 시드 = 결정적)
+      _ymapCars.push({ seg: Math.floor(i * YMAP_RING.length / 3), t: Math.random(), v: 12 + Math.random() * 5, el: g });   // v = px/s(서행)
     }
   }
 }
-async function ymPlaceAll() {   // 현재 시각 실위치 재판정 → 안개 티어 → 워커 실내/야외 모드·앵커 갱신 + 붐빔 링 + 시계 + 낮/밤 스왑
+async function ymPlaceAll() {   // 현재 시각 실위치 재판정 → 워커 실내/야외 모드·앵커 갱신 + 붐빔 링 + 시계
   if (!YMAPD || !_ymapWalkers.length) return;
-  const k = ymKst(), dateStr = k.toISOString().slice(0, 10), h = k.getUTCHours(), sl = ymSlot(h);
-  const cl = $('#ymapClock'); if (cl) cl.textContent = `${yTime(Date.now())} · ${{ late: '깊은 밤', dawn: '새벽', morning: '아침', day: '낮', evening: '저녁', night: '밤' }[sl]}`;
-  const base = document.getElementById('ymBase');
-  if (base) { const href = `assets/yeta_map/${ymBaseImg(sl)}`; if (base.getAttribute('href') !== href) base.setAttribute('href', href); }   // 시간대 넘어가면 낮/밤 그림 교대
+  const k = ymKst(), dateStr = k.toISOString().slice(0, 10), h = k.getUTCHours();
+  const cl = $('#ymapClock'); if (cl) cl.textContent = `${yTime(Date.now())} · ${{ late: '깊은 밤', dawn: '새벽', morning: '아침', day: '낮', evening: '저녁', night: '밤' }[ymSlot(h)]}`;
   const at = {};
   for (const w of _ymapWalkers) at[w.id] = await ymPlaceOf(w.id, dateStr, h);
-  await ymTierAll(at, dateStr, sl);
   const byPlace = {};
-  for (const w of _ymapWalkers) if (w.tier >= 1) (byPlace[at[w.id]] = byPlace[at[w.id]] || []).push(w.id);   // 붐빔 링·자리배치 = 보이는 사람만(은신 인원수 누설 차단)
+  for (const [cid, pl] of Object.entries(at)) (byPlace[pl] = byPlace[pl] || []).push(cid);
   for (const w of _ymapWalkers) {
-    const pl = at[w.id], grp = byPlace[pl] || [w.id], i = Math.max(0, grp.indexOf(w.id));
-    w.plName = (YMAPD.places[pl] || {}).name || '어딘가';
+    const pl = at[w.id], grp = byPlace[pl] || [w.id], i = grp.indexOf(w.id);
     if (YMAP_SPOT[pl] && !YMAP_INDOOR.has(pl)) {   // 야외 = 지상 스팟 안착(오프로드) · 여럿이면 옆으로 벌림(배회 없음)
       w.mode = 'out';
       const off = grp.length > 1 ? 9 : 0, ang = (i / grp.length) * Math.PI * 2 - Math.PI / 2;
@@ -1161,47 +1133,13 @@ async function ymPlaceAll() {   // 현재 시각 실위치 재판정 → 안개 
   }
   for (const id of Object.keys(YMAPD.places)) { const el = document.getElementById('ymn-' + id); if (el) el.classList.toggle('meet', ((byPlace[id] || []).length) >= 2); }
 }
-const YM_MIST = ['낯선 실루엣이 {p} 쪽에 어른거린다', '모르는 누군가가 {p} 근처를 서성인다', '처음 보는 얼굴이 {p}에 있다', '후드 그림자 하나가 {p} 쪽을 지나간다'];
-function ymMist(w) { return YM_MIST[(w.seedN || 0) % YM_MIST.length].replace('{p}', w.plName || '어딘가') + ' — 한 번 더 탭하면 다가간다'; }
-async function ymTierAll(at, dateStr, sl) {   // 안개 가시성(운영자 260707 "친한 인물만 · 나머지 ? 점선 · 반경·친밀도·페르소나") — 저장 0 · 결정적
-  //    T3 단골 = 핀 or 20턴+ · T2 아는 사이 = 방 있음(인사 나눔) · T1 목격 = 발각점수 2+(? 점선) · T0 미지 = 비표시
-  const th = (YSESS || {}).threads || {}, t3 = [];
-  for (const w of _ymapWalkers) {
-    const t = th[w.id] || null;
-    const n = t ? Math.max((t.turns || []).length, t.trim || 0) : 0;   // trim = 절단 전 총턴(친밀도는 절단과 무관)
-    w.tier = (t && ((t.turns || []).length || t.opening)) ? ((t.pin || n >= 20) ? 3 : 2) : 0;
-    if (w.tier === 3) t3.push(w.id);
-  }
-  let me = ''; try { me = localStorage.getItem('yeta_me_place') || ''; } catch {}
-  if (!me) { const cur = (YSESS || {}).cur; if (cur && at[cur]) me = at[cur]; }   // 미설정 = 현재 방 상대 위치 파생(yMeRow "함께" 규약 동형)
-  const meNb = me && YMAPD.places[me] ? (YMAPD.places[me].neighbors || []) : [];
-  for (const w of _ymapWalkers) {
-    const seed = await ymSha(`${w.id}:${dateStr}:${sl}:fog`);
-    w.seedN = Number(seed % 997n);
-    if (w.tier) continue;   // 아는 사이부터는 안개 면제
-    const c = yPersona(w.id) || {};
-    const talk = Array.isArray(c.tune) ? (c.tune[0] ?? 5) : 5;   // 페르소나 축 = 말수(TUNE_AX[0] — 떠드는 사람이 먼저 눈에 띈다)
-    const pl = at[w.id];
-    let s = talk >= 8 ? 2 : talk >= 5 ? 1 : 0;
-    if (me) { if (pl === me) s += 2; else if (meNb.includes(pl) || ((YMAPD.places[pl] || {}).neighbors || []).includes(me)) s += 1; }   // 내 주변 반경
-    if (t3.some(f => at[f] === pl)) s += 2;   // 단골 친구 곁 = 자연히 눈에 들어옴
-    if (seed % 3n === 0n) s += 1;   // 오늘의 우연(시간대마다 로테이션 = 재방문 유인)
-    w.tier = s >= 2 ? 1 : 0;
-  }
-}
-function ymApplyMode(w) {   // 티어 렌더 — T0 비표시 · T1 야외 점선 ?/실내 ? 이름표 · T2 현행 · T3 발밑 라임 링 + 야외 이름표 상시 · 집(hide) 공통 숨김
+function ymApplyMode(w) {   // 스프라이트(야외)/이름표(실내)/숨김(집) 토글 + rAF 미가동(reduce) 시 정적 배치
   if (!w.el) return;
-  if (w.mode === 'hide' || w.tier === 0) { w.el.style.display = 'none'; return; }
+  if (w.mode === 'hide') { w.el.style.display = 'none'; return; }
   w.el.style.display = '';
-  const inTag = w.mode === 'in', mist = w.tier === 1;
-  if (w.spr) w.spr.style.display = (inTag || mist) ? 'none' : '';
-  if (w.q) w.q.style.display = (mist && !inTag) ? '' : 'none';
-  if (w.t3r) w.t3r.style.display = (w.tier === 3 && !inTag) ? '' : 'none';
-  if (w.tag) {
-    w.tag.style.display = (inTag || w.tier === 3) ? '' : 'none';
-    const tx = w.tag.querySelector('text'); if (tx) tx.textContent = mist ? '?' : w.short;   // 목격 단계 실내 = 정체 미공개(? 이름표)
-    w.tag.setAttribute('transform', inTag ? '' : 'translate(0,-26)');   // T3 야외 = 머리 위 이름표
-  }
+  const inTag = w.mode === 'in';
+  if (w.spr) w.spr.style.display = inTag ? 'none' : '';
+  if (w.tag) w.tag.style.display = inTag ? '' : 'none';
   if (YMAP_RM()) { w.x = w.bx; w.y = w.by; w.el.style.transform = `translate(${w.x}px,${w.y}px)`; }
 }
 function ymTick(now) {   // 루프 — 워커 스팟 안착(배회 없음) + 신호등 + 차량 도로 링 주행 · style.transform만(합성 전용)
@@ -1215,33 +1153,16 @@ function ymTick(now) {   // 루프 — 워커 스팟 안착(배회 없음) + 신
   const red = ymRed(now), lr = document.getElementById('ymLR'), lg = document.getElementById('ymLG');
   if (lr) lr.setAttribute('fill', red ? '#ff4d4d' : '#3a1414');
   if (lg) lg.setAttribute('fill', red ? '#153a1a' : '#49e06a');
-  const N = YMAP_ROAD.length;
+  const N = YMAP_RING.length;
   for (const c of _ymapCars) {
-    const A = YMAP_ROAD[c.seg], B = YMAP_ROAD[(c.seg + 1) % N];
-    const len = _ymSegLen[c.seg] || 1;
-    const meS = _ymSegOff[c.seg] + c.t * len;   // 아크 좌표(차간 유지용)
-    let gap = Infinity;
-    for (const o of _ymapCars) {   // 같은 방향 앞차와의 거리(폐곡선 mod)
-      if (o === c || o.dir !== c.dir) continue;
-      const oS = _ymSegOff[o.seg] + o.t * (_ymSegLen[o.seg] || 1);
-      const d = ((oS - meS) * c.dir + _ymRoadTot * 2) % _ymRoadTot;
-      if (d > .1 && d < gap) gap = d;
-    }
-    const vv = gap < 13 ? 0 : gap < 22 ? c.v * .45 : c.v;   // 앞차 13px = 정차 · 22px = 서행(자연 대기열)
-    const adv = vv * dt / len * c.dir;
-    const nextI = c.dir > 0 ? (c.seg + 1) % N : c.seg;
-    const stopT = c.dir > 0 ? 1 - 9 / len : 9 / len;   // 정지선 = 광장 어귀 9px 앞
-    const committed = c.dir > 0 ? c.t > stopT + .001 : c.t < stopT - .001;   // 이미 정지선 넘음 = 그냥 통과(역주행 순간이동 방지)
-    if (red && (c.dir > 0 ? nextI === 22 : nextI === 0) && !committed) {   // 빨간불 = 진행방향별 광장 진입 정점에서만 1회 대기
-      c.t = c.dir > 0 ? Math.min(c.t + adv, stopT) : Math.max(c.t + adv, stopT);
-    } else {
-      c.t += adv;
-      if (c.t >= 1) { c.seg = (c.seg + 1) % N; c.t = 0; }
-      else if (c.t < 0) { c.seg = (c.seg - 1 + N) % N; c.t = 1; }
-    }
-    const hx = (B[0] - A[0]) * YMAP_SC / len * c.dir, hy = (B[1] - A[1]) * YMAP_SC / len * c.dir;   // 진행 단위벡터
-    const x = (A[0] + (B[0] - A[0]) * c.t) * YMAP_SC - hy * 2.2, y = (A[1] + (B[1] - A[1]) * c.t) * YMAP_SC + hx * 2.2;   // 우측통행 = 진행방향 우측 2.2px 차선 오프셋(교행)
-    const ang = Math.atan2(hy, hx) * 180 / Math.PI + 90;
+    const A = YMAP_RING[c.seg], B = YMAP_RING[(c.seg + 1) % N];
+    const len = Math.hypot((B[0] - A[0]) * YMAP_SC, (B[1] - A[1]) * YMAP_SC) || 1;
+    const toPlaza = (c.seg + 1) % N === YMAP_PLAZA_I, stopT = 1 - 9 / len;   // 광장 정점 9px 앞 = 정지선
+    const adv = c.v * dt / len;
+    if (red && toPlaza && c.t + adv >= stopT) { c.t = Math.min(c.t, stopT); }   // 빨간불 = 정지선서 대기
+    else { c.t += adv; if (c.t >= 1) { c.seg = (c.seg + 1) % N; c.t = 0; } }
+    const x = (A[0] + (B[0] - A[0]) * c.t) * YMAP_SC, y = (A[1] + (B[1] - A[1]) * c.t) * YMAP_SC;
+    const ang = Math.atan2(B[1] - A[1], B[0] - A[0]) * 180 / Math.PI + 90;
     c.el.style.transform = `translate(${x}px,${y}px) rotate(${ang}deg)`;
   }
   _ymapRaf = requestAnimationFrame(ymTick);
@@ -1474,7 +1395,7 @@ async function yListRender() {
     const unTxt = un > 0 ? (r.trim > turns.length && un >= turns.length ? un + '+' : (un > 99 ? '99+' : String(un))) : '';
     return `<div class="ylr-wrap"><button type="button" class="ylist-row" data-t="${esc(r.id)}">`
       + `<span class="ylist-ava${p.avatar ? ' has-img' : ''}"${p.avatar ? ` style="background-image:url('${esc(p.avatar)}')"` : ''}>${p.avatar ? '' : esc(p.initial || p.name[0])}</span>`
-      + `<span class="ylist-mid"><span class="ylist-nm">${r.pin ? '<svg class="ylist-pin" viewBox="0 0 24 24" fill="currentColor" aria-label="고정됨"><path d="M16 3l5 5-5.5 2 -1 6.5L12 14l-6 7-1-1 7-6-2.5-2.5L16 10l-2-1.5z"/></svg>' : ''}<i class="ynm-t">${esc(p.name)}</i>${p.alias ? `<span class="ynm-role">· ${esc(p.alias)}</span>` : ''}${unTxt ? `<span class="ylist-badge">${unTxt}</span>` : ''}${window.yPremBadge ? yPremBadge(p) : ''}</span>`
+      + `<span class="ylist-mid"><span class="ylist-nm">${r.pin ? '<svg class="ylist-pin" viewBox="0 0 24 24" fill="currentColor" aria-label="고정됨"><path d="M16 3l5 5-5.5 2 -1 6.5L12 14l-6 7-1-1 7-6-2.5-2.5L16 10l-2-1.5z"/></svg>' : ''}<i class="ynm-t">${esc(p.name)}</i>${unTxt ? `<span class="ylist-badge">${unTxt}</span>` : ''}${window.yPremBadge ? yPremBadge(p) : ''}</span>`
       + (opPend ? `<span class="ylist-last">곧 말을 걸어와…</span>` : line(prev) + line(last, 1)) + `</span>`
       + `<span class="ylist-r"><span class="ylist-t">${last ? yTime(last.ts) : ''}</span></span></button></div>`;   // 안읽음 배지 = 이름 옆으로 이설(항목19) — 우측 = 시간만(18 재배치 대비)
   }).join('') + `</div>`;
@@ -1560,7 +1481,7 @@ function ySideRender() {
   side.innerHTML = YCHARS.map(c => {
     const isCur = c.id === curId;
     const lastMine = isCur && turns.length ? ySnip(turns[turns.length - 1].text, 7)
-      : (isCur && (YTH() || {}).state === 'awaiting' && (YTH() || {}).opening ? '곧 말을 걸어와' : (c.alias || ySnip(c.tagline || '', 7)));   // 현 상대 실대화·오프닝 생성 중 표식·나머지 이명(완결 명사구 = 어절 중간 잘림 해소)
+      : (isCur && (YTH() || {}).state === 'awaiting' && (YTH() || {}).opening ? '곧 말을 걸어와' : ySnip(c.tagline || '', 7));   // 현 상대 실대화·오프닝 생성 중 표식·나머지 태그라인
 
     return `<button type="button" class="ys-row${isCur ? ' cur' : ''}" data-id="${esc(c.id)}">${yAva(c)}<span class="ys-nm">${esc(c.name)}</span><span class="ys-last">${esc(lastMine)}…</span></button>`;
   }).join('');
@@ -1600,7 +1521,7 @@ async function yCharRender() {   // 메뉴1 = 시즌 세계관 헤더 + 캐릭�
   if (!YSESS) yApi('get').then(r => { if (r && r.ok) { YSESS = r.sess || {}; const p = YSESS.cur ? yPersona(YSESS.cur) : null; if (p) yNavName(p.name); } }).catch(() => {});   // 언락 첫 화면부터 상대 이름 동기화(비차단 · 프로필 = 기본 캐릭터 고정 260706)
   $('#yworldHead').innerHTML = YWORLD ? `<div class="yssn">${ySsnHtml()}</div>` : '';   // 시즌 표기 = 대화 탭 .yssn 정본 계승(운영자 통일 지시 — 구 .yworld 폐지)
   grid.innerHTML = YCHARS.map(c => `<button type="button" class="ycrow" data-id="${esc(c.id)}">${yAva(c)}`
-    + `<span class="ycrow-mid"><span class="ycrow-nm"><i class="ynm-t">${esc(c.name)}</i>${c.alias ? `<span class="ynm-role">· ${esc(c.alias)}</span>` : ''}${window.yPremBadge ? yPremBadge(c) : ''}</span><span class="ycrow-desc">${esc(c.desc || c.tagline || '')}</span><span class="ycrow-quote">“${esc(c.quote || '')}”</span></span>`
+    + `<span class="ycrow-mid"><span class="ycrow-nm"><i class="ynm-t">${esc(c.name)}</i>${window.yPremBadge ? yPremBadge(c) : ''}</span><span class="ycrow-desc">${esc(c.desc || c.tagline || '')}</span><span class="ycrow-quote">“${esc(c.quote || '')}”</span></span>`
     + `<span class="ycrow-sep"></span>${yHexSvg(c.stats)}</button>`).join('');
 }
 $('#ycharGrid').addEventListener('click', e => { const b = e.target.closest('.ycrow'); if (b) yShowDetail(b.dataset.id); });
@@ -1937,7 +1858,7 @@ function yAvaSet(el, c) {   // 헤더 아바타 채움(얼굴 이미지 우선 �
 }
 function yApply(c) {   // 페르소나 적용 — 이름·태그·포인트색·배경이 스르륵 전환(캐릭터 따라 톤 변화 = 운영자 컨셉)
   YCUR = c;
-  $('#yetaTitle').textContent = c.name; $('#yetaTag').textContent = c.alias || c.tagline || ''; yNavName(c.name);   // 헤더 = 짧은 이명 우선(긴 tagline은 좁은 헤더서 …로 뭉개짐 · 인트로/디테일 시트가 풀버전 담당)
+  $('#yetaTitle').textContent = c.name; $('#yetaTag').textContent = c.tagline || ''; yNavName(c.name);
   yAvaSet($('#yetaAva'), c);   // 헤더 상주 프로필 — avatar(얼굴) 있으면 이미지, 없으면 이니셜(색은 --yeta-ac 자동)
   // 강조색(--yeta-ac)은 네온보라 고정 — 페르소나 구분은 아바타 이니셜색·배경으로만(운영자 260703). CSS 기본값(:root --yeta-ac) 사용, 런타임 주입 제거.
   const fresh = !((YTH() || {}).turns || []).some(t => t.role === 'user');   // 프레시 스레드(내 발화 전) = 시그니처 배경 강제(항목9 · 무드 무시 = 계단 대신 캐릭터 고유 무대)
@@ -1950,7 +1871,7 @@ function yHeadRoom() {   // 단톡 헤더(합석 260707) — room 2명 = 아바�
   if (room.length < 2) {
     const cur = yPersona((YTH() || {}).last_sp || (YSESS || {}).cur) || YCUR;
     if (cur.id !== YCUR.id) yApply(cur);   // 마지막 화자 동기 — 내보내기 직후 YCUR가 나간 사람으로 남는 스테일 교정(실측 버그픽 260707)
-    else if (a2) { $('#yetaTitle').textContent = cur.name; $('#yetaTag').textContent = cur.alias || cur.tagline || ''; yAvaSet($('#yetaAva'), cur); }   // 스택 해제 = 단일 원복(이명 우선 = yApply 동형)
+    else if (a2) { $('#yetaTitle').textContent = cur.name; $('#yetaTag').textContent = cur.tagline || ''; yAvaSet($('#yetaAva'), cur); }   // 스택 해제 = 단일 원복
     if (a2) a2.remove();
     return;
   }

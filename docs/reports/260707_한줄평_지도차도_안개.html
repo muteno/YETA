@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>260707 — 한줄평(이명) · 지도 차도 실측 · 안개 가시성</title>
+<style>
+  :root{color-scheme:dark}
+  body{margin:0;padding:28px 20px 80px;background:#121212;color:#fff;font:15px/1.7 -apple-system,system-ui,'Apple SD Gothic Neo','Pretendard',sans-serif;max-width:860px;margin-inline:auto}
+  h1{font-size:22px;margin:0 0 6px} h2{font-size:17px;margin:34px 0 10px;color:#CFFF40}
+  h3{font-size:15px;margin:20px 0 6px}
+  .sub{color:#8b8f8a;font-size:13px;margin-bottom:22px}
+  table{border-collapse:collapse;width:100%;font-size:13.5px;margin:10px 0}
+  th,td{border:1px solid rgba(255,255,255,.13);padding:7px 10px;text-align:left;vertical-align:top}
+  th{background:rgba(255,255,255,.06);font-weight:800}
+  code,pre{background:rgba(255,255,255,.07);border-radius:6px;font-family:ui-monospace,Menlo,monospace;font-size:12.5px}
+  code{padding:1px 6px} pre{padding:12px 14px;overflow-x:auto;line-height:1.55}
+  .ok{color:#CFFF40} .warn{color:#ffb46b} .mut{color:#8b8f8a}
+  .card{background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:14px 16px;margin:12px 0}
+  .pill{display:inline-block;padding:1px 9px;border:1px solid rgba(207,255,64,.4);border-radius:99px;color:#CFFF40;font-size:12px;margin-right:6px}
+  b.acc{color:#CFFF40}
+</style></head><body>
+<h1>한줄평(이명) · 지도 차도 실측 · 안개 가시성</h1>
+<div class="sub">260707 · 분신술 10인(opus × effort max · READ-ONLY) 10분 타이머 수렴 반영 · 대상 = <code>viewer/index.html</code> · <code>apps/yeta/characters/roster.json</code></div>
+
+<div class="card">
+<span class="pill">요약</span>
+① 캐릭터마다 짧은 <b class="acc">이명(alias)</b> 신설 — 방 목록·캐릭터 탭·챗 헤더·챗 레일에서 <b>이름 우측</b>에 표시(예: <b>류 · 자칭 천하제일검</b>).
+② 지도 차량이 건물을 관통하던 도로 링 폐기 → <b class="acc">이미지 픽셀 실측 차도 폐곡선</b>으로 교체 + 양방향 우측통행·서행·차간 유지·후미등.
+③ 지도 인물에 <b class="acc">안개 가시성</b> — 친한 인물만 또렷, 낯선 이는 점선 <b>?</b>, 모르는 이는 아예 안 보임(반경·친밀도·페르소나·시간대 우연으로 점차 해금).
+④ 잠자던 <code>map_day.png</code> 실사용 — 아침·낮엔 낮 지도로 자동 교대.
+</div>
+
+<h2>① 한줄평(이명) — 이름 우측 배치</h2>
+<p>기존 <code>tagline</code>(12~29자)은 좁은 표면에서 말줄임으로 뭉개짐(챗 헤더 실측: 윤 29자 중 15자에서 절단). → 짧은 명사구 필드 <code>alias</code>(4~8자)를 roster에 신설하고 표면별로 분리했다. <b>긴 tagline은 디테일 시트(.ycd-tag)·챗 인트로(.yintro-tag)·픽커에 존치</b>(깊이 보는 면 = 풀 문장, 이름 옆 = 직함표).</p>
+<table>
+<tr><th>캐릭터</th><th>alias(신설)</th><th>선정 근거(분신 카피 앵글 수렴)</th></tr>
+<tr><td>무디</td><td><b>몇백 년 주인장</b></td><td>가게 연혁으로도 읽혀 불사(不老) 스포는 반 발만</td></tr>
+<tr><td>세라</td><td><b>최연소 각성자</b></td><td>세계관 공개값(tagline 명시) — 수인 비밀 무접촉</td></tr>
+<tr><td>하은</td><td><b>능글 국어쌤</b></td><td>성격훅+직업 · 5자(최악 슬롯 = 보이스+안읽음 동시에도 생존)</td></tr>
+<tr><td>백</td><td><b>마지막 사냥꾼</b></td><td>공개 tagline이 이미 노출한 표층 이명(딥시크릿 = 길드 전말)</td></tr>
+<tr><td>류</td><td><b>자칭 천하제일검</b></td><td>"자칭" = 진실을 농담처럼 흘리는 캐릭터 MO와 일치 · 호기심 최강</td></tr>
+<tr><td>윤</td><td><b>경계의 심야 DJ</b></td><td>직업 즉시 + "경계" 이중 독해(밤/이승-저승)</td></tr>
+<tr><td>데스크</td><td><b>냉철한 편집장</b></td><td>공개 tagline 축약 · 즉각 이해</td></tr>
+<tr><td>카피</td><td><b>한 줄 카피라이터</b></td><td>desc "펀치라인 제조기"와 중복 회피(축 분리: 이명=직함·desc=성격)</td></tr>
+<tr><td>가을</td><td><b>골목의 실권자</b></td><td>직함(상인회장)보다 훅 — "왜 이 사람이 골목을 쥐지?" 탭 유도</td></tr>
+<tr><td>본</td><td><b>강철의 관장</b></td><td>체육관명 '강철' = 직업 직결 + 성격 은유 이중의미</td></tr>
+</table>
+<h3>표면별 전/후</h3>
+<table>
+<tr><th>표면</th><th>전</th><th>후</th></tr>
+<tr><td>방 목록 이름행 <code>.ylist-nm</code></td><td>이름+배지만(이명 없음)</td><td>이름 <span class="mut">· 이명</span> [안읽음][보이스] — 이명만 말줄임 양보(<code>.ynm-role</code>)</td></tr>
+<tr><td>캐릭터 탭 <code>.ycrow-nm</code></td><td>이름만 · 아래 desc/quote</td><td>이름 <span class="mut">· 이명</span> + desc/quote 존치(직함/성격/목소리 3단 위계)</td></tr>
+<tr><td>챗 헤더 <code>#yetaTag</code></td><td>긴 tagline → …로 절단</td><td><code>alias || tagline</code> — 전 캐릭터 풀표시</td></tr>
+<tr><td>챗 좌 레일 <code>ys-last</code></td><td><code>ySnip(tagline,7)</code> 어절 중간 절단</td><td>이명 완결 명사구(말줄임 0)</td></tr>
+<tr><td>디테일 시트·인트로·픽커</td><td>긴 tagline</td><td><b>존치</b>(전폭 표면 = 풀 문장 담당)</td></tr>
+</table>
+<p class="mut">토큰: <code>--fs-xs</code>·<code>--mut</code>·기존 6px 간격 관례만 계승 — 신규 :root 토큰 0(락 무변경).</p>
+
+<h2>② 지도 차도 — 픽셀 실측 교체</h2>
+<p><b>진단:</b> 옛 <code>YMAP_RING</code> 13정점 중 7개가 건물·놀이터 위(편의점 네온·검도장·체육관 관통 — 분신 도로 앵글 색판정과 내 격자 실측 일치). 남서 절반이 통째로 존재하지 않는 길이었다.</p>
+<p><b>방법:</b> 지도 PNG에 0~100 좌표 격자 오버레이 → 사분면·구역 확대 크롭으로 <b>차선 점선·횡단보도 픽셀을 직접 트레이스</b>{점선 실측 (43,56)·(38,59)·(33,61)·(25,87)·(63,95)·(72,90)·(82,84) · 횡단보도 (44,53)·(15,79)·(83,72)}. 색 휴리스틱은 찻집 등불 빛번짐을 벽돌로 오판해 기각 — 점선이 곧 도로 중심선.</p>
+<table>
+<tr><th></th><th>전</th><th>후</th></tr>
+<tr><td>경로</td><td>13정점 링(7정점 오프로드)</td><td><b>24정점 폐곡선</b> — 광장 SW → 찻집앞 사선길 → 체육관 아래 합류 → 남서대로 → 남동대로 → 학교앞길 → 광장 SE 복귀 · <b class="ok">건물 관통 0(수치 검증)</b></td></tr>
+<tr><td>통행</td><td>일방 3대 · 중앙선 주행</td><td><b>양방향 2+2대</b> · 진행방향 우측 2.2px 차선 오프셋 = 한국 우측통행 교행</td></tr>
+<tr><td>속도</td><td>12~17px/s 등속</td><td><b>8.5~12px/s</b>(골목 서행 체감 ~20km/h 결) + 앞차 13px 정차·22px 감속(자연 대기열)</td></tr>
+<tr><td>신호</td><td>단일 정점 정지</td><td>진행방향별 광장 진입 정점 1회 정지(정지선 9px 앞 · 통과 중이면 통과 = 역주행 순간이동 방지)</td></tr>
+<tr><td>등화</td><td>전조등만</td><td>+ 후미등(<code>--danger-rgb</code> 기존 토큰 · 밤 깊이감)</td></tr>
+</table>
+
+<h2>③ 안개 가시성 — 친한 만큼 보이는 지도</h2>
+<table>
+<tr><th>티어</th><th>조건</th><th>표현</th><th>탭</th></tr>
+<tr><td><b>T3 단골</b></td><td>방 고정(pin) 또는 20턴+</td><td>스프라이트 + <b class="acc">발밑 라임 링</b> + 야외에서도 머리 위 이름표 상시</td><td>바로 대화</td></tr>
+<tr><td><b>T2 아는 사이</b></td><td>방 있음(인사 나눔)</td><td>현행 그대로(야외 스프라이트 · 실내 이름표)</td><td>바로 대화</td></tr>
+<tr><td><b>T1 목격</b></td><td>모르는데 발각점수 ≥ 2</td><td>야외 = <b>점선 ? 마커</b> · 실내 = 건물 이름표가 <b>?</b>(정체 미공개)</td><td>1탭 = 호기심 문구 토스트("낯선 실루엣이 찻집 무음 쪽에…") · <b>2탭 = 다가가기</b>(armed 정본 계약 · 라임 점등)</td></tr>
+<tr><td><b>T0 미지</b></td><td>발각점수 &lt; 2</td><td><b>안 보임</b></td><td>—</td></tr>
+</table>
+<h3>발각점수(결정적 · 저장 0)</h3>
+<pre>점수 = 페르소나(말수 tune[0]: ≥8→+2 · ≥5→+1)      ← 떠드는 사람이 먼저 눈에 띈다
+     + 내 반경(같은 장소 +2 · 인접 장소 +1)          ← 내 위치 = 수동 설정 || 현재 방 상대 위치 파생
+     + 단골 곁(T3 친구와 같은 장소 +2)               ← 친구 주변이 자연히 눈에 들어옴
+     + 오늘의 우연(캐릭터·날짜·시간대 시드 1/3 +1)   ← 시간대마다 로테이션 = 재방문 유인
+표시 = 점수 ≥ 2 · 집(private)은 티어 무관 공통 숨김(정보 누설 0)</pre>
+<h3>실측 시뮬레이션(실데이터 · node)</h3>
+<table>
+<tr><th>시나리오</th><th>결과</th></tr>
+<tr><td>초보(대화 0 · 위치 미설정)</td><td>시간대별 <b>2~5명만 ?</b>로 어렴풋 — 0시 5명 · 14시 2명(하은·류 상시축 + 무디·카피·가을 시드 로테이션) <span class="ok">✓ "몇 명 안 보임" 요구 일치</span></td></tr>
+<tr><td>중수(하은 단골핀 · 세라 3턴 · 내 위치 골목 · 19시)</td><td>하은 T3 · 세라 T2 · 골목 주변(백·류·윤·카피·가을) + 하은 곁(무디·데스크) T1 · 멀리 시장의 본만 T0 <span class="ok">✓ 반경·단골 보너스 정상</span></td></tr>
+</table>
+<p class="mut">붐빔 라임 링·자리 배치도 "보이는 사람만" 계산 — 은신 인원수 누설 차단. 지도 캡션에 규칙 한 줄 안내 추가.</p>
+
+<h2>④ 미구현 개선(동시 반영)</h2>
+<ul>
+<li><b>낮/밤 지도 스왑</b> — 잠자던 <code>map_day.png</code> 실사용: 아침·낮 슬롯 = 낮 그림, 저녁~새벽 = 밤 그림(1분 재판정 시 자동 교대).</li>
+<li><b>지도 선진입 세션 보장</b> — 대화 목록 안 거치고 지도 먼저 열어도 안개 티어가 초보로 오판되지 않게 <code>yMapEnter</code>에 세션 로드 추가.</li>
+<li><b>챗 레일 어절 절단 해소</b> — 위 ① 참조.</li>
+</ul>
+
+<h2>리스크 · 롤백</h2>
+<ul>
+<li>이명 문구는 콘텐츠(주변부 = 자유축) — 마음에 안 드는 문구는 roster.json <code>alias</code>만 고치면 즉시 반영(뷰어 무수정).</li>
+<li>안개가 답답하면: 임계 <code>s ≥ 2</code>를 1로 낮추거나 T1 조건 완화 한 줄 조정. 완전 끄기 = <code>ymTierAll</code>에서 <code>w.tier = w.tier || 2</code> 한 줄.</li>
+<li>차도 좌표는 상수 1개(<code>YMAP_ROAD</code>) — 미세조정 = 좌표만.</li>
+<li>롤백 = <code>_versions/260707_2312_한줄평_지도안개/</code>.</li>
+</ul>
+
+<h2>검증</h2>
+<ul>
+<li>자가검증 경로 = <b>도로 실측</b>(격자 오버레이 4크롭 + 점선·횡단보도 트레이스 + 건물박스 충돌 수치검사 0건) · <b>안개 알고리즘 node 스모크</b>(초보/중수 시나리오 실데이터) · <b>JS 구문 node --check OK</b> · <b>check_refs rc=0</b>(신규 토큰 0 · 락 무변경) · roster JSON 파스 OK · 머지 후 <code>git show origin/main</code> read-back.</li>
+<li>분신술 10인(opus·max·READ-ONLY) — 10분 타이머 내 도착 5앵글(목록 배치·헤더 배치·카피·도로·차량) 수렴 반영 · 사후 rogue 커밋 점검 예정.</li>
+<li>실기기 체감(차 속도·안개 답답함·이명 톤) = 운영자 감각 축 — 조정 노브 위 리스크 절 참조.</li>
+</ul>
+</body></html>
