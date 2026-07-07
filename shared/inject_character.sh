@@ -13,7 +13,8 @@ _yc_files() {
   # ⚠️ 순서 계약: 00(하드룰) → 10(세계 공통 — 페르소나 불변 = 캐시 접두 안정) → 카드(맨 뒤·말투 제1규칙이 최종 우선).
   [ -f "apps/yeta/10_세계관.md" ] && echo "apps/yeta/10_세계관.md"
   if [ -f "apps/yeta/characters/${id}.md" ]; then echo "apps/yeta/characters/${id}.md"
-  else echo "viewer/characters/epic/${id}/CLAUDE.md"; fi   # 에픽 캐릭터 = 자산 폴더 동거 카드(운영자 260707 — 카드+이미지 한 폴더 · characters/epic/<id>/)
+  elif [ -f "viewer/characters/season/${id}/CLAUDE.md" ]; then echo "viewer/characters/season/${id}/CLAUDE.md"
+  elif [ -f "viewer/characters/idol/${id}/CLAUDE.md" ]; then echo "viewer/characters/idol/${id}/CLAUDE.md"; fi   # 스페셜 캐릭터(시즌/아이돌) = 자산 폴더 동거 카드(카드+이미지 한 폴더 · characters/<타입>/<id>/ · 운영자 260707)
 }
 
 character_block() {
