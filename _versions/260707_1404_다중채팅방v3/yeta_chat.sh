@@ -35,26 +35,8 @@ export AWS_ACCESS_KEY_ID="${R2_ACCESS_KEY_ID:?}" AWS_SECRET_ACCESS_KEY="${R2_SEC
 EP="https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
 KEY="sessions/${CHAR}.json"
 SESS=/tmp/yeta_sess.json
-SESS_ETAG=""   # v3 CAS(260707 기틀검증 레이스①) — get이 ETag 기억 · put이 If-Match 조건부(경합 = 실패 → 호출부 fresh 재시도)
-r2get() {   # 반환/에러 계약 종전 유지(404 = 'Not Found|NoSuchKey' 텍스트 — 호출부 grep 호환)
-  local _o
-  if _o="$(aws s3api get-object --bucket "$YETA_R2_BUCKET" --key "$KEY" "$SESS" --endpoint-url "$EP" 2>&1)"; then
-    SESS_ETAG="$(printf '%s' "$_o" | python3 -c 'import json,sys
-try: print((json.load(sys.stdin).get("ETag") or "").strip("\""))
-except Exception: print("")' 2>/dev/null)"
-    return 0
-  fi
-  printf '%s\n' "$_o" >&2; return 1
-}
-r2put() {   # ETag 有 = 조건부 put(교차 writer 덮어쓰기 차단) · CLI 미지원 = 무조건 put 폴백(현행 동급) · PreconditionFailed = rc1(호출부 재시도)
-  local _e
-  if [ -n "$SESS_ETAG" ]; then
-    if _e="$(aws s3api put-object --bucket "$YETA_R2_BUCKET" --key "$KEY" --body "$SESS" --content-type application/json --endpoint-url "$EP" --if-match "$SESS_ETAG" 2>&1)"; then return 0; fi
-    if printf '%s' "$_e" | grep -qiE 'PreconditionFailed|At least one of the pre-conditions'; then echo "  ⚠️ r2put 경합(ETag 불일치) — fresh 재시도 필요"; return 1; fi
-    printf '%s' "$_e" | grep -qiE 'Unknown options|Unrecognized|--if-match' || { printf '%s\n' "$_e" >&2; return 1; }
-  fi
-  aws s3 cp "$SESS" "s3://${YETA_R2_BUCKET}/${KEY}" --endpoint-url "$EP" --content-type application/json --only-show-errors
-}
+r2get() { aws s3 cp "s3://${YETA_R2_BUCKET}/${KEY}" "$SESS" --endpoint-url "$EP" --only-show-errors; }
+r2put() { aws s3 cp "$SESS" "s3://${YETA_R2_BUCKET}/${KEY}" --endpoint-url "$EP" --content-type application/json --only-show-errors; }
 
 SESSION_START=$SECONDS
 
@@ -72,12 +54,7 @@ from yeta_place import load_places, place_of, place_name   # 위치 SSOT = apps/
 PL = load_places()
 _kst = datetime.now(timezone(timedelta(hours=9)))
 _kdate, _khour = f"{_kst:%Y-%m-%d}", _kst.hour
-from yeta_v3 import migrate_v3, pick_thread, thread_view   # v3 다중 채팅방(260707 · 어댑터 SSOT — JS migrateV3 동형)
-S_ROOT = migrate_v3(json.load(open(sys.argv[1], encoding="utf-8"))); n = int(sys.argv[2])
-T = pick_thread(S_ROOT)                                  # 통합 age 큐(invite/pending/opening 최고령 스레드 · 기아 방지)
-if not T:
-    print("NOPENDING"); sys.exit(0)
-s = thread_view(S_ROOT, T)                               # 스레드 뷰 = 이하 기존 단일 로직 그대로 재사용(공유 필드 오버레이 · 타 스레드 = 메타만)
+s = json.load(open(sys.argv[1], encoding="utf-8")); n = int(sys.argv[2])
 names = {}
 try:                                                     # id→이름(화자 귀속 · 집단 역학 260707) — 실패 = 전원 "너:" 폴백(안전)
     names = {c.get("id"): c.get("name") for c in json.load(open(sys.argv[3], encoding="utf-8")) if isinstance(c, dict) and c.get("id")}
@@ -115,11 +92,11 @@ pend_idx = [i for i, t in enumerate(turns[last_a + 1:], start=last_a + 1) if t.g
 if not pend_idx:
     _op = s.get("opening")
     if _op and not any(t.get("role") == "assistant" for t in turns):
-        _mo = _re.match(r"\s*\[LV\s*(\d)\]", (s.get("notes") or {}).get(T) or "")
-        print(json.dumps({"open": 1, "opening_ts": _op, "thread": T, "persona": T,
+        _mo = _re.match(r"\s*\[LV\s*(\d)\]", (s.get("notes") or {}).get(sess_persona) or "")
+        print(json.dumps({"open": 1, "opening_ts": _op, "persona": sess_persona,
                           "note_pub": s.get("note_pub") or s.get("note") or "",
-                          "note_me": ((s.get("notes") or {}).get(T)) or "",
-                          "tune": (s.get("tunes") or {}).get(T),
+                          "note_me": ((s.get("notes") or {}).get(sess_persona)) or "",
+                          "tune": (s.get("tunes") or {}).get(sess_persona),
                           "policy": json.dumps(s.get("policy"), ensure_ascii=False) if isinstance(s.get("policy"), dict) else "",
                           "rel_lv": _mo.group(1) if _mo else "", "cast": " · ".join(v for v in names.values() if v),
                           "hist": "", "pending": "", "ins": 0, "anchor_ts": "", "last_mood": "",
@@ -134,14 +111,13 @@ if inv.get("to") and now_ms - (inv.get("ts") or 0) < 600000 and inv["to"] not in
     _lm = next((t.get("mood") for t in reversed(turns) if t.get("role") == "assistant" and t.get("mood")), "")
     _m = _re.match(r"\s*\[LV\s*(\d)\]", (s.get("notes") or {}).get(persona) or "")
     pref = s.get("pref") or {}
-    print(json.dumps({"mode": "invite", "thread": T, "persona": persona,
+    print(json.dumps({"mode": "invite", "persona": persona,
                       "host_names": " · ".join(names.get(r) or r for r in room),
                       "note_pub": s.get("note_pub") or s.get("note") or "",
                       "note_me": ((s.get("notes") or {}).get(persona)) or "",
                       "hist": "\n".join(line(t, persona) for t in turns[-n:]),
                       "cast": " · ".join(v for v in names.values() if v),
                       "last_mood": _lm, "rel_lv": _m.group(1) if _m else "",
-                      "policy": json.dumps(s.get("policy"), ensure_ascii=False) if isinstance(s.get("policy"), dict) else "",
                       "place_nm": place_name(PL, place_of(PL, persona, _kdate, _khour)),   # 초대받은 애의 지금 장소(거절 사유가 구체적이게 · 마주침 260707)
                       "model": pref.get("model") or "", "effort": pref.get("effort") or ""},
                      ensure_ascii=False))
@@ -191,16 +167,13 @@ _freq = {}
 for _p2 in _recent_a:
     if _p2 != persona: _freq[_p2] = _freq.get(_p2, 0) + 1
 riv = names.get(max(_freq, key=_freq.get), "") if _freq and max(_freq.values()) >= 3 else ""   # 최다 대면 타 주민(3턴+ · 질투축 급식 — 메타만)
-if not riv:                                              # v3 = 타 스레드 메타 폴백(updated 최신·3턴+ 방 — 턴 텍스트 접근 금지 = 누수 차단 · 러너감사①B)
-    _ot = sorted([o for o in (s.get("_others") or []) if (o.get("n") or 0) >= 3], key=lambda o: -(o.get("updated") or 0))
-    if _ot and time.time() * 1000 - (_ot[0].get("updated") or 0) < 86400000: riv = names.get(_ot[0]["id"], "")
 handoff = ""                                             # 교체 직후 첫 턴 = 직전 화자 인계(합류 인수인계)
 if pend_idx[0] > 0 and turns[pend_idx[0] - 1].get("role") == "sys":
     _prev = next((t.get("persona") for t in reversed(turns[:pend_idx[0] - 1]) if t.get("role") == "assistant" and t.get("persona")), "")
     if _prev and _prev != persona: handoff = names.get(_prev, "")
 note_pub = s.get("note_pub") or s.get("note") or ""          # 레거시 단일 note = 공용으로 승계(이중기억 v3 · 아이데이션③)
 note_me = ((s.get("notes") or {}).get(persona)) or ""
-print(json.dumps({"mode": "chat", "thread": T, "note_pub": note_pub, "note_me": note_me, "hist": hist, "pending": "\n".join(pending), "ins": ins,
+print(json.dumps({"mode": "chat", "note_pub": note_pub, "note_me": note_me, "hist": hist, "pending": "\n".join(pending), "ins": ins,
                   "tune": (s.get("tunes") or {}).get(persona),   # 캐릭터별 성향 게이지(16축 0~10 · op tune) — 없으면 None
                   "policy": json.dumps(s.get("policy"), ensure_ascii=False) if isinstance(s.get("policy"), dict) else "",
                   "last_mood": last_mood, "cast": " · ".join(v for v in names.values() if v),   # 상태 블록 재료(260707)
@@ -221,26 +194,18 @@ matv() { python3 -c 'import json,sys; v=json.loads(sys.argv[1]).get(sys.argv[2])
 
 # ── 세션 반영 — fresh 재-read 후 답장을 ins 자리에 insert(끝-append 금지 = 후속 메시지 매몰 방지) ──
 # rc: 0=반영(대사) · 2=세션 교체(reset) 폐기 · 3=빈 대사(error 기록) · 그 외=실패
-finish() {  # $1=ok|error · $2=텍스트 — env: INS·ANCHOR_TS·PERSONA·MODEL·EFF·GEN_S·THREAD — CAS 경합 시 fresh 재실행(최대 3회 · 레이스감사①)
-  local _try
-  for _try in 1 2 3; do
+finish() {  # $1=ok|error · $2=텍스트 — env: INS·ANCHOR_TS·PERSONA·MODEL·EFF·GEN_S
   # fresh 재-read(그 사이 append 보존) — 실패 시 stale 위에 쓰면 후속 유저 메시지 유실 → 재시도 후 반영 포기(데이터 보호)
   local _g=0 _i
   for _i in 1 2 3; do if r2get; then _g=1; break; fi; [ "$_i" -lt 3 ] && sleep 2; done
   if [ "$_g" = 0 ]; then echo "::error::finish r2get 실패 — 반영 포기(답장 폐기·유저 데이터 보호)"; _did_reply=0; return 1; fi
   REPLY_TEXT="$2" PERSONA="${PERSONA:-}" MODEL="${MODEL:-}" EFF="${EFF:-}" GEN_S="${GEN_S:-0}" ANCHOR_TS="${ANCHOR_TS:-}" OPEN="${OPEN:-}" OPENING_TS="${OPENING_TS:-}" \
-    CO_ID="${CO_ID:-}" CO_NAME="${CO_NAME:-}" THREAD="${THREAD:-}" \
+    CO_ID="${CO_ID:-}" CO_NAME="${CO_NAME:-}" \
     python3 - "$SESS" "$1" "${INS:-0}" "${CVER:-}" <<'PY'
 import json, os, re, sys, time
-sys.path.insert(0, ".github/scripts")
-from yeta_v3 import migrate_v3                            # v3(260707) — JS 동형 랩(읽기측 · 영속은 이 finish 경로뿐 = 신규 put 지점 아님)
 p, kind, ins, cver = sys.argv[1], sys.argv[2], int(sys.argv[3]), sys.argv[4]
 anchor_ts = os.environ.get("ANCHOR_TS", "")
-S_ROOT = migrate_v3(json.load(open(p, encoding="utf-8")))
-T = os.environ.get("THREAD", "")
-s = (S_ROOT.get("threads") or {}).get(T)                  # 스레드 뷰(참조) — 이하 turns/state/err/opening/room/barged/invite = 이 스코프
-if s is None:                                             # reset{t} = 스레드 삭제 → 무write 폐기(KeyError 하드실패 오폭 차단 · 러너감사②A · setdefault 재생성 금지 = 유령 스레드 방지)
-    print("스레드 부재(reset/나가기) — 답장 폐기", file=sys.stderr); sys.exit(2)
+s = json.load(open(p, encoding="utf-8"))
 turns = s.setdefault("turns", [])
 now = int(time.time() * 1000)
 open_job = os.environ.get("OPEN") == "1"
@@ -318,18 +283,17 @@ if kind == "ok":
         if open_job:
             s.pop("opening", None); s.pop("awaiting_since", None)   # 오프닝 성공 = nonce 소거(웜루프 재생성 자연 차단 = assistant 턴 1 + 플래그 0)
         if "PUB" in notes_found:
-            S_ROOT["note_pub"] = notes_found["PUB"]; S_ROOT.pop("note", None)   # 공용 기억 = top-level(스레드 밖 · 마이그감사③)
+            s["note_pub"] = notes_found["PUB"]; s.pop("note", None)   # 레거시 단일 note 는 승계 후 정리
         if "ME" in notes_found and persona_env:
-            S_ROOT.setdefault("notes", {})[persona_env] = notes_found["ME"]     # 사적 기억 = 캐릭터 귀속 top-level
+            s.setdefault("notes", {})[persona_env] = notes_found["ME"]
         if turn_persona and len([r for r in (s.get("room") or []) if r]) > 1:
-            s["last_sp"] = turn_persona                # 마지막 화자(v3 = last_sp) = 단톡에서만 갱신 — 1:1 무갱신(5인검증⑤)
+            s["persona"] = turn_persona                # 마지막 화자 갱신 = 단톡(fresh room 2명)에서만 — 1:1은 무갱신(draw 경합 회귀 차단 · 5인검증⑤)
         if (s.get("barged") or {}).get("id") == turn_persona:
             s.pop("barged", None)                      # 난입 데뷔 완료 = 마커 소거(뷰어 내보내기 pill 회수 · 승격 턴 포함)
         if s.get("invite") and now - ((s.get("invite") or {}).get("ts") or 0) > 600000:
             s.pop("invite", None)                      # 스테일 초대 lazy 정리(판정 러너 유실 대비)
         s["state"] = "awaiting" if any(t.get("role") == "user" for t in turns[ins + k:]) else "idle"
         s.pop("err", None)
-        if len(turns) > 200: s["turns"] = turns[-200:]   # 스레드 캡(보안감사⑤ — state 판정 후 트림 = pending 판정 무영향[유저 턴은 꼬리라 보존])
 else:
     if open_job:                                 # 오프닝 실패(쿼터·rc) = 정적 폴백(뷰어 yGreet)·error 배너 금지(죽은 재시도 409 차단 · 기틀검증 회귀B3·UX2)
         s.pop("opening", None); s.pop("awaiting_since", None); s["state"] = "idle"
@@ -338,20 +302,17 @@ else:
         s["err"] = text[:300]
 if cver:
     s["char_ver"] = cver
-s["updated"] = now                                # 스레드 정렬 키(대화 탭 최근순)
-S_ROOT["updated"] = now
-json.dump(S_ROOT, open(p, "w", encoding="utf-8"), ensure_ascii=False)
+s["updated"] = now
+json.dump(s, open(p, "w", encoding="utf-8"), ensure_ascii=False)
 sys.exit(3 if empty else 0)
 PY
   _frc=$?
   case "$_frc" in
     2) echo "세션 교체(reset) — 반영 생략"; _did_reply=0; return 0 ;;
-    3) if r2put; then echo "::warning::빈 대사 — 폴백 기록(푸시 생략)"; _did_reply=0; return 0; fi; [ "$_try" -lt 3 ] && continue; return 1 ;;
-    0) if r2put; then [ "$1" = "ok" ] && _did_reply=1; return 0; fi; [ "$_try" -lt 3 ] && continue; return 1 ;;   # put 경합(ETag) = fresh 재실행(재적용)
+    3) r2put || return 1; echo "::warning::빈 대사 — error 기록(푸시 생략)"; _did_reply=0; return 0 ;;
+    0) r2put || return 1; [ "$1" = "ok" ] && _did_reply=1; return 0 ;;
     *) echo "::error::세션 반영 실패(rc=$_frc)"; return 1 ;;
   esac
-  done
-  return 1
 }
 
 # 무전기(PTT) 답장 음성 — 텍스트 답장 반영 *후* 합성·부착(텍스트 지연 0 · 음성은 수 초 뒤 폴이 픽업 = "무전기 수신" 페이스).
@@ -375,19 +336,16 @@ PY
   python3 .github/scripts/yeta_tts.py "$PERSONA" "$spoken" /tmp/yeta_ptt.mp3 || { echo "  PTT TTS 실패/미설정 — 텍스트만"; return 0; }
   vkey="voice/reply-${PERSONA}-$(date +%s).mp3"
   aws s3 cp /tmp/yeta_ptt.mp3 "s3://${YETA_R2_BUCKET}/${vkey}" --endpoint-url "$EP" --content-type audio/mpeg --only-show-errors || return 0
-  r2get || return 0   # fresh 재-read — 방금 반영한 답장 턴에 voice 키 부착(threads[THREAD] 스코프 · 계속 스캔 = co 분할/승격 턴 뒤에 있어도 발견 · 러너감사⑤A)
-  VKEY="$vkey" PERSONA="$PERSONA" THREAD="${THREAD:-}" python3 - "$SESS" <<'PY' || return 0
+  r2get || return 0   # fresh 재-read — 방금 반영한 답장 턴에 voice 키 부착(끝의 마지막 assistant 턴)
+  VKEY="$vkey" PERSONA="$PERSONA" python3 - "$SESS" <<'PY' || return 0
 import json, os, sys, time
-sys.path.insert(0, ".github/scripts")
-from yeta_v3 import migrate_v3
-S = migrate_v3(json.load(open(sys.argv[1], encoding="utf-8")))
-th = (S.get("threads") or {}).get(os.environ.get("THREAD", ""))
-if th:
-    for t in reversed(th.get("turns") or []):
-        if t.get("role") == "assistant" and t.get("persona") == os.environ["PERSONA"] and not t.get("voice"):
-            t["voice"] = os.environ["VKEY"]; S["updated"] = int(time.time() * 1000)
-            json.dump(S, open(sys.argv[1], "w", encoding="utf-8"), ensure_ascii=False)
-            break
+s = json.load(open(sys.argv[1], encoding="utf-8"))
+for t in reversed(s.get("turns") or []):
+    if t.get("role") == "assistant":
+        if t.get("persona") == os.environ["PERSONA"] and not t.get("voice"):
+            t["voice"] = os.environ["VKEY"]; s["updated"] = int(time.time() * 1000)
+            json.dump(s, open(sys.argv[1], "w", encoding="utf-8"), ensure_ascii=False)
+        break
 PY
   r2put || true
   echo "  PTT 음성 부착 — ${vkey}"
@@ -410,7 +368,7 @@ t=re.sub(r'\*[^*]*\*','',t)                # 지문 제거 = 대사만(미리보
 t=re.sub(r'\s+',' ',t).strip()
 print((t[:70]+'…') if len(t)>70 else (t or '새 메시지'))")"
   python3 .github/scripts/push_send.py --notify "$nm" "$prev" \
-    --url "/?yeta=${CHAR}&t=${THREAD:-}" --tag "nomute-yeta-${CHAR}-${THREAD:-}" >/dev/null 2>&1 || true   # 스레드별 tag(상호 삼킴 방지)+딥링크 t(오배송 방지 · 러너감사⑤B)
+    --url "/?yeta=${CHAR}" --tag "nomute-yeta-${CHAR}" >/dev/null 2>&1 || true
 }
 
 # ── 상태 블록(공용 — 본답장 + 초대 판정 · env: PERSONA LAST_MOOD CAST GAP_H REL_LV RIV HANDOFF TUNE CO_NAME BARGE_DEBUT) ──
@@ -491,18 +449,15 @@ gen_out() {
 # ── 합석 초대 판정(단톡 260707) — 초대받은 캐릭터가 카드·시각·관계로 수락/거절. 전 단계 fail-soft(채팅 본선 무영향) ──
 clear_invite() {   # $1=안내문(있으면 sys 턴 동반) — invite 마커 회수
   r2get 2>/dev/null || return 0
-  REASON="${1:-}" THREAD="${THREAD:-}" python3 - "$SESS" <<'PY'
+  REASON="${1:-}" python3 - "$SESS" <<'PY'
 import json, os, sys, time
-sys.path.insert(0, ".github/scripts")
-from yeta_v3 import migrate_v3
-S = migrate_v3(json.load(open(sys.argv[1], encoding="utf-8")))
-s = (S.get("threads") or {}).get(os.environ.get("THREAD", ""))
-if not s or not s.get("invite"): sys.exit(1)
+s = json.load(open(sys.argv[1], encoding="utf-8"))
+if not s.get("invite"): sys.exit(1)
 s.pop("invite", None)
 if os.environ.get("REASON"):
     s.setdefault("turns", []).append({"role": "sys", "text": os.environ["REASON"], "ts": int(time.time() * 1000)})
-s["updated"] = S["updated"] = int(time.time() * 1000)
-json.dump(S, open(sys.argv[1], "w", encoding="utf-8"), ensure_ascii=False)
+s["updated"] = int(time.time() * 1000)
+json.dump(s, open(sys.argv[1], "w", encoding="utf-8"), ensure_ascii=False)
 PY
   [ $? -eq 0 ] && { r2put >/dev/null 2>&1 || true; }
   return 0
@@ -512,13 +467,9 @@ reflect_invite() {   # $1=초대받은 id · $2=판정 원문(첫 줄 ACCEPT/DEC
   local _g=0 _i
   for _i in 1 2 3; do if r2get; then _g=1; break; fi; [ "$_i" -lt 3 ] && sleep 2; done
   [ "$_g" = 1 ] || { echo "::warning::reflect_invite r2get 실패 — 판정 폐기"; return 0; }
-  VERDICT_RAW="$2" THREAD="${THREAD:-}" python3 - "$SESS" "$1" "$ROOT/apps/yeta/characters/roster.json" <<'PY'
+  VERDICT_RAW="$2" python3 - "$SESS" "$1" "$ROOT/apps/yeta/characters/roster.json" <<'PY'
 import json, os, re, sys, time
-sys.path.insert(0, ".github/scripts")
-from yeta_v3 import migrate_v3
-S_ROOT = migrate_v3(json.load(open(sys.argv[1], encoding="utf-8"))); to = sys.argv[2]
-s = (S_ROOT.get("threads") or {}).get(os.environ.get("THREAD", ""))
-if s is None: sys.exit(1)                                 # 스레드 소멸(reset) = 판정 폐기
+s = json.load(open(sys.argv[1], encoding="utf-8")); to = sys.argv[2]
 try: roster = json.load(open(sys.argv[3], encoding="utf-8"))
 except Exception: roster = []
 info = next((c for c in roster if isinstance(c, dict) and c.get("id") == to), {}) or {}
@@ -547,14 +498,14 @@ def josa(w, a, b):
     c = ord((w or " ")[-1]); return a if 0xAC00 <= c <= 0xD7A3 and (c - 0xAC00) % 28 else b
 # 삽입 자리 = 초대 sys 턴 직후(그 사이 유저 메시지가 와도 초대 문맥 옆) — 못 찾으면 끝
 pos = next((i + 1 for i in range(len(turns) - 1, -1, -1) if turns[i].get("role") == "sys" and turns[i].get("kind") == "invite"), len(turns))
-room = [r for r in (s.get("room") or []) if r][:2] or ([s.get("last_sp")] if s.get("last_sp") else [])
+room = [r for r in (s.get("room") or []) if r][:2] or ([s.get("persona")] if s.get("persona") else [])
 if accept and len(room) < 2 and to not in room:
     room.append(to); s["room"] = room
     turns.insert(pos, {"role": "sys", "text": info.get("enter_line") or f"{name} 등장", "ts": now})
     greet = rest[:1200]
     if greet:
         turns.insert(pos + 1, {"role": "assistant", "text": greet, "ts": now + 1, "persona": to})
-        s["last_sp"] = to                                 # 방금 들어온 사람 = 마지막 화자(v3 · 다음 턴 사다리 기준)
+        s["persona"] = to                                 # 방금 들어온 사람 = 마지막 화자(다음 턴 사다리 기준)
     if (s.get("declined") or {}).get("id") == to:
         s.pop("declined", None)                           # 수락 합류 = 옛 거절 떡밥 소거(kick 후 유령 난입 방지 · 5인검증②)
     print("ACCEPT")
@@ -563,10 +514,10 @@ else:
     turns.insert(pos, {"role": "sys", "text": f"{name}{josa(name, '은', '는')} 오지 않았어" + (f" — '{line}'" if line else ""), "ts": now})
     s["declined"] = {"id": to, "ts": now}                 # 거절 회수 떡밥 — 난입 후보 1순위(48h)
     print("DECLINE")
-s["updated"] = S_ROOT["updated"] = now
-json.dump(S_ROOT, open(sys.argv[1], "w", encoding="utf-8"), ensure_ascii=False)
+s["updated"] = now
+json.dump(s, open(sys.argv[1], "w", encoding="utf-8"), ensure_ascii=False)
 PY
-  [ $? -eq 0 ] && { r2put || echo "::warning::reflect_invite r2put 실패(경합)"; }
+  [ $? -eq 0 ] && { r2put || echo "::warning::reflect_invite r2put 실패"; }
   return 0
 }
 
@@ -584,36 +535,8 @@ invite_turn() {   # extract_mat mode=invite — 판정 1회(같은 폴오버 체
   GAP_H=0; RIV=""; HANDOFF=""
   case "$RAW_MODEL" in claude-opus-4-8|claude-sonnet-5) MODEL="$RAW_MODEL" ;; *) MODEL="$DEFAULT_MODEL" ;; esac
   EFF="low"
-  POL="$(matv policy)"; POLICY_BLOCK=""   # L1 시즌 수위 = 초대 첫마디에도 적용(보안감사③ — 기존 누락 편입)
-  if [ -n "$POL" ] && [ "$POL" != "None" ]; then POLICY_BLOCK="$(python3 - "$POL" "$ROOT/apps/yeta/policy.json" < /dev/null <<'PYP'
-import sys, json
-try:
-    p = json.loads(sys.argv[1]); d = json.load(open(sys.argv[2], encoding="utf-8"))
-except Exception: sys.exit(0)
-if not isinstance(p, dict): sys.exit(0)
-entries = []                                             # process_turn 파서와 동형(정본 = policy.json {key,default,prompt[]} 계약 — 드리프트 금지)
-for g in (d.get("L0") or {}).get("groups") or []:
-    t = g.get("toggle")
-    if isinstance(t, dict): entries.append(t)
-for ax in (d.get("L1") or {}).get("axes") or []:
-    entries.append(ax)
-lines = []
-for e in entries:
-    k = e.get("key"); v = p.get(k)
-    if v is None: continue
-    try: v = max(0, min(2, int(v)))
-    except Exception: continue
-    if v == int(e.get("default", 1)): continue
-    pr = e.get("prompt") or []
-    if 0 <= v < len(pr) and pr[v]: lines.append("- " + pr[v])
-if lines:
-    print((d.get("L1") or {}).get("header") or "[운영 정책 — 관리자 설정]")
-    print("\n".join(lines))
-PYP
-)"; fi
   STATE_BLOCK="$(state_block)"
   local prompt="${CBLOCK}
-${POLICY_BLOCK}
 ${STATE_BLOCK}
 
 [공용 기억 — 유저에 대한 사실과 이 세계의 사건. 다른 주민도 알 만한 것]
@@ -648,17 +571,13 @@ ${HIST:-"(없음)"}
 # 위치 축(운영자 260707 "주변에 인물이 있으면 만나는"): 화자의 지금 장소(동선 SSOT)와 같은 곳 = 시드 1/2 · 인접 = 1/3 — 지도 UI가 붙어도 같은 정본을 읽는다.
 barge_check() {
   r2get 2>/dev/null || return 0
-  if THREAD="${THREAD:-}" python3 - "$SESS" "$ROOT/apps/yeta/characters/roster.json" <<'PY'
+  if python3 - "$SESS" "$ROOT/apps/yeta/characters/roster.json" <<'PY'
 import hashlib, json, sys, time
 from datetime import datetime, timezone, timedelta
 sys.path.insert(0, ".github/scripts")
 from yeta_place import load_places, place_of, place_name
 PL = load_places()
-from yeta_v3 import migrate_v3
-import os as _os
-S_ROOT = migrate_v3(json.load(open(sys.argv[1], encoding="utf-8")))
-s = (S_ROOT.get("threads") or {}).get(_os.environ.get("THREAD", ""))
-if s is None: sys.exit(1)                          # 스레드 소멸 = 난입 없음
+s = json.load(open(sys.argv[1], encoding="utf-8"))
 try: roster = json.load(open(sys.argv[2], encoding="utf-8"))
 except Exception: sys.exit(1)
 names = {c["id"]: (c.get("name") or c["id"]) for c in roster if isinstance(c, dict) and c.get("id")}
@@ -666,11 +585,11 @@ enters = {c["id"]: (c.get("enter_line") or "") for c in roster if isinstance(c, 
 now = datetime.now(timezone(timedelta(hours=9)))
 today = f"{now:%Y-%m-%d}"
 turns = s.get("turns") or []
-persona = s.get("last_sp") or _os.environ.get("THREAD", "")
+persona = s.get("persona") or ""
 room = [r for r in (s.get("room") or []) if r][:2] or ([persona] if persona else [])
 if len(room) != 1: sys.exit(1)                     # 이미 단톡/방 없음
 if s.get("invite") or s.get("barged"): sys.exit(1)
-if S_ROOT.get("barge_day") == today: sys.exit(1)   # 하루 1회 상한 = 전역(top-level — 스레드 곱셈·다방 동시 난입 차단 · 러너감사③A)
+if s.get("barge_day") == today: sys.exit(1)        # 하루 1회 상한
 if s.get("state") == "awaiting": sys.exit(1)       # 답장 생성 중 = 안 끼어듦(반영 레이스 축소)
 if 3 <= now.hour < 8: sys.exit(1)                  # 깊은 새벽 = 난입 없음
 if len(turns) < 8: sys.exit(1)                     # 초반 대화 보호(관계 전 난입 = 소음)
@@ -731,10 +650,10 @@ else:
 s["turns"] = turns
 s["barged"] = {"id": cand, "ts": tnow}
 if via: s["barged"]["via"] = via; s["barged"]["place"] = meet_pl
-S_ROOT["barge_day"] = today                        # 전역 상한 스탬프(top-level)
+s["barge_day"] = today
 if d.get("id") == cand: s.pop("declined", None)
-s["updated"] = S_ROOT["updated"] = tnow
-json.dump(S_ROOT, open(sys.argv[1], "w", encoding="utf-8"), ensure_ascii=False)
+s["updated"] = tnow
+json.dump(s, open(sys.argv[1], "w", encoding="utf-8"), ensure_ascii=False)
 PY
   then r2put >/dev/null 2>&1 && echo "  🚪 난입 반영(room 합류 · 첫 마디 = 다음 턴)" || true; fi
   return 0
@@ -750,8 +669,6 @@ process_turn() {
   extract_mat
   [ "$mat" = "NOPENDING" ] && return 2
   [ -n "$mat" ] || { echo "::error::세션 파싱 실패(malformed) — state 미변경"; return 1; }
-  THREAD="$(matv thread)"   # v3 대상 스레드(extract_mat age 큐 확정) — finish·ptt·push·invite·barge까지 관통(러너감사②B · PERSONA와 별개 축)
-  [[ "$THREAD" =~ ^[a-z0-9_-]{1,24}$ ]] || { echo "::error::스레드 id 없음 — 폐기"; return 1; }
   if [ "$(matv mode)" = "invite" ]; then invite_turn; return 0; fi   # 합석 초대 판정(260707) — 판정 후 웜 루프가 pending 즉답
   NOTE_PUB="$(matv note_pub)"; NOTE_ME="$(matv note_me)"; HIST="$(matv hist)"; PENDING="$(matv pending)"
   INS="$(matv ins)"; ANCHOR_TS="$(matv anchor_ts)"; PERSONA="$(matv persona)"; PTT="$(matv ptt)"
@@ -885,7 +802,7 @@ ${SCENE_BLOCK}
 ${CONTRACT1}${GROUP_RULE}
 - 대사가 끝나면 마지막에 아래 두 기억 블록을 순서대로 붙인다(확정 사실만·각 최대 600자·굵직한 사건은 [사건] 줄로 보존):
 <<NOTE:PUB>>
-(갱신된 공용 기억 — 이 방 밖에서도 성립하는 유저 객관 사실·세계 사건만. 이 방에서만 나온 고백·비밀·관계 진도는 절대 PUB 금지 — 반드시 ME로)
+(갱신된 공용 기억 — 유저 객관 사실·세계 사건. 다른 주민도 알 만한 것만)
 <</NOTE>>
 <<NOTE:ME>>
 (갱신된 둘만의 기억 — 관계 진도·너에게만 한 말)

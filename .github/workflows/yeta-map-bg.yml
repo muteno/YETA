@@ -10,6 +10,10 @@ on:
         description: '1 = 기존 것도 재생성'
         required: false
         default: ''
+      what:
+        description: 'all | bg | char (기본 all)'
+        required: false
+        default: 'all'
 
 concurrency:
   group: yeta-map-bg
@@ -27,11 +31,22 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Pillow 설치 (스프라이트 크로마키)
+        run: python3 -m pip install --quiet --break-system-packages pillow 2>/dev/null || echo "pillow 미설치 — 크로마키 폴백(원본 저장)"
+
       - name: 지도 배경 생성
+        if: ${{ inputs.what != 'char' }}
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           FORCE: ${{ inputs.force }}
         run: python3 .github/scripts/yeta_map_bg.py
+
+      - name: 미니 캐릭터 스프라이트 생성 (10인 · 그린스크린 → 투명)
+        if: ${{ inputs.what != 'bg' }}
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          FORCE: ${{ inputs.force }}
+        run: python3 .github/scripts/yeta_map_char.py
 
       - name: 커밋 (신규 있을 때만)
         run: |

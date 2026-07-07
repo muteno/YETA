@@ -385,7 +385,7 @@ async function pttSend(text) {
 }
 function checkReplyVoice(sess) {   // 무전 답장 음성 자동재생 — 텍스트 먼저, 음성 키(turn.voice)는 수 초 뒤 부착
   if (!pttPending) return;
-  const turns = (sess && (sess.threads && sess.cur ? (sess.threads[sess.cur] || {}).turns : sess.turns)) || [];   // v3 = 현재 방 스레드(구형 폴백 병행 · 260707)
+  const turns = (sess && sess.turns) || [];
   for (let i = turns.length - 1; i >= 0; i--) {
     const t = turns[i];
     if (t.role === 'user') return;                        // 아직 답장 전(sys 는 스킵하고 계속)
@@ -419,7 +419,7 @@ function initCallBtn() {
   b.innerHTML = `<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${PHONE}"/></svg>`;
   hr.insertBefore(b, hr.firstChild);
   b.addEventListener('click', async () => {
-    const pid = (typeof YSESS !== 'undefined' && YSESS && (YSESS.cur || YSESS.persona)) || '';
+    const pid = (typeof YSESS !== 'undefined' && YSESS && YSESS.persona) || '';
     const p = (typeof yPersona === 'function' && yPersona(pid)) || {};
     const real = !!p.phone;
     if (!callArm) {   // 1탭 = 무장(유료 발동 실수 방지 — yh-reset 2탭 패턴)
@@ -531,7 +531,7 @@ function initCdVcf() {
 }
 function vcfBtnSync() {
   const b = document.querySelector('#yetaVcfBtn'); if (!b) return;
-  const pid = (typeof YSESS !== 'undefined' && YSESS && (YSESS.cur || YSESS.persona)) || '';
+  const pid = (typeof YSESS !== 'undefined' && YSESS && YSESS.persona) || '';
   b.hidden = !VCF[pid]; b.dataset.pid = VCF[pid] ? pid : '';
 }
 function initVcfBtn() {

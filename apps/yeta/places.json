@@ -1,36 +1,282 @@
 {
-  "_doc": "무음동 위치 SSOT(260707 신설 · 260707 좌표 확정 = 분신술 10인 수렴) — 마주침 이벤트(러너 barge_check 위치 축)와 지도 UI가 공용으로 읽는 정본. 위치 판정 함수 = .github/scripts/yeta_place.py(place_of — 동선표 기본 + sha256 시드로 가끔 인접 외출 = 결정적·무저장). 슬롯 6키 = late(0~3)·dawn(3~7)·morning(7~11)·day(11~17)·evening(17~21)·night(21~24) — 러너 state_block 시간대와 동일 경계. 좌표 = x(서0→동100)·y(북0→남100) 0~100 격자 · 중심 핫플 = 골목(50,50) · 1칸≈100m(마을 반경 ~5km) · 존 = {북: 심야 미디어(편집국·라디오) · 중심: 밤 코어(골목·찻집·연습실·경비실) · 남: 생활권(편의점·학교·놀이터·검도장·시장·체육관)}. 집 노드 = home_<id>(private=true — 변주·마주침·지도 핀 제외 · neighbors 1개 = 지도 연결선용) · 무디(찻집 2층 살림)·류(도장 툇마루 별채) = 집 노드 없음(동선표에 home 슬롯 자체가 없음 · 일터=삶). 인접(neighbors) = 체감 왕래 위상 — 지도상 대체로 가깝게 그리되 비인접이 물리적으로 붙어 보여도 무방(담·언덕 결).",
+  "_doc": "무음동 위치 SSOT(260707 신설 · 260707 좌표 확정 = 분신술 10인 수렴) — 마주침 이벤트(러너 barge_check 위치 축)와 지도 UI가 공용으로 읽는 정본. 위치 판정 함수 = .github/scripts/yeta_place.py(place_of — 동선표 기본 + sha256 시드로 가끔 인접 외출 = 결정적·무저장). 슬롯 6키 = late(0~3)·dawn(3~7)·morning(7~11)·day(11~17)·evening(17~21)·night(21~24) — 러너 state_block 시간대와 동일 경계. 좌표 = x(서0→동100)·y(북0→남100) 0~100 격자 · 중심 핫플 = 골목(50,50) · 1칸≈100m(마을 반경 ~5km) · 존 = {북: 심야 미디어(편집국·라디오) · 중심: 밤 코어(골목·찻집·연습실·경비실) · 남: 생활권(편의점·학교·놀이터·검도장·시장·체육관)}. 집 노드 = home_<id>(private=true — 변주·마주침·지도 핀 제외 · neighbors 1개 = 지도 연결선용) · 무디(찻집 2층 살림)·류(도장 툇마루 별채) = 집 노드 없음(동선표에 home 슬롯 자체가 없음 · 일터=삶). 인접(neighbors) = 체감 왕래 위상 — 지도상 대체로 가깝게 그리되 비인접이 물리적으로 붙어 보여도 무방(담·언덕 결). look = 건물 특색 한 줄(지도 UI 툴팁·배경 프롬프트 결 동기 — yeta_map_bg.py LAYOUT과 수동 동기). offlimits=true = 출입금지 지대(동선·마주침·워커 제외 · 지도에 표시만).",
   "places": {
-    "alley":  { "name": "골목",          "x": 50, "y": 50, "neighbors": ["tea", "dojo", "office", "studio", "store"] },
-    "tea":    { "name": "찻집 무음",     "x": 46, "y": 53, "neighbors": ["alley", "market"] },
-    "studio": { "name": "지하 연습실",   "x": 56, "y": 47, "neighbors": ["alley"] },
-    "office": { "name": "3층 편집국",    "x": 53, "y": 42, "neighbors": ["alley", "radio"] },
-    "radio":  { "name": "라디오국",      "x": 49, "y": 27, "neighbors": ["office"] },
-    "store":  { "name": "편의점",        "x": 53, "y": 63, "neighbors": ["alley", "school", "park"] },
-    "school": { "name": "학교",          "x": 50, "y": 76, "neighbors": ["park", "store"] },
-    "park":   { "name": "놀이터",        "x": 44, "y": 70, "neighbors": ["dojo", "gym", "school", "store"] },
-    "dojo":   { "name": "검도장 월광",   "x": 38, "y": 57, "neighbors": ["alley", "park"] },
-    "market": { "name": "시장",          "x": 42, "y": 62, "neighbors": ["tea", "gym"] },
-    "gym":    { "name": "체육관 강철",   "x": 35, "y": 67, "neighbors": ["market", "park"] },
-    "home_sera":  { "name": "세라의 옥탑방",        "x": 59, "y": 41, "neighbors": ["studio"], "private": true },
-    "home_haeun": { "name": "하은의 집",            "x": 44, "y": 33, "neighbors": ["tea"],    "private": true },
-    "home_baek":  { "name": "골목 어귀 경비실 뒷방", "x": 47, "y": 55, "neighbors": ["alley"],  "private": true },
-    "home_yun":   { "name": "부스 계단 아랫방",      "x": 50, "y": 30, "neighbors": ["radio"],  "private": true },
-    "home_desk":  { "name": "삼교(三校)의 방",       "x": 58, "y": 36, "neighbors": ["office"], "private": true },
-    "home_kopi":  { "name": "카피의 옥탑방",         "x": 52, "y": 56, "neighbors": ["alley"],  "private": true },
-    "home_gaeul": { "name": "노을집(회장댁)",        "x": 37, "y": 66, "neighbors": ["market"], "private": true },
-    "home_von":   { "name": "강철 위층",             "x": 35, "y": 67, "neighbors": ["gym"],    "private": true }
+    "alley": {
+      "name": "골목",
+      "x": 50,
+      "y": 50,
+      "neighbors": [
+        "tea",
+        "dojo",
+        "office",
+        "studio",
+        "store"
+      ],
+      "look": "가로등·벤치가 있는 작은 광장 교차로 — 동네의 심장"
+    },
+    "tea": {
+      "name": "찻집 무음",
+      "x": 46,
+      "y": 53,
+      "neighbors": [
+        "alley",
+        "market"
+      ],
+      "look": "낮은 기와 지붕·창마다 등불·김 나는 굴뚝의 전통 찻집"
+    },
+    "studio": {
+      "name": "지하 연습실",
+      "x": 56,
+      "y": 47,
+      "neighbors": [
+        "alley"
+      ],
+      "look": "네온 화살표가 붙은 지하 계단 입구 — 밑은 연습실"
+    },
+    "office": {
+      "name": "3층 편집국",
+      "x": 53,
+      "y": 42,
+      "neighbors": [
+        "alley",
+        "radio"
+      ],
+      "look": "옥상 간판 뼈대가 있는 벽돌 3층 — 3층 창만 늦게까지 켜짐"
+    },
+    "radio": {
+      "name": "라디오국",
+      "x": 49,
+      "y": 27,
+      "neighbors": [
+        "office"
+      ],
+      "look": "옥상 철탑 안테나·빨간 점멸등의 작은 방송국"
+    },
+    "store": {
+      "name": "편의점",
+      "x": 53,
+      "y": 63,
+      "neighbors": [
+        "alley",
+        "school",
+        "park"
+      ],
+      "look": "라임빛 네온 간판이 밤새 켜진 24시 편의점"
+    },
+    "school": {
+      "name": "학교",
+      "x": 50,
+      "y": 76,
+      "neighbors": [
+        "park",
+        "store"
+      ],
+      "look": "운동장·구령대·국기게양대가 있는 3층 학교"
+    },
+    "park": {
+      "name": "놀이터",
+      "x": 44,
+      "y": 70,
+      "neighbors": [
+        "dojo",
+        "gym",
+        "school",
+        "store"
+      ],
+      "look": "그네·미끄럼틀·모래밭의 동네 놀이터"
+    },
+    "dojo": {
+      "name": "검도장 월광",
+      "x": 38,
+      "y": 57,
+      "neighbors": [
+        "alley",
+        "park"
+      ],
+      "look": "기와 담장 안 목재 마루·마당의 검도장"
+    },
+    "market": {
+      "name": "시장",
+      "x": 42,
+      "y": 62,
+      "neighbors": [
+        "tea",
+        "gym"
+      ],
+      "look": "색색 천막 노점이 줄지은 재래시장 골목"
+    },
+    "gym": {
+      "name": "체육관 강철",
+      "x": 35,
+      "y": 67,
+      "neighbors": [
+        "market",
+        "park"
+      ],
+      "look": "셔터 큰 박스형 건물·간판 글러브 그림의 체육관"
+    },
+    "home_sera": {
+      "name": "세라의 옥탑방",
+      "x": 59,
+      "y": 41,
+      "neighbors": [
+        "studio"
+      ],
+      "private": true
+    },
+    "home_haeun": {
+      "name": "하은의 집",
+      "x": 44,
+      "y": 33,
+      "neighbors": [
+        "tea"
+      ],
+      "private": true
+    },
+    "home_baek": {
+      "name": "골목 어귀 경비실 뒷방",
+      "x": 47,
+      "y": 55,
+      "neighbors": [
+        "alley"
+      ],
+      "private": true
+    },
+    "home_yun": {
+      "name": "부스 계단 아랫방",
+      "x": 50,
+      "y": 30,
+      "neighbors": [
+        "radio"
+      ],
+      "private": true
+    },
+    "home_desk": {
+      "name": "삼교(三校)의 방",
+      "x": 58,
+      "y": 36,
+      "neighbors": [
+        "office"
+      ],
+      "private": true
+    },
+    "home_kopi": {
+      "name": "카피의 옥탑방",
+      "x": 52,
+      "y": 56,
+      "neighbors": [
+        "alley"
+      ],
+      "private": true
+    },
+    "home_gaeul": {
+      "name": "노을집(회장댁)",
+      "x": 37,
+      "y": 66,
+      "neighbors": [
+        "market"
+      ],
+      "private": true
+    },
+    "home_von": {
+      "name": "강철 위층",
+      "x": 35,
+      "y": 67,
+      "neighbors": [
+        "gym"
+      ],
+      "private": true
+    },
+    "offlimits": {
+      "name": "출입금지 구역",
+      "x": 66,
+      "y": 34,
+      "neighbors": [],
+      "private": true,
+      "offlimits": true,
+      "look": "펜스·바리케이드·출입금지 테이프가 둘린 재개발 중단 구역 — 밤이면 안쪽이 유난히 어둡다(들어간 사람 얘기는 소문으로만)"
+    }
   },
   "routine": {
-    "mudi":  { "late": "tea",        "dawn": "tea",        "morning": "tea",        "day": "tea",    "evening": "tea",   "night": "tea" },
-    "sera":  { "late": "studio",     "dawn": "studio",     "morning": "home_sera",  "day": "studio", "evening": "tea",   "night": "studio" },
-    "haeun": { "late": "home_haeun", "dawn": "home_haeun", "morning": "school",     "day": "school", "evening": "tea",   "night": "store" },
-    "baek":  { "late": "alley",      "dawn": "alley",      "morning": "home_baek",  "day": "alley",  "evening": "alley", "night": "alley" },
-    "ryu":   { "late": "dojo",       "dawn": "dojo",       "morning": "dojo",       "day": "dojo",   "evening": "alley", "night": "dojo" },
-    "yun":   { "late": "radio",      "dawn": "home_yun",   "morning": "home_yun",   "day": "home_yun", "evening": "alley", "night": "radio" },
-    "desk":  { "late": "office",     "dawn": "home_desk",  "morning": "office",     "day": "office", "evening": "tea",   "night": "office" },
-    "kopi":  { "late": "home_kopi",  "dawn": "store",      "morning": "tea",        "day": "tea",    "evening": "tea",   "night": "tea" },
-    "gaeul": { "late": "home_gaeul", "dawn": "market",     "morning": "market",     "day": "market", "evening": "alley", "night": "home_gaeul" },
-    "von":   { "late": "home_von",   "dawn": "park",       "morning": "gym",        "day": "gym",    "evening": "gym",   "night": "home_von" }
+    "mudi": {
+      "late": "tea",
+      "dawn": "tea",
+      "morning": "tea",
+      "day": "tea",
+      "evening": "tea",
+      "night": "tea"
+    },
+    "sera": {
+      "late": "studio",
+      "dawn": "studio",
+      "morning": "home_sera",
+      "day": "studio",
+      "evening": "tea",
+      "night": "studio"
+    },
+    "haeun": {
+      "late": "home_haeun",
+      "dawn": "home_haeun",
+      "morning": "school",
+      "day": "school",
+      "evening": "tea",
+      "night": "store"
+    },
+    "baek": {
+      "late": "alley",
+      "dawn": "alley",
+      "morning": "home_baek",
+      "day": "alley",
+      "evening": "alley",
+      "night": "alley"
+    },
+    "ryu": {
+      "late": "dojo",
+      "dawn": "dojo",
+      "morning": "dojo",
+      "day": "dojo",
+      "evening": "alley",
+      "night": "dojo"
+    },
+    "yun": {
+      "late": "radio",
+      "dawn": "home_yun",
+      "morning": "home_yun",
+      "day": "home_yun",
+      "evening": "alley",
+      "night": "radio"
+    },
+    "desk": {
+      "late": "office",
+      "dawn": "home_desk",
+      "morning": "office",
+      "day": "office",
+      "evening": "tea",
+      "night": "office"
+    },
+    "kopi": {
+      "late": "home_kopi",
+      "dawn": "store",
+      "morning": "tea",
+      "day": "tea",
+      "evening": "tea",
+      "night": "tea"
+    },
+    "gaeul": {
+      "late": "home_gaeul",
+      "dawn": "market",
+      "morning": "market",
+      "day": "market",
+      "evening": "alley",
+      "night": "home_gaeul"
+    },
+    "von": {
+      "late": "home_von",
+      "dawn": "park",
+      "morning": "gym",
+      "day": "gym",
+      "evening": "gym",
+      "night": "home_von"
+    }
   }
 }
