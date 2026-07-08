@@ -113,6 +113,12 @@ const css = `
 .yvcf-num { font-size:var(--fs-sm); color:var(--mut); font-variant-numeric:tabular-nums; }   /* 번호 = tabular(.ytime 결) */
 .yvcf-desc { font-size:var(--fs-xs); color:var(--fg); line-height:var(--lh-base); max-width:30ch; text-wrap:pretty;
   word-break:keep-all; white-space:pre-line; }   /* 대사 = 발화(--fg) · 크기 75%(15→11 ≈ --fs-xs 계승 · 운영자 260706) · keep-all=음절 잘림 방지 · pre-line=대사 \n = 구 단위 개행 */
+.ycd-vcf { width:100%; max-width:320px; margin-top:8px; padding:13px; border:1px solid var(--glass-line); border-radius:var(--r-pill);
+  background:var(--glass); color:var(--fg-2); font:inherit; font-size:var(--fs-label); font-weight:var(--fw-b); cursor:pointer; touch-action:manipulation;
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  backdrop-filter:blur(var(--blur-m)); -webkit-backdrop-filter:blur(var(--blur-m)); }   /* 연락처 교환하기 = .ycd-cta 지오메트리 동형 · 무채 글래스(보조 CTA — 라임은 대화 시작 단독) */
+.ycd-vcf:active { transform:scale(var(--press-m,.9)); }   /* .ycd-cta 동일 티어 */
+.ycd-vcf svg { width:15px; height:15px; }
 .yvcf-steps { display:flex; flex-direction:column; gap:8px; margin-top:var(--sp-2); }
 .yvcf-steps[hidden] { display:none; }
 .yvcf-step { display:flex; align-items:center; gap:8px; font-size:var(--fs-sm); color:var(--fg); text-align:left; }
@@ -514,7 +520,21 @@ document.addEventListener('click', e => {
   const pid = el.dataset.id; vcfMarkDone(pid);
   setTimeout(() => vcfSheet(pid), 700);   // 챗 진입 애니 자리 잡은 뒤(시트 = top-layer라 순서만 보장하면 됨)
 }, true);
-// 캐릭터 디테일(.ycd) 연락처 교환 = index.html `.ycd-sub`(직접 .vcf 내비 = iOS 연락처 시트/Android 열기 자동) 단일화 — call.js 중복 주입(vcfSheet 경유 = a[download] 저장만) 폐지(운영자 260708)
+// 캐릭터 디테일(.ycd) — 배선 캐릭터면 [연락처 교환하기] 주입(본체 무수정 · #ycdCard innerHTML 재생성을 옵저버로 감지 = 운영자 260706 "캐릭터 설정 부분에 버튼")
+function initCdVcf() {
+  const card = document.querySelector('#ycdCard'); if (!card || card._yvcfOb) return;
+  card._yvcfOb = new MutationObserver(() => {
+    if (card.querySelector('.ycd-vcf')) return;
+    const cta = card.querySelector('.ycd-cta[data-id]'); if (!cta || !VCF[cta.dataset.id]) return;
+    const id = cta.dataset.id;
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'ycd-vcf';
+    b.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6M23 11h-6"/></svg>연락처 교환하기';
+    b.addEventListener('click', () => { vcfMarkDone(id); vcfSheet(id); });   // 명함 시트 = 단일 플로우(자동 1회 가드에도 계상)
+    cta.after(b);
+  });
+  card._yvcfOb.observe(card, { childList: true });
+}
 function vcfBtnSync() {
   const b = document.querySelector('#yetaVcfBtn'); if (!b) return;
   const pid = (typeof YSESS !== 'undefined' && YSESS && (YSESS.cur || YSESS.persona)) || '';
@@ -561,7 +581,7 @@ async function check() {
 setInterval(check, POLL_MS);
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') setTimeout(check, 600); });   // 푸시 탭 복귀 = 즉시 픽업
 setTimeout(check, 1500);   // 첫 로드(딥링크 /?yeta=main&call=1 포함) — 기존 ?yeta= 오픈에 편승 + 벨은 여기서
-const initInject = () => { ensureCss(); initPtt(); initCallBtn(); initVcfBtn(); };   // 스타일 주입 먼저(마이크 즉시 스타일) + 입력행 마이크 + 헤더 수화기 + 연락처 저장(전부 모듈 주입 = 본체 무수정) · 디테일 연락처 교환 = index.html .ycd-sub 단일화(260708)
+const initInject = () => { ensureCss(); initPtt(); initCallBtn(); initVcfBtn(); initCdVcf(); };   // 스타일 주입 먼저(마이크 즉시 스타일) + 입력행 마이크 + 헤더 수화기 + 연락처 저장 + 디테일 연락처 교환(전부 모듈 주입 = 본체 무수정)
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initInject); else initInject();
 
 window.YCALL = { onSess, open, playVoice };   // open/playVoice = 테스트 훅 · onSess = 본체 yLoad 훅 계약
