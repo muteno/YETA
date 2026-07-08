@@ -123,6 +123,10 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   @keyframes gdots { 0% { opacity:0; } 25%,70% { opacity:1; } 95%,100% { opacity:0; } }
   .yscramble { display:inline-block; font-family:ui-monospace,SFMono-Regular,Menlo,'Cascadia Code',Consolas,monospace; font-weight:var(--fw-b); font-size:var(--fs-body); letter-spacing:.24em; color:var(--accent); text-shadow:0 0 9px rgba(var(--accent-rgb),.4); }   /* 스크램블 로더 글리프(beui.dev 차용 · 진행중 · 라임 네온 = 메타버스 결 · 운영자 260708) — 모노스페이스 = 글리프 폭 고정(레이아웃 저크 0) · text-shadow = 토큰 없는 축 */
   .yeta-setup.yload { text-align:center; }   /* 스크램블 로더 = 가로 중앙(픽토그램 로더 결 · 에러/빈상태 텍스트는 좌측 유지) */
+  .yboot { position:fixed; inset:0; z-index:999; display:grid; place-items:center; background:var(--yeta-bg,#121212); animation:ybootOut .55s var(--ease) 1.5s forwards; }   /* 첫 열기 부팅 스플래시 = 1.5s(스크램블 1사이클 resolve) 후 페이드 · CSS 애니 = JS 실패해도 반드시 걷힘(블로킹 방지) · z=로컬(raw 예외) */
+  .yboot-w { font-size:clamp(26px,7.5vw,46px); letter-spacing:.3em; }
+  @keyframes ybootOut { to { opacity:0; visibility:hidden; } }
+  @media (prefers-reduced-motion:reduce) { .yboot { animation-delay:.8s; } }
 /* ── yeta 전용 CSS(L309-405) ── */
   /* ── yeta 말벗 제타(#yetadlg · 260703 v2 제타결) — 랜덤 페르소나 톡방. 다크 창(--yeta-bg) + 캐릭터 버블(--bubble-ai·아바타+이름) + 내 버블 제타 보라(--bubble-me) + *나레이션* 이탤릭. 페르소나 색 = --yeta-ac(JS가 roster color 주입 = "캐릭터 따라 톤" 운영자 컨셉) ── */
   /* 챗 = 풀스크린 글래스모피즘(운영자 260705 "팝업 아닌 화면 전체 + 딱 저 글래스 느낌"). base = 스포티파이 블랙 솔리드(--bg) · 유일 배경 = .ybg 씬 레이어(캐릭터 시그니처→장소). 초록 계단 포스터(yeta-bg.webp)는 대화창에서 폐기(운영자 260707 "계단 오버레이 폐기 — 대화창 한정") = 로드 틈 비침·오버레이 0. 표면(헤더·버블·입력·인트로)은 글래스로 .ybg 씬이 비쳐 글래스모피즘 성립. */
@@ -933,6 +937,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
 </style>
 </head>
 <body>
+<div class="yboot" id="yboot" aria-hidden="true"><span class="yscramble yboot-w" id="ybootW">YETABUS</span></div>   <!-- 첫 열기 부팅 스플래시(운영자 260708) — YETABUS 스크램블 resolve 후 페이드(앱은 뒤에서 준비) · CSS 애니가 페이드 보장(JS 실패해도 걷힘) -->
 <!-- ═══ YETA 메인 화면 (라이트·PIN 게이트 · 260704 재디자인 V1) ═══ -->
 <div class="ymain video-lock" id="ymain">
   <div class="ym-stage" aria-hidden="true"><video class="ym-video" id="ymVideo" autoplay loop muted playsinline preload="auto" poster="assets/brand/lock-hero-poster.jpg"><source src="assets/brand/lock-hero.mp4" type="video/mp4"></video><div class="ywm ym-wm" id="ywmLock"></div><div class="ym-flash"></div></div>   <!-- 잠금 스테이지 = 영상 히어로 베이스(운영자 260706) + 대형 로고 글래스모피즘 + 번개 플래시 (소년 원/보이/라벨 폐지) -->
@@ -2661,6 +2666,11 @@ try { const _q = new URLSearchParams(location.search); if (_q.get('yeta')) { con
 })();
 /* PWA 서비스워커 등록 */
 try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch {}
+/* 첫 열기 부팅 스플래시(운영자 260708) — 인라인 "YETABUS"(첫 페인트 즉시)를 스크램블로 교체해 resolve · 페이드는 CSS(.yboot ybootOut)가 보장 · animationend = 제거(스크램블 타이머 정지) */
+(function () { var el = document.getElementById('yboot'); if (!el) return;
+  var w = document.getElementById('ybootW'); if (w) { try { var sc = yScramble('YETABUS'); sc.className = w.className; w.replaceWith(sc); } catch (e) {} }
+  el.addEventListener('animationend', function () { el.remove(); }, { once: true });
+})();
 /* ── (V1 260704) 진입점 = 메인 화면(YETA + PIN). 챗 자동오픈·재오픈 제거 — 챗은 PIN 해제 후 '대화' 탭에서만 연다.
       챗 닫기 = 메인 복귀(dialog 아래 .ymain 상주). 딥링크(?yeta=)만 예외 진입(위 L576). ── */
 </script>
