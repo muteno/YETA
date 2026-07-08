@@ -85,9 +85,9 @@ const css = `
 .ycall-mic.rec { color:var(--danger); animation:ycallRec 1.2s ease-in-out infinite; }   /* 녹음 = 픽토 danger 점멸(도형 없음) */
 @keyframes ycallRec { 0%,100% { opacity:1; } 50% { opacity:.55; } }
 @media (prefers-reduced-motion:reduce) { .ycall-mic.rec { animation:none; } }
-.yprem { display:inline-flex; align-items:center; gap:4px; margin-left:6px; padding:1px 8px; border-radius:var(--r-pill);
-  background:rgba(var(--accent-rgb),.12); border:1px solid rgba(var(--accent-rgb),.4); color:var(--accent);
-  font-size:var(--fs-xs); font-weight:var(--fw-b); vertical-align:middle; white-space:nowrap; }   /* 프리미엄(전용 음색) 배지 = accent 10%대 플레이트(.dlbtn 결) */
+.yprem { display:inline-flex; align-items:center; gap:6px; margin-left:6px; padding:1px 8px; border-radius:var(--r-pill);
+  background:var(--accent); border:1px solid var(--accent); color:var(--bg);
+  font-size:var(--fs-xs); font-weight:var(--fw-b); vertical-align:middle; white-space:nowrap; box-shadow:0 0 7px rgba(var(--accent-rgb),.45); }   /* 보이스 = 라임네온 솔리드 칩(운영자 260708 "라임네온" · 아웃라인 라임 링과 겹침 해소 = 솔리드 칩↔링 대비 · gap 6 = 배지 통일) */
 #yetaCallBtn, #yetaVcfBtn { width:var(--btn); height:var(--btn); flex:none; display:grid; place-items:center; background:none; border:none; color:var(--fg-2); cursor:pointer; touch-action:manipulation; transition:transform .3s var(--ease), color .2s; }   /* 전화·연락처저장 = 픽토그램-온리(감싸는 도형 제거 · 운영자 260705) · 무채 — 마이크/+ 결 · 히트영역 --btn 유지 */
 #yetaCallBtn svg, #yetaVcfBtn svg { width:19px; height:19px; }
 #yetaCallBtn:active, #yetaVcfBtn:active { transform:scale(var(--press-m,.9)); }

@@ -36,7 +36,7 @@
 /* ── :root 토큰(색+구조) — 원본 viewer :root 계승(L19-80) ── */
   :root {
     /* 중립 표면·텍스트 — 흰색 + 스포티파이 블랙(운영자 260704 브랜드 통일) */
-    --fg:#FFFFFF; --fg-2:#E7ECE7; --mut:#8B8F8A;   /* fg-2 = 서브텍스트 리프트(언락 밝기 플그 운영자 확정) */
+    --fg:#FFFFFF; --fg-rgb:255,255,255; --fg-2:#E7ECE7; --mut:#8B8F8A;   /* fg-2 = 서브텍스트 리프트(언락 밝기 플그 운영자 확정) · --fg-rgb = 실버 플레이트/테두리 알파용(운영자 260708 IDOL 테두리 · --X-rgb 패턴 계승) */
     --bg:#161716;   /* 앱 캔버스 = 스포티파이 블랙 리프트(그린 틴트 근흑 · 언락 밝기 플그 운영자 확정 = 기틀 갱신 승인) */
     --line:rgba(255,255,255,.08); --line2:rgba(255,255,255,.06);
     /* 강조1 — 브랜드 라임(공통 컴포넌트·버튼·링·액티브·챗버블 · 운영자 260704 #CFFF40) */
@@ -858,7 +858,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   .ygrade { display:inline-flex; align-items:center; gap:6px; margin-left:6px; padding:1px 8px; border-radius:var(--r-pill); font-size:var(--fs-xs); font-weight:var(--fw-b); vertical-align:middle; white-space:nowrap; box-shadow:inset 0 1px 0 var(--glass-line); }   /* 베이스 = .yprem(call.js 정본) 선언 계승 + 양각 하이라이트 */
   .ygrade svg { width:10px; height:10px; fill:currentColor; filter:drop-shadow(0 1px 0 rgba(0,0,0,.35)); }   /* 젬 = 미세 드롭섀도 양각(box-shadow 계보 raw 예외축) */
   .ygrade.season { background:rgba(var(--season-rgb),.12); border:1px solid rgba(var(--season-rgb),.4); color:var(--season); }   /* 시즌 = 시즌 주인공(진한 보라 --season · 운영자 260708 레드→보라) */
-  .ygrade.idol { background:var(--glass-2); border:1px solid var(--glass-line); color:var(--fg); }   /* IDOL = 흰·실버 메인(운영자) — 뉴트럴 글래스 토큰 계승 = 신규 색 0 */
+  .ygrade.idol { background:rgba(var(--fg-rgb),.10); border:1px solid rgba(var(--fg-rgb),.45); color:var(--fg); }   /* IDOL = 흰·실버 플레이트+테두리(운영자 260708 "테두리 들어가야" · rgba(--fg-rgb) = 시즌/보이스 .4 테두리 패턴 통일 · 뉴트럴 흰 = 신규 색 0) */
   /* 프로필 링(운영자 260708 "특별한 애들 프로필 링 · 대화목록 안읽음 링") — 아바타 둘레 링 · box-shadow(토큰없는 축 raw 예외) + 색=토큰 · --bg 갭으로 분리(인스타 결) */
   .ycrow .yava.yring-voice,  .ycd-card .yintro-ava.yring-voice  { box-shadow:0 0 0 2px var(--bg), 0 0 0 3.5px var(--accent), 0 0 7px rgba(var(--accent-rgb),.32); }   /* 보이스 = 라임 */
   .ycrow .yava.yring-season, .ycd-card .yintro-ava.yring-season { box-shadow:0 0 0 2px var(--bg), 0 0 0 3.5px var(--season), 0 0 7px rgba(var(--season-rgb),.32); }   /* 시즌 = 보라 */
@@ -1578,7 +1578,7 @@ async function yListRender() {
     const badges = `${yGradeBadge(p)}${window.yPremBadge ? yPremBadge(p) : ''}`;   // 등급·보이스 = 이름줄 직업 우측(운영자 260708 · 옛 등급 전용줄 폐지 = 3줄로 절약)
     const thtT = (prev && prev.role !== 'user') ? ySnip(prev.text, 40) : '';   // 생각 = 직전 캐릭터 결(유저 턴 = 생각 아님) · 향후 러너 think 필드로 승격 축
     const tht = `<span class="ylist-tht${thtT ? '' : ' na'}">${thtT ? esc(thtT) : '(무슨 생각을 하는진 모르겠다)'}</span>`;
-    const lastLn = opPend ? `<span class="ylist-last on">곧 말을 걸어와…</span>` : (last ? `<span class="ylist-last on">${last.role === 'user' ? '나 · ' : ''}${esc(ySnip(last.text, 40) || '…')}</span>` : '');
+    const lastLn = opPend ? `<span class="ylist-last on">곧 말을 걸어와…</span>` : (last ? `<span class="ylist-last${(unTxt && last.role !== 'user') ? ' on' : ''}">${last.role === 'user' ? '나 · ' : ''}${esc(ySnip(last.text, 40) || '…')}</span>` : '');
     const meta = last ? `<span class="ylist-meta"><span class="ylist-t">${yTime(last.ts)}</span>${yAgo(last.ts)}${(() => { try { const L = yLocOf(r); return L && L.nm ? `<span class="ylist-loc${L.on ? ' on' : ''}">${esc(L.nm)}</span>` : ''; } catch (e) { return ''; } })()}</span>` : '';   // 스택 = 시간 → 상대시간(흰) → 최근 장소(항목18 병합 — try = 함수 부재 방어)
     return `<div class="ylr-wrap"><button type="button" class="ylist-row" data-t="${esc(r.id)}">`
       + `<span class="ylist-ava${p.avatar ? ' has-img' : ''}${unTxt ? ' yring-unread' : ''}"${p.avatar ? ` style="background-image:url('${esc(p.avatar)}')"` : ''}>${p.avatar ? '' : esc(p.initial || p.name[0])}</span>`
