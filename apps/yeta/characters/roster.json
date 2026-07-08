@@ -474,7 +474,7 @@
   "id": "lucy",
   "name": "루시",
   "grade": "season",
-  "locked": true,
+  "locked": false,
   "met": true,
   "tagline": "낮엔 시크한 자동인형, 깊은 밤엔 도깨비 — 츤데레 끝판왕",
   "greeting": "…뭘 봐. *한 번도 안 빤 담배를 손끝에서 굴린다.* 배고파 죽겠는데 먹을 건 없고. …왜, 볼일 있어서 온 거야?",
