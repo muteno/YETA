@@ -19,20 +19,20 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="application-name" content="예타"><style>
   /* ── LEMONMILK (YETA 디스플레이 · 로컬 호스팅) ── */
-  @font-face{font-family:'LEMONMILK';font-weight:700;font-style:normal;src:url('fonts/LEMONMILK-Bold.otf') format('opentype');font-display:swap}
-  @font-face{font-family:'LEMONMILK';font-weight:300;font-style:normal;src:url('fonts/LEMONMILK-Light.otf') format('opentype');font-display:swap}
-  @font-face{font-family:'LEMONMILK';font-weight:400;font-style:normal;src:url('fonts/LEMONMILK-Regular.otf') format('opentype');font-display:swap}   /* 시즌 subnav 날짜(운영자 260707 "Regular 정방향 연하게") */
-  @font-face{font-family:'LEMONMILK';font-weight:700;font-style:italic;src:url('fonts/LEMONMILK-BoldItalic.otf') format('opentype');font-display:swap}   /* 시즌 배지 SEASON 01(운영자 260707 "S1 이탤릭") */
+  @font-face{font-family:'LEMONMILK';font-weight:700;font-style:normal;src:url('fonts/LEMONMILK-Bold.otf') format('opentype');font-display:swap;ascent-override:116%;descent-override:29%;line-gap-override:0%}
+  @font-face{font-family:'LEMONMILK';font-weight:300;font-style:normal;src:url('fonts/LEMONMILK-Light.otf') format('opentype');font-display:swap;ascent-override:116%;descent-override:29%;line-gap-override:0%}
+  @font-face{font-family:'LEMONMILK';font-weight:400;font-style:normal;src:url('fonts/LEMONMILK-Regular.otf') format('opentype');font-display:swap;ascent-override:116%;descent-override:29%;line-gap-override:0%}   /* 시즌 subnav 날짜(운영자 260707 "Regular 정방향 연하게") */
+  @font-face{font-family:'LEMONMILK';font-weight:700;font-style:italic;src:url('fonts/LEMONMILK-BoldItalic.otf') format('opentype');font-display:swap;ascent-override:116%;descent-override:29%;line-gap-override:0%}   /* 시즌 배지 SEASON 01(운영자 260707 "S1 이탤릭") */
   /* ── Paperlogy (한글 대체 폰트 · 운영자 260707 "설정에서 영문/한글 따로 · 볼드 고정 폰트만" · 비상업 테스트) — 9웨이트 전량 등재 · 사용 face만 브라우저가 fetch ── */
-  @font-face{font-family:'Paperlogy';font-weight:100;src:url('fonts/Paperlogy-1Thin.ttf') format('truetype');font-display:swap}
-  @font-face{font-family:'Paperlogy';font-weight:200;src:url('fonts/Paperlogy-2ExtraLight.ttf') format('truetype');font-display:swap}
-  @font-face{font-family:'Paperlogy';font-weight:300;src:url('fonts/Paperlogy-3Light.ttf') format('truetype');font-display:swap}
-  @font-face{font-family:'Paperlogy';font-weight:400;src:url('fonts/Paperlogy-4Regular.ttf') format('truetype');font-display:swap}
-  @font-face{font-family:'Paperlogy';font-weight:500;src:url('fonts/Paperlogy-5Medium.ttf') format('truetype');font-display:swap}
-  @font-face{font-family:'Paperlogy';font-weight:600;src:url('fonts/Paperlogy-6SemiBold.ttf') format('truetype');font-display:swap}
-  @font-face{font-family:'Paperlogy';font-weight:700;src:url('fonts/Paperlogy-7Bold.ttf') format('truetype');font-display:swap}
-  @font-face{font-family:'Paperlogy';font-weight:800;src:url('fonts/Paperlogy-8ExtraBold.ttf') format('truetype');font-display:swap}
-  @font-face{font-family:'Paperlogy';font-weight:900;src:url('fonts/Paperlogy-9Black.ttf') format('truetype');font-display:swap}
+  @font-face{font-family:'Paperlogy';font-weight:100;src:url('fonts/Paperlogy-1Thin.ttf') format('truetype');font-display:swap;ascent-override:116%;descent-override:29%;line-gap-override:0%}
+  @font-face{font-family:'Paperlogy';font-weight:200;src:url('fonts/Paperlogy-2ExtraLight.ttf') format('truetype');font-display:swap;ascent-override:116%;descent-override:29%;line-gap-override:0%}
+  @font-face{font-family:'Paperlogy';font-weight:300;src:url('fonts/Paperlogy-3Light.ttf') format('truetype');font-display:swap;ascent-override:116%;descent-override:29%;line-gap-override:0%}
+  @font-face{font-family:'Paperlogy';font-weight:400;src:url('fonts/Paperlogy-4Regular.ttf') format('truetype');font-display:swap;ascent-override:116%;descent-override:29%;line-gap-override:0%}
+  @font-face{font-family:'Paperlogy';font-weight:500;src:url('fonts/Paperlogy-5Medium.ttf') format('truetype');font-display:swap;ascent-override:116%;descent-override:29%;line-gap-override:0%}
+  @font-face{font-family:'Paperlogy';font-weight:600;src:url('fonts/Paperlogy-6SemiBold.ttf') format('truetype');font-display:swap;ascent-override:116%;descent-override:29%;line-gap-override:0%}
+  @font-face{font-family:'Paperlogy';font-weight:700;src:url('fonts/Paperlogy-7Bold.ttf') format('truetype');font-display:swap;ascent-override:116%;descent-override:29%;line-gap-override:0%}
+  @font-face{font-family:'Paperlogy';font-weight:800;src:url('fonts/Paperlogy-8ExtraBold.ttf') format('truetype');font-display:swap;ascent-override:116%;descent-override:29%;line-gap-override:0%}
+  @font-face{font-family:'Paperlogy';font-weight:900;src:url('fonts/Paperlogy-9Black.ttf') format('truetype');font-display:swap;ascent-override:116%;descent-override:29%;line-gap-override:0%}
 /* ── :root 토큰(색+구조) — 원본 viewer :root 계승(L19-80) ── */
   :root {
     /* 중립 표면·텍스트 — 흰색 + 스포티파이 블랙(운영자 260704 브랜드 통일) */
@@ -1064,7 +1064,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
 const $ = s => document.querySelector(s);
 // ── 폰트 선택(운영자 260707 "설정에서 영문/한글 따로 · 볼드 고정 = 패밀리만") — 기본 Pretendard · 영문 = LEMONMILK · 한글 = Paperlogy.
 //    라틴 폰트를 스택 앞에 = 라틴 글리프만 그 폰트로, 한글은 다음 폰트로 자동 폴백(영문/한글 분리의 표준 기법) · 웨이트는 기존 --fw-* 그대로(브라우저가 등록 face 매칭) ──
-const yFontGet = k => { try { return localStorage.getItem('yeta_font_' + k) || 'sys'; } catch { return 'sys'; } };
+const yFontGet = k => { const d = k === 'latin' ? 'lemonmilk' : k === 'hangul' ? 'paperlogy' : 'sys'; try { return localStorage.getItem('yeta_font_' + k) || d; } catch { return d; } };   /* 기본값 = 영문 LEMONMILK · 한글 Paperlogy(운영자 260708 "기본값으로") — 미설정 시 이 폰트 · 'sys'로 껐다 켤 수 있음 */
 const yFontSet = (k, v) => { try { localStorage.setItem('yeta_font_' + k, v); } catch {} };
 function yFontApply() {
   const stack = [yFontGet('latin') === 'lemonmilk' ? "'LEMONMILK'" : null, yFontGet('hangul') === 'paperlogy' ? "'Paperlogy'" : null,
