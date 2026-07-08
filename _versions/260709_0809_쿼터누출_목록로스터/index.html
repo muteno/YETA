@@ -1646,10 +1646,7 @@ async function yListRender() {
     box.replaceChildren(yLoadingBox());   // 진행중 = 스크램블 로더(문구 대체 · 운영자 260708)
     const r = await yApi('get').catch(() => null);
     if (r && r.ok) YSESS = r.sess || {};
-  }
-  if (!YCHARS.length) {   // 로스터 미로드·이전 실패 = 렌더마다 재시도(구 코드 = 세션 미로드 때만 시도 → 세션만 있으면 ID·이니셜로 그려지고 sig 가드에 최대 1분 굳음 — 운영자 260709 "처음에 인물들이 안뜸")
-    const c = await yApi('chars').catch(() => null);
-    if (c && c.ok) { YCHARS = c.chars || []; YWORLD = c.world || null; YREADY = !!c.ready; _ylSig = ''; ySsnFixed(); }   // 도착 = 시그니처 무효화(즉시 인물 재도색) + 시즌 헤더 채움
+    if (!YCHARS.length) { const c = await yApi('chars').catch(() => null); if (c && c.ok) { YCHARS = c.chars || []; YWORLD = c.world || null; YREADY = !!c.ready; } }
   }
   ySsnFixed();   // 시즌 헤더 = 탭 공용 #yssnFixed(운영자 260707 · 구 패널 내 #yssnList 폐지)
   yMeRow();   // 내 상태 행(항목22) — 조기반환·sig 가드 앞(대화 0건·무드 변화에도 갱신) · async 발사 후 진행

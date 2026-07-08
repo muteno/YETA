@@ -121,14 +121,7 @@ ${HIST:-"(없음)"}
           --max-turns 1 \
           2> /tmp/yeta_call.err)"
     rc=$?
-    if [ $rc -eq 0 ] && [ -n "${out// }" ]; then
-      if is_quota "$out"; then   # 쿼터 문구 rc=0 유출 가드(yeta_chat gen_out 동형 · 운영자 260709) — 전환 후 재시도·소진 = 실패
-        echo "  ⚠️ 쿼터 한도 텍스트(rc=0) — 계정 전환 시도"
-        if claude_failover "$out"; then out=""; continue; fi
-        rc=1; break
-      fi
-      break
-    fi
+    { [ $rc -eq 0 ] && [ -n "${out// }" ]; } && break
     if [ ${#EFF_ARGS[@]} -gt 0 ] && [ "$_eff_dropped" = 0 ] && grep -qi 'effort' /tmp/yeta_call.err 2>/dev/null; then
       echo "  ⚠️ effort 거부 추정 — effort 빼고 재시도"; EFF_ARGS=(); EFF=""; _eff_dropped=1; continue
     fi

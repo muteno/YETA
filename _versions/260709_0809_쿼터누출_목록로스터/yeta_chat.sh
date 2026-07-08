@@ -485,16 +485,7 @@ gen_out() {
           --max-turns 1 \
           2> /tmp/yeta.err)"
     rc=$?
-    if [ $rc -eq 0 ] && [ -n "${OUT// }" ]; then
-      # ⚠️ 쿼터 한도 문구가 rc=0 정상 출력으로 오는 케이스(운영자 260709 실측 — "You've hit your weekly limit…"가 대사로 박제):
-      #    성공 판정 전에 is_quota 검사 → 계정 전환 후 재시도 · 체인 소진 = 실패 처리(원문이 캐릭터 대사로 유출 금지)
-      if is_quota "$OUT"; then
-        echo "  ⚠️ 쿼터 한도 텍스트(rc=0) — 계정 전환 시도"
-        if claude_failover "$OUT"; then OUT=""; continue; fi
-        rc=1; break   # OUT 보존 = 호출부 is_quota 재판정("사용량 한도야" 안내 경로)
-      fi
-      break
-    fi
+    { [ $rc -eq 0 ] && [ -n "${OUT// }" ]; } && break
     # effort 플래그 거부 폴백(1회) — sonnet-5 는 호환이 정설이나 CLI/모델 변동 대비(아이데이션①④ 절충)
     if [ ${#EFF_ARGS[@]} -gt 0 ] && [ "$_eff_dropped" = 0 ] && grep -qi 'effort' /tmp/yeta.err 2>/dev/null; then
       echo "  ⚠️ effort 거부 추정 — effort 빼고 재시도"; EFF_ARGS=(); EFF=""; _eff_dropped=1; continue
