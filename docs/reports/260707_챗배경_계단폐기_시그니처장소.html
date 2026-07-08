@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>챗 배경 개편 — 계단 폐기 · 시그니처→장소 · 로딩 동기</title>
+<style>
+  :root{ --bg:#161716; --card:#1e2023; --line:rgba(255,255,255,.1); --fg:#f4f5f3; --mut:#a9b0a6;
+    --accent:#CFFF40; --cobalt:#3D6BFF; --epic:#B026FF; --danger:#ff5a4d; --r:14px; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Pretendard,system-ui,sans-serif;line-height:1.62;-webkit-font-smoothing:antialiased;padding:32px 18px 72px}
+  .wrap{max-width:920px;margin:0 auto}
+  h1{font-size:25px;font-weight:800;margin:0 0 6px;letter-spacing:-.02em}
+  h2{font-size:18px;font-weight:750;margin:34px 0 12px;padding-top:16px;border-top:1px solid var(--line);letter-spacing:-.01em}
+  .sub{color:var(--mut);font-size:14px;margin:0 0 22px}
+  p{margin:10px 0}
+  code{background:rgba(255,255,255,.07);padding:1.5px 6px;border-radius:6px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;color:#e6ffb0}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;margin:14px 0}
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13.5px}
+  th,td{text-align:left;padding:9px 11px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--mut);font-weight:650;font-size:12px;text-transform:uppercase;letter-spacing:.03em}
+  td.n{color:var(--mut);white-space:nowrap}
+  .tag{display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:999px;border:1px solid transparent}
+  .ok{background:rgba(207,255,64,.13);color:var(--accent);border-color:rgba(207,255,64,.35)}
+  .rm{background:rgba(255,90,77,.12);color:var(--danger);border-color:rgba(255,90,77,.35)}
+  .info{background:rgba(61,107,255,.13);color:#9fb6ff;border-color:rgba(61,107,255,.35)}
+  .knob{display:flex;gap:14px;align-items:baseline;flex-wrap:wrap;margin:8px 0;padding:12px 14px;background:rgba(207,255,64,.05);border:1px solid rgba(207,255,64,.22);border-radius:12px}
+  .knob b{color:var(--accent);font-size:15px}
+  .flow{display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:13px;margin:6px 0}
+  .chip{background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:999px;padding:4px 12px;white-space:nowrap}
+  .chip.sig{background:rgba(176,38,255,.14);border-color:rgba(176,38,255,.4);color:#d8a6ff}
+  .chip.place{background:rgba(61,107,255,.14);border-color:rgba(61,107,255,.4);color:#9fb6ff}
+  .arw{color:var(--mut)}
+  ul{margin:8px 0;padding-left:20px}li{margin:4px 0}
+  .muted{color:var(--mut);font-size:13px}
+  .verdict{font-size:14px;padding:14px 16px;border-radius:12px;background:rgba(207,255,64,.08);border:1px solid rgba(207,255,64,.3)}
+</style></head>
+<body><div class="wrap">
+
+<h1>챗 배경 개편 — 계단 폐기 · 시그니처→장소 · 로딩 동기</h1>
+<p class="sub">대화창 배경 4개 요구 반영 · <code>viewer/index.html</code> 단일파일 · 디자인 값 신설 0(계승) · 260707</p>
+
+<div class="card">
+<b>한 줄 요약.</b> 대화창을 열면 <b>초록 네온 계단 포스터</b>(<code>yeta-bg.webp</code>)가 base로 깔려 캐릭터 배경 로드 전/틈으로 비쳤다. 이걸 챗에서 <b>완전 폐기</b>(→ 검정 솔리드)하고, 배경을 <b>「첫·오랜만 단독대화 = 처음 몇 발화는 캐릭터 고유 배경 → 이후 장소 배경, 평상시 연속대화 = 바로 장소」</b>로 배선했다. 배경 로딩은 프리로드+캐시 즉시페인트로 <b>챗 진입과 동기화</b>.
+</div>
+
+<h2>왜 — 무엇이 문제였나</h2>
+<table>
+<tr><th>증상</th><th>원인(실측)</th></tr>
+<tr><td>대화창에 초록 계단이 겹쳐 보임("계단 오버레이")</td><td><code>#yetadlg</code> base 배경 = <code>url(yeta-bg.webp)</code> = 초록 네온 유리 계단 포스터. 캐릭터 배경(<code>.ybg</code>)은 92% 불투명이라 8% 비침 + 로드 전엔 100% 계단만 노출.</td></tr>
+<tr><td>배경이 늦게 뜨는 애매한 화면</td><td><code>yStage</code>가 <code>new Image()</code> 비동기 프리로드 후 0.6s 페이드 → 텍스트보다 늦게 등장. 그 틈에 계단 base가 보였다.</td></tr>
+<tr><td>첫 발화 직후 바로 장소로 전환</td><td>기존 로직은 <code>userN===0</code>(내 발화 0)일 때만 시그니처, 첫 메시지부터 장소. "처음 몇 대화"가 없었다.</td></tr>
+</table>
+
+<h2>무엇을 했나 — 요구 4개 → 반영</h2>
+<table>
+<tr><th class="n">요구</th><th>반영</th><th class="n">상태</th></tr>
+<tr><td class="n">① 처음 몇 대화 = 캐릭터 고유 배경(프로필과 별개)</td><td>새 <code>ySigPhase()</code> — 오프닝 국면 처음 <code>Y_SIG_TURNS</code> 유저턴은 <code>YCUR.bg</code>(캐릭터 시그니처 씬 · <code>avatar</code>와 별개 필드).</td><td class="n"><span class="tag ok">반영</span></td></tr>
+<tr><td class="n">② 계단 오버레이 폐기(대화창 한정)</td><td><code>#yetadlg</code> base를 <code>url(yeta-bg.webp)</code>+스크림 → <code>background:var(--bg)</code> 검정 솔리드. 챗에서 계단·오버레이 비침 0. (포스터 파일은 존치 — 챗에서만 미사용)</td><td class="n"><span class="tag ok">반영</span></td></tr>
+<tr><td class="n">③ 이후 = 장소 배경 · 첫/오랜만 아니면 바로 장소</td><td><code>ySigPhase</code>가 false면 <code>ySceneForPlace</code> 장소 씬. 평상시 연속대화(첫도 오랜만도 아님)는 오프닝 발화수가 이미 N 이상 → 즉시 장소. <b>"단독"대화</b>라 시그니처는 solo 전용(합석 2명이면 바로 장소 — 평의회 반영).</td><td class="n"><span class="tag ok">반영</span></td></tr>
+<tr><td class="n">④ 배경 로딩 = 챗 진입과 동기</td><td><b>2단 프리로드</b>: ① 시그니처 bg 즉시 워밍(첫/오랜만 오프닝) ② 장소·무드 씬(36장) 유휴 지연 워밍 — <b>진행 중 대화(장소 국면) 재진입도 동기</b>(평의회 BLOCK 반영). + 언락 즉시 워밍 착수 + <code>yStage</code> 캐시된 그림 즉시페인트(늦은 페이드 제거).</td><td class="n"><span class="tag ok">반영</span></td></tr>
+</table>
+
+<h2>배경 규칙 — 국면 판정</h2>
+<p class="muted">국면 = 지금 대화 뭉치의 성격. "대화 뭉치" = 마지막 <b>긴 공백</b>(재회) 이후, 없으면 스레드 처음부터.</p>
+<div class="flow"><span class="chip sig">캐릭터 시그니처</span><span class="arw">= 오프닝(첫 단독대화 · 오랜만 재회)의 처음 몇 발화</span></div>
+<div class="flow"><span class="chip place">장소 배경</span><span class="arw">= 본격 대화(오프닝 발화 N 이상) · 평상시 연속대화</span></div>
+<table>
+<tr><th>상황</th><th class="n">배경</th></tr>
+<tr><td>방금 입장 · 인사만(내 발화 0)</td><td class="n"><span class="chip sig">시그니처</span></td></tr>
+<tr><td>첫 단독대화 · 내 발화 1~2</td><td class="n"><span class="chip sig">시그니처</span></td></tr>
+<tr><td>첫 단독대화 · 내 발화 3 이상</td><td class="n"><span class="chip place">장소</span></td></tr>
+<tr><td>평상시 연속대화(공백 없음)</td><td class="n"><span class="chip place">장소</span></td></tr>
+<tr><td>오랜만 재회(12h+ 공백) · 복귀 후 1~2발화</td><td class="n"><span class="chip sig">시그니처</span></td></tr>
+<tr><td>오랜만 재회 · 복귀 후 3발화 이상</td><td class="n"><span class="chip place">장소</span></td></tr>
+<tr><td>같은 날 복귀(3h 공백 등, 오랜만 아님)</td><td class="n"><span class="chip place">장소</span></td></tr>
+<tr><td>난입(합석) 직후</td><td class="n">난입자 시그니처(기존 · 최우선 불변)</td></tr>
+<tr><td>에픽(루시)</td><td class="n">감정 미디어 로테이션(기존 · 불변)</td></tr>
+</table>
+
+<h2>튜닝 노브 — 숫자 한마디로 조정</h2>
+<p class="muted">아래 두 값이 "몇 대화"·"오랜만"의 체감을 결정. <code>viewer/index.html</code> 상수라 즉시 조정 가능.</p>
+<div class="knob"><b>Y_SIG_TURNS = 3</b><span>"처음 몇 대화" = 오프닝 시그니처 유지 유저 발화 수(<b>미만</b>이면 시그니처). 현재 = 인사 + 내 발화 1·2번째까지 시그니처 → <b>3번째 발화에서 장소로</b>. "내 발화 3번까지 시그니처"를 원하면 <b>4</b>로.</span></div>
+<div class="knob"><b>Y_REUNION_MS = 12h</b><span>"오랜만" 경계 = 직전 턴과 이 이상 공백이면 재회 오프닝. 기존 임계값 참고: <code>yDormant</code> 72h(방치 소멸)·<code>yLocOf</code> 24h·<code>yAgo</code> 6h. 24h로 올리면 "하루 지나 재회"만, 6h면 저녁 재방문도 재회.</span></div>
+
+<h2>디자인 계약 — 준수</h2>
+<ul>
+<li>디자인 <b>값 신설 0</b>: <code>var(--bg)</code> 토큰 계승만. 새 색/px/blur/radius/scale 0.</li>
+<li>기계 게이트 <code>check_refs</code> <b>rc=0</b>(통과) · design_gate rc=0 · 토큰 락 54개 무변동.</li>
+<li>거울(<code>tokens.css</code>·<code>base.css</code>) 무수정.</li>
+<li><span class="tag info">확인</span> <code>--bg-scrim</code>은 <b>고아 아님</b> — <code>index.html</code> 내부에선 미사용이 됐지만 <code>viewer/call.js</code>(<code>.ycall-bg</code> 통화 스크림)가 여전히 소비(크로스파일). check_refs 경고는 index.html 단독 스캔 기준 = 오탐성 → <b>정의 존치</b>(삭제 시 통화화면 하단 딤 깨짐). <code>--line2</code>만 기존부터 진짜 고아(이번 변경과 무관).</li>
+</ul>
+
+<h2>검증</h2>
+<div class="verdict" id="verify">
+<b>자가검증.</b> check_refs/design_gate <b>rc=0</b>(JS 구문 OK) · <code>ySigPhase</code> 단위테스트 <b>9/9</b>(첫대화·연속·재회·같은날복귀·경계 off-by-one 스펙 일치) · 워밍 슬러그 36개 전원 실존(404 0).<br>
+<b>10인 적대적 평의회(READ-ONLY 병렬).</b> 결과 = <b>9 APPROVE + 1 BLOCK</b>, BLOCK 및 실질 지적 전건 수정 후 재검증:<br>
+<span class="muted">
+• <b>[BLOCK→해소]</b> Ask④ 미완 — 장소 씬 미워밍 → 진행 중 대화 재진입 시 늦은 페이드. → 2단 워밍(장소·무드 36장 유휴)+언락 워밍으로 해소.<br>
+• <b>[수정]</b> "같은 그림 크로스페이드 숨"(회귀·프리로드·타이밍 3인 공통) — 시그니처 국면 키에서 mood 제외.<br>
+• <b>[수정]</b> "단독대화" 정확화(완성도·크로스컷 2인) — 시그니처를 solo 전용 게이트.<br>
+• <b>[확인·존치]</b> <code>--bg-scrim</code> 고아 아님(call.js 소비) · 세션 절단 무해(캡200·현재 스레드 무절단) · 12h/3 임계값 적정 · 에픽·통화·난입 경로 불변.
+</span>
+</div>
+
+<p class="muted" style="margin-top:26px">파일: <code>viewer/index.html</code> (+29 −8) · 브랜치 <code>claude/character-background-video-dry8r4</code> · 원장 <code>docs/작업이력.md</code></p>
+
+</div></body></html>
