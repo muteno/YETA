@@ -32,8 +32,9 @@ h2 .n{display:inline-flex;align-items:center;justify-content:center;width:20px;h
 
 /* ── ① 무대(viewport = 씬 밖 스크린 공간 · 여기만 진짜 글래스 허용) ── */
 .stage{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
-#vp{position:relative;flex:1 1 340px;min-width:320px;height:clamp(420px,min(120vw,74dvh),640px);border:1px solid var(--glass-line);border-radius:var(--r-l);background:#0d0f0d;overflow:hidden;touch-action:manipulation;
-  --rx:55deg;--rz:30deg;--zoom:1;--fit:1;--hs:1;--ss:1;--dim:0}
+#vp{position:relative;flex:1 1 340px;min-width:320px;height:clamp(420px,92vw,600px);border:1px solid var(--glass-line);border-radius:var(--r-l);background:#0d0f0d;overflow:hidden;touch-action:none;cursor:grab;
+  --rx:55deg;--rz:30deg;--zoom:3;--fit:1;--hs:1;--ss:1;--dim:0;--tx:0px;--ty:0px;--fgs:2.4}
+#vp.drag{cursor:grabbing}
 #vp.glide{transition:--rx .75s var(--ease),--rz .75s var(--ease)}
 /* 하늘(시간대 크로스페이드 — 2D 오버레이 2겹·opacity만 전환) */
 .sky{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity 1s var(--ease)}
@@ -49,7 +50,7 @@ h2 .n{display:inline-flex;align-items:center;justify-content:center;width:20px;h
 #vp[data-slot=day]{--dim:0}#vp[data-slot=evening]{--dim:.14}#vp[data-slot=night]{--dim:.26}
 
 /* 카메라(2D 스케일)와 월드(3D 회전) 분리 — 팬줌 수학 단순화 정석 */
-.cam{position:absolute;left:50%;top:50%;width:520px;height:520px;margin:-260px 0 0 -260px;transform:scale(calc(var(--fit)*var(--zoom)));transform-style:preserve-3d}
+.cam{position:absolute;left:50%;top:50%;width:520px;height:520px;margin:-260px 0 0 -260px;transform:translate3d(var(--tx),var(--ty),0) scale(calc(var(--fit)*var(--zoom)));transform-style:preserve-3d}
 .world{position:absolute;inset:0;transform:rotateX(var(--rx)) rotateZ(var(--rz));transform-style:preserve-3d}
 /* 지면 판 — 마을 밀착 슬래브(빈 판 여백 제거 = 한눈 가독) · 다크 캔버스 위 밝은 디오라마 무대 */
 .plate{position:absolute;left:138px;top:108px;width:240px;height:304px;border-radius:var(--r-modal);background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.2);
@@ -131,7 +132,20 @@ h2 .n{display:inline-flex;align-items:center;justify-content:center;width:20px;h
 /* 존 라벨 */
 .zl .pill{position:absolute;transform:translate(0,-100%);display:flex;align-items:center;gap:5px;white-space:nowrap;padding:3px 8px;border-radius:var(--r-pill);background:rgba(18,19,18,.7);border:1px solid var(--glass-line);font-size:9px;color:var(--fg-2);transition:opacity .4s var(--ease)}
 .zl .pill i{width:6px;height:6px;border-radius:50%}
-#vp[data-zl=off] .zl .pill{opacity:0}
+#vp[data-zl=off] .zl .pill,#vp[data-far="0"] .zl .pill{opacity:0}   /* 존 라벨 = 드론뷰(원경)에서만 */
+
+/* ── 미니맵(우측 상단 · 전체 지도 = 여기로 강등 · 스크린 공간 = 진짜 글래스) ── */
+#mm{position:absolute;right:10px;top:10px;z-index:4;width:104px;height:132px;border-radius:var(--r-m);background:rgba(18,19,18,.66);backdrop-filter:blur(var(--blur-l));-webkit-backdrop-filter:blur(var(--blur-l));border:1px solid var(--glass-line);box-shadow:0 8px 24px rgba(0,0,0,.45);overflow:hidden;cursor:pointer;touch-action:none}
+#mm .mzn{position:absolute;left:0;width:100%;pointer-events:none}
+#mm .mzn.n{top:0;height:27%;background:rgba(var(--cobalt-rgb),.1)}
+#mm .mzn.s{bottom:0;height:33%;background:rgba(var(--accent-rgb),.07)}
+#mm .mpd{position:absolute;width:4px;height:4px;margin:-2px 0 0 -2px;border-radius:50%;background:rgba(255,255,255,.45)}
+#mm .mpd.hm{width:3px;height:3px;background:rgba(255,255,255,.2)}
+#mm .mpd.hz{background:rgba(var(--danger-rgb),.55)}
+#mm .mpp{position:absolute;width:5px;height:5px;margin:-2.5px 0 0 -2.5px;border-radius:50%;border:1px solid rgba(0,0,0,.5);transition:left 1.1s var(--ease),top 1.1s var(--ease)}
+#mm .mmR{position:absolute;border:1px dashed rgba(var(--accent-rgb),.55);border-radius:34%;pointer-events:none;transform:translate(-50%,-50%)}
+#mm .mmR::after{content:'';position:absolute;left:50%;top:50%;width:3px;height:3px;margin:-1.5px 0 0 -1.5px;border-radius:50%;background:var(--accent)}
+#mm .mtt{position:absolute;left:0;right:0;bottom:2px;text-align:center;font-size:8px;color:var(--mut);pointer-events:none}
 
 /* ── 주민(발밑 링 = 바닥 평면 원 → 투영이 공짜 타원) ── */
 .res{position:absolute;transform-style:preserve-3d;transition:left 1.1s var(--ease),top 1.1s var(--ease);cursor:pointer}
@@ -146,10 +160,10 @@ h2 .n{display:inline-flex;align-items:center;justify-content:center;width:20px;h
 .res.sel .ring2{border-color:rgba(var(--accent-rgb),.9)}
 @keyframes pulse{0%{transform:translateZ(.5px) scale(.5);opacity:.9}70%{transform:translateZ(.5px) scale(1.3);opacity:0}100%{transform:translateZ(.5px) scale(1.3);opacity:0}}
 .stk{position:absolute;left:0;bottom:0;display:flex;flex-direction:column;align-items:center;gap:3px;transform:translate(-50%,-100%)}
-/* CSS 말(figure) — 참조컷처럼 흰 마네킹 + 정체성 색 = 발밑 링·태그 점(실장 시 스프라이트/아바타 교체 축) */
-.fig{position:relative;width:14px;height:24px;animation:bob 1.7s ease-in-out infinite;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))}
-.fig b{position:absolute;left:50%;top:0;width:9px;height:9px;margin-left:-4.5px;border-radius:50%;background-image:linear-gradient(rgba(255,255,255,.28),rgba(0,0,0,.1));background-color:var(--fg)}
-.fig i{position:absolute;left:50%;bottom:0;width:12px;height:14px;margin-left:-6px;border-radius:6px 6px 4px 4px;background-image:linear-gradient(rgba(255,255,255,.06),rgba(0,0,0,.22));background-color:var(--fg)}
+/* CSS 말(figure) — 흰 마네킹 · 크기 = 카메라 줌 연동(--fgs · 심즈식 추상 비율: 사람 ≈ 건물 절반) */
+.fig{position:relative;width:calc(15px*var(--fgs));height:calc(27px*var(--fgs));animation:bob 1.7s ease-in-out infinite;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35));transition:width .3s var(--ease),height .3s var(--ease)}
+.fig b{position:absolute;left:50%;top:0;width:60%;aspect-ratio:1;margin-left:-30%;border-radius:50%;background-image:linear-gradient(rgba(255,255,255,.28),rgba(0,0,0,.1));background-color:var(--fg)}
+.fig i{position:absolute;left:50%;bottom:0;width:82%;height:52%;margin-left:-41%;border-radius:42% 42% 26% 26%/46% 46% 22% 22%;background-image:linear-gradient(rgba(255,255,255,.06),rgba(0,0,0,.22));background-color:var(--fg)}
 @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-1.5px)}}
 .figw.zz .fig{animation:none;opacity:.85}
 /* 네임태그 pill — 참조컷 문법: 기본 = 이니셜 칩(조용) · 풀태그 = 잡담·선택·호버만(활성 인물이 말한다) */
@@ -262,12 +276,13 @@ td b{font-weight:var(--fw-b)}
 <p class="sub">건물 간판·사람 위치가 주인공인 표현으로 개편(운영자 260707 스크린샷 문법) · 좌표·동선 = <b>기존 정본 그대로</b>(apps/yeta/places.json · yeta_place.py 정확 포팅) · 마을 형태 불변 — 나타내는 방식만 교체</p>
 
 <h2><span class="n">1</span>실물 재현 미리보기 — 살아있는 무음동</h2>
-<p class="cap"><b>건물 = 간판 pill</b>(사람 있으면 <b style="color:var(--accent)">라임 카운트</b>) · <b>주민 = 말 + 네임태그(이름·상태)</b> · 같은 곳 2인 이상 = <b style="color:var(--accent)">잡담 중</b>(발밑 라임 링 + 말풍선 = 로스터 정본 대사) · 밤 = 있는 건물만 창문 점등 · zZ = 자는 중 · 건물/주민 탭 = 정보 카드. 시각을 돌리면 10인이 동선 따라 일제히 걸어 이동한다.</p>
+<p class="cap"><b>기본 = 어깨너머 근경</b>(심즈식 · 사람 ≈ 건물 절반 추상 비율 · 시작 위치 = 사람 제일 많은 핫스팟) — <b>드래그 = 팬</b> · 건물/주민 <b>탭 = 카메라 이동 + 카드</b> · <b>우측 상단 미니맵 = 전체 지도</b>(색점 = 주민 위치 · 점선 링 = 지금 보는 범위 · 탭/드래그 = 점프). 같은 곳 2인 이상 = <b style="color:var(--accent)">잡담 중</b>(말풍선 = 로스터 정본 대사 · 화자만 풀태그) · 밤 = 있는 건물만 창문 점등 · zZ = 자는 중 · 시각 돌리면 10인 동선 이동 · 전체 조망 = <b>드론뷰(이전)</b> 프리셋.</p>
 <div class="stage">
   <div id="vp" data-slot="evening" data-dark="1" data-signs="all" data-zl="on">
     <div class="sky skyA"></div><div class="sky skyB"></div>
     <div class="cam"><div class="world" id="world"></div></div>
     <div id="ov"></div>
+    <div id="mm"><div class="mzn n"></div><div class="mzn s"></div><div class="mmP"></div><div class="mmR"></div><div class="mtt">무음동</div></div>
     <div class="card" id="card"></div>
   </div>
   <div class="ctrl">
@@ -282,11 +297,11 @@ td b{font-weight:var(--fw-b)}
     <div class="knob">
       <p class="kt">카메라 프리셋</p>
       <div class="seg" id="preseg">
-        <button data-p="flat">현행 탑다운</button><button data-p="iso" class="on"><span class="star">★</span> 아이소 클래식</button><button data-p="low">로우앵글</button><button data-p="quarter">쿼터뷰 줌</button>
+        <button data-p="shoulder" class="on"><span class="star">★</span> 어깨너머</button><button data-p="low">로우앵글</button><button data-p="drone">드론뷰(이전)</button><button data-p="flat">탑다운</button>
       </div>
       <p class="lbl">기울기 <b id="rxv">55°</b></p><input type="range" id="rx" min="0" max="70" value="55" step="1">
       <p class="lbl">회전 <b id="rzv">30°</b></p><input type="range" id="rz" min="0" max="75" value="30" step="1">
-      <p class="lbl">줌 <b id="zv">1.00</b></p><input type="range" id="zm" min="80" max="250" value="100" step="1">
+      <p class="lbl">줌 <b id="zv">3.00</b></p><input type="range" id="zm" min="100" max="450" value="300" step="5">
     </div>
     <div class="knob">
       <p class="kt">마을 미세조정</p>
@@ -328,7 +343,7 @@ td b{font-weight:var(--fw-b)}
 <tr><td>안테나 점멸·출입금지</td><td><code>--danger</code>(+rgb)</td><td>(신규 표현)</td><td><b class="ok">계승</b>(의미색 본래 용도)</td></tr>
 <tr><td>에픽 기척(토글·기본 꺼짐)</td><td><code>--epic</code> 저알파 안개</td><td>없음</td><td><b class="ok">계승</b>(배지·연출 전용 규정 내 · 위치 정본 아님 = 제안)</td></tr>
 <tr><td>창문 불빛(웜)</td><td><code>--arm</code> 차용</td><td>없음</td><td><b class="warn">⚠ 차용</b> — 웜 라이트 전용 토큰 없음. ㉮ <code>--warm</code> 신설(승인+락) ㉯ <code>--arm</code> 차용 유지 ㉰ 뉴트럴 흰 광 중 택1</td></tr>
-<tr><td>카메라 기울기·회전·줌·건물 높이</td><td>55° · 45° · 1.0 · 1.0(슬라이더)</td><td>탑다운(0°·0°)</td><td>raw 허용 축(기하 계산 · 지도 전용 레이아웃 — 토큰 없는 축)</td></tr>
+<tr><td>카메라 기울기·회전·줌·건물 높이</td><td>55° · 30° · 3.0(어깨너머 근경) · 1.0</td><td>탑다운(0°·0°) · 드론뷰 = 프리셋 존치</td><td>raw 허용 축(기하 계산 · 지도 전용 레이아웃 — 토큰 없는 축)</td></tr>
 <tr><td>그림자·글로우 일체</td><td>box-shadow raw</td><td>동일 원칙</td><td>raw 허용 축(절대명령1 예외)</td></tr>
 <tr><td>씬 내 pill 바탕</td><td>근흑 알파 rgba(18,19,18,.86)</td><td>.bar = rgba(18,18,18,.82)</td><td>기존 근흑 알파 계보 계승(blur 불가 우회 — 5절)</td></tr>
 </table></div>
@@ -342,6 +357,8 @@ td b{font-weight:var(--fw-b)}
 · 주민 = CSS 말(figure). 실장 시 스프라이트(char_*.png)·아바타 칩으로 교체 가능(로드 실패 = 말 폴백 유지).<br>
 · <b>루시(에픽) = places.json 동선표 밖</b> → 미표시. `에픽 기척` 토글은 위치 주장 없는 연출 제안일 뿐(정본 아님 · 채택 시 동선 편입은 별도 콘텐츠 결정).<br>
 · 폰트 = 시스템(뷰어 실장 시 Paperlogy 자동 적용) · reduced-motion = 전 애니 정지 · 저사양 = 김·점멸·펄스부터 감쇠 여지.<br>
+· <b>어깨너머 = 추상 스케일</b>(운영자 확정 — 사람·건물 실물 비율 무시 · 인물 크기 = 줌 연동) · 지도 영역은 <code>touch-action:none</code>(드래그 팬 전용 — 실장 시 지도 탭 전용 화면이라 페이지 스크롤과 무충돌).<br>
+· 미니맵 = 실장 시 "지금 대화 중인 방 캐릭터" 마커·알림 점 얹는 확장 축(현재는 위치·뷰파인더만).<br>
 · 이 파일 = 표현 시안. 좌표·동선 정본은 places.json — 여기 수치는 사본이며 정본 변경 시 재생성.
 </p>
 
@@ -418,7 +435,10 @@ const $=s=>document.querySelector(s);
 const P=v=>10+v*5;   // 격자 0~100 → 판 좌표 10~510
 const vp=$('#vp'), world=$('#world'), ov=$('#ov');
 /* 정보층 레지스트리 — 월드 좌표(wx,wy,wz) → 화면 투영으로 매 킥마다 동기 */
-let FIT=1, ZOOM=1.4, HS=1;
+let FIT=1, ZOOM=3, HS=1;
+/* 심즈식 카메라: 포커스(camX/Y = 월드 좌표)가 화면 중앙 · 탭/미니맵 = 글라이드 이동 · 드래그 = 팬 */
+let camX=260, camY=262, camTX=null, camTY=null;
+const CLX=v=>Math.min(366,Math.max(150,v)), CLY=v=>Math.min(400,Math.max(120,v));
 const OV=[];
 function ovItem(cls,html,reg){
   const d=document.createElement('div');d.className='oi '+cls;d.innerHTML=html;
@@ -583,6 +603,7 @@ async function render(){
       const x=P(p.x)+Math.cos(ang)*off, y=P(p.y)+fy+Math.sin(ang)*off*.65;
       const r=$('#res-'+cid), f=$('#figw-'+cid);
       r.style.left=x+'px'; r.style.top=y+'px';
+      const mp=$('#mp-'+cid); if(mp){mp.style.left=((x-138)/240*100)+'%'; mp.style.top=((y-108)/304*100)+'%';}
       const sleeping=!!p.pv&&['late','dawn','night'].includes(slot);   // !! 필수 — undefined면 toggle이 플립으로 오동작
       const meet=!p.pv&&cids.length>=2;
       r.classList.toggle('zz',sleeping); f.classList.toggle('zz',sleeping);
@@ -593,6 +614,7 @@ async function render(){
   }
   /* 간판 카운트·마주침 테·창문 점등 + 핫스팟 1점·LOD 감쇠 */
   const hotPl=Object.entries(byPlace).filter(([pl])=>!PLACES[pl].pv).sort((a,b)=>b[1].length-a[1].length)[0];
+  window._hot=hotPl?{x:P(PLACES[hotPl[0]].x),y:P(PLACES[hotPl[0]].y)}:{x:260,y:262};
   for(const id of Object.keys(PLACES)){
     const cids=(byPlace[id]||[]), n=cids.length, pub=!PLACES[id].pv;
     const cnt=$('#cnt-'+id); if(cnt){cnt.textContent=n; cnt.classList.toggle('on',n>0);}
@@ -631,13 +653,29 @@ async function render(){
 let ovRaf=0, ovUntil=0;
 function syncOv(){
   const tf=getComputedStyle(world).transform; if(tf==='none')return;
+  /* 카메라 글라이드(탭·미니맵 이동 = lerp) */
+  if(camTX!=null){
+    camX+=(camTX-camX)*.16; camY+=(camTY-camY)*.16;
+    if(Math.hypot(camTX-camX,camTY-camY)<.6){camX=camTX;camY=camTY;camTX=camTY=null;}
+    else ovUntil=Math.max(ovUntil,performance.now()+90);
+  }
   const m=new DOMMatrix(tf), S=FIT*ZOOM, cx=vp.clientWidth/2, cy=vp.clientHeight/2;
+  const fpt=m.transformPoint(new DOMPoint(camX-260,camY-260,0));
+  vp.style.setProperty('--tx',(-fpt.x*S).toFixed(1)+'px');
+  vp.style.setProperty('--ty',(-fpt.y*S).toFixed(1)+'px');
   for(const it of OV){
     let wx=it.wx, wy=it.wy;
     if(it.res){const cs=getComputedStyle(it.res); wx=parseFloat(cs.left)||0; wy=parseFloat(cs.top)||0;}
     const pt=m.transformPoint(new DOMPoint(wx-260,wy-260,it.wz()));
-    it.el.style.transform=`translate3d(${(cx+pt.x*S).toFixed(1)}px,${(cy+pt.y*S).toFixed(1)}px,0)`;
+    it.el.style.transform=`translate3d(${(cx+(pt.x-fpt.x)*S).toFixed(1)}px,${(cy+(pt.y-fpt.y)*S).toFixed(1)}px,0)`;
     it.el.style.zIndex=1000+Math.round(pt.z);   // 깊이순 — 남쪽·높은 곳 = 앞
+  }
+  /* 미니맵 뷰파인더 링 */
+  const mmR=document.querySelector('#mm .mmR');
+  if(mmR){
+    const rxDeg=+$('#rx').value||55, rw=vp.clientWidth/S, rh=vp.clientHeight/(S*Math.max(.2,Math.cos(rxDeg*Math.PI/180)));
+    mmR.style.left=((camX-138)/240*100)+'%'; mmR.style.top=((camY-108)/304*100)+'%';
+    mmR.style.width=Math.min(96,rw/240*100)+'%'; mmR.style.height=Math.min(96,rh/304*100)+'%';
   }
 }
 function kick(ms){
@@ -650,8 +688,10 @@ function kick(ms){
 function deoverlap(){
   const pills=[...document.querySelectorAll('#ov .sign .pill,#ov .figw .tag')];
   pills.forEach(p=>p.style.removeProperty('--dy'));
+  const vr=vp.getBoundingClientRect();
   const items=pills.map(p=>{const r=p.getBoundingClientRect();return{p,x:r.x+r.width/2,y:r.y+r.height/2,w:r.width,h:r.height,dy:0};})
-    .filter(i=>i.w>0).sort((a,b)=>b.y-a.y);   // 아래(앞)부터 고정
+    .filter(i=>i.w>0&&i.x>vr.x-60&&i.x<vr.right+60&&i.y>vr.y-40&&i.y<vr.bottom+40)   // 화면 안 라벨만
+    .sort((a,b)=>b.y-a.y);   // 아래(앞)부터 고정
   const placed=[];
   for(const it of items){
     let guard=0;
@@ -681,6 +721,10 @@ function select(type,id){
   document.querySelectorAll('.res.sel,.bld.sel,.figw.sel').forEach(e=>e.classList.remove('sel'));
   const t=$(type==='char'?'#res-'+id:'#bld-'+id); if(t)t.classList.add('sel');
   if(type==='char'){const f=$('#figw-'+id); if(f)f.classList.add('sel');}
+  /* 심즈식: 선택 대상에게 카메라 글라이드 */
+  if(type==='char'){const r=$('#res-'+id); camTX=CLX(parseFloat(r.style.left)||260); camTY=CLY(parseFloat(r.style.top)||262);}
+  else{camTX=CLX(P(PLACES[id].x)); camTY=CLY(P(PLACES[id].y));}
+  kick(1500);
   refreshCard(); $('#card').classList.add('on');
 }
 function refreshCard(){
@@ -700,11 +744,10 @@ function refreshCard(){
   }
 }
 function closeCard(e){e.stopPropagation();selId=null;selType=null;document.querySelectorAll('.res.sel,.bld.sel,.figw.sel').forEach(el2=>el2.classList.remove('sel'));$('#card').classList.remove('on');}
-vp.addEventListener('pointerdown',()=>{if(selId)closeCard(new Event('x'));});
-$('#card').addEventListener('pointerdown',e=>e.stopPropagation());   // 카드 안 탭 = 닫힘 방지
+$('#card').addEventListener('pointerdown',e=>e.stopPropagation());   // 카드 안 탭 = 닫힘 방지(빈 탭 닫기 = endDrag가 담당)
 
 /* ══ 카메라·슬라이더·프리셋 ══ */
-const PRESETS={flat:{rx:0,rz:0,zoom:1,ss:.85},iso:{rx:55,rz:30,zoom:1,ss:1},low:{rx:66,rz:24,zoom:1.12,ss:1},quarter:{rx:60,rz:45,zoom:1.3,ss:1}};
+const PRESETS={shoulder:{rx:55,rz:30,zoom:3,ss:1},low:{rx:66,rz:24,zoom:3.4,ss:1},drone:{rx:55,rz:30,zoom:1.15,ss:1},flat:{rx:0,rz:0,zoom:1.05,ss:.85}};
 function cam(glide){
   if(glide){vp.classList.add('glide');setTimeout(()=>vp.classList.remove('glide'),800);}
   vp.style.setProperty('--rx',$('#rx').value+'deg');
@@ -713,8 +756,9 @@ function cam(glide){
   vp.style.setProperty('--hs',$('#hsc').value/100);
   vp.style.setProperty('--ss',$('#ssc').value/100);
   ZOOM=+$('#zm').value/100; HS=+$('#hsc').value/100;
-  clearTimeout(cam._ft); cam._ft=setTimeout(fit,glide?820:140);   // 각도 바뀌면 투영 bbox 재실측(자동핏)
-  kick(glide?950:160);
+  vp.style.setProperty('--fgs',Math.min(2.8,Math.max(1,ZOOM*.85)).toFixed(2));   // 인물 = 줌 연동(심즈 추상 비율)
+  vp.dataset.far=ZOOM<1.7?'1':'0';   // 원경(드론뷰)에서만 존 라벨
+  kick(glide?950:200);
   $('#rxv').textContent=$('#rx').value+'°';$('#rzv').textContent=$('#rz').value+'°';
   $('#zv').textContent=(+$('#zm').value/100).toFixed(2);
   $('#hv').textContent=(+$('#hsc').value/100).toFixed(2);
@@ -727,6 +771,8 @@ document.querySelectorAll('#preseg button').forEach(b=>b.addEventListener('click
   const p=PRESETS[b.dataset.p];
   $('#rx').value=p.rx;$('#rz').value=p.rz;$('#zm').value=p.zoom*100;
   if(p.ss!=null)$('#ssc').value=p.ss*100;
+  if(b.dataset.p==='drone'||b.dataset.p==='flat'){camTX=260;camTY=262;}          // 원경 = 마을 중앙
+  else if(window._hot){camTX=CLX(_hot.x);camTY=CLY(_hot.y);}                     // 근경 = 핫스팟
   cam(true);
 }));
 $('#hr').addEventListener('input',()=>{hour=+$('#hr').value;render();});
@@ -750,20 +796,60 @@ $('#playBtn').addEventListener('click',()=>{
 });
 $('#nowBtn').addEventListener('click',()=>{hour=new Date(Date.now()+9*3600e3).getUTCHours();$('#hr').value=hour;dayOff=0;document.querySelectorAll('#dayseg button').forEach(x=>x.classList.toggle('on',x.dataset.d==='0'));render();});
 
-/* 핏 = 실측 자동: 가로 기준 채움 + 뷰포트 높이를 콘텐츠에 밀착(죽은 세로 여백 제거) */
-function fit(){
-  const plate=document.querySelector('.plate');
-  vp.style.setProperty('--fit',1); const zSave=vp.style.getPropertyValue('--zoom'); vp.style.setProperty('--zoom',1);
-  const r=plate.getBoundingClientRect();
-  if(r.width>4&&r.height>4){
-    FIT=Math.min((vp.clientWidth-30)/r.width,(640-158)/r.height);
-    const vh=Math.max(400,Math.min(640,Math.round(r.height*FIT+158)));   // 158 = 간판 머리(상) + 카드 여유(하)
-    vp.style.height=vh+'px';
-  }
-  vp.style.setProperty('--fit',FIT); vp.style.setProperty('--zoom',zSave||1);
-  kick(200);
-}
+/* 핏 = 뷰포트 폭 정규화(줌 1 = 마을 전폭 기준 · 기본 줌 3 = 어깨너머 근경) */
+function fit(){FIT=Math.max(.5,vp.clientWidth/520);vp.style.setProperty('--fit',FIT);kick(200);}
 addEventListener('resize',fit);
+
+/* ── 드래그 팬(월드 역투영) — 심즈식 카메라 이동 ── */
+let drag=null;
+vp.addEventListener('pointerdown',e=>{
+  if(e.target.closest('.pill,.stk,.card,#mm'))return;
+  drag={id:e.pointerId,x:e.clientX,y:e.clientY,moved:false};
+  try{vp.setPointerCapture(e.pointerId);}catch{}
+});
+vp.addEventListener('pointermove',e=>{
+  if(!drag||e.pointerId!==drag.id)return;
+  const dx=e.clientX-drag.x, dy=e.clientY-drag.y;
+  if(!drag.moved&&Math.hypot(dx,dy)<5)return;
+  drag.moved=true; vp.classList.add('drag'); camTX=camTY=null;
+  const tf=getComputedStyle(world).transform; if(tf==='none')return;
+  const m=new DOMMatrix(tf), S=FIT*ZOOM;
+  const p0=m.transformPoint(new DOMPoint(0,0,0)), e1=m.transformPoint(new DOMPoint(1,0,0)), e2=m.transformPoint(new DOMPoint(0,1,0));
+  const ax=e1.x-p0.x, ay=e1.y-p0.y, bx=e2.x-p0.x, by=e2.y-p0.y, det=ax*by-bx*ay;
+  if(Math.abs(det)>1e-6){
+    camX=CLX(camX-(( by*dx-bx*dy)/det)/S);
+    camY=CLY(camY-((-ay*dx+ax*dy)/det)/S);
+  }
+  drag.x=e.clientX; drag.y=e.clientY; kick(320);
+});
+const endDrag=e=>{
+  if(!drag||e.pointerId!==drag.id)return;
+  const moved=drag.moved; drag=null; vp.classList.remove('drag');
+  if(!moved&&selId)closeCard(new Event('x'));   // 제자리 탭 = 카드 닫기
+};
+vp.addEventListener('pointerup',endDrag); vp.addEventListener('pointercancel',endDrag);
+
+/* ── 미니맵: 점지도 + 뷰파인더 · 탭/드래그 = 카메라 점프 ── */
+function mmBuild(){
+  const P100=(wx,wy)=>`left:${((wx-138)/240*100).toFixed(1)}%;top:${((wy-108)/304*100).toFixed(1)}%`;
+  const box=document.querySelector('#mm .mmP');
+  let h='';
+  for(const [id,p] of Object.entries(PLACES)){
+    if(id==='offlimits'){h+=`<i class="mpd hz" style="${P100(P(p.x),P(p.y))}"></i>`;continue;}
+    h+=`<i class="mpd${p.pv?' hm':''}" style="${P100(P(p.x),P(p.y))}"></i>`;
+  }
+  for(const [cid,[ini,col]] of Object.entries(CAST)) h+=`<i class="mpp" id="mp-${cid}" style="background:${col};left:50%;top:50%"></i>`;
+  box.innerHTML=h;
+}
+const mmEl=document.querySelector('#mm');
+function mmSet(e){
+  const r=mmEl.getBoundingClientRect();
+  camTX=CLX(138+((e.clientX-r.x)/r.width)*240); camTY=CLY(108+((e.clientY-r.y)/r.height)*304);
+  kick(1500);
+}
+mmEl.addEventListener('pointerdown',e=>{e.stopPropagation();try{mmEl.setPointerCapture(e.pointerId);}catch{};mmEl._dn=1;mmSet(e);});
+mmEl.addEventListener('pointermove',e=>{if(mmEl._dn)mmSet(e);});
+mmEl.addEventListener('pointerup',()=>mmEl._dn=0); mmEl.addEventListener('pointercancel',()=>mmEl._dn=0);
 
 /* 복사 바 */
 function cfg(){return{카메라:{기울기:+$('#rx').value,회전:+$('#rz').value,줌:+$('#zm').value/100},마을:{건물높이:+$('#hsc').value/100,간판크기:+$('#ssc').value/100,간판:vp.dataset.signs,존라벨:vp.dataset.zl!=='off',에픽기척:wispOn},시간:{시:hour,날짜오프셋:dayOff},토큰:'신규 0 · 창 불빛=--arm 차용(갱신 후보) · 좌표 정본=apps/yeta/places.json'};}
@@ -774,11 +860,15 @@ $('#cpBtn').addEventListener('click',async()=>{
   const b=$('#cpBtn');b.textContent='복사됨';setTimeout(()=>b.textContent='선택값 JSON 복사',1400);
 });
 
-/* 부팅 — 지금(KST) 시각으로 시작 · 첫 배치는 무애니(플라이인 방지) */
+/* 부팅 — 지금(KST) 시각 · 카메라 = 핫스팟(사람 제일 많은 곳)에서 시작 · 첫 배치는 무애니 */
 world.classList.add('boot');
-buildWorld();
+buildWorld(); mmBuild();
 $('#hr').value=hour;
 fit();cam(false);
-render().then(()=>requestAnimationFrame(()=>requestAnimationFrame(()=>world.classList.remove('boot'))));
+render().then(()=>{
+  if(window._hot){camX=CLX(_hot.x);camY=CLY(_hot.y);}
+  kick(400);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>world.classList.remove('boot')));
+});
 </script>
 </body></html>
