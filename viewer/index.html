@@ -676,7 +676,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
     box-shadow:0 0 6px rgba(var(--accent-rgb),.21); }   /* 아바타 라임 글로우 .26(언락 밝기 플그 운영자 확정) · cover 재선언 = background 축약이 .yava.has-img cover를 리셋하던 프사 깨짐 교정(.ylist-ava 관례 동형 · 운영자 260707) */
   .ycrow-mid { flex:1; min-width:0; display:flex; flex-direction:column; }   /* 간격 = --lgap 비율 체계(대화목록과 통일 · 운영자 260707 "모든 레포지 동일") */
   .ycrow-nm .ygrade, .ycrow-nm .yprem { flex:none; }   /* 등급·보이스 배지 = 이름줄 직업 우측 나란히(운영자 260708 "1행 절약") — 이름만 shrink·배지 유지 */
-  .ycrow-nm { display:flex; align-items:center; min-width:0; font-weight:var(--fw-x); font-size:var(--fs-h3); margin-bottom:var(--lgap); }   /* flex 중앙축 = 이름·보이스 배지 동일 높이(항목7 · ellipsis는 .ynm-t) */
+  .ycrow-nm { display:flex; align-items:center; min-width:0; font-weight:var(--fw-x); font-size:var(--fs-h3); margin-bottom:calc(var(--lgap)*.55); }   /* flex 중앙축 = 이름·보이스 배지 동일 높이(항목7 · ellipsis는 .ynm-t) · 이름→상황 간격 축소(운영자 260708 "너무 넓어" · 전 목록 동일) */
   .ycrow-desc { font-size:var(--fs-xs); color:var(--fg-2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:calc(var(--lgap)*.7); }
   .ycrow-quote { font-size:var(--fs-xs); color:var(--mut); font-style:italic; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .ycrow-sep { flex:none; width:1px; align-self:stretch; margin:5px 0; background:var(--glass-line); opacity:.55; }   /* 행 내부 전용 아주 연한 세로 구분자(전관통 메뉴 구분선 아님) */
@@ -838,16 +838,16 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   .ylist-ava.has-img { color:transparent; }
   .ylist-mid { flex:1; min-width:0; display:flex; flex-direction:column; }   /* 4줄 고정 슬롯(운영자 260707) — 등급줄 → 이름줄 → 생각줄 → 최근말 · 간격 = --lgap 비율 5:5:3.5 */
   .ylist-nm .ygrade, .ylist-nm .yprem { flex:none; }   /* 등급·보이스 배지 = 이름줄 직업 우측 나란히(운영자 260708) — 이름만 shrink·배지 유지 */
-  .ylist-nm { display:flex; align-items:center; min-width:0; font-weight:var(--fw-x); font-size:var(--fs-h3); margin-bottom:var(--lgap); }   /* ② 이름 줄(비율 5) — flex 중앙축 = 우측 메타(시간 스택)와 수직 중앙 자동 정렬(운영자 "엇나가지 않게") */
+  .ylist-nm { display:flex; align-items:center; min-width:0; font-weight:var(--fw-x); font-size:var(--fs-h3); margin-bottom:calc(var(--lgap)*.55); }   /* ② 이름 줄 — flex 중앙축 = 우측 메타와 수직 중앙 자동 정렬 · 이름→상황 간격 축소(운영자 260708 · 전 목록 동일) */
   .ylist-meta { flex:none; display:flex; flex-direction:column; align-items:flex-end; gap:2px; margin-left:auto; padding-left:8px; }   /* 시간+상대시간 = 이름줄 우측 상주(라인 중앙정렬) */
-  .ylist-ago { font-size:var(--fs-xs); color:var(--fg); font-variant-numeric:tabular-nums; }   /* 상대시간 = 흰색(운영자) — N분·N0분·N시간(~6h)·초과 미표시 */
+  .ylist-ago { font-size:var(--fs-xs); color:var(--mut); font-variant-numeric:tabular-nums; }   /* 상대시간 = mut 통일(운영자 260708) — N분·N0분·N시간·N일 · 절대시각 폐지 */
   .ylist-loc { font-size:var(--fs-xs); color:var(--mut); }   /* 최근 장소(항목18 병합 — 색 위계 = 항목21: 기본 흐림·판명 흰) */
   .ylist-loc.on { color:var(--fg); }
   .ylist-tht { font-size:var(--fs-sm); color:rgba(var(--think-rgb),.72); margin-bottom:calc(var(--lgap)*.7); line-height:1.5; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }   /* ③ 생각/감정 줄(비율 5→3.5 경계) = 터콰이즈 저투명(운영자 — 과하면 α만 조절) · 항상 유지 */
   .ylist-tht.na { color:var(--think); opacity:.4; }   /* 생각 못 읽음 = "(무슨 생각을 하는진 모르겠다)" 플레이스홀더(더 옅게) — 라인 자체는 불멸(운영자 "바로 아래 대화창 금지") */
-  .ynm-t { font-style:normal; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }   /* 이름 텍스트 래퍼 — flex 안 ellipsis는 실요소에만 걸림 */
+  .ynm-t { font-style:normal; flex:none; min-width:0; max-width:5em; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }   /* 이름 = 고유 영역(운영자 260708 "이름 4음절까진 안 짤림") — flex:none = 안 줄어듦(4음절 표시) · max 5em = 초과만 ellipsis(직업배지가 대신 축소) */
   /* 직업·변신 배지(운영자 260707 "이름 항상 바로 옆에 직업/변신모드 · 메인 직업 = 강조 · 변신군 = 터콰이즈 · 잘 보여야") — .yprem 플레이트 정본 계승 · 변신 = --think(단일 터콰이즈 톤) */
-  .yjob { flex:none; display:inline-flex; align-items:center; margin-left:6px; padding:1px 8px; border-radius:var(--r-pill);
+  .yjob { flex:0 1 auto; display:inline-flex; align-items:center; margin-left:6px; padding:1px 8px; border-radius:var(--r-pill);
     background:rgba(var(--accent-rgb),.12); border:1px solid rgba(var(--accent-rgb),.4); color:var(--accent);
     font-size:var(--fs-xs); font-weight:var(--fw-b); white-space:nowrap; max-width:46vw; overflow:hidden; text-overflow:ellipsis; }   /* 메인 직업 = 라임 강조 */
   .yjob.tq { background:rgba(var(--think-rgb),.12); border-color:rgba(var(--think-rgb),.4); color:var(--think); }   /* 변신 모드 = 터콰이즈(--think 공용) */
@@ -874,7 +874,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   .yme-mid { flex:1; min-width:0; display:flex; flex-direction:column; }   /* 간격 = --lgap 비율 체계 통일 */
   .yme-grade { display:flex; align-items:center; margin-bottom:var(--lgap); }   /* 방문자 태그 = 이름 위(등급줄 동형) */
   .yme-grade .yme-tag { margin-left:0; }
-  .yme-nm { margin-bottom:var(--lgap); }
+  .yme-nm { margin-bottom:calc(var(--lgap)*.55); }   /* 이름→상황(서브네비) 간격 축소(운영자 260708 · 전 목록 동일) */
   .yme-nm { display:flex; align-items:center; font-weight:var(--fw-x); font-size:var(--fs-h3); }
   .yme-tag { flex:none; margin-left:6px; padding:1px 8px; border-radius:var(--r-pill); background:rgba(var(--accent-rgb),.12); border:1px solid rgba(var(--accent-rgb),.4); color:var(--accent); font-size:var(--fs-xs); font-weight:var(--fw-b); }   /* (나) 표식 = .yprem 플레이트 계승 */
   /* 스페셜 등급 훈장(운영자 260707 확정) — 시즌 특전 등급 = 시즌(시즌 주인공)·IDOL(아이돌 구현) · 동렬·상호배타 · 보이스(.yprem)는 별개 "기능 아이콘" 축. 형태 차별 = 보석 젬 + 양각 sheen(글래스 인셋 = 훈장 결) */
@@ -1619,8 +1619,8 @@ async function yListRender() {
     const badges = `${yGradeBadge(p)}${window.yPremBadge ? yPremBadge(p) : ''}`;   // 등급·보이스 = 이름줄 직업 우측(운영자 260708 · 옛 등급 전용줄 폐지 = 3줄로 절약)
     const thtT = (prev && prev.role !== 'user') ? ySnip(prev.text, 40) : '';   // 생각 = 직전 캐릭터 결(유저 턴 = 생각 아님) · 향후 러너 think 필드로 승격 축
     const tht = `<span class="ylist-tht${thtT ? '' : ' na'}">${thtT ? esc(thtT) : '(무슨 생각을 하는진 모르겠다)'}</span>`;
-    const lastLn = opPend ? `<span class="ylist-last on">곧 말을 걸어와…</span>` : (last ? `<span class="ylist-last${(unTxt && last.role !== 'user') ? ' on' : ''}">${last.role === 'user' ? '나 · ' : ''}${esc(ySnip(last.text, 40) || '…')}</span>` : '');
-    const meta = last ? `<span class="ylist-meta"><span class="ylist-t">${yTime(last.ts)}</span>${yAgo(last.ts)}${(() => { try { const L = yLocOf(r); return L && L.nm ? `<span class="ylist-loc${L.on ? ' on' : ''}">${esc(L.nm)}</span>` : ''; } catch (e) { return ''; } })()}</span>` : '';   // 스택 = 시간 → 상대시간(흰) → 최근 장소(항목18 병합 — try = 함수 부재 방어)
+    const lastLn = opPend ? `<span class="ylist-last on">곧 말을 걸어와…</span>` : (last ? `<span class="ylist-last${(unTxt && last.role !== 'user') ? ' on' : ''}">${last.role === 'user' ? '나 · ' : ''}${esc(ySnip(last.text, 40) || '…')}</span>` : '');   // #186 안읽음 조건부 on 유지
+    const meta = last ? `<span class="ylist-meta">${yAgo(last.ts)}${(() => { try { const L = yLocOf(r); return L && L.nm ? `<span class="ylist-loc${L.on ? ' on' : ''}">${esc(L.nm)}</span>` : ''; } catch (e) { return ''; } })()}</span>` : '';   // 항목1(260708): 절대시각(ylist-t) 폐지 → 상대시간(mut) → 최근 장소
     return `<div class="ylr-wrap"><button type="button" class="ylist-row" data-t="${esc(r.id)}">`
       + `<span class="ylist-ava${p.avatar ? ' has-img' : ''}${unTxt ? ' yring-unread' : ''}"${p.avatar ? ` style="background-image:url('${esc(p.avatar)}')"` : ''}>${p.avatar ? '' : esc(p.initial || p.name[0])}</span>`
       + `<span class="ylist-mid"><span class="ylist-nm">${r.pin ? '<svg class="ylist-pin" viewBox="0 0 24 24" fill="currentColor" aria-label="고정됨"><path d="M16 3l5 5-5.5 2 -1 6.5L12 14l-6 7-1-1 7-6-2.5-2.5L16 10l-2-1.5z"/></svg>' : ''}<i class="ynm-t">${esc(p.name)}</i>${yJobBadge(p)}${badges}${unTxt ? `<span class="ylist-badge">${unTxt}</span>` : ''}${meta}</span>`
@@ -2121,8 +2121,8 @@ function yActiveIds() { const t = (YSESS || {}).threads || {}; return new Set(Ob
 function yAgo(ts) {   // 상대시간(운영자 260707) — <1분 = 방금 · 1~9 = N분 전 · 10~59 = N0분 전(십분 내림) · 1~6시간 = N시간 전 · 초과 = 미표시 · 흰색(.ylist-ago)
   if (!ts) return '';
   const m = Math.floor((Date.now() - ts) / 60000);
-  if (m < 0 || m > 360) return '';
-  const t = m < 1 ? '방금 전' : m < 10 ? `${m}분 전` : m < 60 ? `${Math.floor(m / 10) * 10}분 전` : `${Math.floor(m / 60)}시간 전`;
+  if (m < 0) return '';   // 운영자 260708: 절대시각 폐지·상대시각 전면화 → 6h 초과도 표시(시간→일)
+  const t = m < 1 ? '방금 전' : m < 10 ? `${m}분 전` : m < 60 ? `${Math.floor(m / 10) * 10}분 전` : m < 1440 ? `${Math.floor(m / 60)}시간 전` : `${Math.floor(m / 1440)}일 전`;
   return `<span class="ylist-ago">${t}</span>`;
 }
 let YSEASONM = {};   // 시즌 감정 미디어 manifest 캐시(캐릭터별 1회 fetch — {warm[]·tense[]·blue[]·base[]})
