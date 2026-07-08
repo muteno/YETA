@@ -10,9 +10,10 @@ def migrate_v3(s):
     """v>=3 or threads 존재 = no-op(멱등). v2 = threads[persona] 랩 · updated = 마지막 턴 ts 백필."""
     if not isinstance(s, dict):
         return {"v": 3, "cur": "", "barge_day": "", "call": None, "threads": {},
-                "note_pub": "", "notes": {}, "tunes": {}, "policy": {}, "pref": {}}
+                "note_pub": "", "notes": {}, "tunes": {}, "policy": {}, "pref": {},
+                "me": {"call": "", "about": ""}}
     if s.get("v", 0) >= 3 or "threads" in s:
-        s.setdefault("threads", {}); s["v"] = 3
+        s.setdefault("threads", {}); s.setdefault("me", {"call": "", "about": ""}); s["v"] = 3   # me = 유저 프로필(호칭+소개 · 260708) 상시 존재(JS migrateV3 동형)
         return s
     t = str(s.get("persona") or "")
     th = {}
@@ -28,7 +29,8 @@ def migrate_v3(s):
     return {"v": 3, "cur": t or "", "barge_day": s.get("barge_day") or "", "call": s.get("call") or None,
             "threads": th, "note_pub": s.get("note_pub") or s.get("note") or "",
             "notes": s.get("notes") or {}, "tunes": s.get("tunes") or {},
-            "policy": s.get("policy") or {}, "pref": s.get("pref") or {}}
+            "policy": s.get("policy") or {}, "pref": s.get("pref") or {},
+            "me": s.get("me") if isinstance(s.get("me"), dict) else {"call": "", "about": ""}}
 
 def _age(th, now_ms):
     """스레드의 일감 나이(ts) — 없으면 None. invite(신선)·pending(최고령)·opening(assistant 0) 통합."""
