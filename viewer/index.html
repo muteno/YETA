@@ -1211,7 +1211,7 @@ function ySsnFixed() {   // 탭 공용 시즌 헤더(운영자 260707) — 내�
   const el = $('#yssnFixed'); if (!el) return;
   const html = YWORLD ? `<div class="yssn">${ySsnHtml()}</div>` : '';
   if (el._h !== html) { el.innerHTML = html; el._h = html; }
-  requestAnimationFrame(() => { const h = el.offsetHeight; if (h) document.documentElement.style.setProperty('--ssn-h', (h + 6) + 'px'); });   // +6 = 헤더↔콘텐츠 숨
+  requestAnimationFrame(() => { const h = el.offsetHeight; if (h) document.documentElement.style.setProperty('--ssn-h', (h + 16) + 'px'); });   // +16 = 타이틀네비↔서브네비 숨(운영자 260708 "너무 쫍아 겹칠지경" · 구 +6)
 }
 function yTab(tab) {   // 'char' | 'list' | 'settings' — 네비 활성·패널 토글(chat=dialog)
   const m = document.getElementById('ymain');
