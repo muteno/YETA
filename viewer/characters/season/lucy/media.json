@@ -1,25 +1,64 @@
 {
- "_comment": "시즌 감정 미디어 manifest(루시) — 뷰어 yStage가 답장수 n으로 결정적 로테이션(pool[n%len]). base[0]=클립=대화 시작 배경(muted 비디오·운영자 260708). 모드↔무드 브리지: 안드로이드(낮=시크 자동인형)=base·blue / 도깨비(밤=고에너지)=warm·tense. 경로=viewer/ 기준 상대. 이미지 정본=viewer/characters/season/lucy/{android,dokkaebi}/.",
+ "_comment": "시즌 감정 미디어 manifest(루시) — yStage 답장수 n 결정적 로테이션 pool[n%len]. base[0]=클립=대화 시작배경(muted 비디오). 모드↔무드: 안드로이드(낮 시크 자동인형)=base·blue / 도깨비(밤 레베카 고에너지)=warm·tense. 정본=viewer/characters/season/lucy/{android,dokkaebi}/.",
  "base": [
   "characters/season/lucy/lucy_clip_01.mp4",
   "characters/season/lucy/android/android_01.jpg",
+  "characters/season/lucy/android/android_02.jpg",
   "characters/season/lucy/android/android_03.webp",
   "characters/season/lucy/android/android_04.jpg",
-  "characters/season/lucy/android/android_02.jpg"
+  "characters/season/lucy/android/android_05.jpg",
+  "characters/season/lucy/android/android_06.jpg",
+  "characters/season/lucy/android/android_07.jpg",
+  "characters/season/lucy/android/android_08.jpg",
+  "characters/season/lucy/android/android_09.jpg",
+  "characters/season/lucy/android/android_10.jpg",
+  "characters/season/lucy/android/android_11.jpg",
+  "characters/season/lucy/android/android_12.jpg",
+  "characters/season/lucy/android/android_13.jpg",
+  "characters/season/lucy/android/android_14.jpg",
+  "characters/season/lucy/android/android_15.jpg",
+  "characters/season/lucy/android/android_16.jpg"
  ],
  "warm": [
   "characters/season/lucy/dokkaebi/dokkaebi_01.jpg",
-  "characters/season/lucy/dokkaebi/dokkaebi_04.jpg",
-  "characters/season/lucy/dokkaebi/dokkaebi_07.jpg"
- ],
- "tense": [
   "characters/season/lucy/dokkaebi/dokkaebi_02.jpg",
   "characters/season/lucy/dokkaebi/dokkaebi_03.jpg",
+  "characters/season/lucy/dokkaebi/dokkaebi_04.jpg",
   "characters/season/lucy/dokkaebi/dokkaebi_05.jpg",
-  "characters/season/lucy/dokkaebi/dokkaebi_06.jpg"
+  "characters/season/lucy/dokkaebi/dokkaebi_06.jpg",
+  "characters/season/lucy/dokkaebi/dokkaebi_07.jpg",
+  "characters/season/lucy/dokkaebi/dokkaebi_08.jpg",
+  "characters/season/lucy/dokkaebi/dokkaebi_09.jpg",
+  "characters/season/lucy/dokkaebi/dokkaebi_10.jpg"
+ ],
+ "tense": [
+  "characters/season/lucy/dokkaebi/dokkaebi_11.jpg",
+  "characters/season/lucy/dokkaebi/dokkaebi_12.jpg",
+  "characters/season/lucy/dokkaebi/dokkaebi_13.jpg",
+  "characters/season/lucy/dokkaebi/dokkaebi_14.jpg",
+  "characters/season/lucy/dokkaebi/dokkaebi_15.jpg",
+  "characters/season/lucy/dokkaebi/dokkaebi_16.jpg",
+  "characters/season/lucy/dokkaebi/dokkaebi_17.jpg",
+  "characters/season/lucy/dokkaebi/dokkaebi_18.jpg",
+  "characters/season/lucy/dokkaebi/dokkaebi_19.jpg",
+  "characters/season/lucy/dokkaebi/dokkaebi_20.jpg"
  ],
  "blue": [
+  "characters/season/lucy/android/android_01.jpg",
   "characters/season/lucy/android/android_02.jpg",
-  "characters/season/lucy/android/android_01.jpg"
+  "characters/season/lucy/android/android_03.webp",
+  "characters/season/lucy/android/android_04.jpg",
+  "characters/season/lucy/android/android_05.jpg",
+  "characters/season/lucy/android/android_06.jpg",
+  "characters/season/lucy/android/android_07.jpg",
+  "characters/season/lucy/android/android_08.jpg",
+  "characters/season/lucy/android/android_09.jpg",
+  "characters/season/lucy/android/android_10.jpg",
+  "characters/season/lucy/android/android_11.jpg",
+  "characters/season/lucy/android/android_12.jpg",
+  "characters/season/lucy/android/android_13.jpg",
+  "characters/season/lucy/android/android_14.jpg",
+  "characters/season/lucy/android/android_15.jpg",
+  "characters/season/lucy/android/android_16.jpg"
  ]
 }
