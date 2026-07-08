@@ -1,0 +1,419 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>잠금 캐릭터 카드(READ ONLY) 플레이그라운드 — yeta</title>
+<style>
+/* ══════════════════════════════════════════════════════════════════
+   :root 토큰 = viewer/index.html :root 사본(값 SSOT · 260708 시점 · 드리프트 대비 복붙 아님 = 재현용)
+   실제 적용은 viewer 토큰 var()가 정본. 이 플그는 그 값을 실물로 재현할 뿐.
+   ══════════════════════════════════════════════════════════════════ */
+:root{
+  --fg:#FFFFFF; --fg-2:#E7ECE7; --mut:#8B8F8A;
+  --bg:#161716;
+  --accent:#CFFF40; --accent-rgb:207,255,64;
+  --cobalt:#3D6BFF; --cobalt-rgb:61,107,255;
+  --season:#C02148; --season-rgb:192,33,72;
+  --think:#3EE0C8; --think-rgb:62,224,200;
+  --lgap:6px;
+  --glass:rgba(255,255,255,.005); --glass-2:rgba(255,255,255,0); --glass-line:rgba(255,255,255,.08);
+  --glass-0:rgba(255,255,255,.002); --glass-line-0:rgba(255,255,255,.066);
+  --shadow-card:0 24px 60px rgba(0,0,0,.42);
+  --danger:#ff5b4a; --danger-rgb:255,91,74; --arm:#ffd93d;
+  --r-s:9px; --r-m:11px; --r-l:16px; --r-modal:22px; --r-pill:999px;
+  --sp-2:12px; --sp-3:18px; --btn:34px;
+  --fs-h2:15px; --fs-h3:14px; --fs-body:15px; --fs-label:13px; --fs-sm:12px; --fs-xs:11px;
+  --fw-x:800; --fw-b:700; --lh-base:1.6;
+  --ease:cubic-bezier(.2,.7,.3,1);
+  --blur-m:29px; --blur-l:11px;
+  --press-m:.9; --press-l:.95; --press-s:.9;
+
+  /* ── 잠금 처리 구동 변수(슬라이더가 라이브로 바꿈) ── */
+  --lk-dim:.55;        /* 카드 딤 = .ycrow.talking(.55) 계승 */
+  --lk-gray:90%;       /* 아바타 그레이스케일 = raw(아바타축 예외) */
+  --lk-ablur:0px;      /* 아바타 블러 = raw(아바타축 예외) */
+  --lk-scrim:.34;      /* 프로스트 스크림 딤 알파 */
+  --lk-locksz:15px;    /* 자물쇠 픽토 크기 = 아이콘축 */
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Pretendard,Roboto,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+  color:var(--fg); background:var(--bg);
+  padding:26px 18px 80px;
+}
+.wrap{max-width:1080px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+h1{font-size:21px;font-weight:800;margin:0;letter-spacing:-.01em}
+h1 .sub{display:block;font-size:12px;font-weight:600;color:var(--mut);margin-top:6px;letter-spacing:0}
+.lede{font-size:13px;line-height:1.7;color:var(--fg-2);margin:0;max-width:70ch}
+.lede b{color:var(--accent);font-weight:700}
+.lede code{background:rgba(255,255,255,.06);padding:1px 6px;border-radius:6px;font-size:12px;color:var(--fg)}
+.grid2{display:grid;grid-template-columns:minmax(300px,1fr) minmax(300px,420px);gap:22px;align-items:start}
+@media (max-width:820px){.grid2{grid-template-columns:1fr}}
+
+/* ── 폰 프레임(미리보기) ── */
+.phone-col{display:flex;flex-direction:column;gap:12px;align-items:center;position:sticky;top:18px}
+@media (max-width:820px){.phone-col{position:static}}
+.phone{
+  width:100%;max-width:380px;aspect-ratio:9/17;border-radius:34px;overflow:hidden;position:relative;
+  border:1px solid rgba(255,255,255,.1);
+  background:
+    radial-gradient(circle at 62% 20%, rgba(var(--accent-rgb),.14), transparent 52%),
+    radial-gradient(circle at 12% 92%, rgba(var(--cobalt-rgb),.06), transparent 46%),
+    var(--bg);
+  box-shadow:var(--shadow-card), 0 0 0 6px rgba(255,255,255,.02);
+}
+.phone::after{content:'';position:absolute;inset:0;background:rgba(18,18,18,.38);pointer-events:none}
+.phone-inner{position:absolute;inset:0;z-index:1;padding:20px 14px;overflow-y:auto;display:flex;flex-direction:column;gap:12px}
+.ph-h{font-size:var(--fs-label);font-weight:800;color:var(--fg);opacity:.9;padding:2px 4px 0}
+.ph-h span{color:var(--mut);font-weight:600;font-size:var(--fs-xs)}
+
+/* ══ 정본 컴포넌트 계승 (.ychar-grid / .ycrow / …) ══ */
+.ychar-grid{display:flex;flex-direction:column;gap:14px}
+.ycrow{display:flex;align-items:center;gap:11px;width:100%;padding:var(--sp-2);background:var(--glass-0);
+  border:1px solid var(--glass-line-0);border-radius:var(--r-m);color:var(--fg);font:inherit;text-align:left;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;backdrop-filter:blur(var(--blur-l));-webkit-backdrop-filter:blur(var(--blur-l));
+  box-shadow:inset 0 1px 0 var(--glass-line-0);position:relative;
+  transition:opacity .32s var(--ease), filter .32s var(--ease);}
+.ycrow:active{transform:scale(var(--press-l))}
+.ycrow.talking{opacity:.55}
+.ycrow-on{flex:none;margin-left:6px;padding:0 7px;border-radius:var(--r-pill);background:var(--glass-2);color:var(--mut);
+  font-size:var(--fs-xs);font-weight:var(--fw-b);white-space:nowrap;border:1px solid var(--glass-line)}
+.yava{flex:none;width:41px;height:41px;border-radius:50%;display:grid;place-items:center;font-size:var(--fs-h3);font-weight:var(--fw-x);
+  border:1px solid var(--glass-line);color:#0c0d0c;background-size:cover;background-position:center;
+  box-shadow:0 0 6px rgba(var(--accent-rgb),.21);position:relative;
+  transition:filter .32s var(--ease)}
+.ycrow-mid{flex:1;min-width:0;display:flex;flex-direction:column}
+.ycrow-grade{display:flex;align-items:center;gap:4px;margin-bottom:var(--lgap);flex-wrap:wrap}
+.ycrow-nm{display:flex;align-items:center;min-width:0;font-weight:var(--fw-x);font-size:var(--fs-h3);margin-bottom:var(--lgap)}
+.ycrow-desc{font-size:var(--fs-xs);color:var(--fg-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:calc(var(--lgap)*.7)}
+.ycrow-quote{font-size:var(--fs-xs);color:var(--mut);font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ycrow-sep{flex:none;width:1px;align-self:stretch;margin:5px 0;background:var(--glass-line);opacity:.55}
+.yhex{flex:none;width:52px;height:52px}
+.yhex .hx-g{fill:none;stroke:var(--glass-line);stroke-width:1}
+.yhex .hx-v{fill:rgba(var(--accent-rgb),.2);stroke:var(--accent);stroke-width:1.5;stroke-linejoin:round}
+
+/* 등급 훈장(.ygrade) 계승 */
+.ygrade{display:inline-flex;align-items:center;gap:4px;padding:1px 8px;border-radius:var(--r-pill);
+  font-size:var(--fs-xs);font-weight:var(--fw-b);white-space:nowrap;box-shadow:inset 0 1px 0 var(--glass-line)}
+.ygrade svg{width:10px;height:10px;fill:currentColor;filter:drop-shadow(0 1px 0 rgba(0,0,0,.35))}
+.ygrade.season{background:rgba(var(--season-rgb),.12);border:1px solid rgba(var(--season-rgb),.4);color:var(--season)}
+.ygrade.idol{background:var(--glass-2);border:1px solid var(--glass-line);color:var(--fg)}
+
+/* ══ 신규 = 잠금 상태(.ycrow.locked = .talking 형제) — 전부 뉴트럴 계승(강조색 아님 = §🎨 2색 제한) ══ */
+.ycrow.locked{cursor:default}
+.ycrow.locked:active{transform:none}
+/* READ ONLY 알약 = .ycrow-on(대화 중) 계승 + 자물쇠 픽토 */
+.ylock-pill{flex:none;display:inline-flex;align-items:center;gap:4px;padding:1px 8px 1px 6px;border-radius:var(--r-pill);
+  background:var(--glass-2);color:var(--mut);border:1px solid var(--glass-line);
+  font-size:var(--fs-xs);font-weight:var(--fw-b);white-space:nowrap;letter-spacing:.02em}
+.ylock-pill svg{width:calc(var(--lk-locksz) - 2px);height:calc(var(--lk-locksz) - 2px);stroke:currentColor}
+.ylock-pill.tone-season{background:rgba(var(--season-rgb),.1);border-color:rgba(var(--season-rgb),.32);color:var(--season)}
+/* 아바타 위 자물쇠(실루엣·프로스트·훈장) */
+.ylock-ava{position:absolute;inset:0;display:none;place-items:center;border-radius:50%;
+  background:rgba(18,18,18,.42);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)}
+.ylock-ava svg{width:var(--lk-locksz);height:var(--lk-locksz);stroke:var(--fg);opacity:.92}
+/* 카드 전면 프로스트 스크림(프리셋 ③) */
+.ylock-scrim{position:absolute;inset:0;display:none;align-items:center;justify-content:center;gap:8px;border-radius:var(--r-m);
+  background:rgba(18,18,18,var(--lk-scrim));backdrop-filter:blur(var(--blur-l));-webkit-backdrop-filter:blur(var(--blur-l));
+  color:var(--fg-2);font-size:var(--fs-sm);font-weight:var(--fw-b);letter-spacing:.04em;pointer-events:none}
+.ylock-scrim svg{width:calc(var(--lk-locksz) + 2px);height:calc(var(--lk-locksz) + 2px);stroke:currentColor}
+/* 코너 락 칩(프리셋 ④) */
+.ylock-corner{position:absolute;top:8px;right:8px;display:none;width:22px;height:22px;place-items:center;border-radius:50%;
+  background:var(--glass-2);border:1px solid var(--glass-line);backdrop-filter:blur(var(--blur-l));-webkit-backdrop-filter:blur(var(--blur-l))}
+.ylock-corner svg{width:12px;height:12px;stroke:var(--fg-2)}
+
+/* ── 프리셋 스위치(그리드 클래스로 잠금행에만 적용) ── */
+/* 현행: 아무 처리 없음(문제 상태) — 잠금 오나먼트 전부 숨김 */
+.pv-cur .ycrow.locked .ylock-pill,.pv-cur .ycrow.locked .ylock-ava,.pv-cur .ycrow.locked .ylock-scrim,.pv-cur .ycrow.locked .ylock-corner{display:none!important}
+.pv-cur .ycrow.locked{opacity:1;filter:none}
+.pv-cur .ycrow.locked .yava{filter:none}
+
+/* ① 은은한 잠김 */
+.pv-subtle .ycrow.locked{opacity:var(--lk-dim)}
+.pv-subtle .ycrow.locked .yava{filter:grayscale(var(--lk-gray)) brightness(.92) blur(var(--lk-ablur))}
+.pv-subtle .ycrow.locked .ylock-pill{display:inline-flex}
+
+/* ② 실루엣 티저 */
+.pv-silhouette .ycrow.locked{opacity:calc(var(--lk-dim) + .12)}
+.pv-silhouette .ycrow.locked .yava{filter:grayscale(1) brightness(.28) blur(var(--lk-ablur))}
+.pv-silhouette .ycrow.locked .ylock-ava{display:grid}
+.pv-silhouette .ycrow.locked .ycrow-nm .nm-real{opacity:.28}
+.pv-silhouette .ycrow.locked .ylock-pill{display:inline-flex}
+
+/* ③ 프로스트 스크림 (중앙 스크림이 라벨 담당 → 등급줄 알약 숨김) */
+.pv-frost .ycrow.locked .yava{filter:grayscale(.6)}
+.pv-frost .ycrow.locked .ylock-scrim{display:flex}
+.pv-frost .ycrow.locked .ylock-pill{display:none}
+
+/* ④ 훈장 잠김(등급 배지는 풀컬러 유지) */
+.pv-grade .ycrow.locked{opacity:calc(var(--lk-dim) + .07)}
+.pv-grade .ycrow.locked .yava{filter:grayscale(var(--lk-gray)) brightness(.9)}
+.pv-grade .ycrow.locked .ygrade{opacity:1;filter:none}
+.pv-grade .ycrow.locked .ycrow-mid > :not(.ycrow-grade){opacity:.82}
+.pv-grade .ycrow.locked .ylock-corner{display:grid}
+.pv-grade .ycrow.locked .ylock-pill{display:inline-flex}
+
+/* ── 컨트롤 패널 ── */
+.panel{display:flex;flex-direction:column;gap:16px}
+.card{background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.08);border-radius:var(--r-l);padding:15px 15px 16px}
+.card h2{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);margin:0 0 12px}
+.preset-row{display:flex;flex-direction:column;gap:8px}
+.preset{display:flex;align-items:flex-start;gap:10px;padding:11px 12px;border-radius:var(--r-m);cursor:pointer;
+  background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.07);transition:border-color .2s var(--ease),background .2s var(--ease)}
+.preset:hover{border-color:rgba(255,255,255,.16)}
+.preset.on{border-color:rgba(var(--accent-rgb),.55);background:rgba(var(--accent-rgb),.05)}
+.preset input{margin:2px 0 0}
+.preset .p-t{font-size:13px;font-weight:700;color:var(--fg);display:flex;align-items:center;gap:6px}
+.preset .p-star{color:var(--accent);font-size:11px}
+.preset .p-d{font-size:11px;color:var(--mut);line-height:1.55;margin-top:3px}
+.slider{display:flex;flex-direction:column;gap:5px;margin-bottom:13px}
+.slider:last-child{margin-bottom:0}
+.slider .s-top{display:flex;justify-content:space-between;align-items:baseline;font-size:12px}
+.slider .s-l{color:var(--fg-2);font-weight:600}
+.slider .s-l .tag{font-size:9px;font-weight:700;padding:1px 5px;border-radius:999px;margin-left:6px;vertical-align:middle}
+.tag.keep{background:rgba(var(--accent-rgb),.14);color:var(--accent)}
+.tag.raw{background:rgba(var(--think-rgb),.14);color:var(--think)}
+.slider .s-v{color:var(--accent);font-weight:800;font-variant-numeric:tabular-nums}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:999px;border:1px solid var(--glass-line);
+  background:linear-gradient(90deg,rgba(var(--accent-rgb),.85) var(--p,50%),rgba(255,255,255,.06) var(--p,50%));outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--accent);border:none;box-shadow:0 0 10px rgba(var(--accent-rgb),.35)}
+input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--accent);border:none}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{padding:6px 11px;border-radius:999px;font-size:12px;font-weight:700;cursor:pointer;
+  background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.09);color:var(--fg-2);transition:all .18s var(--ease)}
+.chip.on{background:rgba(var(--accent-rgb),.12);border-color:rgba(var(--accent-rgb),.5);color:var(--accent)}
+.chip.on.season-on{background:rgba(var(--season-rgb),.14);border-color:rgba(var(--season-rgb),.5);color:var(--season)}
+.out{background:#0e0f0e;border:1px solid rgba(255,255,255,.08);border-radius:var(--r-m);padding:13px 14px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  font-size:11.5px;line-height:1.7;color:#cfe;white-space:pre;overflow-x:auto}
+.copybtn{margin-top:10px;width:100%;padding:12px;border-radius:var(--r-pill);border:1px solid rgba(var(--accent-rgb),.4);
+  background:rgba(var(--accent-rgb),.1);color:var(--accent);font:inherit;font-size:13px;font-weight:800;cursor:pointer;transition:transform .15s var(--ease)}
+.copybtn:active{transform:scale(var(--press-m))}
+.copybtn.done{background:var(--accent);color:#0c0d0c}
+.foot{font-size:11px;line-height:1.75;color:var(--mut);border-top:1px solid rgba(255,255,255,.07);padding-top:14px}
+.foot b{color:var(--fg-2);font-weight:700}
+.foot code{background:rgba(255,255,255,.05);padding:0 4px;border-radius:4px}
+.rec{display:inline-block;font-size:10px;font-weight:800;color:#0c0d0c;background:var(--accent);padding:1px 7px;border-radius:999px;margin-left:7px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>잠금 캐릭터 카드 · READ ONLY 표기 플레이그라운드
+    <span class="sub">해금 안 된 캐릭터(루시·윈터 = 로스터에 있으나 카드 콘텐츠 없음)를 "락걸린 느낌"으로 표기 · 정본 컴포넌트/토큰 계승 · 260708</span>
+  </h1>
+  <p class="lede">
+    현재 <code>roster.json</code>엔 <b>12명</b>인데 카드는 10장 — <b>루시·윈터</b>는 로스터에 떠도 콘텐츠가 없다.
+    이 둘을 <code>.ycrow.locked</code>(= 기존 <code>.talking</code>의 형제 상태)로 표기한다. 자물쇠는 <b>PIN 잠금의 정본 SVG를 그대로 계승</b>,
+    "READ ONLY" 알약은 <b>「대화 중」 알약(<code>.ycrow-on</code>)을 계승</b>(뉴트럴 글래스 = §🎨 강조 2색 제한 준수). 아래에서 프리셋·슬라이더로 고르면 값이 복사된다.
+  </p>
+
+  <div class="grid2">
+    <!-- ── 미리보기(폰) ── -->
+    <div class="phone-col">
+      <div class="phone">
+        <div class="phone-inner pv-subtle" id="pv">
+          <div class="ph-h">캐릭터 <span>· 무음동 10 + 스페셜 2</span></div>
+          <div class="ychar-grid" id="grid"></div>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--mut);text-align:center">↑ 위 2명 = 정상/대화중(비교 기준) · 아래 2명 = 잠금 대상</div>
+    </div>
+
+    <!-- ── 컨트롤 ── -->
+    <div class="panel">
+      <div class="card">
+        <h2>프리셋 (락걸린 느낌)</h2>
+        <div class="preset-row" id="presets"></div>
+      </div>
+
+      <div class="card">
+        <h2>미세조정</h2>
+        <div class="slider" data-k="dim">
+          <div class="s-top"><span class="s-l">카드 딤 <span class="tag keep">계승 .talking</span></span><span class="s-v" id="v-dim"></span></div>
+          <input type="range" min="30" max="100" step="1" id="r-dim">
+        </div>
+        <div class="slider" data-k="gray">
+          <div class="s-top"><span class="s-l">아바타 그레이스케일 <span class="tag raw">raw·아바타축</span></span><span class="s-v" id="v-gray"></span></div>
+          <input type="range" min="0" max="100" step="5" id="r-gray">
+        </div>
+        <div class="slider" data-k="ablur">
+          <div class="s-top"><span class="s-l">아바타 블러 <span class="tag raw">raw·아바타축</span></span><span class="s-v" id="v-ablur"></span></div>
+          <input type="range" min="0" max="6" step="1" id="r-ablur">
+        </div>
+        <div class="slider" data-k="scrim">
+          <div class="s-top"><span class="s-l">프로스트 스크림 딤 <span class="tag keep">③ 전용</span></span><span class="s-v" id="v-scrim"></span></div>
+          <input type="range" min="10" max="60" step="2" id="r-scrim">
+        </div>
+        <div class="slider" data-k="locksz">
+          <div class="s-top"><span class="s-l">자물쇠 크기 <span class="tag raw">아이콘축</span></span><span class="s-v" id="v-locksz"></span></div>
+          <input type="range" min="12" max="22" step="1" id="r-locksz">
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>라벨 문구</h2>
+        <div class="chips" id="labels"></div>
+        <h2 style="margin-top:15px">알약 톤</h2>
+        <div class="chips" id="tones"></div>
+      </div>
+
+      <div class="card">
+        <h2>선택값 (→ viewer 적용용)</h2>
+        <div class="out" id="out"></div>
+        <button class="copybtn" id="copy">CSS 복사</button>
+      </div>
+
+      <div class="foot">
+        <b>재현 한계(각주)</b> · ① 폰트 = LEMONMILK/Pretendard 없어 시스템 폴백 · ② 배경 영상(.ybgvid) 없어 정적 그라데+38% 스크림으로 근사 ·
+        ③ 실제 아바타 이미지 없어 로스터 <code>color</code>+이니셜로 대체 · ④ 성향 레이더(.yhex)는 대표 육각형(실값 아님) ·
+        ⑤ 루시=<code>grade:season</code>(#C02148=--season)·윈터=<code>grade:idol</code> = 로스터 실값.<br>
+        <b>구현 메모</b> · "READ ONLY" = 미리보기(<code>.ycd</code> 디테일)만 열고 <b>[대화 시작] CTA는 잠금 안내로</b>(op <code>draw</code>가 카드 없는 id를 막는 배선은 후속·기틀 검토). 이 플그는 <b>시각 표기</b>만 — 채택 후 viewer 실장.
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* 정본 자물쇠 SVG = viewer .ym-access 그대로(rect + shackle path) */
+var LOCK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>';
+var GEM='<svg viewBox="0 0 24 24"><path d="M12 2l3 5 5 .7-3.7 3.5 1 5.3L12 19l-5.3 2.5 1-5.3L4 7.7 9 7z"/></svg>';
+/* 육각 레이더(대표) */
+function hex(){return '<svg class="yhex" viewBox="0 0 100 100"><polygon class="hx-g" points="50,6 88,28 88,72 50,94 12,72 12,28"/><polygon class="hx-v" points="50,20 78,34 74,68 50,80 26,62 30,36"/></svg>';}
+
+/* 캐릭터 데이터(로스터 실값) */
+var CHARS=[
+  {id:'mudi',n:'무디',c:'#7ee0a3',ini:'무',d:'수백 년치 사연을 듣고도 한 번도 옮긴 적 없는 리스너',q:'네 얘기가 오늘 내 끼니야. 천천히 해도 돼.',state:'normal'},
+  {id:'sera',n:'세라',c:'#ff8fb3',ini:'세',d:'가시부터 세우지만, 문장이 길어지면 마음을 여는 중',q:'…뭐. 또 왔네. 할 말 있으면 빨리 해.',state:'talking'},
+  {id:'lucy',n:'루시',c:'#C02148',ini:'루',d:'낮엔 시크한 자동인형, 깊은 밤엔 도깨비 — 츤데레 끝판왕',q:'배고파 죽겠는데… 네가 주는 건 안 먹어.',state:'locked',grade:'season'},
+  {id:'winter',n:'윈터',c:'#A9C6E8',ini:'윈',d:'차가운 비주얼 속 다정한 부산 사람',q:'밥은 먹었어? 무리하지 말고.',state:'locked',grade:'idol'}
+];
+
+var ST={preset:'subtle',dim:55,gray:90,ablur:0,scrim:34,locksz:15,label:'READ ONLY',tone:'neutral'};
+
+var PRESETS=[
+  {k:'cur',t:'현행 (처리 없음)',d:'지금 상태 — 잠금 캐릭터가 정상 카드와 똑같이 뜬다(운영자가 지적한 문제). 비교 기준.'},
+  {k:'subtle',t:'① 은은한 잠김',star:1,d:'딤 + 아바타 그레이스케일 + 「READ ONLY」 뉴트럴 알약. 운영자 요청 문구 그대로 · 최소 침습 · .talking 계승.'},
+  {k:'silhouette',t:'② 실루엣 티저',d:'아바타를 실루엣으로 어둡히고 자물쇠를 얹어 정체를 살짝 감춤(가챠식 티저). 이름은 옅게. "곧 공개" 결.'},
+  {k:'frost',t:'③ 프로스트 스크림',d:'카드 전면을 글래스로 봉인 + 중앙 자물쇠 + 라벨. "유리 뒤에 봉인" = 가장 강한 잠김감(글래스모피즘 정합).'},
+  {k:'grade',t:'④ 훈장 잠김',d:'카드는 딤하되 등급 배지(시즌/IDOL)는 풀컬러 유지 + 코너 자물쇠. "특별 캐릭터 곧 공개"를 강조.'}
+];
+var LABELS=['READ ONLY','잠김','곧 공개','LOCKED','???'];
+var TONES=[{k:'neutral',t:'뉴트럴 글래스 ★'},{k:'season',t:'시즌색(루시류)'}];
+
+/* 렌더 카드 */
+function card(ch){
+  var isImg=false;
+  var av='<div class="yava" style="background:'+ch.c+';box-shadow:0 0 6px '+ch.c+'55">'+
+         '<span>'+ch.ini+'</span>'+
+         '<div class="ylock-ava">'+LOCK+'</div></div>';
+  var grade='';
+  if(ch.grade==='season') grade='<span class="ygrade season">'+GEM+'시즌</span>';
+  if(ch.grade==='idol') grade='<span class="ygrade idol">'+GEM+'IDOL</span>';
+  var pill='';
+  if(ch.state==='talking') pill='<span class="ycrow-on">대화 중</span>';
+  var lockpill = ch.state==='locked' ? '<span class="ylock-pill'+(ST.tone==='season'?' tone-season':'')+'">'+LOCK+'<span class="lp-t">'+ST.label+'</span></span>' : '';
+  var gradeRow = (grade||lockpill) ? '<div class="ycrow-grade">'+grade+lockpill+'</div>' : '';
+  var nm = ch.state==='locked' ? '<span class="nm-real">'+ch.n+'</span>' : ch.n+pill;
+  var cls='ycrow'+(ch.state==='talking'?' talking':'')+(ch.state==='locked'?' locked':'');
+  var scrim = ch.state==='locked' ? '<div class="ylock-scrim">'+LOCK+'<span>'+ST.label+'</span></div>' : '';
+  var corner = ch.state==='locked' ? '<div class="ylock-corner">'+LOCK+'</div>' : '';
+  return '<button class="'+cls+'">'+av+
+    '<div class="ycrow-mid">'+gradeRow+
+      '<div class="ycrow-nm">'+nm+'</div>'+
+      '<div class="ycrow-desc">'+ch.d+'</div>'+
+      '<div class="ycrow-quote">'+ch.q+'</div>'+
+    '</div>'+
+    '<div class="ycrow-sep"></div>'+hex()+scrim+corner+
+    '</button>';
+}
+function renderGrid(){document.getElementById('grid').innerHTML=CHARS.map(card).join('');}
+
+/* 프리셋 UI */
+function renderPresets(){
+  document.getElementById('presets').innerHTML=PRESETS.map(function(p){
+    return '<label class="preset'+(ST.preset===p.k?' on':'')+'" data-k="'+p.k+'">'+
+      '<input type="radio" name="preset" '+(ST.preset===p.k?'checked':'')+'>'+
+      '<div><div class="p-t">'+p.t+(p.star?'<span class="p-star">★추천</span>':'')+'</div><div class="p-d">'+p.d+'</div></div></label>';
+  }).join('');
+  document.querySelectorAll('.preset').forEach(function(el){
+    el.addEventListener('click',function(){ST.preset=el.dataset.k;applyAll();});
+  });
+}
+function renderChips(){
+  document.getElementById('labels').innerHTML=LABELS.map(function(l){return '<span class="chip'+(ST.label===l?' on':'')+'" data-l="'+l+'">'+l+'</span>';}).join('');
+  document.getElementById('tones').innerHTML=TONES.map(function(t){return '<span class="chip'+(ST.tone===t.k?' on'+(t.k==='season'?' season-on':''):'')+'" data-t="'+t.k+'">'+t.t+'</span>';}).join('');
+  document.querySelectorAll('#labels .chip').forEach(function(el){el.addEventListener('click',function(){ST.label=el.dataset.l;renderGrid();renderChips();out();});});
+  document.querySelectorAll('#tones .chip').forEach(function(el){el.addEventListener('click',function(){ST.tone=el.dataset.t;renderGrid();renderChips();out();});});
+}
+
+/* 슬라이더 */
+var SL=[['dim','v-dim','r-dim',function(v){return (v/100).toFixed(2)}],
+        ['gray','v-gray','r-gray',function(v){return v+'%'}],
+        ['ablur','v-ablur','r-ablur',function(v){return v+'px'}],
+        ['scrim','v-scrim','r-scrim',function(v){return (v/100).toFixed(2)}],
+        ['locksz','v-locksz','r-locksz',function(v){return v+'px'}]];
+function bindSliders(){
+  SL.forEach(function(s){
+    var r=document.getElementById(s[2]);
+    r.value=ST[s[0]];
+    r.addEventListener('input',function(){ST[s[0]]=+r.value;applyVars();});
+    r.addEventListener('input',function(){var mn=+r.min,mx=+r.max;r.style.setProperty('--p',((r.value-mn)/(mx-mn)*100)+'%');});
+  });
+}
+function applyVars(){
+  var pv=document.getElementById('pv');
+  pv.style.setProperty('--lk-dim',(ST.dim/100));
+  pv.style.setProperty('--lk-gray',ST.gray+'%');
+  pv.style.setProperty('--lk-ablur',ST.ablur+'px');
+  pv.style.setProperty('--lk-scrim',(ST.scrim/100));
+  pv.style.setProperty('--lk-locksz',ST.locksz+'px');
+  SL.forEach(function(s){document.getElementById(s[1]).textContent=s[3](ST[s[0]]);
+    var r=document.getElementById(s[2]);var mn=+r.min,mx=+r.max;r.style.setProperty('--p',((r.value-mn)/(mx-mn)*100)+'%');});
+  out();
+}
+function applyAll(){
+  var pv=document.getElementById('pv');
+  pv.className='phone-inner pv-'+ST.preset;
+  renderPresets();applyVars();
+}
+
+/* 선택값 출력 */
+function out(){
+  var toneCSS = ST.tone==='season'
+    ? 'background:rgba(var(--season-rgb),.1); border-color:rgba(var(--season-rgb),.32); color:var(--season);'
+    : 'background:var(--glass-2); border-color:var(--glass-line); color:var(--mut);';
+  var lines=[];
+  lines.push('/* 프리셋: '+ST.preset+' · 라벨: "'+ST.label+'" */');
+  lines.push('.ycrow.locked{');
+  if(ST.preset!=='cur' && ST.preset!=='frost') lines.push('  opacity:var(--lk-dim, '+(ST.dim/100).toFixed(2)+');   /* 계승 .talking(.55) */');
+  lines.push('  cursor:default;');
+  lines.push('}');
+  if(ST.preset!=='cur'){
+    var f=[];
+    if(ST.gray>0) f.push('grayscale('+ST.gray+'%)');
+    if(ST.preset==='silhouette') f.push('brightness(.28)');
+    if(ST.ablur>0) f.push('blur('+ST.ablur+'px)');
+    if(f.length) lines.push('.ycrow.locked .yava{ filter:'+f.join(' ')+'; }   /* raw·아바타축 예외 */');
+  }
+  lines.push('/* READ ONLY 알약 = .ycrow-on 계승 + 정본 자물쇠 SVG */');
+  lines.push('.ylock-pill{ /* '+ST.label+' */');
+  lines.push('  '+toneCSS);
+  lines.push('  padding:1px 8px 1px 6px; border-radius:var(--r-pill);');
+  lines.push('  font-size:var(--fs-xs); font-weight:var(--fw-b);');
+  lines.push('}');
+  lines.push('.ylock-pill svg{ width:'+(ST.locksz-2)+'px; height:'+(ST.locksz-2)+'px; }   /* 아이콘축 */');
+  document.getElementById('out').textContent=lines.join('\n');
+}
+
+document.getElementById('copy').addEventListener('click',function(){
+  var b=this;var t=document.getElementById('out').textContent;
+  navigator.clipboard.writeText(t).then(function(){b.textContent='복사됨 ✓';b.classList.add('done');setTimeout(function(){b.textContent='CSS 복사';b.classList.remove('done');},1400);});
+});
+
+/* init */
+renderGrid();renderChips();bindSliders();applyAll();
+</script>
+</body>
+</html>
