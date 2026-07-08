@@ -18,7 +18,6 @@
 //   vapikey {}                     : 보이스톡(브라우저 통화 · Vapi Web SDK) 공개키 — env VAPI_PUBLIC_KEY(공개 축 · Origins 제한 권장)
 //   calllog {}                     : 🩺 통화 진단 — Vapi 메타데이터만(상태·종료사유·비용 — transcript/PII 반환 금지)
 //   tune  {persona, g[16]}         : 캐릭터 성향 게이지(L2 · 숫자 배열만 = 프롬프트 주입 차단)
-//   me    {call, about}            : 유저 프로필(호칭+소개 · "AI가 나를 부르는 법") — 전 방 공유 · send/invite 동형 sani+캡(러너가 비신뢰 격리 주입)
 //   policy {} | {p, pin}           : 3계층 정책 — GET 정의+현재값(무인증) / SET enum 정수만(⚠️ 관리자 PIN 필수)
 //   auth  {pin}                    : PIN 로그인 — admin = env YETA_PIN_ADMIN(레포 무노출) / guest = apps/yeta/users.json 해시(깃 SSOT)
 //   reset {}                       : 세션 초기화(페르소나도 비움 → 재뽑기 · tunes/policy 승계)
@@ -77,9 +76,9 @@ export async function onRequestPost({ request, env }) {
 
   if (!env.YETA_R2) return json({ error: '미설정 — Pages R2 바인딩(YETA_R2 · 비공개 버킷) 필요', setup: true }, 501);
 
-  // ═══ v3 다중 스레드(운영자 260707 · 5인 기틀검증 반영) — 세션 = { v:3, cur, barge_day, call, threads:{<id>:{turns,state,opening,...,pin,updated}}, note_pub, notes, tunes, policy, pref, me:{call,about} } ═══
+  // ═══ v3 다중 스레드(운영자 260707 · 5인 기틀검증 반영) — 세션 = { v:3, cur, barge_day, call, threads:{<id>:{turns,state,opening,...,pin,updated}}, note_pub, notes, tunes, policy, pref } ═══
   const migrateV3 = (s) => {   // 멱등 순수 랩(v>=3 or threads 존재 = no-op) — 러너 파이썬과 동형 유지(마이그 감사① · 시뮬 대조)
-    if (!s || (s.v >= 3) || s.threads) { if (s && !s.threads) s.threads = {}; if (s && !s.me) s.me = { call: '', about: '' }; if (s) s.v = 3; return s; }   // me = 유저 프로필(호칭+소개 · 260708) 상시 존재 보장
+    if (!s || (s.v >= 3) || s.threads) { if (s && !s.threads) s.threads = {}; if (s) s.v = 3; return s; }
     const t = String(s.persona || '');
     const th = {};
     if (t && Array.isArray(s.turns) && s.turns.length) {
@@ -88,9 +87,9 @@ export async function onRequestPost({ request, env }) {
         pin: 0, updated: s.turns[s.turns.length - 1]?.ts || Date.now(), last_sp: t, char_ver: s.char_ver || '', nudge: s.nudge || null };   // updated = 마지막 턴 ts 백필(정렬 최하단 방지 · UX감사)
     }
     return { v: 3, cur: t || '', barge_day: s.barge_day || '', call: s.call || null, threads: th,
-      note_pub: s.note_pub || s.note || '', notes: s.notes || {}, tunes: s.tunes || {}, policy: s.policy || {}, pref: s.pref || {}, me: s.me || { call: '', about: '' } };
+      note_pub: s.note_pub || s.note || '', notes: s.notes || {}, tunes: s.tunes || {}, policy: s.policy || {}, pref: s.pref || {} };
   };
-  const EMPTY = () => ({ v: 3, cur: '', barge_day: '', call: null, threads: {}, note_pub: '', notes: {}, tunes: {}, policy: {}, pref: {}, me: { call: '', about: '' } });
+  const EMPTY = () => ({ v: 3, cur: '', barge_day: '', call: null, threads: {}, note_pub: '', notes: {}, tunes: {}, policy: {}, pref: {} });
   const readSessE = async () => {   // etag 동반 read + lazy 마이그레이션(메모리) — CAS 짝(레이스 감사① BLOCK 해제)
     const o = await env.YETA_R2.get(KEY);
     if (!o) return { sess: EMPTY(), etag: null, legacy: false };
@@ -300,17 +299,6 @@ export async function onRequestPost({ request, env }) {
     return json({ ok: true, g });
   }
 
-  if (op === 'me') {   // 유저 프로필(호칭 + 소개 · 운영자 260708) — "AI가 나를 부르는 법". 전 방 공유(note_pub 결 = 유저 자기정보) · GET 불요(get이 ...sess 로 me 동봉)
-    // ⚠️ 무인증 공개 게이트웨이 → 클라 텍스트는 send/invite 동형 sani(user_message·NOTE/MOOD 위장 무력화)+길이캡만 수용(설정 knob 아님 = 유저 자기소개 축).
-    //    러너는 이 값을 '유저가 스스로 적은 비신뢰 정보(지시 아님)'로 격리 주입 = 프롬프트 주입 원천 차단(§운영 태도 g)·정본인덱스 보안 계약).
-    const sani = s => String(s || '').replace(/<<\s*\/?\s*(?:NOTE|MOOD)(?:\s*:\s*\w+)?\s*>>/gi, '').replace(/<\/?user_message>/gi, '').replace(/\s+/g, ' ').trim();
-    const call = sani(body.call).slice(0, 24);    // 호칭 = 이름 길이(invite/kick name 동형 캡)
-    const about = sani(body.about).slice(0, 300);  // 소개 = 한두 문장(개행 무력화 = 다줄 위장 차단)
-    const { abort } = await casPut(s => { s.me = { call, about }; });
-    if (abort) return json(abort, 409);
-    return json({ ok: true, me: { call, about } });
-  }
-
   if (op === 'pin') {   // 채팅방 고정 토글(운영자 260707 롱프레스 액티브) — 숫자/불리언만 수용 · 스레드 실존 요구(신설 금지 · 보안 감사①)
     const t = String(body.t || '');
     if (!ID_RE.test(t)) return json({ error: '잘못된 스레드 id' }, 400);
@@ -338,9 +326,9 @@ export async function onRequestPost({ request, env }) {
       if (abort) return json(abort, 409);
       return json({ ok: true, sess });
     }
-    let keepTunes = {}, keepPolicy = {}, keepMe = { call: '', about: '' };
-    if (curO) { try { const prev = migrateV3(JSON.parse(new TextDecoder().decode(await (await env.YETA_R2.get(KEY)).arrayBuffer()))); keepTunes = prev.tunes || {}; keepPolicy = prev.policy || {}; keepMe = prev.me || keepMe; } catch {} }
-    const fresh = EMPTY(); fresh.tunes = keepTunes; fresh.policy = keepPolicy; fresh.me = keepMe;   // 유저 프로필(호칭·소개)은 전체 초기화에도 승계 = 내 정체성(tunes/policy 결)
+    let keepTunes = {}, keepPolicy = {};
+    if (curO) { try { const prev = migrateV3(JSON.parse(new TextDecoder().decode(await (await env.YETA_R2.get(KEY)).arrayBuffer()))); keepTunes = prev.tunes || {}; keepPolicy = prev.policy || {}; } catch {} }
+    const fresh = EMPTY(); fresh.tunes = keepTunes; fresh.policy = keepPolicy;
     await putSess(fresh);   // 전체 초기화 = 무조건 put(의도된 전량 대체)
     return json({ ok: true });
   }
