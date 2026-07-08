@@ -25,8 +25,6 @@ import json, sys, time, datetime, zoneinfo
 sys.path.insert(0, ".github/scripts")
 from yeta_v3 import migrate_v3
 S_ROOT = migrate_v3(json.load(open(sys.argv[1], encoding="utf-8")))
-_me = S_ROOT.get("me") if isinstance(S_ROOT.get("me"), dict) else {}   # 유저 프로필(호칭+소개 · 전 방 공유 · 260708)
-me_call = str(_me.get("call") or "").strip(); me_about = str(_me.get("about") or "").strip()
 _cur = S_ROOT.get("cur") or ""
 s = dict((S_ROOT.get("threads") or {}).get(_cur) or {})
 s["persona"] = _cur if s else ""
@@ -52,7 +50,6 @@ def line(t):
     who = "유저" if t.get("role") == "user" else (t.get("name") or "캐릭터")
     return f"{who}: {(t.get('text') or '').strip()[:200]}"
 print(json.dumps({"go": 1, "persona": persona, "hours": round(elapsed_min/60, 1), "today": today, "count": count,
-                  "me_call": me_call, "me_about": me_about,
                   "note_pub": s.get("note_pub") or s.get("note") or "", "note_me": ((s.get("notes") or {}).get(persona)) or "",
                   "hist": "\n".join(line(t) for t in recent)}, ensure_ascii=False))
 PY
@@ -61,13 +58,10 @@ PY
 gv() { printf '%s' "$GATE" | python3 -c "import json,sys;print(json.load(sys.stdin).get('$1',''))"; }
 PERSONA="$(gv persona)"; HOURS="$(gv hours)"; TODAY="$(gv today)"; COUNT="$(gv count)"
 NOTE_PUB="$(gv note_pub)"; NOTE_ME="$(gv note_me)"; HIST="$(gv hist)"
-ME_CALL="$(gv me_call)"; ME_ABOUT="$(gv me_about)"   # 유저 프로필(호칭+소개 · 260708)
 
 CBLOCK="$(character_block "$PERSONA")" || { echo "::warning::지침 주입 실패 — 생략"; exit 0; }
-ME_BLOCK="$(me_block)"   # 유저 프로필 블록(shared/inject_character.sh 정본) — 넛지 호격에 유저 이름 반영(비신뢰 격리 · 260708)
 
 prompt="$CBLOCK
-${ME_BLOCK}
 
 [공용 기억]
 ${NOTE_PUB:-（없음）}

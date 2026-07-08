@@ -1044,9 +1044,9 @@ function yFontApply() {
 }
 yFontApply();
 const esc = s => String(s ?? '').replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
-// ── 내 프로필 + 앱 설정(로컬 전용 · 운영자 260707 "미구현 설정 다 동작하게") ──────────────
-//    프로필(이름·상태·아바타·무드색) + 토글(진동·타이핑·모션·읽음·알림) = localStorage SSOT.
-//    게이트웨이 미전송(무인증 공개 주입면 0 = yeta_me_place/mood 관례 계승) · 기기 로컬 전용.
+// ── 내 프로필 + 앱 설정(운영자 260707 "미구현 설정 다 동작하게" · 호칭·소개 서버동기 260708) ──────────────
+//    프로필(호칭·소개·아바타·무드색) + 토글(진동·타이핑·모션·읽음·알림) = localStorage 편집 SSOT.
+//    호칭(name)·소개(bio) = op me 로 서버 동기(러너가 답장에 비신뢰 격리 주입 · stripMarkers+격리 방어) · 아바타·강조색·토글은 기기 로컬 전용(게이트웨이 미전송).
 const yMeGet = k => { try { return localStorage.getItem('yeta_me_' + k) || ''; } catch { return ''; } };
 const yMeSet = (k, v) => { try { if (v) localStorage.setItem('yeta_me_' + k, v); else localStorage.removeItem('yeta_me_' + k); return true; } catch { return false; } };   // 성공 여부 반환(quota 초과 시 false → 호출부 분기)
 const yMeName = () => yMeGet('name') || '무음동 방문자';
@@ -1880,13 +1880,16 @@ function yProfileRender() {   // 내 프로필 카드 렌더(재렌더 = navOpen
     + `<span class="ycd-desc">${bio ? esc(bio) : '밤이 길어질수록 자주 들르는 단골. 골목의 비밀을 어렴풋이 눈치채 가는 중.'}</span>`
     + `<div class="yprof-accent"><button type="button" class="yac-chip yac-lime${ac === 'lime' ? ' on' : ''}" data-ac="lime" aria-label="라임 강조색" aria-pressed="${ac === 'lime'}"></button><button type="button" class="yac-chip yac-cobalt${ac === 'cobalt' ? ' on' : ''}" data-ac="cobalt" aria-label="코발트 강조색" aria-pressed="${ac === 'cobalt'}"></button></div></div>`
     + `<div class="yprof-stats"><div class="yprof-stat"><b>${nThreads}</b><span>진행 대화</span></div><div class="yprof-stat"><b>LV 2</b><span>친밀도</span></div><div class="yprof-stat"><b>7</b><span>함께한 밤</span></div></div>`
-    + `<div class="yset-sec">AI가 나를 부르는 법</div>` + nav('이름 (호칭)', '캐릭터가 날 이렇게 불러', nm, ' data-me="name"') + nav('나를 소개하는 말', '캐릭터가 참고해 · 선택', bio || '비어 있음', ' data-me="bio"')
+    + `<div class="yset-sec">AI가 나를 부르는 법</div>` + nav('이름 (호칭)', '캐릭터가 날 이렇게 불러', yMeGet('name') || '비어 있음', ' data-me="name"') + nav('나를 소개하는 말', '캐릭터가 참고해 · 선택', bio || '비어 있음', ' data-me="bio"')
     + `<div class="yset-sec">계정</div>` + `<button type="button" class="yset-item ro" aria-disabled="true"><span class="si-lbl"><span class="si-t">PIN 변경</span><span class="si-d">잠금 비밀번호 — 서버(관리자)에서 변경</span></span><span class="si-v">서버 관리</span></button>` + nav('알림 · 앱 설정', '설정 화면으로', '', ' data-open="settings"')
     + `<div class="yset-note">호칭·소개는 캐릭터가 참고하도록 저장돼 — 대화에서 이 이름으로 널 불러. 사진·강조색은 이 기기에만.</div>`;
 }
 // 내 호칭·소개 = 서버 저장(op me · 운영자 260708 "AI가 나를 부르는 프로필") — 러너가 답장에 반영. 로컬(localStorage) = 편집 SSOT · 저장 시 서버 push(best-effort · 실패해도 로컬 유지).
-function yMePush() {   // name(호칭)·bio(소개) → 서버. 성공 시 YSESS.me 갱신(폴 stale 방지)
-  yApi('me', { call: yMeGet('name'), about: yMeGet('bio') }).then(r => { if (r && r.ok && YSESS) YSESS.me = r.me; }).catch(() => {});
+function yMePush(silent) {   // name(호칭)·bio(소개) → 서버. 성공=YSESS.me 갱신+dirty 해제 · 실패=dirty 플래그+토스트(다음 프로필 진입 자동 재푸시 · 침묵 동기실패 방지 · 평의회5 Q2)
+  yApi('me', { call: yMeGet('name'), about: yMeGet('bio') }).then(r => {
+    if (r && r.ok) { if (YSESS) YSESS.me = r.me; yMeSet('dirty', ''); }
+    else { yMeSet('dirty', '1'); if (!silent) miniToast('저장했어 — 동기화만 실패, 잠시 후 자동 재시도돼'); }
+  }).catch(() => { yMeSet('dirty', '1'); if (!silent) miniToast('저장했어 — 동기화만 실패, 잠시 후 자동 재시도돼'); });
 }
 function yMeHydrate() {   // 서버 me → 로컬 시드(로컬 비었을 때만 = 로컬 편집 존중·덮어쓰기 금지 · 새 기기/캐시비움 복구용)
   const m = (YSESS || {}).me; if (!m) return;
@@ -1895,6 +1898,7 @@ function yMeHydrate() {   // 서버 me → 로컬 시드(로컬 비었을 때만
 }
 function yShowProfile() {   // 내 프로필 시트 열기(운영자 260706) — 실동작(사진·호칭·소개·강조색 로컬 저장·즉시 반영 260707 · 호칭·소개는 서버 동기 260708)
   yMeHydrate();
+  if (yMeGet('dirty')) yMePush(true);   // 지난 동기화 실패분 조용히 재푸시(best-effort · 평의회5 Q2)
   yProfileRender();
   const d = $('#ycprofile'); d.classList.add('on'); d.scrollTop = 0;
   document.getElementById('ymain').classList.add('cd-open');
