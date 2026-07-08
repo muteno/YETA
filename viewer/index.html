@@ -870,7 +870,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   /* 대화 = 카톡 결 분할 리스트(운영자 260707 첨부 "획으로 나눠서 대화창") — 여러 스레드를 획(--glass-line-0)으로 나눈 단일 글래스 면 · 기존 토큰만 계승(값 SSOT) · 다중스레드 백엔드 미착수 = 현 활성 스레드 렌더, 구조는 스택 대비 */
   .ylist-group { background:var(--glass-0); border:1px solid var(--glass-line-0); border-radius:var(--r-m); overflow:hidden;
     backdrop-filter:blur(var(--blur-m)) saturate(1); -webkit-backdrop-filter:blur(var(--blur-m)) saturate(1); box-shadow:inset 0 1px 0 var(--glass-line-0); }
-  .ylist-group .ylr-wrap { margin-bottom:0; border-radius:0; border-top:1px solid var(--glass-line-0); }   /* 행 사이 획(카톡 구분선) = 초투명 헤어라인 계승 */
+  .ylist-group .ylr-wrap { margin-bottom:0; border-radius:0; border-top:1px solid var(--glass-line-0); background:rgba(18,18,18,.3); }   /* 행 사이 획(카톡 구분선) = 초투명 헤어라인 계승 · 각 대화 영역 = 스포티파이 블랙 30% 워시(운영자 "대화 시작된 애들 블랙 30% 더" — .ym-ovl/.ycrow.talking 오버레이 관용 계승) */
   .ylist-group .ylr-wrap:first-child { border-top:none; }
   .ylist-group .ylist-row { margin-bottom:0; background:none; border:none; border-radius:0; backdrop-filter:none; -webkit-backdrop-filter:none; box-shadow:none; }   /* 면은 그룹이 = 행은 무도형(카톡 결) */
   .ylist-row:active { transform:scale(var(--press-l,.95)); }
