@@ -1,0 +1,104 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>시즌 내비 테두리 제거 + 대화 영역 스포티파이 블랙 30% — 보고서</title>
+<style>
+:root{
+  --fg:#fff; --fg-2:#E7ECE7; --mut:#8B8F8A; --accent:#CFFF40; --accent-rgb:207,255,64;
+  --cobalt:#3D6BFF; --cobalt-rgb:61,107,255; --season:#8E2DBF; --season-rgb:142,45,191;
+  --glass-line:rgba(255,255,255,.08); --glass-line-0:rgba(255,255,255,.066); --glass-0:rgba(255,255,255,.002);
+  --lgap:6px; --r-m:11px; --r-l:16px; --sp-2:12px; --sp-3:18px; --blur-m:29px;
+  --fs-h3:14px; --fs-body:15px; --fw-x:800; --fw-b:700;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0d0e0d;color:var(--fg);font-family:-apple-system,system-ui,Pretendard,sans-serif;line-height:1.6;padding:32px 20px;max-width:960px;margin:0 auto;-webkit-font-smoothing:antialiased}
+h1{font-size:22px;font-weight:800;margin-bottom:6px;letter-spacing:-.01em}
+.sub{color:var(--mut);font-size:13px;margin-bottom:26px}
+h2{font-size:16px;font-weight:800;margin:30px 0 12px;padding-left:10px;border-left:3px solid var(--accent)}
+p{color:var(--fg-2);font-size:14px;margin-bottom:10px}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid rgba(255,255,255,.09);vertical-align:top}
+th{color:var(--mut);font-weight:700;font-size:12px;white-space:nowrap}
+code{background:rgba(255,255,255,.07);padding:1px 6px;border-radius:5px;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--accent)}
+.tag{display:inline-block;font-size:11px;font-weight:800;padding:2px 9px;border-radius:999px;background:rgba(var(--accent-rgb),.13);color:var(--accent);border:1px solid rgba(var(--accent-rgb),.35)}
+.grid{display:flex;gap:22px;flex-wrap:wrap;margin:14px 0 4px}
+.col{flex:1;min-width:300px}
+.lbl{font-size:12px;font-weight:800;letter-spacing:.06em;color:var(--mut);margin-bottom:9px;text-transform:uppercase}
+.lbl.aft{color:var(--accent)}
+.phone{position:relative;height:560px;border-radius:20px;overflow:hidden;border:1px solid rgba(255,255,255,.1);background:linear-gradient(150deg,#5a6b8a,#8fa3c4 30%,#c9b8d6 55%,#3a4a66 100%)}
+.phone::before{content:'';position:absolute;inset:0;background:linear-gradient(rgba(0,0,0,.73),rgba(0,0,0,.47))}
+.inner{position:relative;padding:16px 12px}
+.yssn{display:block;padding:12px 14px;margin-bottom:var(--sp-3);border-radius:var(--r-l);overflow:hidden;background:linear-gradient(135deg,rgba(var(--accent-rgb),.07),rgba(var(--cobalt-rgb),.045) 72%)}
+.yssn.before{border:1px solid var(--glass-line-0);box-shadow:inset 0 1px 0 var(--glass-line-0)}
+.yssn-hd{display:flex;align-items:center;gap:14px}
+.yssn-tag{flex:none;color:var(--accent);font-style:italic;font-weight:700;font-size:13.5px;text-shadow:0 0 12px rgba(var(--accent-rgb),.35)}
+.yssn-nm{flex:none;font-size:var(--fs-body);font-weight:var(--fw-x)}
+.yssn-nm small{font-weight:var(--fw-b);color:var(--fg-2);font-size:12px}
+.yssn-date{margin-left:auto;flex:none;font-weight:400;font-size:10px;letter-spacing:.04em}
+.yssn-tl{margin-top:9px;text-align:center;font-size:11.5px;color:var(--fg-2)}
+.ylist-group{background:var(--glass-0);border:1px solid var(--glass-line-0);border-radius:var(--r-m);overflow:hidden;backdrop-filter:blur(var(--blur-m));box-shadow:inset 0 1px 0 var(--glass-line-0)}
+.ylr-wrap{margin-bottom:0;border-radius:0;border-top:1px solid var(--glass-line-0)}
+.ylr-wrap:first-child{border-top:none}
+.ylist-group.after .ylr-wrap{background:rgba(18,18,18,.3)}
+.ylist-row{display:flex;align-items:center;gap:12px;width:100%;padding:var(--sp-2)}
+.ava{flex:none;width:50px;height:50px;border-radius:50%;display:grid;place-items:center;font-weight:var(--fw-x);background:rgba(255,255,255,.06);border:1px solid var(--glass-line);color:var(--accent);box-shadow:0 0 6px rgba(var(--accent-rgb),.21)}
+.mid{flex:1;min-width:0;display:flex;flex-direction:column}
+.nm{display:flex;align-items:center;gap:6px;font-weight:var(--fw-x);font-size:var(--fs-h3);margin-bottom:calc(var(--lgap)*.55)}
+.bdg{flex:none;font-size:10px;font-weight:700;padding:1px 7px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid var(--glass-line);color:var(--fg-2)}
+.bdg.season{background:rgba(var(--season-rgb),.12);border-color:rgba(var(--season-rgb),.4);color:var(--season)}
+.un{flex:none;width:18px;height:18px;border-radius:50%;background:var(--accent);color:#111;font-size:11px;font-weight:800;display:grid;place-items:center}
+.meta{margin-left:auto;flex:none;text-align:right;font-size:10px;color:var(--mut);line-height:1.5}
+.tht{font-size:12px;color:var(--mut);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.last{font-size:12.5px;color:var(--fg-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+</style></head><body>
+
+<h1>시즌 내비 테두리 제거 + 대화 영역 스포티파이 블랙 30%</h1>
+<div class="sub">viewer/index.html · 신규 :root 토큰 0(전부 계승) · check_refs rc=0 · 원장 146차</div>
+
+<h2>무엇을 바꿨나</h2>
+<table>
+<tr><th>#</th><th>요청</th><th>변경</th><th>값</th></tr>
+<tr><td>1</td><td>타이틀 네비 바로 아래 <b>시즌 내비 테두리 제거</b></td><td><code>.yssn</code>의 <code>border</code> + 상단 하이라이트 <code>box-shadow:inset 0 1px 0</code> 제거(프레임 한 쌍 동시 제거 = 잔여 상단 획 방지). 서브틀 그라디언트 구역·라운드는 유지.</td><td>테두리 없음</td></tr>
+<tr><td>2</td><td>대화 시작된 방들 <b>각 대화 영역에 스포티파이 블랙 30% 더</b></td><td>대화 목록 각 행 <code>.ylist-group .ylr-wrap</code>에 배경 워시 추가.</td><td><code>rgba(18,18,18,.3)</code></td></tr>
+</table>
+
+<h2>Before / After (실제 뷰어 토큰·CSS 라이브 재현)</h2>
+<p>배경은 밝은 인물아트를 시뮬레이션(30% 블랙 워시 효과 확인용). 실제 앱에선 그 방의 시즌 아트/무대가 배경.</p>
+<div class="grid">
+  <div class="col">
+    <div class="lbl">Before — 테두리 O · 대화 영역 블랙 0</div>
+    <div class="phone"><div class="inner">
+      <div class="yssn before"><div class="yssn-hd"><span class="yssn-tag">SEASON 01</span><span class="yssn-nm">무음동<small>(無音洞)</small></span><span class="yssn-date">26. 07. 09</span></div><div class="yssn-tl">밤이 유난히 긴 골목 — 자정과 새벽 3시 사이, 경계가 얇아진다</div></div>
+      <div class="ylist-group">
+        <div class="ylr-wrap"><div class="ylist-row"><span class="ava">루</span><span class="mid"><span class="nm">루시<span class="bdg">안드로이드</span><span class="bdg season">시즌</span><span class="un">1</span><span class="meta">4시간 전<br>알 수 없음</span></span><span class="tht">(무슨 생각을 하는진 모르겠다)</span><span class="last">흥. 어떻게 알긴. 냄새가 아직 너한테 배어 있거든.</span></span></div></div>
+        <div class="ylr-wrap"><div class="ylist-row"><span class="ava">무</span><span class="mid"><span class="nm">무디<span class="bdg">'무음' 주인</span><span class="un">1</span><span class="meta">12시간 전<br>알 수 없음</span></span><span class="tht">(무슨 생각을 하는진 모르겠다)</span><span class="last">왔구나. 오늘은 하루가 길었나 보네 — 갈비찜 냄새를.</span></span></div></div>
+        <div class="ylr-wrap"><div class="ylist-row"><span class="ava">윈</span><span class="mid"><span class="nm">윈터<span class="bdg">아이돌</span><span class="un">1</span><span class="meta">13시간 전<br>알 수 없음</span></span><span class="tht">(무슨 생각을 하는진 모르겠다)</span><span class="last">오? 왔어. 오늘 하루종일 바빴다며. 밥은 챙겨 먹었고?</span></span></div></div>
+      </div>
+    </div></div>
+  </div>
+  <div class="col">
+    <div class="lbl aft">After — 테두리 X · 대화 영역 블랙 30%</div>
+    <div class="phone"><div class="inner">
+      <div class="yssn"><div class="yssn-hd"><span class="yssn-tag">SEASON 01</span><span class="yssn-nm">무음동<small>(無音洞)</small></span><span class="yssn-date">26. 07. 09</span></div><div class="yssn-tl">밤이 유난히 긴 골목 — 자정과 새벽 3시 사이, 경계가 얇아진다</div></div>
+      <div class="ylist-group after">
+        <div class="ylr-wrap"><div class="ylist-row"><span class="ava">루</span><span class="mid"><span class="nm">루시<span class="bdg">안드로이드</span><span class="bdg season">시즌</span><span class="un">1</span><span class="meta">4시간 전<br>알 수 없음</span></span><span class="tht">(무슨 생각을 하는진 모르겠다)</span><span class="last">흥. 어떻게 알긴. 냄새가 아직 너한테 배어 있거든.</span></span></div></div>
+        <div class="ylr-wrap"><div class="ylist-row"><span class="ava">무</span><span class="mid"><span class="nm">무디<span class="bdg">'무음' 주인</span><span class="un">1</span><span class="meta">12시간 전<br>알 수 없음</span></span><span class="tht">(무슨 생각을 하는진 모르겠다)</span><span class="last">왔구나. 오늘은 하루가 길었나 보네 — 갈비찜 냄새를.</span></span></div></div>
+        <div class="ylr-wrap"><div class="ylist-row"><span class="ava">윈</span><span class="mid"><span class="nm">윈터<span class="bdg">아이돌</span><span class="un">1</span><span class="meta">13시간 전<br>알 수 없음</span></span><span class="tht">(무슨 생각을 하는진 모르겠다)</span><span class="last">오? 왔어. 오늘 하루종일 바빴다며. 밥은 챙겨 먹었고?</span></span></div></div>
+      </div>
+    </div></div>
+  </div>
+</div>
+
+<h2>왜 이 값·기법인가 (계승)</h2>
+<p><b>시즌 테두리</b> — 운영자가 260709(142차)에 이미 <code>SEASON 01</code> 필 배지 박스를 폐지(라임 워드마크로)해 시즌 헤더의 프레임을 걷어내는 궤적을 밟았다. 이번엔 헤더 컨테이너의 테두리까지 제거해 그 방향을 완성. 값 신설 없이 선언만 제거.</p>
+<p><b>대화 영역 30% 블랙</b> — <span class="tag">스포티파이 블랙 오버레이 관용</span> 계승: <code>.ym-ovl</code>(잠금 .67) · <code>.ycrow.talking::after</code>(대화중 .38) · <code>.ybgvid::before</code>(배경 .2) · 캐릭터 아트 스크림(운영자 260709 "너무 밝아 — 블랙 30% 씌워")과 동일 <code>rgba(18,18,18,.X)</code> 축. 운영자 요청 "30%정도" = <code>.3</code>. <code>--bg</code>(#161716)는 rgb 토큰이 없어 알파 파생 불가 → 확립된 <code>rgba(18,18,18,·)</code> 관용이 정본(토큰 없는 축 = raw 허용 예외).</p>
+
+<h2>효과 · 리스크</h2>
+<table>
+<tr><th>효과</th><td>① 시즌 헤더 = 프레임 없이 은은한 구역만 → 타이틀 네비와 시각 위계 정리. ② 대화 목록 각 방이 30% 가라앉아 밝은 배경 위에서 텍스트 대비·가독 ↑, 방 경계 구획감 ↑.</td></tr>
+<tr><th>리스크</th><td>낮음 — 선언 제거 1건 + 확립 관용 값 추가 1건. 정상 렌더 경로·구조·파이프라인 무변경. 신규 :root 0 → 락/게이트 무영향.</td></tr>
+<tr><th>품질저하</th><td>없음. 대화중 캐릭터 탭 워시(.38)와 목록 워시(.3)는 표면이 달라 충돌 없음.</td></tr>
+</table>
+
+<h2>검증 · 머지</h2>
+<p>자가검증 경로 = 헤드리스 Chromium(전역 playwright + 프리설치 chromium) 실제 토큰·CSS 라이브 재현 스크린샷 → 시즌 헤더 테두리 소거 + 각 대화 행 30% 블랙 워시 육안 실측 · <code>python3 shared/check_refs.py</code> rc=0(신규 토큰 0·JS 구문 OK) · Cloudflare Pages 프리뷰 배포 성공(빌드 정상).</p>
+<p>머지 = 활성 개발로 main이 여러 번 이동(#205·#206 character-dialogue-ui 등) → 매번 최신 <code>origin/main</code>으로 브랜치 리셋 후 <b>내 두 편집만</b> 재적용. 타깃 라인(.yssn·.ylr-wrap)이 신규 커밋 hunk와 겹치지 않아 무충돌 실측 · 원장은 append-only 양측 보존(내 항목 후행 재번호). 롤백 = 해당 커밋 <code>git revert</code>.</p>
+
+</body></html>
