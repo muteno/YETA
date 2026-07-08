@@ -29,10 +29,6 @@ _meter_shard() {
 # _meter_record <json> <rc> — JSON result 객체에서 토큰·비용을 뽑아 shard 에 1줄 append(jq).
 _meter_record() {
   local raw="$1" rc="$2" shard ts
-  # METER_LAST(옵트인) — 호출부 지정 파일에 이 호출의 usage 요약({in,out})을 덮어씀(yeta 답장 턴 tok 박제 = 뷰어 누적 미터 · 260709). 실패 = 무해(|| true).
-  if [ -n "${METER_LAST:-}" ]; then
-    printf '%s' "$raw" | jq -c '{in:((.usage.input_tokens // .usage.inputTokens) // 0), out:((.usage.output_tokens // .usage.outputTokens) // 0)}' > "$METER_LAST" 2>/dev/null || true
-  fi
   shard="$(_meter_shard)"
   mkdir -p metrics/usage 2>/dev/null || return 0
   ts="$(TZ='Asia/Seoul' date +%FT%T%:z 2>/dev/null)"   # KST(§📐 시각=KST)

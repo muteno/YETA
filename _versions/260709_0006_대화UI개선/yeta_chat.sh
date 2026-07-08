@@ -235,7 +235,7 @@ finish() {  # $1=ok|error · $2=텍스트 — env: INS·ANCHOR_TS·PERSONA·MODE
   for _i in 1 2 3; do if r2get; then _g=1; break; fi; [ "$_i" -lt 3 ] && sleep 2; done
   if [ "$_g" = 0 ]; then echo "::error::finish r2get 실패 — 반영 포기(답장 폐기·유저 데이터 보호)"; _did_reply=0; return 1; fi
   REPLY_TEXT="$2" PERSONA="${PERSONA:-}" MODEL="${MODEL:-}" EFF="${EFF:-}" GEN_S="${GEN_S:-0}" ANCHOR_TS="${ANCHOR_TS:-}" OPEN="${OPEN:-}" OPENING_TS="${OPENING_TS:-}" \
-    CO_ID="${CO_ID:-}" CO_NAME="${CO_NAME:-}" THREAD="${THREAD:-}" TOK_I="${TOK_I:-0}" TOK_O="${TOK_O:-0}" \
+    CO_ID="${CO_ID:-}" CO_NAME="${CO_NAME:-}" THREAD="${THREAD:-}" \
     python3 - "$SESS" "$1" "${INS:-0}" "${CVER:-}" <<'PY'
 import json, os, re, sys, time
 sys.path.insert(0, ".github/scripts")
@@ -314,12 +314,6 @@ if kind == "ok":
                 "model": os.environ.get("MODEL", ""),
                 "effort": os.environ.get("EFF", ""),
                 "gen_s": int(os.environ.get("GEN_S", "0") or 0)}   # 다이얼·소요 박제 = 뷰어 체감 캡션(아이데이션④)
-        try:
-            _ti, _to = int(os.environ.get("TOK_I", "0") or 0), int(os.environ.get("TOK_O", "0") or 0)
-        except ValueError:
-            _ti = _to = 0
-        if _ti or _to:
-            turn["tok"] = {"i": _ti, "o": _to}   # 이 답장 생성의 실측 토큰(claude_meter METER_LAST) — 뷰어 좌상단 누적 미터(운영자 260709)
         if mood:
             turn["mood"] = mood                        # 장면 공기(뷰어 배경 배리언트 크로스페이드 훅)
         turns.insert(ins, turn)
@@ -477,9 +471,9 @@ PY
 gen_out() {
   local prompt="$1" inline_delay=15 attempt rc=1 _eff_dropped=0
   EFF_ARGS=(); [ -n "$EFF" ] && EFF_ARGS=(--effort "$EFF")   # 빈값 = 플래그 생략(gate_judge SSOT 패턴)
-  T0=$SECONDS; OUT=""; TOK_I=0; TOK_O=0; rm -f /tmp/yeta_meter_last.json   # 이 생성의 실측 토큰(METER_LAST) — finish가 답장 턴 tok으로 박제(뷰어 좌상단 미터 · 운영자 260709)
+  T0=$SECONDS; OUT=""
   for attempt in $(seq 1 "$INLINE_TRIES"); do
-    OUT="$(printf '%s' "$prompt" | METER_SRC=yeta METER_REF="$PERSONA" METER_MODEL="$MODEL" METER_EFFORT="$EFF" METER_LAST=/tmp/yeta_meter_last.json claude_meter 240 \
+    OUT="$(printf '%s' "$prompt" | METER_SRC=yeta METER_REF="$PERSONA" METER_MODEL="$MODEL" METER_EFFORT="$EFF" claude_meter 240 \
           --model "$MODEL" $SAFE "${EFF_ARGS[@]}" \
           --disallowedTools "Write,Edit,MultiEdit,NotebookEdit,Bash,Task,WebFetch,WebSearch,Read,Glob,Grep" \
           --max-turns 1 \
@@ -498,10 +492,6 @@ gen_out() {
     break
   done
   GEN_S=$((SECONDS - T0))
-  if [ -s /tmp/yeta_meter_last.json ] && command -v jq >/dev/null 2>&1; then   # 실측 usage 회수(계측 실패 = 0 유지 = tok 미박제 · fail-soft)
-    TOK_I="$(jq -r '.in // 0' /tmp/yeta_meter_last.json 2>/dev/null || echo 0)"
-    TOK_O="$(jq -r '.out // 0' /tmp/yeta_meter_last.json 2>/dev/null || echo 0)"
-  fi
   [ $rc -eq 0 ] && [ -n "${OUT// }" ] && return 0
   return 1
 }

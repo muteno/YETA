@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>260709 대화 UI 개선 — 간격·배경·미터·설정 전면 배선</title>
+<style>
+  :root { --bg:#161716; --fg:#fff; --fg2:#c9cec9; --mut:#8B8F8A; --ac:#CFFF40; --cb:#3D6BFF; --tq:#3EE0C8; --line:rgba(255,255,255,.09); --card:rgba(255,255,255,.03); }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font-family:-apple-system,system-ui,'Segoe UI',Roboto,'Apple SD Gothic Neo','Noto Sans KR',sans-serif; line-height:1.65; }
+  main { max-width:900px; margin:0 auto; padding:40px 20px 80px; }
+  h1 { font-size:22px; margin:0 0 6px; } h1 small { color:var(--mut); font-size:13px; font-weight:400; display:block; margin-top:4px; }
+  h2 { font-size:16px; margin:38px 0 10px; color:var(--ac); }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th, td { text-align:left; padding:9px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { color:var(--mut); font-weight:600; white-space:nowrap; }
+  td b { color:var(--ac); font-weight:700; } td i.tq { color:var(--tq); font-style:normal; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px 18px; margin:10px 0; }
+  .pill { display:inline-block; padding:1px 9px; border-radius:999px; font-size:11px; font-weight:700; margin-right:6px; }
+  .ok { background:rgba(207,255,64,.13); color:var(--ac); border:1px solid rgba(207,255,64,.35); }
+  .wa { background:rgba(255,217,61,.1); color:#ffd93d; border:1px solid rgba(255,217,61,.35); }
+  code { background:rgba(255,255,255,.07); border-radius:5px; padding:1px 6px; font-size:12px; font-family:ui-monospace,Menlo,Consolas,monospace; color:var(--fg2); }
+  .mut { color:var(--mut); } .fg2 { color:var(--fg2); }
+  ul { margin:6px 0; padding-left:20px; } li { margin:3px 0; }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; } @media (max-width:640px) { .grid { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<main>
+<h1>대화 UI 개선 — 간격·시즌 표기·배경 축·미터·설정 전면 배선<small>260709 · 운영자 지시 14건 일괄 · 자가검증 = 헤드리스 실측 22항목 전원 PASS</small></h1>
+
+<h2>1. 전/후 비교 (무엇이 어떻게 바뀌었나)</h2>
+<table>
+<tr><th>항목</th><th>전(before)</th><th>후(after)</th></tr>
+<tr><td><b>타이틀 네비↔시즌 헤더 간격</b></td><td>헤더 top 64px — 로고와 ~9px, "겹칠 지경"</td><td>top <b>78px</b>(+14) · 헤더↔콘텐츠 숨 +16→<b>+22</b> · 상단 페이드 마스크 동기(70/86)</td></tr>
+<tr><td><b>SEASON 01 표기</b></td><td>라임 필 박스 배지(배경+그림자)</td><td><b>박스 폐지</b> — 라임 텍스트 워드마크(레몬밀크 이탤릭 유지 + 은은한 글로우)</td></tr>
+<tr><td><b>대화 중 캐릭터 행</b></td><td>행 전체 opacity .55 흐림</td><td><b>스포티파이 블랙 38% 워시</b>(::after 오버레이) — 차별점은 살리고 글자는 안 뭉개짐</td></tr>
+<tr><td><b>챗 진입 배경</b></td><td>시즌 로테이션이 클립(<code>base[0]</code> = 인트로 영상)부터 — 디코드 전 검은/멈춘 프레임</td><td>진입 첫 페인트 = <b>이미지 우선(클립 스킵)</b> · 클립은 대화 진행 중 로테이션에서만</td></tr>
+<tr><td><b>챗 재진입/방 전환 잔상</b></td><td>이전 방 배경(멈춘 영상 프레임)이 새 방 배경에 노출</td><td>방 전환·챗 닫힘 = <b>무대 2겹 전체 소거</b>(비디오 pause+제거·그림 비움) → 항상 그 방 배경만 · 로드 전 = 블랙 베이스(로딩)</td></tr>
+<tr><td><b>캐릭터 아트 배경 밝기</b></td><td>스크림 rgba(10,10,14) .35/.55 — "너무 밝아"</td><td>스포티파이 블랙 <b>.55/.68</b>(+30% 등가) · 시즌 클립 brightness .62→<b>.45</b>(30% 딤 등가)</td></tr>
+<tr><td><b>환경(장소 씬) 배경 밝기</b></td><td>스크림 .72/.86 — "너무 어두워"</td><td>스포티파이 블랙 <b>.55/.72</b>(투명도 상향)</td></tr>
+<tr><td><b>전화 잠금 표시</b></td><td>수화기와 동색(mut) 저투명 자물쇠 — "열쇠 꽂힌 느낌"</td><td>수화기 = mut 유지 · 정중앙 자물쇠 = <i class="tq">터콰이즈(--think)</i> 불투명 + 미세 그림자 · 방 전환 즉시 동기(<code>YCALL.sync</code> 신설)</td></tr>
+<tr><td><b>챗 헤더 설명(첨부2)</b></td><td><code>--mut</code> 회색</td><td><b>흰색 불투명(--fg)</b></td></tr>
+<tr><td><b>헤더 프사 탭</b></td><td>표시 전용(무동작)</td><td><b>프로필 팝오버</b> — 아바타·이름·배지·태그라인 + <i class="tq">지금 생각</i>(마지막 답장 결) + 위치·공기 + 소개·인용 · 단톡은 두 아바타 각자</td></tr>
+<tr><td><b>좌상단 기록 미터(첨부3)</b></td><td>없음</td><td><code>Opus 4.8 --effort low  |  12.3k tok</code> 상시 표시 — 모델·effort = 현재 다이얼 · 토큰 = 이 방 답장 턴 <code>tok{i,o}</code> 누적(러너 <code>claude_meter</code> 실측 박제 신설)</td></tr>
+<tr><td><b>설정 — 대화 모델</b></td><td>읽기전용 "opus 고정"</td><td><b>Opus 4.8 ↔ Sonnet 5 탭 전환</b>(다음 답장부터 턴별 박제 · 서버 화이트리스트 그대로)</td></tr>
+<tr><td><b>설정 — 생각 깊이(effort)</b></td><td>없음</td><td><b>빠름(low) → 깊게('') → 최대(max)</b> 순환</td></tr>
+<tr><td><b>설정 — 글자 크기</b></td><td>읽기전용 "기본 고정"</td><td><b>보통 → 크게(×1.12) → 아주 크게(×1.24)</b> — 타이포 토큰 6종 런타임 배율</td></tr>
+<tr><td><b>설정 — 걸려오는 전화</b></td><td>토글 저장만(무동작)</td><td>OFF = <b>벨 없이 부재중 처리</b>(대사는 챗 로그 유지)</td></tr>
+<tr><td><b>설정 — 무전기(PTT)</b></td><td>토글 저장만(마이크는 CSS로 폐지 상태)</td><td>ON = <b>입력행 마이크 복원</b>(옵트인 · 기본 OFF = 260705 폐지 결정 유지)</td></tr>
+<tr><td><b>설정 — 읽음 표시</b></td><td>토글 저장만('1'은 항상 표시)</td><td>OFF = <b>안읽음 '1' 미표시</b>(기본 ON = 현행 유지)</td></tr>
+<tr><td><b>폰트 기본값</b></td><td>기본값 코드는 있으나 구버전 저장분('sys')이 덮음</td><td><b>1회 마이그레이션</b>으로 영문 LEMONMILK + 한글 Paperlogy 기본 확정(이후 재설정은 존중)</td></tr>
+</table>
+
+<h2>2. 왜 이렇게 (근본 원인)</h2>
+<div class="grid">
+<div class="card"><b>배경 잔상·인트로 영상</b><div class="fg2">시즌 감정 미디어 <code>base[0]</code>이 mp4 클립이라 답장수 0(첫 진입·재진입)마다 클립이 첫 페인트가 됐고, 무대 2겹 레이어는 챗을 닫아도 소거되지 않아 멈춘 프레임이 다음 진입에 비쳤다. → 진입 = 이미지 우선 + 방 전환/닫힘 = 레이어 전체 소거로 근본 차단.</div></div>
+<div class="card"><b>토큰 미터</b><div class="fg2">러너는 이미 <code>claude_meter</code>로 usage를 계측하고 있었지만 세션 턴에는 안 실렸다. → 미터 래퍼에 옵트인 <code>METER_LAST</code> 출구 1개 추가 → 러너 <code>finish()</code>가 답장 턴에 <code>tok{i,o}</code> 박제 → 뷰어 합산. 파이프라인 호출·출력 계약 무변경(fail-soft — 계측 실패 = tok 미박제).</div></div>
+<div class="card"><b>설정 안 먹힘</b><div class="fg2">read/call/ptt 토글은 저장만 되고 소비처가 없었고, 모델·글자 크기는 read-only 행이었다. → 소비처 배선(yRender·call.js onSess·html 클래스) + 다이얼/배율 행 신설. 게이트웨이 <code>MODELS/EFFORTS</code> 화이트리스트는 원래부터 sonnet-5·max를 허용 = 서버 무수정.</div></div>
+<div class="card"><b>전화 락 오독</b><div class="fg2">수화기와 자물쇠가 같은 색(mut)에 자물쇠만 40% 투명 — 겹쳐 보여 "열쇠 꽂힌" 실루엣으로 읽혔다. → 자물쇠만 터콰이즈(<code>--think</code> 기존 토큰) 불투명으로 분리. 신규 색 0.</div></div>
+</div>
+
+<h2>3. 검증 (자가검증 경로 = 도구 실측)</h2>
+<div class="card">
+<span class="pill ok">헤드리스 E2E 22항목 전원 PASS</span><span class="pill ok">check_refs rc=0</span><span class="pill ok">bash -n·JS 구문 OK</span>
+<ul class="fg2">
+<li>Playwright(chromium) + <code>api/yeta</code> 목킹으로 실제 뷰어 구동: PIN 패턴 언락 → 간격 78px 실측 → SEASON 투명 배경/라임 텍스트 → talking ::after 스포티파이 블랙 워시 → 루시(시즌) 진입 배경 = <code>android_01.jpg</code>(클립 스킵·비디오 0) + 스크림 .55/.68 → 헤더 설명 rgb(255,255,255) → 미터 표기/누적(12.3k) → 프사 팝오버 열림/바깥탭 닫힘 → 챗 닫힘 레이어 소거 → 방 전환 시 루시 미디어 잔존 0 → 설정 모델/effort/글자크기/PTT 실동작 → <b>send 바디에 sonnet-5·effort '' 실제 박제 확인</b>.</li>
+<li>전화 락 별도 실측: 무디(미배선) = mut 수화기 + 터콰이즈 락 표시 / 하은(배선) = 락 없음 · 방 전환 즉시 동기.</li>
+<li>토큰 박제는 러너 경로라 라이브 첫 답장부터 누적 시작(과거 턴 = 미계측 = 0에서 출발).</li>
+</ul>
+</div>
+
+<h2>3.5 10인 평의회(READ-ONLY 병렬 적대 감사)</h2>
+<div class="card fg2"><span class="pill ok">전원 APPROVE · 치명 0</span> 앵글 = 무대 로직·설정 배선·러너 계측·디자인 계약·보안·UX 회귀·성능·명세 적합(14건 전수)·문서 정합·엣지케이스. 지적 16건 전부 반영 — 핵심: 미터↔첫 메시지 겹침(챗 로그 상단 80px 확보) · 폰트 마이그레이션은 구 기본(sys)만 소거(명시 선택 보존) · 글자 크기 기준값을 :root 실측 파생으로 전환(값 SSOT 이중화 해소) · 크로스페이드로 밀려난 클립 pause+디코더 해제 · 시즌 버킷 첫 이미지 프리워밍 · 클립 전용 풀 진입 시 시그니처 폴백 · 단톡 팝오버 인물 귀속 엄격화 · 팝오버 상호배타.</div>
+<h2>4. 리스크·트레이드오프</h2>
+<div class="card fg2">
+<ul>
+<li><span class="pill wa">주의</span><b>과거 대화 토큰은 소급 불가</b> — 미터는 이번 배포 후 답장부터 누적(러너가 그때부터 박제).</li>
+<li><b>글자 크기 = 토큰 런타임 배율</b> — 기준값을 첫 적용 전 :root 실측(getComputedStyle)에서 파생(평의회 반영) = 하드코딩 이중화 없음 · :root 개정 자동 추종.</li>
+<li>폰트 1회 마이그레이션은 260708 이전 저장분('sys')만 소거 — 이후 사용자가 다시 끄면 그대로 존중.</li>
+<li>시즌 클립은 폐기 아님 — 대화 진행 중 로테이션에서 재생(진입 프레임만 이미지 우선).</li>
+<li>'일일 통화 상한'·'테마'는 서버 env·브랜드 기틀이라 read-only 유지(사유 표기). '답장 알림'은 권한 요청까지(웹푸시 구독 저장 축은 별도 백엔드 필요 = 후속).</li>
+</ul>
+</div>
+
+<h2>5. 변경 파일</h2>
+<div class="card fg2"><code>viewer/index.html</code>(CSS·마크업·JS — 간격·시즌 표기·talking 워시·무대 소거/클립 스킵/스크림·미터·프로필 팝오버·설정 다이얼/글자크기/토글 배선·폰트 마이그레이션) · <code>viewer/call.js</code>(터콰이즈 락·call 토글 게이트·YCALL.sync) · <code>shared/claude_meter.sh</code>(METER_LAST 옵트인 출구) · <code>.github/scripts/yeta_chat.sh</code>(답장 턴 tok 박제) · <code>docs/CII_컴포넌트계승인덱스.md</code>(신규 3행)</div>
+
+<p class="mut" style="margin-top:34px">정본: 값 = viewer/index.html :root · 규칙 = CLAUDE.md §🎨 · 위치 = docs/절대명령2_정본인덱스.md · 신규 토큰 0(터콰이즈 = 기존 --think 계승)</p>
+</main>
+</body>
+</html>
