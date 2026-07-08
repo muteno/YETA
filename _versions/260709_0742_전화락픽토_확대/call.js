@@ -415,7 +415,7 @@ function initCallBtn() {
   const b = document.createElement('button');
   b.type = 'button'; b.id = 'yetaCallBtn';   // 픽토그램-온리(도형 제거 · 운영자 260705) — 스타일 = css의 #yetaCallBtn
   b.setAttribute('aria-label', '통화'); b.title = '통화';
-  b.innerHTML = `<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${PHONE}"/></svg><span class="ycall-lock" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2" fill="currentColor"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>`;   // 락 오버레이 = 실전화 미배선 표시(운영자 260708 항목8) · 크기 11→22(2배)·몸통 채움 = 불투명(운영자 260709 "작아짐·불투명하게" — 선만 있던 몸통에 수화기가 비치던 것 차단)
+  b.innerHTML = `<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${PHONE}"/></svg><span class="ycall-lock" aria-hidden="true"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>`;   // 락 오버레이 = 실전화 미배선 표시(운영자 260708 항목8)
   hr.insertBefore(b, hr.firstChild);
   b.addEventListener('click', async () => {
     const pid = (typeof YSESS !== 'undefined' && YSESS && (YSESS.cur || YSESS.persona)) || '';
