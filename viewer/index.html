@@ -189,6 +189,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   .yb.me i.yn { color:rgba(0,0,0,.6); }
   .yb.sys { align-self:center; background:var(--glass); border:1px solid var(--glass-line); border-radius:var(--r-pill); color:var(--fg-2); font-size:var(--fs-sm); padding:3px 12px;
     backdrop-filter:blur(var(--blur-m)); -webkit-backdrop-filter:blur(var(--blur-m)); }   /* 글래스 알약 — 배경 위 가독 */
+  .ysit { align-self:stretch; text-align:center; color:var(--mut); font-size:var(--fs-sm); font-style:italic; line-height:var(--lh-base); padding:2px 16px 5px; }   /* 대화 시작 장면 지문(enter_line · 운영자 260708) — 인물 대사 전 "상황 먼저"(제타 결) · 버블 아닌 그레이 나레이션(--mut) · 내 첫 발화 전만 노출 */
   .yb.fail { align-self:flex-start; background:rgba(var(--danger-rgb),.08); border:1px solid rgba(var(--danger-rgb),.4); color:var(--danger); font-size:var(--fs-sm); }
   .yfail-retry { display:block; margin-top:7px; padding:5px 12px; border:1px solid rgba(var(--danger-rgb),.5); border-radius:var(--r-pill); background:none; color:var(--danger); font:inherit; font-size:var(--fs-xs); font-weight:var(--fw-b); cursor:pointer; }   /* 원탭 재시도(재타이핑 0) */
   .yfail-retry:active { transform:scale(var(--press-m,.9)); }
@@ -2001,14 +2002,17 @@ function yShowList() { yRenderList(); yView('list'); }
 async function yEnterChat(c) {   // 리스트에서 캐릭터 선택 → 대화방 진입(draw)
   if (!c) return;
   if (c.bg) { const im = new Image(); im.src = c.bg; }   // 진입 즉시 이 캐릭터 시그니처 배경 프리로드(로딩=진입 동기 · 운영자 260707)
-  const r = await yApi('draw', { persona: c.id, greeting: yGreet(c) }).catch(() => null);
+  _yLastN = -1; _yTypOn = false; _yFailOn = false; _yKickOn = false; _yPaceN = -1; _yTypHold = 0;
+  clearTimeout(_yTypT); _yTypT = null; clearTimeout(_yPaceT); _yPaceT = 0; _meUnread = false;   // QA13: 스레드 전환/닫기 = 이전 방 타이머 해제(유령 '입력 중'/'1' 다른 방 누출 차단)
+  // F(운영자 260708): draw 왕복 '전에' 이 캐릭터 대화창을 즉시 세운다 — "yeta 목업 → 인물" 교체 깜빡임 제거(헤더·배경·상황·타이핑 전부 인물로 선반영). 왕복 중 = 상황 지문 + "입력 중"(동적 오프닝 = 실제로 러너가 생성 중).
+  YSESS = null; yView('chat'); yApply(c);
+  const _log = $('#yetaLog'); _log.innerHTML = (c.enter_line ? `<div class="ysit">${esc(c.enter_line)}</div>` : '') + yTypingHtml(true, c); $('#yetaIn').hidden = false; _log.scrollTop = 0;
+  const r = await yApi('draw', { persona: c.id, name: c.name, enter: c.enter_line || '', greeting: yGreet(c) }).catch(() => null);
   // R2 미설정/진입 실패여도 대화방으로 들어가 소개는 보여준다(intro=roster 데이터라 서버 불필요) · 실패는 스쳐가는 토스트 대신 모달 안 배너로(토스트가 showModal top-layer 뒤로 숨어 "무반응"으로 보이던 문제 — 분신술 260703)
   const fail = (r && r.setup) ? '저장소(R2) 미설정 — 소개만 볼 수 있어. 대화는 셋업 후 켜져.'
              : (!r || !r.ok) ? ((r && r.error) || '진입 실패 — 잠시 후 다시 눌러줘') : '';
-  _yLastN = -1; _yTypOn = false; _yFailOn = false; _yKickOn = false; _yPaceN = -1; _yTypHold = 0;
-  clearTimeout(_yTypT); _yTypT = null; clearTimeout(_yPaceT); _yPaceT = 0; _meUnread = false;   // QA13: 스레드 전환/닫기 = 이전 방 타이머 해제(유령 '입력 중'/'1' 다른 방 누출 차단)
-  if (fail) { YSESS = null; yView('chat'); yApply(c); yShowIntroOnly(c, fail); return; }
-  YSESS = r.sess; yView('chat'); yApply(c); yRender();
+  if (fail) { YSESS = null; yShowIntroOnly(c, fail); return; }
+  YSESS = r.sess; yRender();
 }
 function yShowIntroOnly(c, note) {   // R2 미설정/진입 실패 시 — 대화방에 소개 배너 + 안내만(입력 숨김) · "설명조차 안 뜬다" 해소(분신술 260703)
   const log = $('#yetaLog');
@@ -2445,6 +2449,7 @@ function yRender() {
   // 소개 카드(yintro) = 대화창에서 스킵(운영자 260705 #11 · 인물 프사·이름·소개는 헤더에만)
   const openingPending = !!(s.state === 'awaiting' && s.opening);   // 동적 오프닝 생성 중(운영자 260707) — 정적 인사 억제·타이핑만(딱딱한 전환 차단 · 기틀검증 UX1)
   const openingStuck = openingPending && (Date.now() - (s.awaiting_since || 0)) > 300000;   // 5분 초과 = 정적 폴백(재시도 배너 대신 yGreet)
+  if (YCUR && YCUR.enter_line && !turns.some(t => t.role === 'user')) h += `<div class="ysit">${esc(YCUR.enter_line)}</div>`;   // 대화 시작 장면 지문(운영자 260708) — 내 발화 전(오프닝 단계) = 상황(enter_line)을 인물 대사 위에 먼저("먼저 상황이 보이고, 그다음에 말") · 첫 내 메시지 후 퇴장
   if (!turns.length && YCUR && (!openingPending || openingStuck)) h += yAiMsg({ text: yGreet(YCUR), persona: YCUR.id });   // 첫인사 폴백 — 오프닝 인플라이트면 억제(타이핑만) · 미설정/막힘 시 정적 표시
   h += turns.map((t, i) => {
     const fresh = !first && i >= prevN;   // 신규 턴만 촤르륵
