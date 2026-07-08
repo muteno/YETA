@@ -48,7 +48,7 @@ me_block() {
   python3 - "${ME_CALL:-}" "${ME_ABOUT:-}" <<'PY'
 import re, sys
 def clean(x):
-    x = x or ''
+    x = (x or '')[:8192]   # 선캡 = 고정점 루프 DoS 차단(게이트웨이 stripMarkers 동형 · 입력은 세션 ≤300캡이나 방어 심층)
     while True:
         n = re.sub(r'<<\s*/?\s*(?:NOTE|MOOD)(?:\s*:[^>]*)?\s*>>', '', x, flags=re.I)
         n = re.sub(r'</?user_message>', '', n, flags=re.I)
