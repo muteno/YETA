@@ -6,7 +6,9 @@
   Cache-Control: no-cache
 /tokens.css
   Cache-Control: no-cache
-# 연락처 vCard(사진 임베드) — 정확 MIME + inline(운영자 260707 "다운로드가 아니라 자동 실행"):
-# attachment 폐지 = iOS Safari가 즉시 연락처 추가 시트를 띄우고, Android도 열기(연락처 앱 연동)로 처리.
+# 연락처 vCard(사진 임베드) — 표준 MIME text/vcard + inline(운영자 260707 "다운로드가 아니라 자동 실행"):
+# iOS Safari = inline text/vcard 가 "연락처 추가" 시트를 즉시 띄우는 트리거(레거시 text/x-vcard 는 nosniff 와 겹쳐 미리보기 불가 판정 → 다운로드로 새기 쉬워 표준으로 교체 · 운영자 260709).
+# ⚠️ 웹 한계(코드로 우회 불가 = OS 정책): 어떤 웹도 주소록에 자동 "설치" 못 함. Android Chrome·iOS 설치형 PWA 는 항상 다운로드→알림/파일 탭→연락처 추가. inline·MIME 는 iOS Safari 자동시트 성공률만 끌어올림.
 /assets/contacts/*
-  Content-Type: text/x-vcard; charset=utf-8
+  Content-Type: text/vcard; charset=utf-8
+  Content-Disposition: inline
