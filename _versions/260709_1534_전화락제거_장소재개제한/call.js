@@ -88,16 +88,16 @@ const css = `
 .yprem { display:inline-flex; align-items:center; gap:6px; margin-left:6px; padding:1px 8px; border-radius:var(--r-pill);
   background:var(--accent); border:1px solid var(--accent); color:var(--bg);
   font-size:var(--fs-xs); font-weight:var(--fw-b); vertical-align:middle; white-space:nowrap; box-shadow:0 0 7px rgba(var(--accent-rgb),.45); }   /* 보이스 = 라임네온 솔리드 칩(운영자 260708 "라임네온" · 아웃라인 라임 링과 겹침 해소 = 솔리드 칩↔링 대비 · gap 6 = 배지 통일) */
-#yetaCallBtn { width:var(--btn); height:var(--btn); flex:none; display:grid; place-items:center; background:none; border:none; color:var(--fg-2); cursor:pointer; touch-action:manipulation; transition:transform .3s var(--ease), color .2s; }   /* 전화·연락처저장 = 픽토그램-온리(감싸는 도형 제거 · 운영자 260705) · 무채 — 마이크/+ 결 · 히트영역 --btn 유지 */
-#yetaCallBtn svg { width:19px; height:19px; }
-#yetaCallBtn:active { transform:scale(var(--press-m,.9)); }
-#yetaCallBtn:focus-visible { outline:none; box-shadow:0 0 0 2px rgba(var(--accent-rgb),.5); border-radius:50%; }   /* 포커스 링 = .tool-x 계승(라임) — UA 흰 사각 아웃라인 차단 */
+#yetaCallBtn, #yetaVcfBtn { width:var(--btn); height:var(--btn); flex:none; display:grid; place-items:center; background:none; border:none; color:var(--fg-2); cursor:pointer; touch-action:manipulation; transition:transform .3s var(--ease), color .2s; }   /* 전화·연락처저장 = 픽토그램-온리(감싸는 도형 제거 · 운영자 260705) · 무채 — 마이크/+ 결 · 히트영역 --btn 유지 */
+#yetaCallBtn svg, #yetaVcfBtn svg { width:19px; height:19px; }
+#yetaCallBtn:active, #yetaVcfBtn:active { transform:scale(var(--press-m,.9)); }
+#yetaCallBtn:focus-visible, #yetaVcfBtn:focus-visible { outline:none; box-shadow:0 0 0 2px rgba(var(--accent-rgb),.5); border-radius:50%; }   /* 포커스 링 = .tool-x 계승(라임) — UA 흰 사각 아웃라인 차단 */
 #yetaCallBtn { position:relative; }
-#yetaCallBtn.nophone { color:var(--mut); }   /* 실전화 미배선 캐릭터 = 전화 픽토 mut만(자물쇠 오버레이 폐지 = 운영자 260709 "픽토 유지·자물쇠만 제거") · 탭 = 인앱 걸려오는 전화 폴백 유지 */
-#yetaFarBtn { width:var(--btn); height:var(--btn); flex:none; display:grid; place-items:center; background:none; border:none; color:var(--fg-2); cursor:pointer; touch-action:manipulation; transition:transform .3s var(--ease), color .2s; }   /* 원거리 소통 상태 픽토(운영자 260709 — 전화 픽토와 쌍) · 스타일 = #yetaCallBtn 동일 계승 */
-#yetaFarBtn svg { width:19px; height:19px; }
-#yetaFarBtn:active { transform:scale(var(--press-m,.9)); }
-#yetaFarBtn.nofar { color:var(--mut); }   /* 원거리 불가 = 비활성 mut(자물쇠 없음 — 전화 비활성과 동일 문법) */
+#yetaCallBtn.nophone { color:var(--mut); }   /* 실전화 미배선 캐릭터 = 전화 픽토 mut(운영자 260708 항목8) · 탭 = 인앱 걸려오는 전화 폴백 유지 */
+#yetaCallBtn .ycall-lock { display:none; position:absolute; inset:0; place-items:center; pointer-events:none; color:var(--think); }   /* 락 = 터콰이즈(--think · 운영자 260709 "MUT 수화기 가운데 터콰이즈 락 픽토" — 옛 저투명 mut 동색이 '열쇠 꽂힌' 오독) */
+#yetaCallBtn .ycall-lock svg { opacity:1; filter:drop-shadow(0 1px 2px rgba(0,0,0,.7)); }   /* 또렷 + 미세 그림자 = 수화기 위 분리(토큰 없는 축) */
+#yetaCallBtn.nophone .ycall-lock { display:grid; }
+#yetaVcfBtn[hidden] { display:none; }   /* display:grid가 hidden 속성을 이기는 것 차단(전화 배선 캐릭터만 노출) */
 #vcfdlg { width:min(340px,92vw); padding:0; border:1px solid var(--glass-line); border-radius:var(--r-modal);
   background:var(--bg); color:var(--fg); box-shadow:inset 0 1px 0 var(--glass-line), var(--shadow-card); }   /* 명함 시트 = #calldlg/#yetadlg 모달 결 계승(글래스 엣지+sheen) */
 #vcfdlg::backdrop { background:rgba(0,0,0,.6); }                /* #yetadlg::backdrop 동값 계승 */
@@ -415,16 +415,8 @@ function initCallBtn() {
   const b = document.createElement('button');
   b.type = 'button'; b.id = 'yetaCallBtn';   // 픽토그램-온리(도형 제거 · 운영자 260705) — 스타일 = css의 #yetaCallBtn
   b.setAttribute('aria-label', '통화'); b.title = '통화';
-  b.innerHTML = `<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${PHONE}"/></svg>`;   // 자물쇠 오버레이 폐지(운영자 260709 "픽토 유지·자물쇠만") — 미배선 = .nophone mut 색만
+  b.innerHTML = `<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${PHONE}"/></svg><span class="ycall-lock" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2" fill="currentColor"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>`;   // 락 오버레이 = 실전화 미배선 표시(운영자 260708 항목8) · 크기 11→22(2배)·몸통 채움 = 불투명(운영자 260709 "작아짐·불투명하게" — 선만 있던 몸통에 수화기가 비치던 것 차단)
   hr.insertBefore(b, hr.firstChild);
-  const fb = document.createElement('button');   // 원거리 소통 상태 픽토(운영자 260709 — 옛 연락처 자리 · 수화기 왼쪽) · 전파 방사 아이콘
-  fb.type = 'button'; fb.id = 'yetaFarBtn'; fb.setAttribute('aria-label', '원거리 소통'); fb.title = '원거리 소통 — 멀리 있어도 대화';
-  fb.innerHTML = '<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.9 19.1a10 10 0 0 1 0-14.2M8.5 15.5a5 5 0 0 1 0-7M19.1 4.9a10 10 0 0 1 0 14.2M15.5 8.5a5 5 0 0 1 0 7"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/></svg>';
-  hr.insertBefore(fb, b);
-  fb.addEventListener('click', () => {   // 탭 = 상태 안내(표시 픽토 — 액션 없음)
-    const ok = !fb.classList.contains('nofar');
-    toast(ok ? '멀리 있어도 문자가 닿는 사이야' : '아직 멀리서는 못 불러 — 더 친해지면 열려');
-  });
   b.addEventListener('click', async () => {
     const pid = (typeof YSESS !== 'undefined' && YSESS && (YSESS.cur || YSESS.persona)) || '';
     const p = (typeof yPersona === 'function' && yPersona(pid)) || {};
@@ -523,17 +515,36 @@ document.addEventListener('click', e => {
   setTimeout(() => vcfSheet(pid), 700);   // 챗 진입 애니 자리 잡은 뒤(시트 = top-layer라 순서만 보장하면 됨)
 }, true);
 // 캐릭터 디테일(.ycd) 연락처 교환 = index.html `.ycd-sub`(직접 .vcf 내비 = iOS 연락처 시트/Android 열기 자동) 단일화 — call.js 중복 주입(vcfSheet 경유 = a[download] 저장만) 폐지(운영자 260708)
-// 헤더 연락처 버튼(#yetaVcfBtn) 폐지 = 운영자 260709 "연락처 등록 = 프로필로" — 캐릭터 디테일 .ycd-sub(연락처 교환하기)가 단일 정본 · 첫 진입 자동 명함 시트(vcfSheet)는 존치
-function callBtnSync() {   // 전화·원거리 픽토 페르소나별 상태(운영자 260708 항목8 · 260709 쌍 픽토) — 불가 = mut(자물쇠 폐지)
+function vcfBtnSync() {
+  const b = document.querySelector('#yetaVcfBtn'); if (!b) return;
+  const pid = (typeof YSESS !== 'undefined' && YSESS && (YSESS.cur || YSESS.persona)) || '';
+  b.hidden = !VCF[pid]; b.dataset.pid = VCF[pid] ? pid : '';
+}
+function callBtnSync() {   // 전화버튼 페르소나별 상태(운영자 260708 항목8) — 실전화 미배선(!p.phone) = mut + 락 오버레이. 탭 = 인앱 걸려오는 전화 폴백 유지.
+  const b = document.querySelector('#yetaCallBtn'); if (!b) return;
   const pid = (typeof YSESS !== 'undefined' && YSESS && (YSESS.cur || YSESS.persona)) || '';
   const p = (typeof yPersona === 'function' && yPersona(pid)) || {};
-  const b = document.querySelector('#yetaCallBtn'); if (b) b.classList.toggle('nophone', !p.phone);
-  const fb = document.querySelector('#yetaFarBtn'); if (fb) fb.classList.toggle('nofar', !(p.id && typeof yFarOK === 'function' && yFarOK(p)));   // 원거리 = 페르소나·친밀도 판정(index yFarOK)
+  b.classList.toggle('nophone', !p.phone);
+}
+function initVcfBtn() {
+  const hr = document.querySelector('#yetadlg .yh-r');
+  if (!hr || document.querySelector('#yetaVcfBtn')) return;
+  const b = document.createElement('button');
+  b.type = 'button'; b.id = 'yetaVcfBtn'; b.hidden = true;   // 픽토그램-온리 · 스타일 = #yetaCallBtn 동일 선언 계승
+  b.setAttribute('aria-label', '연락처 저장'); b.title = '연락처 저장 — 전화 올 때 사진·이름이 뜨게';
+  b.innerHTML = '<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6M23 11h-6"/></svg>';
+  hr.insertBefore(b, hr.firstChild);   // 수화기 왼쪽 자리(둘 다 firstChild 주입 = 나중 주입이 앞)
+  b.addEventListener('click', () => {
+    const pid = b.dataset.pid; if (!pid || !VCF[pid]) return;
+    vcfMarkDone(pid); vcfSheet(pid);   // 헤더 버튼 = 명함 시트 재오픈(수동 경로 · 자동 1회 가드에도 계상)
+  });
+  vcfBtnSync();
 }
 
 // ── 감지 — 본체 yLoad 훅(①) + 자체 백스톱 폴(챗 폴 비활성·visible 시만) ──
 function onSess(sess) {
   if (!alive()) return;
+  vcfBtnSync();   // 페르소나 교체(뽑기·진입) 반영 — 전화 배선 캐릭터만 연락처 버튼 노출
   callBtnSync();   // 전화버튼 mut+락 상태 갱신(실전화 미배선 = 항목8)
   checkReplyVoice(sess);
   const call = sess && sess.call;
@@ -551,8 +562,8 @@ async function check() {
 setInterval(check, POLL_MS);
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') setTimeout(check, 600); });   // 푸시 탭 복귀 = 즉시 픽업
 setTimeout(check, 1500);   // 첫 로드(딥링크 /?yeta=main&call=1 포함) — 기존 ?yeta= 오픈에 편승 + 벨은 여기서
-const initInject = () => { ensureCss(); initPtt(); initCallBtn(); };   // 스타일 주입 먼저(마이크 즉시 스타일) + 입력행 마이크 + 헤더 수화기(전부 모듈 주입 = 본체 무수정) · 연락처 = 디테일 .ycd-sub 단일 정본(헤더 버튼 폐지 260709)
+const initInject = () => { ensureCss(); initPtt(); initCallBtn(); initVcfBtn(); };   // 스타일 주입 먼저(마이크 즉시 스타일) + 입력행 마이크 + 헤더 수화기 + 연락처 저장(전부 모듈 주입 = 본체 무수정) · 디테일 연락처 교환 = index.html .ycd-sub 단일화(260708)
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initInject); else initInject();
 
-window.YCALL = { onSess, open, playVoice, sync: () => { callBtnSync(); } };   // open/playVoice = 테스트 훅 · onSess = 본체 yLoad 훅 계약 · sync = 방 전환(yApply) 즉시 수화기 상태 동기(260709)
+window.YCALL = { onSess, open, playVoice, sync: () => { vcfBtnSync(); callBtnSync(); } };   // open/playVoice = 테스트 훅 · onSess = 본체 yLoad 훅 계약 · sync = 방 전환(yApply) 즉시 버튼 상태 동기(폴 전 스테일 락 표시 교정 · 260709)
 })();
