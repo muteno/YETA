@@ -4,14 +4,22 @@
       {
         "matcher": "startup|resume|compact",
         "hooks": [
-          { "type": "command", "command": "python3 \"${CLAUDE_PROJECT_DIR}/.claude/hooks/design_digest.py\"", "timeout": 15 }
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PROJECT_DIR}/.claude/hooks/design_digest.py\"",
+            "timeout": 15
+          }
         ]
       }
     ],
     "UserPromptSubmit": [
       {
         "hooks": [
-          { "type": "command", "command": "python3 \"${CLAUDE_PROJECT_DIR}/.claude/hooks/design_digest.py\" --if-ui-prompt", "timeout": 10 }
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PROJECT_DIR}/.claude/hooks/design_digest.py\" --if-ui-prompt",
+            "timeout": 10
+          }
         ]
       }
     ],
@@ -19,7 +27,23 @@
       {
         "matcher": "Edit|Write",
         "hooks": [
-          { "type": "command", "command": "python3 \"${CLAUDE_PROJECT_DIR}/.claude/hooks/design_gate.py\"", "timeout": 30 }
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PROJECT_DIR}/.claude/hooks/design_gate.py\"",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PROJECT_DIR}/.claude/hooks/bg_gate.py\"",
+            "timeout": 10
+          }
         ]
       }
     ]
