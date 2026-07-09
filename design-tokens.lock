@@ -69,6 +69,7 @@
 --fs-body
 --fs-label
 --fs-sm
+--fs-meta   # 메타 정보(N분 전·장소) 전용 8.25px = fs-xs 75% — 운영자 260709 직접 승인("팔레트 기틀에 삽입해 통일")
 --fs-xs
 --fw-x
 --fw-b

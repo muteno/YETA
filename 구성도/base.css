@@ -32,7 +32,7 @@
     /* 간격·버튼 */
     --sp-2:12px; --sp-3:18px; --btn:34px;
     /* 타이포 */
-    --fs-h2:15px; --fs-h3:14px; --fs-body:15px; --fs-label:13px; --fs-sm:12px; --fs-xs:11px;
+    --fs-h2:15px; --fs-h3:14px; --fs-body:15px; --fs-label:13px; --fs-sm:12px; --fs-xs:11px; --fs-meta:8.25px;   /* 메타 정보(N분 전·장소) 전용 = fs-xs의 75%(운영자 260709 "75%로·팔레트 기틀에 통일") */
     --fw-x:800; --fw-b:700; --lh-base:1.6;
     /* 모션 */
     --ease:cubic-bezier(.2,.7,.3,1);
