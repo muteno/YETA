@@ -359,7 +359,9 @@ export async function onRequestPost({ request, env }) {
         { headers: { 'user-agent': 'nomute-viewer' }, cf: { cacheTtl: 300, cacheEverything: true } });
       if (!rc.ok) return json({ error: '로스터 로드 실패' }, 502);
       let roster; try { roster = await rc.json(); } catch { return json({ error: '로스터 파싱 실패' }, 502); }
-      if (!Array.isArray(roster) || !roster.some(c => c && c.id === persona)) return json({ error: '로스터에 없는 캐릭터야' }, 400);
+      const rchar = Array.isArray(roster) ? roster.find(c => c && c.id === persona) : null;
+      if (!rchar) return json({ error: '로스터에 없는 캐릭터야' }, 400);
+      if (rchar.locked) return json({ error: '아직 열리지 않은 인물이야' }, 403);   // LOCKED 스페셜 = 방 신설 차단(분신술 260709 — 클라 전용 게이트를 서버도 강제 · 무인증 공개 op 견고화)
     }
     const mkTh = () => ({ turns: [], state: 'idle', opening: 0, awaiting_since: 0, err: '', room: [persona], invite: null, barged: 0, declined: {}, pin: 0, updated: Date.now(), last_sp: persona, char_ver: '', nudge: null });
     // 1) 기존 방(턴 有) 또는 오프닝 인플라이트 = cur 전환만(멱등 — 재dispatch 금지 · 보안⑤/비용가드1)
@@ -413,6 +415,13 @@ export async function onRequestPost({ request, env }) {
     const name = stripMarkers(body.name).slice(0, 24) || persona;
     const t = String(body.t || (await readSess()).cur || '');   // 대상 스레드(초대 = 열린 방으로)
     if (!ID_RE.test(t)) return json({ error: '먼저 대화 상대를 뽑아줘' }, 409);
+    try {   // LOCKED 스페셜 = 합석 초대도 차단(분신술 260709 — draw와 동일 서버 강제 · 캐시 5분 = 왕복 저비용)
+      const rc = await fetch(`https://raw.githubusercontent.com/${REPO}/main/apps/yeta/characters/roster.json`,
+        { headers: { 'user-agent': 'nomute-viewer' }, cf: { cacheTtl: 300, cacheEverything: true } });
+      if (rc.ok) { const roster = await rc.json(); const rchar = Array.isArray(roster) ? roster.find(c => c && c.id === persona) : null;
+        if (!rchar) return json({ error: '로스터에 없는 캐릭터야' }, 400);
+        if (rchar.locked) return json({ error: '아직 열리지 않은 인물이야' }, 403); }
+    } catch {}   // 로스터 조회 실패 = 통과(가용성 우선 — 러너 판정이 최종 방어선)
     const { sess, abort } = await casPut(s => {
       const th = TH(s, t); if (!th) return { abort: { error: '없는 대화방이야' } };
       const room = Array.isArray(th.room) && th.room.length ? th.room : [t];

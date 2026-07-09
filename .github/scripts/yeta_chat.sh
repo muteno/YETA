@@ -79,8 +79,11 @@ if not T:
     print("NOPENDING"); sys.exit(0)
 s = thread_view(S_ROOT, T)                               # 스레드 뷰 = 이하 기존 단일 로직 그대로 재사용(공유 필드 오버레이 · 타 스레드 = 메타만)
 names = {}
+locked_ids = set()
 try:                                                     # id→이름(화자 귀속 · 집단 역학 260707) — 실패 = 전원 "너:" 폴백(안전)
-    names = {c.get("id"): c.get("name") for c in json.load(open(sys.argv[3], encoding="utf-8")) if isinstance(c, dict) and c.get("id")}
+    _ro = json.load(open(sys.argv[3], encoding="utf-8"))
+    names = {c.get("id"): c.get("name") for c in _ro if isinstance(c, dict) and c.get("id")}
+    locked_ids = {c["id"] for c in _ro if isinstance(c, dict) and c.get("id") and c.get("locked")}   # LOCKED 스페셜(분신술 260709 — 초대 판정 최종 방어선)
 except Exception: pass
 turns = s.get("turns") or []
 sess_persona = s.get("persona") or ""
@@ -133,7 +136,7 @@ if not pend_idx:
         sys.exit(0)
 
 inv = s.get("invite") or {}
-if inv.get("to") and now_ms - (inv.get("ts") or 0) < 600000 and inv["to"] not in room and len(room) < 2:
+if inv.get("to") and now_ms - (inv.get("ts") or 0) < 600000 and inv["to"] not in room and len(room) < 2 and inv["to"] not in locked_ids:   # LOCKED = 초대 판정 자체를 안 태움(마커는 lazy 정리 · 분신술 260709)
     persona = inv["to"]                                   # ── 초대 판정 모드 — 재료는 전부 초대받은 캐릭터 기준 ──
     _lm = next((t.get("mood") for t in reversed(turns) if t.get("role") == "assistant" and t.get("mood")), "")
     _m = _re.match(r"\s*\[LV\s*(\d)\]", (s.get("notes") or {}).get(persona) or "")
@@ -691,8 +694,8 @@ s = (S_ROOT.get("threads") or {}).get(_os.environ.get("THREAD", ""))
 if s is None: sys.exit(1)                          # 스레드 소멸 = 난입 없음
 try: roster = json.load(open(sys.argv[2], encoding="utf-8"))
 except Exception: sys.exit(1)
-names = {c["id"]: (c.get("name") or c["id"]) for c in roster if isinstance(c, dict) and c.get("id")}
-enters = {c["id"]: (c.get("enter_line") or "") for c in roster if isinstance(c, dict) and c.get("id")}
+names = {c["id"]: (c.get("name") or c["id"]) for c in roster if isinstance(c, dict) and c.get("id") and not c.get("locked")}   # LOCKED(스페셜) = 난입 후보 제외(분신술 260709 — "특정 조건을 깨야" 축이 우연 난입으로 뚫리던 구멍 · 미대면은 유지 = 난입이 해금 경로)
+enters = {c["id"]: (c.get("enter_line") or "") for c in roster if isinstance(c, dict) and c.get("id") and not c.get("locked")}
 now = datetime.now(timezone(timedelta(hours=9)))
 today = f"{now:%Y-%m-%d}"
 turns = s.get("turns") or []
@@ -827,9 +830,9 @@ PY
 )"
   fi
 
-  # 운영 정책 블록(운영자 260706 3계층: L0 코어[하드 2그룹 불변 + 관리자 토글 2그룹] > L1 시즌 수위 > L2 성향[TUNE]) —
+  # 운영 정책 블록(3계층 v3 260709: L0 코어 = 전면 하드 4그룹 불변[웹 토글 폐지 — toggle 필드 없음 = 아래 isinstance 가드가 자동 스킵] > L1 시즌 수위[관리자] > L2 성향[TUNE]) —
   # 문구 정본 = apps/yeta/policy.json(러너가 직접 읽음 · 세션엔 enum 정수만 · SET = 관리자 PIN 게이트웨이 강제) ·
-  # 기본값과 같은 축 = 생략 · 전축 기본 = 블록 생략 = 00_지침 기본값 유효.
+  # 기본값과 같은 축 = 생략 · 전축 기본 = 블록 생략 = 00_지침 기본값 유효. (L0 웹 토글 부활 금지 — 분신술 260709 주석 동기)
   POLICY_BLOCK=""
   if [ -n "$POL" ] && [ "$POL" != "None" ]; then
     POLICY_BLOCK="$(python3 - "$POL" "$ROOT/apps/yeta/policy.json" <<'PY'
