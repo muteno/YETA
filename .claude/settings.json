@@ -23,5 +23,13 @@
         ]
       }
     ]
+  },
+  "permissions": {
+    "allow": [
+      "mcp__Claude_Code_Remote",
+      "mcp__claude-code-remote",
+      "mcp__github__subscribe_pr_activity",
+      "mcp__github__unsubscribe_pr_activity"
+    ]
   }
 }

@@ -224,3 +224,5 @@
 - 🔒 **런타임은 CLAUDE.md 미참조**(운영자 260704): CLAUDE.md = Claude Code **개발 세션 전용**. 생성 경로(`claude -p`)는 `--safe-mode` **기본**(auto-discovery 스킵 = 턴당 ~37k 토큰 절약 · 회귀 노브 `YETA_SAFE=0`). 파이프라인 코드가 CLAUDE.md 를 읽거나 프롬프트에 싣는 것 금지.
 - ⚠️ **`--bare` 절대 금지**(OAuth 안 읽어 인증 즉사 — `--safe-mode`와 별개 축).
 - 폴오버 = 4계정 체인 MUTENO→NOMUTEFB→EMS1130G→MUTENONA(로테이션 3계정 + `_MUTENONA` 고정 꼬리·⚠️쿼터 nomute 공유·운영자 260704). 세션 작업자·검증은 opus 4.8 유지(= §모델 정책의 현행 인스턴스).
+
+MCP 권한 자동 허용 정본 = `.claude/settings.json` permissions.allow(Claude Code Remote 서버 전체 + github PR 구독/해제) — 임의 삭제 금지. 강제는 settings.json이고 이 줄은 기록용.
