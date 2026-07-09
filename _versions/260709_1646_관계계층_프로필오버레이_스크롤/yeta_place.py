@@ -33,9 +33,8 @@ def place_of(pl, char_id, date_str, hour):
         return base
     nb = [n for n in (info.get("neighbors") or []) if not ((pl.get("places") or {}).get(n) or {}).get("private")]
     if nb:
-        # 이동 빈도 상향(운영자 260709 "장소 이동 많이 — 소통이 자유롭지 않게"): 1/4→1/2 + 2시간 입도(같은 슬롯에도 h//2 단위 재판정 = 결정적 유지) · 뷰어 ymPlaceOf와 시드 문자열 완전 동일(드리프트 금지)
-        seed = int(hashlib.sha256(f"{char_id}:{date_str}:{slot}:{hour // 2}:go".encode()).hexdigest(), 16)
-        if seed % 2 == 0:
+        seed = int(hashlib.sha256(f"{char_id}:{date_str}:{slot}:go".encode()).hexdigest(), 16)
+        if seed % 4 == 0:
             return nb[seed % len(nb)]
     return base
 
