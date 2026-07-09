@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>네비 라인 그라데이션 — 플레이그라운드 (260709)</title>
+<style>
+  /* yeta 토큰 하드카피(독립 파일 — 값 SSOT = viewer/index.html :root) */
+  :root { --bg:#121212; --fg:#FFFFFF; --fg-2:#E7ECE7; --mut:#8B8F8A; --accent:#CFFF40; --accent-rgb:207,255,64;
+    --cobalt:#3D6BFF; --think:#3EE0C8; --glass:rgba(255,255,255,.075); --glass-line:rgba(255,255,255,.14);
+    --r-m:14px; --r-l:18px; --r-pill:999px; --ease:cubic-bezier(.22,.61,.36,1); }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--fg); font-family:Pretendard,-apple-system,BlinkMacSystemFont,system-ui,'Segoe UI',sans-serif; padding:22px; }
+  h1 { font-size:17px; margin-bottom:4px; }
+  .sub { color:var(--mut); font-size:12px; margin-bottom:18px; line-height:1.5; }
+  .wrap { display:flex; gap:22px; flex-wrap:wrap; align-items:flex-start; }
+  /* ══ 실물 재현(9:16 폰 프레임) ══ */
+  .phone { position:relative; width:340px; height:640px; border-radius:22px; overflow:hidden; border:1px solid var(--glass-line); flex:none;
+    background:linear-gradient(160deg,#1a2033 0%,#141821 34%,#0f1219 60%,#141019 100%); }
+  .city { position:absolute; inset:0; opacity:.9;
+    background:
+      radial-gradient(ellipse 70% 30% at 74% 30%, rgba(61,107,255,.28), transparent 60%),
+      radial-gradient(ellipse 46% 22% at 22% 44%, rgba(255,61,180,.17), transparent 65%),
+      radial-gradient(ellipse 60% 26% at 60% 66%, rgba(62,224,200,.12), transparent 60%),
+      repeating-linear-gradient(90deg, transparent 0 26px, rgba(255,255,255,.045) 26px 30px),
+      repeating-linear-gradient(0deg, transparent 0 40px, rgba(255,255,255,.03) 40px 43px); }
+  .fade { position:absolute; top:0; left:0; right:0; pointer-events:none; }   /* ← 튜닝 대상 #ytopfade */
+  .ui { position:absolute; inset:0; padding:18px 16px; }
+  .logo { display:flex; align-items:center; justify-content:space-between; }
+  .logo b { font-style:italic; font-weight:900; font-size:26px; letter-spacing:.02em; color:var(--accent); text-shadow:0 0 14px rgba(207,255,64,.5); }
+  .prof { width:34px; height:34px; border-radius:50%; background:var(--glass); border:1px solid var(--glass-line); }
+  .ssn { margin-top:26px; }   /* 시즌 = 네비 라인(박스 폐지 실물) */
+  .ssn-hd { display:flex; align-items:center; gap:12px; }
+  .ssn-tag { font-style:italic; font-weight:700; font-size:13.5px; color:var(--accent); }   /* ← 글로우 튜닝 대상 */
+  .ssn-nm { font-size:14px; font-weight:800; }
+  .ssn-nm small { font-weight:600; color:var(--fg-2); font-size:11.5px; }
+  .ssn-date { margin-left:auto; font-size:10px; letter-spacing:.04em; }
+  .ssn-tl { margin-top:8px; text-align:center; font-size:11px; color:var(--fg-2); }
+  .row { display:flex; gap:11px; align-items:center; margin-top:14px; padding:13px; background:var(--glass); border:1px solid rgba(255,255,255,.09); border-radius:var(--r-m); backdrop-filter:blur(9px); }
+  .row:first-of-type { margin-top:22px; }
+  .ava { flex:none; width:40px; height:40px; border-radius:50%; background:radial-gradient(circle at 35% 30%, #3a4152, #22252e); border:1px solid var(--glass-line); box-shadow:0 0 6px rgba(207,255,64,.2); }
+  .rmid { flex:1; min-width:0; }
+  .rnm { font-size:14px; font-weight:800; display:flex; align-items:center; gap:6px; }
+  .rjob { font-size:10px; color:var(--accent); border:1px solid rgba(207,255,64,.4); border-radius:var(--r-pill); padding:1px 7px; }
+  .ron { font-size:10px; color:rgba(62,224,200,.5); background:rgba(255,255,255,.06); border-radius:var(--r-pill); padding:1px 7px; }   /* 대화 중 = 터콰이즈 50% 실물 */
+  .rdesc { font-size:11px; color:var(--fg-2); margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  /* ══ 컨트롤 ══ */
+  .panel { flex:1; min-width:300px; max-width:430px; }
+  .grp { background:var(--glass); border:1px solid var(--glass-line); border-radius:var(--r-l); padding:14px 16px; margin-bottom:12px; }
+  .grp h2 { font-size:12.5px; margin-bottom:10px; color:var(--fg-2); }
+  .presets { display:flex; gap:7px; flex-wrap:wrap; }
+  .presets button { padding:7px 14px; border:1px solid var(--glass-line); border-radius:var(--r-pill); background:none; color:var(--fg-2); font:inherit; font-size:11.5px; font-weight:700; cursor:pointer; }
+  .presets button.on { color:#121212; background:var(--accent); border-color:transparent; }
+  .sl { display:flex; align-items:center; gap:10px; margin:9px 0; font-size:11.5px; }
+  .sl label { flex:none; width:118px; color:var(--fg-2); }
+  .sl input { flex:1; accent-color:var(--accent); }
+  .sl output { flex:none; width:44px; text-align:right; color:var(--accent); font-weight:800; font-variant-numeric:tabular-nums; }
+  .code { font-family:ui-monospace,Menlo,Consolas,monospace; font-size:10.5px; line-height:1.55; color:var(--fg-2); background:rgba(18,18,18,.6); border:1px solid var(--glass-line); border-radius:var(--r-m); padding:11px 12px; white-space:pre; overflow-x:auto; }
+  .copy { margin-top:9px; width:100%; padding:11px; border:none; border-radius:var(--r-pill); background:var(--accent); color:#121212; font:inherit; font-size:12.5px; font-weight:800; cursor:pointer; }
+  .copy:active { transform:scale(.97); }
+  .note { font-size:10.5px; color:var(--mut); margin-top:8px; line-height:1.6; }
+</style>
+</head>
+<body>
+<h1>네비 라인 그라데이션 + 시즌 글자 형광 — 플레이그라운드</h1>
+<p class="sub">운영자 260709 — "네비라인쪽 그라데이션으로 아래로 투명하게" + "SEASON 글자 형광 더" + "시즌 = 박스 없이 네비 라인". 왼쪽 = 실물 근사(박스 폐지 반영). 값 고르고 <b>복사</b> → 붙여주면 그대로 적용.</p>
+<div class="wrap">
+  <div class="phone">
+    <div class="city"></div>
+    <div class="fade" id="fade"></div>
+    <div class="ui">
+      <div class="logo"><b>YETA</b><span class="prof"></span></div>
+      <div class="ssn">
+        <div class="ssn-hd"><span class="ssn-tag" id="ssnTag">SEASON 01</span><span class="ssn-nm">무음동 <small>(無音洞)</small></span><span class="ssn-date">26. 07. 09</span></div>
+        <div class="ssn-tl">밤이 유난히 긴 골목 — 자정과 새벽 3시 사이, 경계가 얇아진다</div>
+      </div>
+      <div class="row"><span class="ava"></span><span class="rmid"><span class="rnm">하은 <span class="rjob">국어교사</span><span class="ron">대화 중</span></span><span class="rdesc">5분이면 10년 지기처럼 구는 능글맞은 국어교사</span></span></div>
+      <div class="row"><span class="ava" style="filter:grayscale(1) brightness(.3)"></span><span class="rmid"><span class="rnm">???</span><span class="rdesc">수백 년치 사연을 듣고도 한 번도 옮긴 적 없는 리스너</span></span></div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="grp"><h2>프리셋</h2><div class="presets" id="presets"></div></div>
+    <div class="grp"><h2>그라데이션 (#ytopfade)</h2>
+      <div class="sl"><label>높이 (px)</label><input type="range" id="h" min="120" max="360" step="4"><output id="oh"></output></div>
+      <div class="sl"><label>시작 어둡기</label><input type="range" id="a0" min="0" max="95" step="1"><output id="oa0"></output></div>
+      <div class="sl"><label>중간 스톱 위치 %</label><input type="range" id="mid" min="25" max="80" step="1"><output id="omid"></output></div>
+      <div class="sl"><label>중간 어둡기</label><input type="range" id="a1" min="0" max="70" step="1"><output id="oa1"></output></div>
+    </div>
+    <div class="grp"><h2>SEASON 글자 형광 (.yssn-tag)</h2>
+      <div class="sl"><label>코어 글로우</label><input type="range" id="g0" min="0" max="100" step="2"><output id="og0"></output></div>
+      <div class="sl"><label>퍼짐 헤일로</label><input type="range" id="g1" min="0" max="100" step="2"><output id="og1"></output></div>
+    </div>
+    <div class="grp"><h2>선택값 (viewer/index.html 반영용)</h2><div class="code" id="code"></div><button type="button" class="copy" id="copy">이 값 복사</button>
+      <p class="note">· 그라데이션 = 배경 위·콘텐츠 아래 순수 스크림(pointer-events:none · char/list 탭만)<br>· 코어/헤일로 = --accent-rgb 계승 text-shadow(토큰 없는 축) · 값만 바뀜 = 기틀 불변</p></div>
+  </div>
+</div>
+<script>
+  var P = { h:216, a0:66, mid:52, a1:30, g0:90, g1:55 };
+  var PRESETS = { '은은':{h:180,a0:48,mid:50,a1:20,g0:70,g1:40}, '표준 (적용값)':{h:216,a0:66,mid:52,a1:30,g0:90,g1:55}, '진함':{h:260,a0:82,mid:56,a1:42,g0:100,g1:70}, '워시 길게':{h:330,a0:70,mid:64,a1:34,g0:90,g1:55} };
+  var ids = ['h','a0','mid','a1','g0','g1'];
+  function apply() {
+    document.getElementById('fade').style.cssText = 'height:'+P.h+'px;background:linear-gradient(to bottom, rgba(0,0,0,'+(P.a0/100)+'), rgba(0,0,0,'+(P.a1/100)+') '+P.mid+'%, transparent)';
+    document.getElementById('ssnTag').style.textShadow = '0 0 5px rgba(207,255,64,'+(P.g0/100)+'), 0 0 16px rgba(207,255,64,'+(P.g1/100)+')';
+    ids.forEach(function(k){ document.getElementById(k).value = P[k]; document.getElementById('o'+k).textContent = (k==='h') ? P[k]+'px' : (k==='mid') ? P[k]+'%' : '.'+String(P[k]).padStart(2,'0'); });
+    document.getElementById('code').textContent =
+      '#ytopfade { height:calc('+P.h+'px + env(safe-area-inset-top));\n  background:linear-gradient(to bottom,\n    rgba(0,0,0,.'+String(P.a0).padStart(2,'0')+'), rgba(0,0,0,.'+String(P.a1).padStart(2,'0')+') '+P.mid+'%, transparent); }\n.yssn-tag { text-shadow:0 0 5px rgba(var(--accent-rgb),.'+String(P.g0).padStart(2,'0')+'),\n  0 0 16px rgba(var(--accent-rgb),.'+String(P.g1).padStart(2,'0')+'); }';
+  }
+  ids.forEach(function(k){ document.getElementById(k).addEventListener('input', function(){ P[k] = +this.value; document.querySelectorAll('#presets button').forEach(function(b){ b.classList.remove('on'); }); apply(); }); });
+  var pr = document.getElementById('presets');
+  Object.keys(PRESETS).forEach(function(nm, i){ var b = document.createElement('button'); b.textContent = nm; if (i===1) b.className = 'on';
+    b.addEventListener('click', function(){ P = JSON.parse(JSON.stringify(PRESETS[nm])); document.querySelectorAll('#presets button').forEach(function(x){ x.classList.toggle('on', x===b); }); apply(); }); pr.appendChild(b); });
+  document.getElementById('copy').addEventListener('click', function(){ var t = document.getElementById('code').textContent;
+    (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(function(){ var b = document.getElementById('copy'); b.textContent = '복사됐어 ✓'; setTimeout(function(){ b.textContent = '이 값 복사'; }, 1400); }).catch(function(){ prompt('복사:', t); });
+  });
+  apply();
+</script>
+</body>
+</html>
