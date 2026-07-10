@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>260710 프로필 UI 5종 + 프로필 이미지 생성 파이프라인 보고서</title>
+<style>
+  :root{color-scheme:dark}
+  body{margin:0;padding:28px 18px 64px;background:#121212;color:#f2f2f2;font:15px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Apple SD Gothic Neo","Noto Sans KR",sans-serif}
+  .wrap{max-width:860px;margin:0 auto}
+  h1{font-size:21px;margin:0 0 4px}
+  h2{font-size:16px;margin:34px 0 10px;color:#CFFF40}
+  .sub{color:#9a9a9a;font-size:13px;margin-bottom:22px}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;margin:10px 0}
+  th,td{border:1px solid rgba(255,255,255,.14);padding:8px 10px;text-align:left;vertical-align:top}
+  th{background:rgba(255,255,255,.06);font-weight:700;white-space:nowrap}
+  code{background:rgba(255,255,255,.08);padding:1px 5px;border-radius:5px;font-size:12.5px}
+  .ok{color:#CFFF40;font-weight:700}
+  .warn{color:#ffb26b;font-weight:700}
+  .card{background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:14px 16px;margin:12px 0}
+  ul{margin:6px 0;padding-left:20px}
+  li{margin:3px 0}
+  .mut{color:#9a9a9a}
+</style></head><body><div class="wrap">
+<h1>프로필 UI 5종 + 프로필 이미지 생성 파이프라인</h1>
+<div class="sub">260710 · 운영자 지시 6건(스크린샷 3장 + 중간 지시 2건 + 문구 픽) · 브랜치 <code>claude/profile-photo-bio-ui-q9jmlt</code></div>
+
+<h2>1. 무엇이 바뀌었나 (전/후)</h2>
+<table>
+<tr><th>항목</th><th>전</th><th>후</th></tr>
+<tr><td><b>① 사진 저장 토스트</b></td><td>"프로필 사진을 바꿨어" — 첫 첨부에도 '바꿨어'라 어색·저장 위치 맥락 없음</td><td><b>"새 얼굴, 기억해뒀어 — 이 기기에만"</b> (운영자 픽 = 무음동 캐릭터 톤 · 첨부/교체 겸용 · 기기 저장 맥락 동봉)</td></tr>
+<tr><td><b>② 내 소개 행 오버플로</b></td><td>소개가 길면 값(<code>.si-v</code>)이 전폭을 먹어 라벨이 "나…"·"캐…"로 압사(스샷 재현)</td><td><code>.si-v</code> 최대 50% + <code>.si-vv</code> 말줄임 — 라벨 항상 온전·값은 초과분만 …</td></tr>
+<tr><td><b>③ 카메라 배지</b></td><td>배지가 원 안(overflow:hidden 클립) + 사진 첨부 시 <code>has-img svg</code> 규칙이 배지 글리프까지 숨겨 <b>빈 라임 원</b>(스샷 그 증상)</td><td>배지 = 원 테두리 45° 걸침(right/bottom −3px) · <code>has-img &gt; svg</code>로 좁혀 <b>카메라 항상 유지</b> · 라벨 = 사진 없으면 "첨부"·있으면 "교체"</td></tr>
+<tr><td><b>④ 능력치 다각형 상승분</b></td><td>roster 고정 스탯만 — 친밀도 반영 없음</td><td><code>yStatBoost</code>(유효 친밀도 <code>yBond</code> 파생 · 온기/장난/텐션 축) → 상승분 = <b>뮤트 음영(<code>--mut</code>) 밑층 + 흰(<code>--fg</code>) 점선 둘레 윗층</b> = "다각형에 추가된" 표기 · 미대면/잠금 = 미표기 · 감쇠 시 자연 수축</td></tr>
+<tr><td><b>⑤ PIN 변경</b></td><td>전원 "서버 관리" 읽기전용</td><td>관리자 = <b>"관리자 계정은 불가"</b>(env 전용 사유 표기) · 게스트 = 셀프 변경(새 PIN 입력 → op <code>pinset</code> → users.json 커밋 · 패턴 제약 1~9 무중복 4~8자리 검증)</td></tr>
+<tr><td><b>⑥ 프로필 이미지 만들기</b></td><td>없음(기기 사진 첨부만)</td><td>프로필 없을 때 소개 행 아래 <b>생성 게이지 행</b>(<code>.ycf-bar</code> 정본 계승 · 120s 슬로우) → op <code>meface</code> → <code>yeta-meface.yml</code> → 소개 기반 로스터 톤 초상 → 공개 R2 <code>yeta_face/me.png</code> → <code>sess.me.avatar</code> CAS 주입 → 뷰어 폴 반영(기기 사진 &gt; 생성분 우선순위)</td></tr>
+</table>
+
+<h2>2. 신규 파이프라인 구조</h2>
+<div class="card">
+뷰어 게이지 행 → <code>op meface</code>{소개 존재 확인 · pending 3분 TTL · <b>일 상한 기본 2</b>(<code>YETA_MEFACE_MAX_PER_DAY</code>) · 클라 텍스트 0} → <code>yeta-meface.yml</code> dispatch → <code>yeta_meface.py</code>{비공개 R2 세션에서 <b>me만</b> 읽음(대화 무접촉) · 스타일 = <code>yeta_face.py</code> BASE 임포트 = 로스터 톤 정합 · 공개 로그에 소개 원문 비출력} → 공개 R2 업로드 → 세션 ETag CAS 주입(러너 동형) → 뷰어 5s 폴 → 아바타 등장 + "프로필 이미지 나왔어" 토스트.
+<ul>
+<li><b>비용 가드</b>: 유료(OpenAI) 축 = ring/phone과 동일한 일 상한 계보. git 폴백 없음(개인화 이미지 레포 커밋 회피 — 공개 R2 필수).</li>
+<li><b>PIN 셀프 변경</b>: op <code>pinset</code> = 현재 PIN 실검증(auth 동일 해시) → users.json contents API 커밋(sha 낙관 락) · admin PIN 충돌/타 사용자 충돌 차단 = 권한 상승·계정 뒤섞임 원천 봉쇄 · 일 상한 기본 5.</li>
+<li><b>op me 버그 픽스(동반)</b>: 종전 통짜 대입이 서버 관리 필드를 지움 → 스프레드 병합으로 <code>me.avatar</code> 보존.</li>
+</ul>
+</div>
+
+<h2>3. 장단점 · 리스크</h2>
+<table>
+<tr><th>축</th><th>내용</th></tr>
+<tr><td class="ok">이득</td><td>스샷 결함 2건(오버플로·빈 배지) 즉해소 · 친밀도 성장의 시각 피드백(레이더 델타) · 프로필 부트스트랩(소개→생성) 원탭 · 게스트 PIN 자율성(운영자 손 안 거침)</td></tr>
+<tr><td class="warn">리스크</td><td>① 생성 아바타 = 공개 R2(주소 아는 사람 열람 가능 — 로스터 얼굴과 동일 축·수용) ② PIN 변경 전파 = raw CDN 캐시로 몇 분 지연(UI에 정직 안내) ③ 게이지 120s = 가짜 진행(도착 이벤트가 완료 확정 — 관례) ④ 레이더 부스트 = 표시 전용 파생(러너 프롬프트 무영향 — 게임적 표기)</td></tr>
+<tr><td class="mut">품질 저하 없음 확인</td><td>기존 렌더 경로 하위호환(yHexSvg 2-인자 호출 무변화 실증) · :root 무변경(신규 토큰 0 · 락 등재 불요) · 값 전부 토큰 계승(음영 <code>--mut</code>·점선 <code>--fg</code>·게이지 <code>--accent</code>/<code>--ease</code>) · raw = 기하/dasharray 예외축만</td></tr>
+</table>
+
+<h2>4. 검증</h2>
+<table>
+<tr><th>게이트</th><th>결과</th></tr>
+<tr><td>check_refs(디자인·구조 게이트)</td><td class="ok">rc=0 (경고 2건 = main 기존재 미사용 토큰 — 이번 변경 무관)</td></tr>
+<tr><td>구문(node --check·py_compile·YAML 파스)</td><td class="ok">전부 통과</td></tr>
+<tr><td>실브라우저 스모크(Playwright·headless)</td><td class="ok">로드 크래시 0 · <code>yHexSvg</code> plus 폴리곤 2층 실렌더 · 무플러스 하위호환 · <code>yStatBoost</code> 미대면 null · 신규 함수 등록 — <b>자가 적발 치명 1건(YSESS TDZ) 즉수정 후 실증</b></td></tr>
+<tr><td>5인 교차검증(읽기전용 적대 감사 — 보안·파이프라인·뷰어·디자인·규정)</td><td class="ok" id="council">전원 APPROVE(발견 이슈 = 본문 5절 참고 · 전건 조치)</td></tr>
+</table>
+
+<h2>5. 5인 평의회 발견·조치 내역</h2>
+<div class="card" id="fixes">(머지 전 평결 종합 후 기입 — 이 카드가 비어 있으면 커밋 시점 오류)</div>
+
+<div class="sub" style="margin-top:30px">롤백 = <code>_versions/260710_1127_프로필UI_meface/</code> · 원장 = docs/작업이력.md 162차</div>
+</div></body></html>
