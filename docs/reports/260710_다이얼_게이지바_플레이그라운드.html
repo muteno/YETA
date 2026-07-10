@@ -1,15 +1,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>다이얼 게이지바 — 플레이그라운드</title>
+<title>대화 깊이 통합 게이지바 — 플레이그라운드</title>
 <style>
 /* ── viewer/index.html :root 토큰 사본(실물 재현용 · 값 SSOT = viewer/index.html) ── */
 :root{
   --fg:#FFFFFF; --fg-rgb:255,255,255; --fg-2:#E7ECE7; --mut:#8B8F8A;
   --bg:#161716;
-  --accent:#CFFF40; --accent-rgb:207,255,64;      /* 강조1 브랜드 라임 */
-  --cobalt:#3D6BFF; --cobalt-rgb:61,107,255;      /* 강조2 코발트 = 2강조색 */
-  --season:#8E2DBF; --season-rgb:142,45,191;
-  --think:#3EE0C8; --think-rgb:62,224,200;        /* 기본값 이탈 표기색 */
+  --accent:#CFFF40; --accent-rgb:207,255,64;      /* 강조1 브랜드 라임 = Opus */
+  --cobalt:#3D6BFF; --cobalt-rgb:61,107,255;      /* 강조2 코발트 = Sonnet */
+  --think:#3EE0C8; --think-rgb:62,224,200;
   --lgap:6px;
   --glass:rgba(255,255,255,.005); --glass-2:rgba(255,255,255,0); --glass-line:rgba(255,255,255,.08);
   --shadow-card:0 24px 60px rgba(0,0,0,.42);
@@ -18,21 +17,17 @@
   --fs-h2:15px; --fs-h3:14px; --fs-body:15px; --fs-label:13px; --fs-sm:12px; --fs-xs:11px; --fs-meta:8.25px;
   --fw-x:800; --fw-b:700; --lh-base:1.6;
   --ease:cubic-bezier(.2,.7,.3,1);
-  --ypick:cubic-bezier(.22,.61,.36,1);            /* 촤르륵 등장 커브(ypickIn 계승) */
+  --ypick:cubic-bezier(.22,.61,.36,1);
   --blur-m:29px; --blur-l:11px;
   --press-m:.9; --press-l:.95; --press-s:.9;
 
-  /* ── 게이지 튜닝 축(슬라이더가 돌림 · 새 컴포넌트 내부 변수 = 색은 토큰 계승·알파/치수만 로컬) ── */
-  --g-acc-lo:.20;   /* 빠름 그라데 시작 알파(약) */
-  --g-acc-hi:1;     /* 최대 그라데 끝 알파(강) — 노력도 높을수록 세게 */
-  --g-cob-lo:.34;   /* 소넷 그라데 시작 알파 */
-  --g-cob-hi:.92;   /* 소넷 그라데 끝 알파 */
-  --g-dash-a:.40;   /* 점선 투명도(살짝) */
-  --g-dash-w:1.5px; /* 점선 굵기 */
-  --g-gap:12px;     /* 좌측 1분할 ↔ 우측 3분할 분리 간격(--sp-2 스냅) */
-  --g-h:46px;       /* 게이지 높이(히트영역 ≥40) */
-  --g-r:16px;       /* 게이지 반지름(--r-l 스냅) */
-  --g-dur:.38s;     /* 촤르륵 슬라이드 시간 */
+  /* ── 통합 게이지 튜닝 축(색=토큰 계승·알파/치수만 로컬 = .yset-range 선례) ── */
+  --gl-h:7px;       /* 라인 높이 */
+  --gl-thumb:20px;  /* 썸 지름 */
+  --gl-lo:.32;      /* 각 모델 램프 시작 알파(빠름) */
+  --gl-hi:1;        /* 각 모델 램프 끝 알파(깊게) — 노력도↑ 세짐 */
+  --gl-dash-a:.6;   /* 모델 경계 점선 투명도 */
+  --gl-dur:.36s;    /* 촤르륵 시간 */
 }
 *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
 html,body{margin:0}
@@ -41,369 +36,218 @@ body{
     radial-gradient(circle at 78% 8%, rgba(var(--accent-rgb),.06), transparent 46%),
     radial-gradient(circle at 12% 96%, rgba(var(--cobalt-rgb),.07), transparent 44%),
     var(--bg);
-  color:var(--fg);
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Pretendard,Roboto,sans-serif;
-  -webkit-font-smoothing:antialiased;
-  line-height:var(--lh-base);
-  padding:26px 16px 80px;
+  color:var(--fg); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Pretendard,Roboto,sans-serif;
+  -webkit-font-smoothing:antialiased; line-height:var(--lh-base); padding:26px 16px 80px;
 }
 h1{font-size:19px; font-weight:var(--fw-x); margin:0 0 4px; letter-spacing:-.01em}
-.sub{color:var(--mut); font-size:var(--fs-sm); margin:0 0 22px}
-.wrap{max-width:1080px; margin:0 auto; display:grid; grid-template-columns:340px 1fr; gap:26px; align-items:start}
+.sub{color:var(--mut); font-size:var(--fs-sm); margin:0 0 22px; max-width:60ch}
+.wrap{max-width:1000px; margin:0 auto; display:grid; grid-template-columns:340px 1fr; gap:26px; align-items:start}
 @media (max-width:820px){ .wrap{grid-template-columns:1fr} }
 
-/* ── 폰 프레임(실물 재현) ── */
-.phone{
-  width:340px; max-width:100%; aspect-ratio:9/16; margin:0 auto; position:relative;
+.phone{width:340px; max-width:100%; aspect-ratio:9/16; margin:0 auto; position:relative;
   border-radius:30px; border:1px solid var(--glass-line); overflow:hidden;
-  background:
-    radial-gradient(circle at 62% 14%, rgba(var(--accent-rgb),.10), transparent 52%),
-    radial-gradient(circle at 12% 92%, rgba(var(--cobalt-rgb),.06), transparent 46%),
-    #0d0e0d;
-  box-shadow:var(--shadow-card);
-}
+  background:radial-gradient(circle at 62% 14%, rgba(var(--accent-rgb),.10), transparent 52%),
+    radial-gradient(circle at 12% 92%, rgba(var(--cobalt-rgb),.06), transparent 46%), #0d0e0d;
+  box-shadow:var(--shadow-card);}
 .scr{position:absolute; inset:0; padding:20px 15px; display:flex; flex-direction:column}
 .mini-ttl{font-size:var(--fs-xs); color:var(--mut); font-weight:var(--fw-b); letter-spacing:.12em; margin:2px 2px 12px}
 .mini-sec{font-size:var(--fs-xs); color:var(--mut); font-weight:var(--fw-b); margin:4px 2px 8px}
 
-/* ── 설정 행(.yset-item 계승) ── */
-.row{
-  display:flex; align-items:center; gap:11px; width:100%; padding:13px 14px; margin-bottom:9px;
+/* ── 통합 「대화 깊이」 행(.yset-item 계승) — 헤드 + 카드 안 게이지 ── */
+.row{display:flex; align-items:center; gap:11px; width:100%; padding:13px 14px;
   background:var(--glass); border:1px solid var(--glass-line); border-radius:var(--r-l);
   backdrop-filter:blur(var(--blur-m)) saturate(1); -webkit-backdrop-filter:blur(var(--blur-m)) saturate(1);
-  color:var(--fg); text-align:left; cursor:pointer; font:inherit;
-  transition:transform .16s var(--ease), border-color .2s var(--ease);
-}
-.row:active{transform:scale(var(--press-l))}
-.row.hot{border-color:rgba(var(--accent-rgb),.34)}
+  color:var(--fg); flex-wrap:wrap;}
+.eff-head{display:flex; align-items:center; gap:11px; width:100%; cursor:pointer; background:none; border:none; padding:0; margin:0; font:inherit; color:inherit; text-align:left; transition:transform .16s var(--ease)}
+.eff-head:active{transform:scale(var(--press-l))}
 .row .ic{flex:none; width:22px; height:22px; color:var(--fg-2); display:grid; place-items:center}
 .row .ic svg{width:21px; height:21px}
 .row .lbl{flex:1; min-width:0; display:flex; flex-direction:column; gap:1px}
-.row .t{font-size:var(--fs-body); font-weight:var(--fw-b); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.row .t{font-size:var(--fs-body); font-weight:var(--fw-b)}
 .row .d{font-size:var(--fs-xs); color:var(--mut); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
-.row .v{flex:none; display:flex; align-items:center; gap:3px; font-size:var(--fs-xs)}
-.row .v .vt{color:var(--accent); font-weight:var(--fw-b)}
-.row .v .vt.mod{color:var(--think)}
-.row .v .chev{width:17px; height:17px; color:var(--mut); transition:transform .28s var(--ypick)}
-.row.hot .v .chev{transform:rotate(90deg)}
+.row .v{flex:none; display:flex; align-items:center; gap:5px}
+.chev{width:17px; height:17px; color:var(--mut); transition:transform .28s var(--ypick)}
+.row.open .chev{transform:rotate(90deg)}
+/* 값 = [모델] [노력] 두 칩(운영자 "MODEL | 빠름 중간 깊게") */
+.vchip{padding:2px 9px; border-radius:var(--r-pill); font-size:var(--fs-xs); font-weight:var(--fw-b); white-space:nowrap; letter-spacing:.02em; transition:color .18s var(--ease), background .18s var(--ease), border-color .18s var(--ease)}
+.vchip.vmodel{border:1px solid rgba(var(--accent-rgb),.45); background:rgba(var(--accent-rgb),.14); color:var(--accent)}
+.gwrap[data-model="s"] ~ .no, .vmodel.s{border-color:rgba(var(--cobalt-rgb),.55); background:rgba(var(--cobalt-rgb),.18); color:#7f9dff}
+.vchip.veff{border:1px solid var(--glass-line); background:rgba(var(--fg-rgb),.05); color:var(--fg-2)}
 
-/* ── 촤르륵 게이지(새 컴포넌트) — 행 아래로 슬라이드 ── */
-.gauge-wrap{
-  overflow:hidden; max-height:0; opacity:0; transform:translateY(-6px);
-  transition:max-height var(--g-dur) var(--ypick), opacity var(--g-dur) var(--ypick), transform var(--g-dur) var(--ypick), margin var(--g-dur) var(--ypick);
-  margin:-3px 2px 0;
-}
-.gauge-wrap.open{max-height:150px; opacity:1; transform:none; margin:-3px 2px 12px}
+.si-gauge{flex-basis:100%; overflow:hidden; max-height:0; opacity:0;
+  transition:max-height var(--gl-dur) var(--ypick), opacity var(--gl-dur) var(--ypick), margin var(--gl-dur) var(--ypick); margin-top:0;}
+.row.open .si-gauge{max-height:96px; opacity:1; margin-top:13px}
 
-.gbar{display:flex; align-items:stretch; height:var(--g-h)}
-.gseg{
-  position:relative; flex:1 1 0; min-width:0; border:none; background:transparent; cursor:pointer;
-  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px;
-  color:var(--fg-2); font:inherit; padding:0 4px; overflow:hidden;
-  transition:color .2s var(--ease), transform .16s var(--ease);
-}
-.gseg:active{transform:scale(var(--press-m))}
-.gseg .gt{font-size:var(--fs-sm); font-weight:var(--fw-b); position:relative; z-index:2; white-space:nowrap; text-shadow:0 1px 2px rgba(0,0,0,.55)}
+.gwrap{position:relative}
+.gtrack{position:relative; height:var(--gl-thumb); display:flex; align-items:center}   /* 썸 높이 = 트랙 세로중앙 정렬 보장 */
+/* 선형 트랙 = 좌 코발트 램프(Sonnet 3) + 점선 경계 + 우 라임 램프(Opus 3) */
+.gline{position:relative; width:100%; height:var(--gl-h); border-radius:var(--r-pill); border:1px solid var(--glass-line);
+  background:linear-gradient(90deg,
+    rgba(var(--cobalt-rgb),var(--gl-lo)) 0%,
+    rgba(var(--cobalt-rgb),var(--gl-hi)) 44%,
+    rgba(255,255,255,.02) 46%, rgba(255,255,255,.02) 54%,
+    rgba(var(--accent-rgb),var(--gl-lo)) 56%,
+    rgba(var(--accent-rgb),var(--gl-hi)) 100%);}
+.gline::after{content:""; position:absolute; top:-4px; bottom:-4px; left:50%; border-left:1.5px dashed rgba(var(--fg-rgb),var(--gl-dash-a))}
+.eff-range{appearance:none; -webkit-appearance:none; position:absolute; inset:0; width:100%; height:100%; margin:0; background:transparent; outline:none; cursor:pointer}
+.eff-range::-webkit-slider-thumb{-webkit-appearance:none; appearance:none; width:var(--gl-thumb); height:var(--gl-thumb); border-radius:50%; background:var(--accent); border:2px solid #0d0e0d; box-shadow:0 0 10px rgba(var(--accent-rgb),.4); transition:transform .18s var(--ease), background .18s var(--ease)}
+.eff-range:active::-webkit-slider-thumb{transform:scale(var(--press-l))}
+.eff-range::-moz-range-thumb{width:var(--gl-thumb); height:var(--gl-thumb); border-radius:50%; background:var(--accent); border:2px solid #0d0e0d}
+.gwrap[data-model="s"] .eff-range::-webkit-slider-thumb{background:var(--cobalt); box-shadow:0 0 10px rgba(var(--cobalt-rgb),.5)}
+.gwrap[data-model="s"] .eff-range::-moz-range-thumb{background:var(--cobalt)}
 
-/* 모델 캡션 = 어느 칸이 어느 모델인지 1회(칸마다 반복 제거) · 존 색 틴트 */
-.gmodels{display:flex; margin-top:7px; padding:0 2px}
-.gm{font-size:var(--fs-meta); font-weight:var(--fw-b); letter-spacing:.04em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
-.gm-s{flex:1 1 0; margin-right:var(--g-gap); color:rgba(var(--cobalt-rgb),.92)}
-.gm-o{flex:3 1 0; text-align:right; color:rgba(var(--accent-rgb),.82)}
+/* 라벨 = 두 절반(SONNET | OPUS) 각 빠름·중간·깊게 */
+.eff-legend{display:flex; margin-top:10px}
+.half{flex:1 1 0; display:flex; flex-direction:column; gap:3px}
+.half.hs{padding-right:12px} .half.ho{padding-left:12px}
+.efforts{display:flex; justify-content:space-between}
+.efforts i{font-size:var(--fs-meta); color:var(--mut); font-style:normal; font-weight:var(--fw-b); transition:color .18s var(--ease)}
+.efforts i.on{color:var(--fg)}
+.mname{font-size:var(--fs-meta); font-weight:var(--fw-x); letter-spacing:.08em; text-align:center; opacity:.5; transition:opacity .18s var(--ease)}
+.hs .mname{color:#7f9dff} .ho .mname{color:var(--accent)}
+.half.act .mname{opacity:1}
 
-/* 좌측 1분할 = 소넷(매우 빠름) = 코발트 그라데 · 분리 */
-.gsonnet{
-  flex:1 1 0; margin-right:var(--g-gap); border-radius:var(--g-r);
-  background:linear-gradient(100deg, rgba(var(--cobalt-rgb),var(--g-cob-lo)), rgba(var(--cobalt-rgb),var(--g-cob-hi)));
-  box-shadow:inset 0 1px 0 rgba(var(--fg-rgb),.14);
-}
-/* 우측 3분할 = Opus 노력도 = 라임 그라데(왼→오 세짐) · 점선 구분자 */
-.gopus{
-  flex:3 1 0; display:flex; border-radius:var(--g-r); overflow:hidden;
-  background:linear-gradient(90deg, rgba(var(--accent-rgb),var(--g-acc-lo)), rgba(var(--accent-rgb),var(--g-acc-hi)));
-  box-shadow:inset 0 1px 0 rgba(var(--fg-rgb),.14);
-}
-.gopus .gseg + .gseg{border-left:var(--g-dash-w) dashed rgba(var(--fg-rgb),var(--g-dash-a))}
-
-/* 선택 표기 = 밝은 인셋 링 + 글자 부상(색은 토큰 계승 · 라벨 흰색+다크 헤일로 = 그라데 어디서나 가독) */
-.gseg.sel .gt{color:var(--fg); font-weight:var(--fw-x)}
-.gsonnet.sel{box-shadow:inset 0 0 0 2px rgba(var(--cobalt-rgb),.95), 0 0 14px rgba(var(--cobalt-rgb),.34), inset 0 1px 0 rgba(var(--fg-rgb),.14)}
-.gopus .gseg.sel::after{
-  content:""; position:absolute; inset:3px; border-radius:var(--r-m); z-index:1;
-  box-shadow:inset 0 0 0 2px rgba(var(--accent-rgb),.95), 0 0 16px rgba(var(--accent-rgb),.34);
-  background:rgba(0,0,0,.16);   /* 선택 칸 살짝 어둡게 = 밝은 라임 위 흰 글자 대비(raw 스크림 = 토큰 없는 축) */
-}
-
-.hint{font-size:var(--fs-meta); color:var(--mut); text-align:center; margin-top:auto; padding-top:14px; line-height:1.5}
+.hint{font-size:var(--fs-meta); color:var(--mut); text-align:center; margin-top:auto; padding-top:16px; line-height:1.5}
 .hint b{color:var(--fg-2); font-weight:var(--fw-b)}
 
 /* ── 컨트롤 패널 ── */
 .panel{display:flex; flex-direction:column; gap:18px}
-.card{background:var(--glass); border:1px solid var(--glass-line); border-radius:var(--r-l); padding:16px 16px 18px;
-  backdrop-filter:blur(var(--blur-l)); -webkit-backdrop-filter:blur(var(--blur-l))}
+.card{background:var(--glass); border:1px solid var(--glass-line); border-radius:var(--r-l); padding:16px 16px 18px; backdrop-filter:blur(var(--blur-l)); -webkit-backdrop-filter:blur(var(--blur-l))}
 .card h2{font-size:var(--fs-h3); font-weight:var(--fw-x); margin:0 0 12px; display:flex; align-items:center; gap:8px}
 .card h2 .n{width:20px; height:20px; border-radius:50%; background:rgba(var(--accent-rgb),.16); color:var(--accent); display:grid; place-items:center; font-size:11px; font-weight:var(--fw-x)}
-
 .presets{display:flex; flex-wrap:wrap; gap:8px}
-.pbtn{padding:8px 13px; border-radius:var(--r-pill); border:1px solid var(--glass-line); background:rgba(var(--fg-rgb),.03);
-  color:var(--fg-2); font:inherit; font-size:var(--fs-sm); font-weight:var(--fw-b); cursor:pointer;
-  transition:transform .16s var(--ease), border-color .2s var(--ease), color .2s var(--ease)}
+.pbtn{padding:8px 13px; border-radius:var(--r-pill); border:1px solid var(--glass-line); background:rgba(var(--fg-rgb),.03); color:var(--fg-2); font:inherit; font-size:var(--fs-sm); font-weight:var(--fw-b); cursor:pointer; transition:transform .16s var(--ease), border-color .2s var(--ease), color .2s var(--ease)}
 .pbtn:active{transform:scale(var(--press-l))}
 .pbtn.on{border-color:rgba(var(--accent-rgb),.5); color:var(--accent); background:rgba(var(--accent-rgb),.1)}
 .pbtn .star{color:var(--accent)}
-
-.grp{margin-top:6px}
 .grp-h{font-size:var(--fs-xs); color:var(--mut); font-weight:var(--fw-b); letter-spacing:.06em; margin:14px 0 6px}
-.grp-h:first-child{margin-top:0}
+.grp-h:first-of-type{margin-top:2px}
 .sld{display:flex; align-items:center; gap:11px; padding:6px 0}
-.sld .sn{flex:none; width:112px; font-size:var(--fs-xs); color:var(--fg-2)}
-.sld input[type=range]{
-  appearance:none; -webkit-appearance:none; flex:1; height:6px; border-radius:var(--r-pill); border:1px solid var(--glass-line);
-  background:linear-gradient(90deg, rgba(var(--accent-rgb),.85) var(--p,50%), rgba(var(--fg-rgb),.08) var(--p,50%)); outline:none}
-.sld input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; appearance:none; width:20px; height:20px; border-radius:50%;
-  background:var(--accent); border:none; box-shadow:0 0 10px rgba(var(--accent-rgb),.35); transition:transform .2s var(--ease)}
+.sld .sn{flex:none; width:110px; font-size:var(--fs-xs); color:var(--fg-2)}
+.sld input[type=range]{appearance:none; -webkit-appearance:none; flex:1; height:6px; border-radius:var(--r-pill); border:1px solid var(--glass-line); background:linear-gradient(90deg, rgba(var(--accent-rgb),.85) var(--p,50%), rgba(var(--fg-rgb),.08) var(--p,50%)); outline:none}
+.sld input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; appearance:none; width:20px; height:20px; border-radius:50%; background:var(--accent); border:none; box-shadow:0 0 10px rgba(var(--accent-rgb),.35); transition:transform .2s var(--ease)}
 .sld input[type=range]:active::-webkit-slider-thumb{transform:scale(var(--press-l))}
 .sld input[type=range]::-moz-range-thumb{width:20px; height:20px; border-radius:50%; background:var(--accent); border:none}
-.sld .sv{flex:none; width:52px; text-align:right; font-size:var(--fs-xs); color:var(--accent); font-weight:var(--fw-x); font-variant-numeric:tabular-nums}
-
-pre.out{margin:0; padding:14px; background:#0d0e0d; border:1px solid var(--glass-line); border-radius:var(--r-m);
-  font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:12px; line-height:1.7; color:var(--fg-2);
-  overflow-x:auto; white-space:pre; -webkit-overflow-scrolling:touch}
-pre.out .tok{color:var(--accent)}
-pre.out .cob{color:#7f9dff}
-pre.out .cmt{color:var(--mut)}
-.copy{margin-top:11px; padding:10px 15px; border-radius:var(--r-pill); border:1px solid rgba(var(--accent-rgb),.4);
-  background:rgba(var(--accent-rgb),.1); color:var(--accent); font:inherit; font-size:var(--fs-sm); font-weight:var(--fw-b); cursor:pointer;
-  transition:transform .16s var(--ease)}
+.sld .sv{flex:none; width:48px; text-align:right; font-size:var(--fs-xs); color:var(--accent); font-weight:var(--fw-x); font-variant-numeric:tabular-nums}
+pre.out{margin:0; padding:14px; background:#0d0e0d; border:1px solid var(--glass-line); border-radius:var(--r-m); font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:12px; line-height:1.7; color:var(--fg-2); overflow-x:auto; white-space:pre; -webkit-overflow-scrolling:touch}
+pre.out .tok{color:var(--accent)} pre.out .cob{color:#7f9dff} pre.out .cmt{color:var(--mut)}
+.copy{margin-top:11px; padding:10px 15px; border-radius:var(--r-pill); border:1px solid rgba(var(--accent-rgb),.4); background:rgba(var(--accent-rgb),.1); color:var(--accent); font:inherit; font-size:var(--fs-sm); font-weight:var(--fw-b); cursor:pointer; transition:transform .16s var(--ease)}
 .copy:active{transform:scale(var(--press-l))}
-.copy.done{border-color:rgba(var(--accent-rgb),.7)}
-
-.legend{font-size:var(--fs-sm); color:var(--fg-2); line-height:1.7}
-.legend .k{display:inline-flex; align-items:center; gap:6px; margin-right:14px}
-.chip{width:26px; height:13px; border-radius:4px; display:inline-block; vertical-align:middle}
-.chip.acc{background:linear-gradient(90deg, rgba(var(--accent-rgb),.2), rgba(var(--accent-rgb),1))}
-.chip.cob{background:linear-gradient(100deg, rgba(var(--cobalt-rgb),.34), rgba(var(--cobalt-rgb),.92))}
 .note{font-size:var(--fs-xs); color:var(--mut); line-height:1.7; margin-top:8px}
-.note b{color:var(--fg-2)}
-.warn{color:var(--think)}
-footer{max-width:1080px; margin:26px auto 0; font-size:var(--fs-xs); color:var(--mut); line-height:1.7; border-top:1px solid var(--glass-line); padding-top:16px}
+.note b{color:var(--fg-2)} .note code{color:var(--fg-2)}
+footer{max-width:1000px; margin:26px auto 0; font-size:var(--fs-xs); color:var(--mut); line-height:1.7; border-top:1px solid var(--glass-line); padding-top:16px}
 </style>
 
-<h1>다이얼 게이지바 — 플레이그라운드</h1>
-<p class="sub">모델·EFFORT 행을 탭하면 아래로 촤르륵 펼쳐지는 4분할 게이지. 좌1 = 소넷(매우 빠름·코발트) · 우3 = Opus 노력도(라임 그라데 + 점선). 슬라이더로 실시간 튜닝 → 확정값 복사.</p>
+<h1>대화 깊이 통합 게이지바 — 플레이그라운드</h1>
+<p class="sub">「대화 모델」+「생각 깊이」를 <b>한 행</b>으로 합침(같은 레벨). Sonnet 3단 + Opus 3단 = <b>6단 선형 게이지</b>. 라인을 밀면 위 값 <b>[모델] [빠름·중간·깊게]</b>가 실시간 변경. 좌 = Sonnet(코발트) · 점선 경계 · 우 = Opus(라임).</p>
 
 <div class="wrap">
-  <!-- ① 실물 재현 미리보기 -->
   <div class="phone"><div class="scr">
     <div class="mini-ttl">⚙ SETTING</div>
     <div class="mini-sec">대화</div>
 
-    <button class="row" id="rowModel" type="button">
-      <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
-      <span class="lbl"><span class="t">대화 모델</span><span class="d">탭 = 게이지로 조정 · 다음 답장부터</span></span>
-      <span class="v"><span class="vt" id="vModel">Opus 4.8</span><span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></span></span>
-    </button>
-
-    <button class="row" id="rowEffort" type="button">
-      <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
-      <span class="lbl"><span class="t">생각 깊이 (EFFORT)</span><span class="d">탭 = 게이지로 조정 · 빠름 → 최대</span></span>
-      <span class="v"><span class="vt mod" id="vEffort">최대</span><span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></span></span>
-    </button>
-
-    <!-- 촤르륵 게이지 -->
-    <div class="gauge-wrap" id="gauge">
-      <div class="gbar">
-        <button class="gseg gsonnet" data-seg="0" type="button"><span class="gt">매우 빠름</span></button>
-        <div class="gopus">
-          <button class="gseg" data-seg="1" type="button"><span class="gt">빠름</span></button>
-          <button class="gseg" data-seg="2" type="button"><span class="gt">깊게</span></button>
-          <button class="gseg" data-seg="3" type="button"><span class="gt">최대</span></button>
+    <div class="row" id="rowEff">
+      <button class="eff-head" id="effHead" type="button" aria-expanded="false">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+        <span class="lbl"><span class="t">대화 깊이</span><span class="d">모델 × 노력 · 라인으로 조정</span></span>
+        <span class="v"><span class="vchip vmodel" id="vModel">OPUS</span><span class="vchip veff" id="vEff">깊게</span><span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></span></span>
+      </button>
+      <div class="si-gauge">
+        <div class="gwrap" id="gwrap" data-model="o">
+          <div class="gtrack">
+            <div class="gline"></div>
+            <input type="range" class="eff-range" id="effRange" min="0" max="5" step="1" value="5" aria-label="대화 깊이">
+          </div>
+          <div class="eff-legend">
+            <div class="half hs"><div class="efforts"><i>빠름</i><i>중간</i><i>깊게</i></div><div class="mname">SONNET</div></div>
+            <div class="half ho act"><div class="efforts"><i>빠름</i><i>중간</i><i>깊게</i></div><div class="mname">OPUS</div></div>
+          </div>
         </div>
       </div>
-      <div class="gmodels"><span class="gm gm-s">Sonnet 5</span><span class="gm gm-o">Opus 4.8 · 노력도 ↑</span></div>
     </div>
 
-    <div class="hint">행을 <b>탭</b>하면 게이지가 펼쳐져 · 칸을 <b>탭</b>하면 즉시 선택<br>좌측 <b>매우 빠름</b>만 다른 모델(Sonnet) = 살짝 떨어뜨려 코발트로 구분</div>
+    <div class="hint">「대화 깊이」 탭 = 카드 안 라인 펼침 · 밀면 위 <b>[모델][노력]</b> 실시간 변경<br>좌 3칸 = <b>Sonnet</b> 빠름·중간·깊게 · 우 3칸 = <b>Opus</b> 빠름·중간·깊게</div>
   </div></div>
 
-  <!-- 컨트롤 -->
   <div class="panel">
     <div class="card">
       <h2><span class="n">2</span>프리셋</h2>
       <div class="presets" id="presets">
         <button class="pbtn on" data-preset="rec" type="button"><span class="star">★</span> 추천</button>
+        <button class="pbtn" data-preset="thin" type="button">라인 얇게</button>
         <button class="pbtn" data-preset="soft" type="button">점선 은은</button>
-        <button class="pbtn" data-preset="bold" type="button">그라데 강하게</button>
-        <button class="pbtn" data-preset="tight" type="button">분리 좁게</button>
-      </div>
-      <div class="legend" style="margin-top:14px">
-        <span class="k"><span class="chip cob"></span> 소넷 = 코발트(2강조)</span>
-        <span class="k"><span class="chip acc"></span> Opus = 라임(노력도↑ = 세짐)</span>
       </div>
     </div>
-
     <div class="card">
       <h2><span class="n">3</span>미세조정</h2>
-
-      <div class="grp-h">그라데이션 — 라임(Opus)</div>
-      <div class="sld"><span class="sn">빠름(시작·약)</span><input type="range" id="acclo" min="5" max="60" step="1" value="20"><span class="sv" id="acclo_v">.20</span></div>
-      <div class="sld"><span class="sn">최대(끝·강)</span><input type="range" id="acchi" min="60" max="100" step="1" value="100"><span class="sv" id="acchi_v">1.0</span></div>
-
-      <div class="grp-h">그라데이션 — 코발트(Sonnet)</div>
-      <div class="sld"><span class="sn">시작 알파</span><input type="range" id="coblo" min="10" max="70" step="1" value="34"><span class="sv" id="coblo_v">.34</span></div>
-      <div class="sld"><span class="sn">끝 알파</span><input type="range" id="cobhi" min="55" max="100" step="1" value="92"><span class="sv" id="cobhi_v">.92</span></div>
-
-      <div class="grp-h">점선 구분자(살짝)</div>
-      <div class="sld"><span class="sn">투명도</span><input type="range" id="dasha" min="0" max="80" step="1" value="40"><span class="sv" id="dasha_v">.40</span></div>
-      <div class="sld"><span class="sn">굵기</span><input type="range" id="dashw" min="10" max="30" step="1" value="15"><span class="sv" id="dashw_v">1.5px</span></div>
-
-      <div class="grp-h">레이아웃 · 모션</div>
-      <div class="sld"><span class="sn">분리 간격 <span class="warn" title="--sp 토큰 스냅">⚑</span></span><input type="range" id="gap" min="0" max="24" step="2" value="12"><span class="sv" id="gap_v">12px</span></div>
-      <div class="sld"><span class="sn">게이지 높이</span><input type="range" id="gh" min="40" max="60" step="1" value="46"><span class="sv" id="gh_v">46px</span></div>
-      <div class="sld"><span class="sn">반지름 <span class="warn" title="--r 토큰 스냅">⚑</span></span><input type="range" id="gr" min="9" max="24" step="1" value="16"><span class="sv" id="gr_v">16px</span></div>
-      <div class="sld"><span class="sn">슬라이드 시간</span><input type="range" id="dur" min="20" max="60" step="2" value="38"><span class="sv" id="dur_v">.38s</span></div>
+      <div class="grp-h">라인</div>
+      <div class="sld"><span class="sn">라인 높이</span><input type="range" id="glh" min="5" max="12" step="1" value="7"><span class="sv" id="glh_v">7px</span></div>
+      <div class="sld"><span class="sn">썸 지름</span><input type="range" id="glthumb" min="16" max="26" step="1" value="20"><span class="sv" id="glthumb_v">20px</span></div>
+      <div class="grp-h">그라데이션 · 점선</div>
+      <div class="sld"><span class="sn">램프 시작(약)</span><input type="range" id="gllo" min="12" max="60" step="1" value="32"><span class="sv" id="gllo_v">.32</span></div>
+      <div class="sld"><span class="sn">점선 투명도</span><input type="range" id="gldash" min="0" max="90" step="1" value="60"><span class="sv" id="gldash_v">.60</span></div>
     </div>
-
     <div class="card">
       <h2><span class="n">4</span>선택값 · 복사</h2>
       <pre class="out" id="out"></pre>
       <button class="copy" id="copy" type="button">CSS 복사</button>
-      <div class="note"><b>계승</b> = 색 전부 <span class="tok" style="color:var(--accent)">var(--accent-rgb)</span>·<span style="color:#7f9dff">var(--cobalt-rgb)</span> 토큰(알파만 로컬 = <code>.yset-range</code>·<code>.ycd-cta.go</code> 선례와 동형) · 반지름·간격 = <b class="warn">⚑</b> <code>--r-*</code>·<code>--sp-*</code> 토큰 스냅 · 점선/높이 = 토큰 없는 축(raw 허용). <b>신규 :root 토큰 0</b> → 락 등재 불필요.</div>
+      <div class="note"><b>계승</b> = 선형 트랙·썸 = <code>.yset-range</code> 정본 계승 · 색 전부 <span class="tok" style="color:var(--accent)">var(--accent-rgb)</span>·<span style="color:#7f9dff">var(--cobalt-rgb)</span> 토큰(알파만 로컬) · <b>신규 :root 토큰 0</b>. 6단 = 서버 화이트리스트(2모델×3노력) 그대로 · 「대화 모델」 별행 폐지(통합).</div>
     </div>
   </div>
 </div>
 
 <footer>
-<b>재현 한계</b> — ① 폰트 = 시스템 폴백(실앱 = LEMONMILK·Paperlogy) · ② 배경 영상·글래스 블러는 근사(실앱 = 뒤 영상 비침) · ③ 실앱은 <code>매우 빠름</code>(Sonnet) 진입 시 "품질 저하" 확인 팝업 1회 유지 예정 — 게이지에서도 그 가드 계승. ④ 이 플그는 <b>시안</b>: 확정하면 <code>viewer/index.html</code> 다이얼 탭 핸들러(<code>data-dial</code>)를 "탭 순환 → 게이지 펼침"으로 교체 이식. ⑤ 상태 매핑 = 매우빠름(sonnet×low·vfast) · 빠름(opus×low) · 깊게(opus×'') · 최대(opus×max) — 현행 사다리 그대로.
+<b>재현 한계</b> — ① 폰트 = 시스템 폴백 · ② 배경 영상·글래스 근사 · ③ 6단 매핑 = 1 Sonnet빠름(=현 매우빠름/vfast)·2 Sonnet중간·3 Sonnet깊게·4 Opus빠름(=현 기본)·5 Opus중간·6 Opus깊게(=현 최대) → 서버 model/effort 2파라미터 그대로 · ④ 실앱 Sonnet 진입 = "품질 저하" 확인 1회 계승 예정 · ⑤ 이 플그 = <b>시안</b>, 확정 시 viewer 다이얼 이식(2행 → 1행).
 </footer>
 
 <script>
-var SEG = [
-  {seg:0, model:'Sonnet 5', effort:'매우 빠름', mmod:true,  emod:true},
-  {seg:1, model:'Opus 4.8', effort:'빠름',     mmod:false, emod:false},
-  {seg:2, model:'Opus 4.8', effort:'깊게',     mmod:false, emod:true},
-  {seg:3, model:'Opus 4.8', effort:'최대',     mmod:false, emod:true}
+var MAP = [
+  {model:'SONNET', eff:'빠름', m:'s'}, {model:'SONNET', eff:'중간', m:'s'}, {model:'SONNET', eff:'깊게', m:'s'},
+  {model:'OPUS', eff:'빠름', m:'o'}, {model:'OPUS', eff:'중간', m:'o'}, {model:'OPUS', eff:'깊게', m:'o'}
 ];
-var cur = 3;   // 현행 = Opus × 최대(스샷 상태)
-var gauge = document.getElementById('gauge');
-var segs = Array.prototype.slice.call(document.querySelectorAll('.gseg'));
-var root = document.documentElement;
+var root=document.documentElement, range=document.getElementById('effRange'), gwrap=document.getElementById('gwrap');
+var halves=document.querySelectorAll('.half'), effGroups=[document.querySelectorAll('.hs .efforts i'), document.querySelectorAll('.ho .efforts i')];
 
-function paint(){
-  segs.forEach(function(s){ s.classList.toggle('sel', +s.dataset.seg === cur); });
-  var m = SEG[cur];
-  var vm = document.getElementById('vModel'), ve = document.getElementById('vEffort');
-  vm.textContent = m.model; vm.className = 'vt' + (m.mmod ? ' mod' : '');
-  ve.textContent = m.effort; ve.className = 'vt' + (m.emod ? ' mod' : '');
+function paintVal(){
+  var v=+range.value, m=MAP[v];
+  gwrap.dataset.model=m.m;
+  var vm=document.getElementById('vModel'); vm.textContent=m.model; vm.className='vchip vmodel'+(m.m==='s'?' s':'');
+  document.getElementById('vEff').textContent=m.eff;
+  var half = v<3?0:1, idx = v%3;
+  halves[0].classList.toggle('act', half===0); halves[1].classList.toggle('act', half===1);
+  effGroups.forEach(function(g,gi){ g.forEach(function(t,ti){ t.classList.toggle('on', gi===half && ti===idx); }); });
 }
-function openGauge(hot){
-  gauge.classList.add('open');
-  document.getElementById('rowModel').classList.toggle('hot', hot==='model' || hot==='both');
-  document.getElementById('rowEffort').classList.toggle('hot', hot==='effort' || hot==='both');
-}
-document.getElementById('rowModel').addEventListener('click', function(){ toggle('model'); });
-document.getElementById('rowEffort').addEventListener('click', function(){ toggle('effort'); });
-function toggle(which){
-  if (gauge.classList.contains('open')){
-    gauge.classList.remove('open');
-    document.getElementById('rowModel').classList.remove('hot');
-    document.getElementById('rowEffort').classList.remove('hot');
-  } else { openGauge('both'); }
-}
-segs.forEach(function(s){
-  s.addEventListener('click', function(){ cur = +s.dataset.seg; paint(); });
-});
+range.addEventListener('input', paintVal);
 
-/* ── 슬라이더 → CSS var + 출력 ── */
-function snapToken(px, ladder){ // 가장 가까운 토큰값
-  var best = ladder[0];
-  ladder.forEach(function(t){ if (Math.abs(t.v - px) < Math.abs(best.v - px)) best = t; });
-  return best;
-}
-var R_LADDER = [{v:9,n:'--r-s'},{v:11,n:'--r-m'},{v:16,n:'--r-l'},{v:22,n:'--r-modal'}];
-var SP_LADDER = [{v:0,n:'0'},{v:12,n:'--sp-2'},{v:18,n:'--sp-3'}];
+var rowEff=document.getElementById('rowEff'), effHead=document.getElementById('effHead');
+effHead.addEventListener('click', function(){ var o=rowEff.classList.toggle('open'); effHead.setAttribute('aria-expanded', o?'true':'false'); });
 
-function f2(v){ return (v/100).toFixed(2).replace(/0$/,'').replace(/\.$/,'.0'); }
+/* 슬라이더 */
 function alpha(v){ var s=(v/100).toFixed(2); return s==='1.00'?'1':s.replace(/^0/,'').replace(/0$/,''); }
-
-var S = {
-  acclo:['--g-acc-lo', function(v){return alpha(v);}, function(v){return alpha(v);}],
-  acchi:['--g-acc-hi', function(v){return v>=100?'1':alpha(v);}, function(v){return v>=100?'1.0':alpha(v);}],
-  coblo:['--g-cob-lo', function(v){return alpha(v);}, function(v){return alpha(v);}],
-  cobhi:['--g-cob-hi', function(v){return alpha(v);}, function(v){return alpha(v);}],
-  dasha:['--g-dash-a', function(v){return alpha(v);}, function(v){return alpha(v);}],
-  dashw:['--g-dash-w', function(v){return (v/10)+'px';}, function(v){return (v/10)+'px';}],
-  gap:['--g-gap', function(v){return v+'px';}, function(v){return v+'px';}],
-  gh:['--g-h', function(v){return v+'px';}, function(v){return v+'px';}],
-  gr:['--g-r', function(v){return v+'px';}, function(v){return v+'px';}],
-  dur:['--g-dur', function(v){return (v/100)+'s';}, function(v){return (v/100)+'s';}]
+var S={
+  glh:['--gl-h', function(v){return v+'px';}],
+  glthumb:['--gl-thumb', function(v){return v+'px';}],
+  gllo:['--gl-lo', function(v){return alpha(v);}, function(v){return alpha(v);}],
+  gldash:['--gl-dash-a', function(v){return alpha(v);}, function(v){return alpha(v);}]
 };
-function apply(id){
-  var el = document.getElementById(id), v = +el.value, spec = S[id];
-  root.style.setProperty(spec[0], spec[1](v));
-  document.getElementById(id+'_v').textContent = spec[2](v);
-  el.style.setProperty('--p', ((v-el.min)/(el.max-el.min)*100)+'%');
-  render();
-}
-Object.keys(S).forEach(function(id){
-  var el = document.getElementById(id);
-  el.addEventListener('input', function(){ apply(id); });
-});
-
+function apply(id){ var el=document.getElementById(id), v=+el.value, sp=S[id]; root.style.setProperty(sp[0], sp[1](v)); document.getElementById(id+'_v').textContent=(sp[2]||sp[1])(v); el.style.setProperty('--p', ((v-el.min)/(el.max-el.min)*100)+'%'); render(); }
+Object.keys(S).forEach(function(id){ document.getElementById(id).addEventListener('input', function(){ apply(id); }); });
 function gv(id){ return +document.getElementById(id).value; }
 function render(){
-  var gap = gv('gap'), gr = gv('gr');
-  var spSnap = snapToken(gap, SP_LADDER), rSnap = snapToken(gr, R_LADDER);
-  var gapStr = spSnap.n==='0' ? '0' : (Math.abs(spSnap.v-gap)<=2 ? 'var('+spSnap.n+')' : gap+'px');
-  var rStr = Math.abs(rSnap.v-gr)<=1 ? 'var('+rSnap.n+')' : gr+'px';
-  var o = '';
-  o += '<span class="cmt">/* 게이지 — 색 = 토큰 계승 · 알파/치수만 로컬 */</span>\n';
-  o += '<span class="cmt">/* 라임(Opus) 그라데 — 노력도↑ = 세짐 */</span>\n';
-  o += 'background:linear-gradient(90deg,\n';
-  o += '  rgba(<span class="tok">var(--accent-rgb)</span>,'+S.acclo[2](gv('acclo'))+'),\n';
-  o += '  rgba(<span class="tok">var(--accent-rgb)</span>,'+S.acchi[2](gv('acchi'))+'));\n';
-  o += '<span class="cmt">/* 코발트(Sonnet·좌측 분리) 그라데 */</span>\n';
-  o += 'background:linear-gradient(100deg,\n';
-  o += '  rgba(<span class="cob">var(--cobalt-rgb)</span>,'+S.coblo[2](gv('coblo'))+'),\n';
-  o += '  rgba(<span class="cob">var(--cobalt-rgb)</span>,'+S.cobhi[2](gv('cobhi'))+'));\n';
-  o += '<span class="cmt">/* 점선 구분자(살짝) */</span>\n';
-  o += 'border-left:'+(gv('dashw')/10)+'px dashed rgba(<span class="tok">var(--fg-rgb)</span>,'+S.dasha[2](gv('dasha'))+');\n';
-  o += '<span class="cmt">/* 레이아웃 · 모션 */</span>\n';
-  o += 'margin-right:'+gapStr+';   <span class="cmt">/* 분리 간격 (현행 없음) */</span>\n';
-  o += 'height:'+gv('gh')+'px;\n';
-  o += 'border-radius:'+rStr+';\n';
-  o += 'transition:max-height '+(gv('dur')/100)+'s <span class="tok">var(--ypick)</span>;';
-  document.getElementById('out').innerHTML = o;
+  var o='';
+  o+='<span class="cmt">/* 통합 6단 트랙 — 색 = 토큰 계승·알파/치수만 로컬 */</span>\n';
+  o+='.gline{ height:'+gv('glh')+'px; border-radius:<span class="tok">var(--r-pill)</span>;\n';
+  o+='  background:linear-gradient(90deg,\n';
+  o+='    rgba(<span class="cob">var(--cobalt-rgb)</span>,'+alpha(gv('gllo'))+') 0%, rgba(<span class="cob">var(--cobalt-rgb)</span>,1) 44%,   <span class="cmt">/* Sonnet 램프 */</span>\n';
+  o+='    rgba(<span class="tok">var(--accent-rgb)</span>,'+alpha(gv('gllo'))+') 56%, rgba(<span class="tok">var(--accent-rgb)</span>,1) 100%); <span class="cmt">/* Opus 램프 */</span> }\n';
+  o+='.gline::after{ left:50%; border-left:1.5px dashed rgba(<span class="tok">var(--fg-rgb)</span>,'+alpha(gv('gldash'))+'); } <span class="cmt">/* 모델 경계 */</span>\n';
+  o+='.eff-range::-webkit-slider-thumb{ width:'+gv('glthumb')+'px; height:'+gv('glthumb')+'px; } <span class="cmt">/* .yset-range 계승 · Sonnet=코발트 썸 */</span>';
+  document.getElementById('out').innerHTML=o;
 }
+var PRE={ rec:{glh:7,glthumb:20,gllo:32,gldash:60}, thin:{glh:5,glthumb:17,gllo:36,gldash:50}, soft:{glh:7,glthumb:20,gllo:32,gldash:25} };
+document.querySelectorAll('.pbtn').forEach(function(b){ b.addEventListener('click', function(){ document.querySelectorAll('.pbtn').forEach(function(x){x.classList.remove('on');}); b.classList.add('on'); var p=PRE[b.dataset.preset]; Object.keys(p).forEach(function(id){ document.getElementById(id).value=p[id]; apply(id); }); }); });
+document.getElementById('copy').addEventListener('click', function(){ var t=document.getElementById('out').textContent, b=this; (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(function(){ b.textContent='복사됨 ✓'; setTimeout(function(){b.textContent='CSS 복사';},1400); }).catch(function(){ b.textContent='길게 눌러 선택'; }); });
 
-/* ── 프리셋 ── */
-var PRE = {
-  rec:  {acclo:20, acchi:100, coblo:34, cobhi:92, dasha:40, dashw:15, gap:12, gh:46, gr:16, dur:38},
-  soft: {acclo:24, acchi:96,  coblo:34, cobhi:88, dasha:20, dashw:12, gap:12, gh:46, gr:16, dur:42},
-  bold: {acclo:10, acchi:100, coblo:28, cobhi:98, dasha:55, dashw:18, gap:14, gh:48, gr:16, dur:34},
-  tight:{acclo:20, acchi:100, coblo:34, cobhi:92, dasha:40, dashw:15, gap:4,  gh:46, gr:11, dur:38}
-};
-document.querySelectorAll('.pbtn').forEach(function(b){
-  b.addEventListener('click', function(){
-    document.querySelectorAll('.pbtn').forEach(function(x){ x.classList.remove('on'); });
-    b.classList.add('on');
-    var p = PRE[b.dataset.preset];
-    Object.keys(p).forEach(function(id){ document.getElementById(id).value = p[id]; apply(id); });
-  });
-});
-
-/* ── 복사 ── */
-document.getElementById('copy').addEventListener('click', function(){
-  var txt = document.getElementById('out').textContent;
-  var btn = this;
-  (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(function(){
-    btn.textContent = '복사됨 ✓'; btn.classList.add('done');
-    setTimeout(function(){ btn.textContent='CSS 복사'; btn.classList.remove('done'); }, 1400);
-  }).catch(function(){ btn.textContent='복사 실패 — 길게 눌러 선택'; });
-});
-
-/* init */
-Object.keys(S).forEach(apply);
-paint();
-setTimeout(function(){ openGauge('both'); }, 420);   // 열린 상태로 첫 시연(촤르륵)
+Object.keys(S).forEach(apply); paintVal();
+setTimeout(function(){ rowEff.classList.add('open'); effHead.setAttribute('aria-expanded','true'); }, 440);
 </script>
