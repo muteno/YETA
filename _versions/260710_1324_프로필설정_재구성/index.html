@@ -811,8 +811,6 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   /* ═══ 설정·프로필 목업(운영자 260706 "목업만 구성") — .ycd 풀스크린 글래스 시트 계승 · 행 = .ylist-row 글래스 결 · 토큰만 ═══ */
   .ycd-card.card-left { align-items:stretch; text-align:left; gap:10px; }   /* 설정/프로필 = 좌측 리스트(디테일 중앙정렬과 별개) */
   .yset-sec { font-size:var(--fs-label); font-weight:var(--fw-b); color:var(--fg); padding:8px 4px 2px; }   /* 섹션 라벨(대화·글꼴·알림…) = 흰색(운영자 260709 "흰색으로 표기" — 옛 뮤트) */
-  #ycprofileCard .yset-sec::before { content:'• '; color:var(--accent); }   /* 소머리 블릿(CII 소머리 정본 계승 · 블릿 형광 --accent · 텍스트 흰 --fg) — 프로필 중분류만(운영자 260710) */
-  #ycprofileCard .yset-acc { margin-top:var(--sp-3); }   /* 계정(Account Setting) 위 여백 확보(운영자 260710 · --sp-3 토큰) */
   .yset-item { display:flex; align-items:center; gap:11px; width:100%; padding:13px 14px; background:var(--glass); border:1px solid var(--glass-line); border-radius:var(--r-l);
     color:var(--fg); font:inherit; text-align:left; cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent; box-shadow:inset 0 1px 0 var(--glass-line);
     backdrop-filter:blur(var(--blur-m)); -webkit-backdrop-filter:blur(var(--blur-m)); }   /* 글래스 = 메뉴1 .ycrow 동일 계승(운영자 260707 "글래스 메뉴1,2 동일") — glass-0→glass 승격으로 실제 동일단 완성(운영자 확정 "설정 구분감" · 배경 위 프로스트 또렷) */
@@ -2291,20 +2289,20 @@ function yProfileRender() {   // 내 프로필 카드 렌더(재렌더 = navOpen
   const av = yMeAva(), nm = yMeName(), bio = yMeGet('bio'), ac = yMeGet('accent') === 'cobalt' ? 'cobalt' : 'lime';
   const camLbl = av ? '프로필 사진 교체' : '프로필 사진 첨부';   // 배지 시맨틱(운영자 260710 — 없으면 첨부·있으면 교체)
   const nThreads = Object.keys((YSESS || {}).threads || {}).length || 0;   // 진행 대화 = 실 스레드 수
-  const autoOn = yPrefOn('autoface', false);   // 소개로 프사 생성 = 자동생성 모드(운영자 260710) — 켜짐+프사 없음 → meface 생성 트리거 · 꺼짐 → 사용자 첨부/기본 이미지
-  const afRow = `<button type="button" class="yset-item sw${autoOn ? ' on' : ''}" data-pref="autoface" role="switch" aria-checked="${autoOn}"><span class="si-lbl"><span class="si-t">소개로 프사 생성</span>${_mfT ? `<span class="ycf-bar slow" id="ymefaceBar"><i></i></span>` : ''}</span><span class="si-sw"></span></button>`;   // 스위치 = .si-sw 기틀 계승(재설계 금지) · 진행 중이면 라벨 밑 게이지(.ycf-bar 정본)
+  const mfRow = av ? '' : `<button type="button" class="yset-item" data-act="meface" id="ymefaceRow"${_mfT ? ' disabled' : ''}><span class="si-lbl"><span class="si-t">프로필 이미지 만들기</span><span class="si-d">${_mfT ? '소개를 읽고 그리는 중…' : '내 소개를 읽고 지금 캐릭터들 톤으로 그려줘'}</span><span class="ycf-bar slow" id="ymefaceBar"${_mfT ? '' : ' hidden'}><i></i></span></span><span class="si-v">${_mfT ? '' : YICO.chev}</span></button>`;   // 프로필 없을 때만 = 생성 게이지 행(운영자 260710 · .ycf-bar 정본 게이지 계승)
   $('#ycprofileCard').innerHTML =
       `<div class="yprof-hero"><span class="yprof-ava${av ? ' has-img' : ''}" id="yprofAva" role="button" tabindex="0" aria-label="${camLbl}" title="${camLbl}"${av ? ` style="background-image:url('${esc(av)}')"` : ''}>${YICO.user}<span class="yprof-cam">${CAM}</span></span>`
     + `<span class="ycd-nm">${esc(nm)}</span><span class="ycd-tag">골목의 창작자</span>`
     + `<span class="ycd-desc">${bio ? esc(bio) : '밤이 길어질수록 자주 들르는 단골. 골목의 비밀을 어렴풋이 눈치채 가는 중.'}</span>`
     + `<div class="yprof-accent"><button type="button" class="yac-chip yac-lime${ac === 'lime' ? ' on' : ''}" data-ac="lime" aria-label="라임 강조색" aria-pressed="${ac === 'lime'}"></button><button type="button" class="yac-chip yac-cobalt${ac === 'cobalt' ? ' on' : ''}" data-ac="cobalt" aria-label="코발트 강조색" aria-pressed="${ac === 'cobalt'}"></button></div></div>`
     + `<div class="yprof-stats"><div class="yprof-stat"><b>${nThreads}</b><span>진행 대화</span></div><div class="yprof-stat"><b>LV 2</b><span>친밀도</span></div><div class="yprof-stat"><b>7</b><span>함께한 밤</span></div></div>`
-    + `<div class="yset-sec">PROFILE</div>` + nav('이름', '', yMeGet('name') || '비어 있음', ' data-me="name"') + nav('나의 페르소나', '', bio || '비어 있음', ' data-me="bio"') + afRow
-    + `<div class="yset-sec yset-acc">Account Setting</div>`
+    + `<div class="yset-sec">AI가 나를 부르는 법</div>` + nav('이름 (호칭)', '캐릭터가 날 이렇게 불러', yMeGet('name') || '비어 있음', ' data-me="name"') + nav('나를 소개하는 말', '캐릭터가 참고해 · 선택', bio || '비어 있음', ' data-me="bio"') + mfRow
+    + `<div class="yset-sec">계정</div>`
     + (YROLE === 'admin'
-        ? `<button type="button" class="yset-item ro" aria-disabled="true"><span class="si-lbl"><span class="si-t">PIN 설정</span></span><span class="si-v"><i class="si-vv">관리자 계정은 불가</i></span></button>`
-        : nav('PIN 설정', '', '', ' data-act="pinset"'))   // 권한 분기(운영자 260710) — 관리자 = 불가 표기 · 게스트 = 셀프 변경(op pinset)
-    + nav('앱 설정', '', '', ' data-open="settings"');   // 부수설명(si-d)·하단 노트 폐지(운영자 260710 — 타이포 위계 부제 폐지 디폴트)
+        ? `<button type="button" class="yset-item ro" aria-disabled="true"><span class="si-lbl"><span class="si-t">PIN 변경</span><span class="si-d">관리자 PIN은 서버(환경변수) 전용</span></span><span class="si-v"><i class="si-vv">관리자 계정은 불가</i></span></button>`
+        : nav('PIN 변경', '패턴 잠금 번호 새로 정하기', '', ' data-act="pinset"'))   // 권한 분기(운영자 260710) — 관리자 = 불가 표기 · 게스트 = 셀프 변경(op pinset)
+    + nav('알림 · 앱 설정', '설정 화면으로', '', ' data-open="settings"')
+    + `<div class="yset-note">호칭·소개는 캐릭터가 참고하도록 저장돼 — 대화에서 이 이름으로 널 불러. 직접 올린 사진·강조색은 이 기기에만 · 만들어 준 프로필 이미지는 계정에 남아.</div>`;   // 생성 프사 = 서버(me.avatar) 저장 — 사실관계 갱신(260710)
   if (_mfT) { const b = document.getElementById('ymefaceBar'); if (b) { b.querySelector('i').style.animationDelay = `-${Date.now() - _mfT}ms`; requestAnimationFrame(() => b.classList.add('run')); } }   // 재렌더에도 게이지 이어달리기(음수 delay = 경과분 스킵)
 }
 // 내 호칭·소개 = 서버 저장(op me · 운영자 260708 "AI가 나를 부르는 프로필") — 러너가 답장에 반영. 로컬(localStorage) = 편집 SSOT · 저장 시 서버 push(best-effort · 실패해도 로컬 유지).
@@ -2319,7 +2317,7 @@ function yMeHydrate() {   // 서버 me → 로컬 시드(로컬 비었을 때만
   if (!yMeGet('name') && m.call) yMeSet('name', m.call);
   if (!yMeGet('bio') && m.about) yMeSet('bio', m.about);
 }
-// ── 소개로 프사 생성(운영자 260710 · 프로필 토글 autoface = 진입점) — 소개 기반 생성: op meface(일 상한 가드) → yeta-meface.yml → sess.me.avatar → 폴 반영 ──
+// ── 프로필 이미지 만들기(운영자 260710) — 소개 기반 생성: op meface(일 상한 가드) → yeta-meface.yml → sess.me.avatar → 폴 반영 ──
 let _mfT = 0, _mfPoll = 0;   // 진행 시작시각(0 = 유휴) · 폴 타이머
 function yMefaceStart() {
   if (_mfT) return;
@@ -2479,21 +2477,14 @@ $('#yctermsBack').addEventListener('click', () => navBack('ycterms'));
 $('#yctermsX').addEventListener('click', () => navBack('ycterms'));   // 상주 닫기 = 동일 백스택 경로(운영자 260709)
 $('#ycprofileCard').addEventListener('click', e => {
   if (e.target.closest('#yprofAva')) { yAvatarPick(); return; }   // 프로필 사진 첨부/교체(파일 → 리샘플 → 로컬)
-  const af = e.target.closest('.yset-item.sw[data-pref="autoface"]');   // 소개로 프사 생성 토글(운영자 260710)
-  if (af) {
-    const turningOn = !af.classList.contains('on');
-    if (turningOn && !(yMeGet('bio') || (((YSESS || {}).me || {}).about) || '').trim()) { miniToast('내 소개부터 써줘 — 소개를 읽고 그려'); return; }   // 소개 없으면 못 켬(생성 재료 없음 · 토글 그대로)
-    yPrefSet('autoface', turningOn); af.classList.toggle('on', turningOn); af.setAttribute('aria-checked', turningOn);
-    if (turningOn && !yMeAva() && !_mfT) yMefaceStart();   // 켜짐 + 프사 없음 + 진행중 아님 → 소개 기반 자동생성(게이지 · yMefaceStart가 재렌더) · 프사 있으면 설정만
-    return;
-  }
+  if (e.target.closest('.yset-item[data-act="meface"]')) { yMefaceStart(); return; }   // 프로필 이미지 만들기(운영자 260710 — 소개 기반 생성 게이지)
   if (e.target.closest('.yset-item[data-act="pinset"]')) { yPinChangeOpen(); return; }   // 게스트 PIN 셀프 변경(운영자 260710)
   const ch = e.target.closest('.yac-chip[data-ac]');
   if (ch) { yMeSet('accent', ch.dataset.ac === 'cobalt' ? 'cobalt' : ''); yMeApply(); yProfileRender(); return; }   // 내 말풍선 강조색(라임=기본=빈값)
   const me = e.target.closest('.yset-item[data-me]');
   if (me) {
-    if (me.dataset.me === 'name') yEditOpen('이름', yMeGet('name'), v => { yMeSet('name', v); yMeApply(); try { yMeRow(); } catch (x) {} yProfileRender(); yMePush(); }, 24);   // 호칭 = 서버 동기(러너가 답장에 반영 · 260708)
-    else yEditOpen('나의 페르소나', yMeGet('bio'), v => { yMeSet('bio', v); yProfileRender(); yMePush(); }, 150);   // 소개 = 서버 동기 · maxlen 150(게이트웨이 300캡)
+    if (me.dataset.me === 'name') yEditOpen('이름 (호칭)', yMeGet('name'), v => { yMeSet('name', v); yMeApply(); try { yMeRow(); } catch (x) {} yProfileRender(); yMePush(); }, 24);   // 호칭 = 서버 동기(러너가 답장에 반영 · 260708)
+    else yEditOpen('나를 소개하는 말', yMeGet('bio'), v => { yMeSet('bio', v); yProfileRender(); yMePush(); }, 150);   // 소개 = 서버 동기 · maxlen 150(게이트웨이 300캡)
     return;
   }
   if (e.target.closest('.yset-item[data-open="settings"]')) { navSwap('ycprofile', 'ycsettings', yHideSettings); yShowSettings(true); }   // 프로필 → 설정 = 오버레이 교체(레이스 프리 · 디테일→챗 navSwap 관례 계승)
