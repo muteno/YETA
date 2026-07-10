@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>지도 차선 왕복 + 주민 산개 + 개명 — 260710</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin:0; padding:28px 20px 60px; background:#121212; color:#fff; font:15px/1.65 -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", system-ui, sans-serif; }
+  main { max-width:860px; margin:0 auto; }
+  h1 { font-size:22px; margin:0 0 6px; }
+  h2 { font-size:16px; margin:34px 0 10px; color:#CFFF40; }
+  .sub { color:#9a9a9a; font-size:13px; margin-bottom:26px; }
+  table { border-collapse:collapse; width:100%; font-size:13.5px; margin:10px 0 4px; }
+  th, td { text-align:left; padding:7px 10px; border-bottom:1px solid rgba(255,255,255,.09); vertical-align:top; }
+  th { color:#bdbdbd; font-weight:600; white-space:nowrap; }
+  td.k { color:#8fb7ff; white-space:nowrap; }
+  .bad { color:#ff8b8b; } .good { color:#CFFF40; }
+  code { background:rgba(255,255,255,.08); border-radius:5px; padding:1px 6px; font-size:12.5px; }
+  .note { font-size:12.5px; color:#9a9a9a; }
+  .card { background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.09); border-radius:14px; padding:16px 18px; margin:12px 0; }
+</style>
+</head>
+<body>
+<main>
+<h1>지도 차선 왕복 + 주민 산개 + 개명</h1>
+<div class="sub">260710 · 운영자 지시 3건{차가 차도로 안 다님 · 한국식 좌우 각 1차선 · 주민이 항상 뭉침} + 개명 2건{무디→홍석천 · 하은→하서연}</div>
+
+<h2>1. 차가 차도 밖으로 다니던 원인 — 도로 트레이스 자체가 그림과 어긋남</h2>
+<div class="card">
+  <table>
+    <tr><th>구분</th><th>전 (v2)</th><th>후 (v3)</th></tr>
+    <tr><td class="k">좌상단</td><td class="bad">북부 간선 시작 (0,2.5) = 고층빌딩 지붕 → 차가 건물 위 주행(운영자 스크린샷 빨간 원)</td><td class="good">좌상 도로의 실제 방향은 ↗(북서로 nwUp 신설) · 북부 간선은 (23.5,11.8) X교차로에서 분기 — 확대 크롭으로 중앙 점선 대시 실측</td></tr>
+    <tr><td class="k">광장</td><td class="bad">마름모가 실그림보다 3~4% 남쪽 → 정지선·존이 어긋남</td><td class="good">재실측 N(49.5,38)·W(41,42.5)·E(58,42.5)·S(49.5,47) — 기하 정합(중심 일치) 확인</td></tr>
+    <tr><td class="k">밤/낮</td><td class="bad">좌표 1벌 공용 — 낮 그림에서 차가 다리 옆 개천 위·공사장 안 주행</td><td class="good">밤/낮이 서로 다른 생성 그림(다리 중심 밤 67,19.5 / 낮 84,25 · 간선 1.5~2.5 시프트)임을 확정 → 간선 6종 톤별 세트 + 배경 스왑 시 차선 재생성</td></tr>
+    <tr><td class="k">가림 연출</td><td class="bad">'h'(건물 뒤 가림) 마커가 주석에만 있고 실데이터 0</td><td class="good">밤 = 편집국 뒤 1구간 · 낮 = 편집국~공사장 3구간 + 상가 뒤 1구간 — 차가 건물 뒤에서 스르륵 등장</td></tr>
+  </table>
+  <div class="note">검증 = 밤·낮 지도에 10% 그리드 + 폴리라인 오버레이 QA 3라운드(확대 크롭 대시·횡단보도·가로등 실측 스냅) + node 단위검증(14차선 좌표·기울기 ±0.5·광장 미진입).</div>
+</div>
+
+<h2>2. 한국식 왕복 차선 — 운영자 스펙 그대로</h2>
+<div class="card">
+  <table>
+    <tr><th>운영자 스펙</th><th>구현</th></tr>
+    <tr><td>지금 도로를 좌우 각 1차선으로</td><td>간선 7종 × 정·역방향 = <b>왕복 14대</b> (기존 편도 6대)</td></tr>
+    <tr><td>중앙 180° — 조금이라도 위로 가면 우측통행, 아래면 좌측</td><td>진행벡터 (dx,dy)의 우측 법선 (−dy,dx)으로 중앙선에서 1.2% 오프셋 — 위로 가는 차 = 화면 오른쪽 차선, 아래로 가는 차 = 화면 왼쪽 차선(수학적으로 동일 규칙) → 마주 오는 차가 서로 반대 차선</td></tr>
+    <tr><td>(기존 260709) 상행 파랑 · 하행 레드</td><td>차선별 전체 진행 dy 부호로 자동 판정 유지</td></tr>
+  </table>
+  <div class="note">역방향 차선의 'h'(가림)는 구간 속성이라 역순 시 자동 시프트(yLaneOf) — node 검증으로 정·역 모두 같은 물리 구간이 가려짐 확인. 's'(광장 정지선)는 정점 속성 무시프트 = 양방향 각자 교차로 앞 빨간불 정지. 오프셋 1.6→1.2% = 실그림 도로 반폭(~2.2%) 안에 차 폭까지 수납. 신호등도 새 교차로 위치(48,34)로 이동.</div>
+</div>
+
+<h2>3. 주민 뭉침 해소 — 원인 2겹</h2>
+<div class="card">
+  <table>
+    <tr><th>겹</th><th>전</th><th>후</th></tr>
+    <tr><td class="k">동선표<br>(places.json)</td><td class="bad">evening 슬롯: 찻집 5명(홍석천·세라·하서연·데스크·코피) + 골목 4명(백·류·윤·가을) — 저녁마다 두 곳에 9명</td><td class="good">장소당 최대 2명: 세라→연습실 · 하서연→학교 · 데스크→편집국(야근) · 류→시장(장보기) · 윤→놀이터(방송 전 산책) — 캐릭터 결에 맞게 재배치. 러너(yeta_place.py)·뷰어가 같은 JSON을 읽으므로 데이터만으로 양쪽 동기</td></tr>
+    <tr><td class="k">배치 로직<br>(뷰어)</td><td class="bad">존 내 순수 랜덤 → 같은 곳에 겹쳐 스폰 가능</td><td class="good">같은 존 워커 목표점과 최소 12px 간격(9회 시도 · 실패 시 가장 먼 후보 폴백) — 배회 재목표 시에도 동일 적용</td></tr>
+  </table>
+</div>
+
+<h2>4. 개명 — 무디→홍석천 · 하은→하서연</h2>
+<div class="card">
+  <table>
+    <tr><th>항목</th><th>내용</th></tr>
+    <tr><td class="k">범위</td><td>정본 19개 파일(캐릭터 카드 10 + roster.json + places.json + 세계관·SCHEMA·템플릿 + 뷰어 index/call.js + lucy 카드 + CLAUDE.md) — 백업(<code>_versions</code>)·확립 보고서(<code>docs/reports</code>)는 경위 보존 원칙대로 소급 안 함</td></tr>
+    <tr><td class="k">조사 처리</td><td>무디(받침 없음)→홍석천(받침 ㄴ): <code>가→이 · 는→은 · 를→을 · 다→이다</code> 규칙 치환(예: "갑은 무디다"→"갑은 홍석천이다" · "무디가 새 찻잔을"→"홍석천이 새 찻잔을"). 하은→하서연 = 받침 동일(ㄴ)이라 전 조사 안전</td></tr>
+    <tr><td class="k">불변</td><td>캐릭터 id(<code>mudi</code>·<code>haeun</code>) · 아바타/스프라이트 R2 경로 · 스레드 키 · 전화(Vapi) 배선 — 표시 이름만 변경이라 파이프라인 무영향</td></tr>
+  </table>
+</div>
+
+<h2>리스크 · 남은 것</h2>
+<div class="card">
+  <ul style="margin:4px 0; padding-left:18px;">
+    <li class="note">밤/낮 지도가 애초 다른 그림이라 ±1 내외 잔오차는 남음(도로 폭 안). 지도 그림을 다시 뽑으면 재실측 1라운드 필요.</li>
+    <li class="note">nShop 하행 차선은 광장 NE변 연석에 근접(실그림도 광장에 도로가 붙은 구조) — 로터리 안쪽 차선 그림으로 자연.</li>
+    <li class="note">evening 동선 변경으로 마주침(barge) 후보 분포도 함께 자연 분산 — 의도된 효과.</li>
+  </ul>
+</div>
+</main>
+</body>
+</html>
