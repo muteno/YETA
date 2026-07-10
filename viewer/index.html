@@ -1215,7 +1215,7 @@ const yMeName = () => yMeGet('name') || '무음동 방문자';
 try { if (!localStorage.getItem('yeta_set_v2')) { Object.keys(localStorage).filter(k => k.indexOf('yeta_pref_') === 0 || ['yeta_dial_model', 'yeta_dial_effort', 'yeta_dial_vfast', 'yeta_fs', 'yeta_font_latin', 'yeta_font_hangul'].includes(k)).forEach(k => localStorage.removeItem(k)); localStorage.setItem('yeta_set_v2', '1'); } } catch {}   // 설정 전체 1회 기본값 복원(운영자 260709 · 새 기본 = 소리진동 ON 포함) — me 프로필·튠·읽음캐시는 보존
 const yPrefOn = (k, def) => { try { const v = localStorage.getItem('yeta_pref_' + k); return v === null ? !!def : v === '1'; } catch { return !!def; } };
 const yPrefSet = (k, on) => { try { localStorage.setItem('yeta_pref_' + k, on ? '1' : '0'); } catch {} };
-const yMeAva = () => yMeGet('avatar') || (((typeof YSESS !== 'undefined' && YSESS) || {}).me || {}).avatar || '';   // 내 아바타 해석 SSOT(운영자 260710) — 기기 사진 > 서버 생성분(me.avatar · meface 파이프) > 없음
+const yMeAva = () => { let sv = ''; try { sv = ((YSESS || {}).me || {}).avatar || ''; } catch (e) {} return yMeGet('avatar') || sv; };   // 내 아바타 해석 SSOT(운영자 260710) — 기기 사진 > 서버 생성분(me.avatar · meface 파이프) > 없음 · try = YSESS(let·1381)가 이 섹션보다 뒤 선언이라 초기 yMeApply(1264) 시점 TDZ 흡수(typeof 가드는 TDZ에 무력)
 function yMeApply() {   // 내 프로필 → 라이브 표면(우상단 프로필 버튼·내 버블 강조색) · 미로우 아바타는 yMeRow가 직접 반영
   const av = yMeAva(), prof = document.getElementById('yprof');
   if (prof) { prof.style.backgroundImage = av ? `url("${av}")` : ''; prof.classList.toggle('has-img', true); }
