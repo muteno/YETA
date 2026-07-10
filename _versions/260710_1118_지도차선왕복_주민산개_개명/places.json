@@ -1,5 +1,5 @@
 {
-  "_doc": "무음동 위치 SSOT(260707 신설 · 260707 좌표 확정 = 분신술 10인 수렴) — 마주침 이벤트(러너 barge_check 위치 축)와 지도 UI가 공용으로 읽는 정본. 위치 판정 함수 = .github/scripts/yeta_place.py(place_of — 동선표 기본 + sha256 시드로 가끔 인접 외출 = 결정적·무저장). 슬롯 6키 = late(0~3)·dawn(3~7)·morning(7~11)·day(11~17)·evening(17~21)·night(21~24) — 러너 state_block 시간대와 동일 경계. 좌표 = x(서0→동100)·y(북0→남100) 0~100 격자 · 중심 핫플 = 골목(50,50) · 1칸≈100m(마을 반경 ~5km) · 존 = {북: 심야 미디어(편집국·라디오) · 중심: 밤 코어(골목·찻집·연습실·경비실) · 남: 생활권(편의점·학교·놀이터·검도장·시장·체육관)}. 집 노드 = home_<id>(private=true — 변주·마주침·지도 핀 제외 · neighbors 1개 = 지도 연결선용) · 홍석천(찻집 2층 살림)·류(도장 툇마루 별채) = 집 노드 없음(동선표에 home 슬롯 자체가 없음 · 일터=삶). 인접(neighbors) = 체감 왕래 위상 — 지도상 대체로 가깝게 그리되 비인접이 물리적으로 붙어 보여도 무방(담·언덕 결). look = 건물 특색 한 줄(지도 UI 툴팁·배경 프롬프트 결 동기 — yeta_map_bg.py LAYOUT과 수동 동기). offlimits=true = 출입금지 지대(동선·마주침·워커 제외 · 지도에 표시만).",
+  "_doc": "무음동 위치 SSOT(260707 신설 · 260707 좌표 확정 = 분신술 10인 수렴) — 마주침 이벤트(러너 barge_check 위치 축)와 지도 UI가 공용으로 읽는 정본. 위치 판정 함수 = .github/scripts/yeta_place.py(place_of — 동선표 기본 + sha256 시드로 가끔 인접 외출 = 결정적·무저장). 슬롯 6키 = late(0~3)·dawn(3~7)·morning(7~11)·day(11~17)·evening(17~21)·night(21~24) — 러너 state_block 시간대와 동일 경계. 좌표 = x(서0→동100)·y(북0→남100) 0~100 격자 · 중심 핫플 = 골목(50,50) · 1칸≈100m(마을 반경 ~5km) · 존 = {북: 심야 미디어(편집국·라디오) · 중심: 밤 코어(골목·찻집·연습실·경비실) · 남: 생활권(편의점·학교·놀이터·검도장·시장·체육관)}. 집 노드 = home_<id>(private=true — 변주·마주침·지도 핀 제외 · neighbors 1개 = 지도 연결선용) · 무디(찻집 2층 살림)·류(도장 툇마루 별채) = 집 노드 없음(동선표에 home 슬롯 자체가 없음 · 일터=삶). 인접(neighbors) = 체감 왕래 위상 — 지도상 대체로 가깝게 그리되 비인접이 물리적으로 붙어 보여도 무방(담·언덕 결). look = 건물 특색 한 줄(지도 UI 툴팁·배경 프롬프트 결 동기 — yeta_map_bg.py LAYOUT과 수동 동기). offlimits=true = 출입금지 지대(동선·마주침·워커 제외 · 지도에 표시만).",
   "places": {
     "alley": {
       "name": "골목",
@@ -125,7 +125,7 @@
       "private": true
     },
     "home_haeun": {
-      "name": "하서연의 집",
+      "name": "하은의 집",
       "x": 44,
       "y": 33,
       "neighbors": [
@@ -211,7 +211,7 @@
       "dawn": "studio",
       "morning": "home_sera",
       "day": "studio",
-      "evening": "studio",
+      "evening": "tea",
       "night": "studio"
     },
     "haeun": {
@@ -219,7 +219,7 @@
       "dawn": "home_haeun",
       "morning": "school",
       "day": "school",
-      "evening": "school",
+      "evening": "tea",
       "night": "store"
     },
     "baek": {
@@ -235,7 +235,7 @@
       "dawn": "dojo",
       "morning": "dojo",
       "day": "dojo",
-      "evening": "market",
+      "evening": "alley",
       "night": "dojo"
     },
     "yun": {
@@ -243,7 +243,7 @@
       "dawn": "home_yun",
       "morning": "home_yun",
       "day": "home_yun",
-      "evening": "park",
+      "evening": "alley",
       "night": "radio"
     },
     "desk": {
@@ -251,7 +251,7 @@
       "dawn": "home_desk",
       "morning": "office",
       "day": "office",
-      "evening": "office",
+      "evening": "tea",
       "night": "office"
     },
     "kopi": {
