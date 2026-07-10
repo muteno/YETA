@@ -1,14 +1,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>다이얼 선형 게이지바 — 플레이그라운드</title>
+<title>대화 깊이 통합 게이지바 — 플레이그라운드</title>
 <style>
 /* ── viewer/index.html :root 토큰 사본(실물 재현용 · 값 SSOT = viewer/index.html) ── */
 :root{
   --fg:#FFFFFF; --fg-rgb:255,255,255; --fg-2:#E7ECE7; --mut:#8B8F8A;
   --bg:#161716;
-  --accent:#CFFF40; --accent-rgb:207,255,64;      /* 강조1 브랜드 라임 */
-  --cobalt:#3D6BFF; --cobalt-rgb:61,107,255;      /* 강조2 코발트 = 2강조색 */
-  --think:#3EE0C8; --think-rgb:62,224,200;        /* 기본값 이탈 표기색 */
+  --accent:#CFFF40; --accent-rgb:207,255,64;      /* 강조1 브랜드 라임 = Opus */
+  --cobalt:#3D6BFF; --cobalt-rgb:61,107,255;      /* 강조2 코발트 = Sonnet */
+  --think:#3EE0C8; --think-rgb:62,224,200;
   --lgap:6px;
   --glass:rgba(255,255,255,.005); --glass-2:rgba(255,255,255,0); --glass-line:rgba(255,255,255,.08);
   --shadow-card:0 24px 60px rgba(0,0,0,.42);
@@ -17,17 +17,16 @@
   --fs-h2:15px; --fs-h3:14px; --fs-body:15px; --fs-label:13px; --fs-sm:12px; --fs-xs:11px; --fs-meta:8.25px;
   --fw-x:800; --fw-b:700; --lh-base:1.6;
   --ease:cubic-bezier(.2,.7,.3,1);
-  --ypick:cubic-bezier(.22,.61,.36,1);            /* 촤르륵 등장 커브(ypickIn 계승) */
+  --ypick:cubic-bezier(.22,.61,.36,1);
   --blur-m:29px; --blur-l:11px;
   --press-m:.9; --press-l:.95; --press-s:.9;
 
-  /* ── 선형 게이지 튜닝 축(색은 토큰 계승·알파/치수만 로컬 = .yset-range 선례) ── */
-  --gl-h:7px;       /* 라인(트랙) 높이 = .yset-range 6px 계승 */
-  --gl-cob:16;      /* 매우빠름 코발트 존 폭 % */
-  --gl-acc-lo:.26;  /* 라임 램프 시작 알파(빠름) */
-  --gl-acc-hi:1;    /* 라임 램프 끝 알파(최대) — 노력도↑ = 세짐 */
-  --gl-dash-a:.55;  /* 코발트↔라임 경계 점선 투명도 */
-  --gl-thumb:22px;  /* 썸 지름 = .yset-range 계승 */
+  /* ── 통합 게이지 튜닝 축(색=토큰 계승·알파/치수만 로컬 = .yset-range 선례) ── */
+  --gl-h:7px;       /* 라인 높이 */
+  --gl-thumb:20px;  /* 썸 지름 */
+  --gl-lo:.32;      /* 각 모델 램프 시작 알파(빠름) */
+  --gl-hi:1;        /* 각 모델 램프 끝 알파(깊게) — 노력도↑ 세짐 */
+  --gl-dash-a:.6;   /* 모델 경계 점선 투명도 */
   --gl-dur:.36s;    /* 촤르륵 시간 */
 }
 *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
@@ -37,168 +36,139 @@ body{
     radial-gradient(circle at 78% 8%, rgba(var(--accent-rgb),.06), transparent 46%),
     radial-gradient(circle at 12% 96%, rgba(var(--cobalt-rgb),.07), transparent 44%),
     var(--bg);
-  color:var(--fg);
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Pretendard,Roboto,sans-serif;
-  -webkit-font-smoothing:antialiased;
-  line-height:var(--lh-base);
-  padding:26px 16px 80px;
+  color:var(--fg); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Pretendard,Roboto,sans-serif;
+  -webkit-font-smoothing:antialiased; line-height:var(--lh-base); padding:26px 16px 80px;
 }
 h1{font-size:19px; font-weight:var(--fw-x); margin:0 0 4px; letter-spacing:-.01em}
-.sub{color:var(--mut); font-size:var(--fs-sm); margin:0 0 22px}
+.sub{color:var(--mut); font-size:var(--fs-sm); margin:0 0 22px; max-width:60ch}
 .wrap{max-width:1000px; margin:0 auto; display:grid; grid-template-columns:340px 1fr; gap:26px; align-items:start}
 @media (max-width:820px){ .wrap{grid-template-columns:1fr} }
 
-/* ── 폰 프레임(실물 재현) ── */
-.phone{
-  width:340px; max-width:100%; aspect-ratio:9/16; margin:0 auto; position:relative;
+.phone{width:340px; max-width:100%; aspect-ratio:9/16; margin:0 auto; position:relative;
   border-radius:30px; border:1px solid var(--glass-line); overflow:hidden;
-  background:
-    radial-gradient(circle at 62% 14%, rgba(var(--accent-rgb),.10), transparent 52%),
-    radial-gradient(circle at 12% 92%, rgba(var(--cobalt-rgb),.06), transparent 46%),
-    #0d0e0d;
-  box-shadow:var(--shadow-card);
-}
+  background:radial-gradient(circle at 62% 14%, rgba(var(--accent-rgb),.10), transparent 52%),
+    radial-gradient(circle at 12% 92%, rgba(var(--cobalt-rgb),.06), transparent 46%), #0d0e0d;
+  box-shadow:var(--shadow-card);}
 .scr{position:absolute; inset:0; padding:20px 15px; display:flex; flex-direction:column}
 .mini-ttl{font-size:var(--fs-xs); color:var(--mut); font-weight:var(--fw-b); letter-spacing:.12em; margin:2px 2px 12px}
 .mini-sec{font-size:var(--fs-xs); color:var(--mut); font-weight:var(--fw-b); margin:4px 2px 8px}
 
-/* ── 설정 행(.yset-item 계승) ── */
-.row{
-  display:flex; align-items:center; gap:11px; width:100%; padding:13px 14px; margin-bottom:9px;
+/* ── 통합 「대화 깊이」 행(.yset-item 계승) — 헤드 + 카드 안 게이지 ── */
+.row{display:flex; align-items:center; gap:11px; width:100%; padding:13px 14px;
   background:var(--glass); border:1px solid var(--glass-line); border-radius:var(--r-l);
   backdrop-filter:blur(var(--blur-m)) saturate(1); -webkit-backdrop-filter:blur(var(--blur-m)) saturate(1);
-  color:var(--fg); text-align:left; cursor:pointer; font:inherit;
-  transition:transform .16s var(--ease), border-color .2s var(--ease);
-}
-button.row:active{transform:scale(var(--press-l))}
-.row.hot{border-color:rgba(var(--accent-rgb),.34)}
+  color:var(--fg); flex-wrap:wrap;}
+.eff-head{display:flex; align-items:center; gap:11px; width:100%; cursor:pointer; background:none; border:none; padding:0; margin:0; font:inherit; color:inherit; text-align:left; transition:transform .16s var(--ease)}
+.eff-head:active{transform:scale(var(--press-l))}
 .row .ic{flex:none; width:22px; height:22px; color:var(--fg-2); display:grid; place-items:center}
 .row .ic svg{width:21px; height:21px}
 .row .lbl{flex:1; min-width:0; display:flex; flex-direction:column; gap:1px}
-.row .t{font-size:var(--fs-body); font-weight:var(--fw-b); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.row .t{font-size:var(--fs-body); font-weight:var(--fw-b)}
 .row .d{font-size:var(--fs-xs); color:var(--mut); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
-.row .v{flex:none; display:flex; align-items:center; gap:3px; font-size:var(--fs-xs)}
-.row .v .vt{color:var(--accent); font-weight:var(--fw-b); font-variant-numeric:tabular-nums}
-.row .v .vt.mod{color:var(--think)}
-.row .v .chev{width:17px; height:17px; color:var(--mut); transition:transform .28s var(--ypick)}
-.row.open .v .chev{transform:rotate(90deg)}
+.row .v{flex:none; display:flex; align-items:center; gap:5px}
+.chev{width:17px; height:17px; color:var(--mut); transition:transform .28s var(--ypick)}
+.row.open .chev{transform:rotate(90deg)}
+/* 값 = [모델] [노력] 두 칩(운영자 "MODEL | 빠름 중간 깊게") */
+.vchip{padding:2px 9px; border-radius:var(--r-pill); font-size:var(--fs-xs); font-weight:var(--fw-b); white-space:nowrap; letter-spacing:.02em; transition:color .18s var(--ease), background .18s var(--ease), border-color .18s var(--ease)}
+.vchip.vmodel{border:1px solid rgba(var(--accent-rgb),.45); background:rgba(var(--accent-rgb),.14); color:var(--accent)}
+.gwrap[data-model="s"] ~ .no, .vmodel.s{border-color:rgba(var(--cobalt-rgb),.55); background:rgba(var(--cobalt-rgb),.18); color:#7f9dff}
+.vchip.veff{border:1px solid var(--glass-line); background:rgba(var(--fg-rgb),.05); color:var(--fg-2)}
 
-/* ── 생각 깊이 카드 = 탭할 헤드 + 카드 안 선형 게이지(도형 안) ── */
-.row.eff{flex-wrap:wrap; cursor:default}
-.eff-head{display:flex; align-items:center; gap:11px; width:100%; cursor:pointer; background:none; border:none; padding:0; margin:0; font:inherit; color:inherit; text-align:left; -webkit-tap-highlight-color:transparent}
-.eff-head:active{transform:scale(var(--press-l))}
-.si-gauge{
-  flex-basis:100%; overflow:hidden; max-height:0; opacity:0;
-  transition:max-height var(--gl-dur) var(--ypick), opacity var(--gl-dur) var(--ypick), margin var(--gl-dur) var(--ypick);
-  margin-top:0;
-}
-.row.eff.open .si-gauge{max-height:70px; opacity:1; margin-top:12px}
+.si-gauge{flex-basis:100%; overflow:hidden; max-height:0; opacity:0;
+  transition:max-height var(--gl-dur) var(--ypick), opacity var(--gl-dur) var(--ypick), margin var(--gl-dur) var(--ypick); margin-top:0;}
+.row.open .si-gauge{max-height:96px; opacity:1; margin-top:13px}
 
-/* 선형 트랙(게이지) — 코발트 존 + 점선 경계 + 라임 램프 */
-.gline{position:relative; height:var(--gl-h); border-radius:var(--r-pill); border:1px solid var(--glass-line);
+.gwrap{position:relative}
+.gtrack{position:relative; height:var(--gl-thumb); display:flex; align-items:center}   /* 썸 높이 = 트랙 세로중앙 정렬 보장 */
+/* 선형 트랙 = 좌 코발트 램프(Sonnet 3) + 점선 경계 + 우 라임 램프(Opus 3) */
+.gline{position:relative; width:100%; height:var(--gl-h); border-radius:var(--r-pill); border:1px solid var(--glass-line);
   background:linear-gradient(90deg,
-    rgba(var(--cobalt-rgb),.9) 0%,
-    rgba(var(--cobalt-rgb),.5) calc(var(--gl-cob) * 1%),
-    rgba(255,255,255,.02) calc(var(--gl-cob) * 1%),
-    rgba(255,255,255,.02) calc((var(--gl-cob) + 6) * 1%),
-    rgba(var(--accent-rgb),var(--gl-acc-lo)) calc((var(--gl-cob) + 6) * 1%),
-    rgba(var(--accent-rgb),var(--gl-acc-hi)) 100%);
-}
-/* 코발트↔라임 경계 점선(살짝) */
-.gline::after{content:""; position:absolute; top:-4px; bottom:-4px; left:calc((var(--gl-cob) + 3) * 1%);
-  border-left:1.5px dashed rgba(var(--fg-rgb),var(--gl-dash-a));}
-/* 네이티브 레인지 = 투명 오버레이(드래그·스냅·키보드 담당) · .yset-range 썸 계승 */
-.eff-range{appearance:none; -webkit-appearance:none; position:absolute; inset:-9px 0; width:100%; height:calc(var(--gl-h) + 18px); margin:0; background:transparent; outline:none; cursor:pointer}
-.eff-range::-webkit-slider-thumb{-webkit-appearance:none; appearance:none; width:var(--gl-thumb); height:var(--gl-thumb); border-radius:50%;
-  background:var(--accent); border:2px solid #0d0e0d; box-shadow:0 0 10px rgba(var(--accent-rgb),.4); transition:transform .18s var(--ease), background .18s var(--ease)}
+    rgba(var(--cobalt-rgb),var(--gl-lo)) 0%,
+    rgba(var(--cobalt-rgb),var(--gl-hi)) 44%,
+    rgba(255,255,255,.02) 46%, rgba(255,255,255,.02) 54%,
+    rgba(var(--accent-rgb),var(--gl-lo)) 56%,
+    rgba(var(--accent-rgb),var(--gl-hi)) 100%);}
+.gline::after{content:""; position:absolute; top:-4px; bottom:-4px; left:50%; border-left:1.5px dashed rgba(var(--fg-rgb),var(--gl-dash-a))}
+.eff-range{appearance:none; -webkit-appearance:none; position:absolute; inset:0; width:100%; height:100%; margin:0; background:transparent; outline:none; cursor:pointer}
+.eff-range::-webkit-slider-thumb{-webkit-appearance:none; appearance:none; width:var(--gl-thumb); height:var(--gl-thumb); border-radius:50%; background:var(--accent); border:2px solid #0d0e0d; box-shadow:0 0 10px rgba(var(--accent-rgb),.4); transition:transform .18s var(--ease), background .18s var(--ease)}
 .eff-range:active::-webkit-slider-thumb{transform:scale(var(--press-l))}
-.eff-range::-moz-range-thumb{width:var(--gl-thumb); height:var(--gl-thumb); border-radius:50%; background:var(--accent); border:2px solid #0d0e0d; box-shadow:0 0 10px rgba(var(--accent-rgb),.4)}
-/* 매우 빠름(값0·소넷) = 썸 코발트 */
-.gwrap[data-v="0"] .eff-range::-webkit-slider-thumb{background:var(--cobalt); box-shadow:0 0 10px rgba(var(--cobalt-rgb),.5)}
-.gwrap[data-v="0"] .eff-range::-moz-range-thumb{background:var(--cobalt)}
-.gwrap{position:relative; padding:9px 0 2px}
-.eff-ticks{display:flex; justify-content:space-between; margin-top:9px}
-.eff-ticks i{font-size:var(--fs-meta); color:var(--mut); font-style:normal; font-weight:var(--fw-b); transition:color .18s var(--ease)}
-.eff-ticks i.on{color:var(--fg)}
-.eff-ticks i:first-child.on{color:rgba(var(--cobalt-rgb),.95)}
+.eff-range::-moz-range-thumb{width:var(--gl-thumb); height:var(--gl-thumb); border-radius:50%; background:var(--accent); border:2px solid #0d0e0d}
+.gwrap[data-model="s"] .eff-range::-webkit-slider-thumb{background:var(--cobalt); box-shadow:0 0 10px rgba(var(--cobalt-rgb),.5)}
+.gwrap[data-model="s"] .eff-range::-moz-range-thumb{background:var(--cobalt)}
+
+/* 라벨 = 두 절반(SONNET | OPUS) 각 빠름·중간·깊게 */
+.eff-legend{display:flex; margin-top:10px}
+.half{flex:1 1 0; display:flex; flex-direction:column; gap:3px}
+.half.hs{padding-right:12px} .half.ho{padding-left:12px}
+.efforts{display:flex; justify-content:space-between}
+.efforts i{font-size:var(--fs-meta); color:var(--mut); font-style:normal; font-weight:var(--fw-b); transition:color .18s var(--ease)}
+.efforts i.on{color:var(--fg)}
+.mname{font-size:var(--fs-meta); font-weight:var(--fw-x); letter-spacing:.08em; text-align:center; opacity:.5; transition:opacity .18s var(--ease)}
+.hs .mname{color:#7f9dff} .ho .mname{color:var(--accent)}
+.half.act .mname{opacity:1}
 
 .hint{font-size:var(--fs-meta); color:var(--mut); text-align:center; margin-top:auto; padding-top:16px; line-height:1.5}
 .hint b{color:var(--fg-2); font-weight:var(--fw-b)}
 
 /* ── 컨트롤 패널 ── */
 .panel{display:flex; flex-direction:column; gap:18px}
-.card{background:var(--glass); border:1px solid var(--glass-line); border-radius:var(--r-l); padding:16px 16px 18px;
-  backdrop-filter:blur(var(--blur-l)); -webkit-backdrop-filter:blur(var(--blur-l))}
+.card{background:var(--glass); border:1px solid var(--glass-line); border-radius:var(--r-l); padding:16px 16px 18px; backdrop-filter:blur(var(--blur-l)); -webkit-backdrop-filter:blur(var(--blur-l))}
 .card h2{font-size:var(--fs-h3); font-weight:var(--fw-x); margin:0 0 12px; display:flex; align-items:center; gap:8px}
 .card h2 .n{width:20px; height:20px; border-radius:50%; background:rgba(var(--accent-rgb),.16); color:var(--accent); display:grid; place-items:center; font-size:11px; font-weight:var(--fw-x)}
-
 .presets{display:flex; flex-wrap:wrap; gap:8px}
-.pbtn{padding:8px 13px; border-radius:var(--r-pill); border:1px solid var(--glass-line); background:rgba(var(--fg-rgb),.03);
-  color:var(--fg-2); font:inherit; font-size:var(--fs-sm); font-weight:var(--fw-b); cursor:pointer;
-  transition:transform .16s var(--ease), border-color .2s var(--ease), color .2s var(--ease)}
+.pbtn{padding:8px 13px; border-radius:var(--r-pill); border:1px solid var(--glass-line); background:rgba(var(--fg-rgb),.03); color:var(--fg-2); font:inherit; font-size:var(--fs-sm); font-weight:var(--fw-b); cursor:pointer; transition:transform .16s var(--ease), border-color .2s var(--ease), color .2s var(--ease)}
 .pbtn:active{transform:scale(var(--press-l))}
 .pbtn.on{border-color:rgba(var(--accent-rgb),.5); color:var(--accent); background:rgba(var(--accent-rgb),.1)}
 .pbtn .star{color:var(--accent)}
-
 .grp-h{font-size:var(--fs-xs); color:var(--mut); font-weight:var(--fw-b); letter-spacing:.06em; margin:14px 0 6px}
 .grp-h:first-of-type{margin-top:2px}
 .sld{display:flex; align-items:center; gap:11px; padding:6px 0}
-.sld .sn{flex:none; width:118px; font-size:var(--fs-xs); color:var(--fg-2)}
-.sld input[type=range]{
-  appearance:none; -webkit-appearance:none; flex:1; height:6px; border-radius:var(--r-pill); border:1px solid var(--glass-line);
-  background:linear-gradient(90deg, rgba(var(--accent-rgb),.85) var(--p,50%), rgba(var(--fg-rgb),.08) var(--p,50%)); outline:none}
-.sld input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; appearance:none; width:20px; height:20px; border-radius:50%;
-  background:var(--accent); border:none; box-shadow:0 0 10px rgba(var(--accent-rgb),.35); transition:transform .2s var(--ease)}
+.sld .sn{flex:none; width:110px; font-size:var(--fs-xs); color:var(--fg-2)}
+.sld input[type=range]{appearance:none; -webkit-appearance:none; flex:1; height:6px; border-radius:var(--r-pill); border:1px solid var(--glass-line); background:linear-gradient(90deg, rgba(var(--accent-rgb),.85) var(--p,50%), rgba(var(--fg-rgb),.08) var(--p,50%)); outline:none}
+.sld input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; appearance:none; width:20px; height:20px; border-radius:50%; background:var(--accent); border:none; box-shadow:0 0 10px rgba(var(--accent-rgb),.35); transition:transform .2s var(--ease)}
 .sld input[type=range]:active::-webkit-slider-thumb{transform:scale(var(--press-l))}
 .sld input[type=range]::-moz-range-thumb{width:20px; height:20px; border-radius:50%; background:var(--accent); border:none}
-.sld .sv{flex:none; width:50px; text-align:right; font-size:var(--fs-xs); color:var(--accent); font-weight:var(--fw-x); font-variant-numeric:tabular-nums}
-
-pre.out{margin:0; padding:14px; background:#0d0e0d; border:1px solid var(--glass-line); border-radius:var(--r-m);
-  font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:12px; line-height:1.7; color:var(--fg-2);
-  overflow-x:auto; white-space:pre; -webkit-overflow-scrolling:touch}
+.sld .sv{flex:none; width:48px; text-align:right; font-size:var(--fs-xs); color:var(--accent); font-weight:var(--fw-x); font-variant-numeric:tabular-nums}
+pre.out{margin:0; padding:14px; background:#0d0e0d; border:1px solid var(--glass-line); border-radius:var(--r-m); font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:12px; line-height:1.7; color:var(--fg-2); overflow-x:auto; white-space:pre; -webkit-overflow-scrolling:touch}
 pre.out .tok{color:var(--accent)} pre.out .cob{color:#7f9dff} pre.out .cmt{color:var(--mut)}
-.copy{margin-top:11px; padding:10px 15px; border-radius:var(--r-pill); border:1px solid rgba(var(--accent-rgb),.4);
-  background:rgba(var(--accent-rgb),.1); color:var(--accent); font:inherit; font-size:var(--fs-sm); font-weight:var(--fw-b); cursor:pointer; transition:transform .16s var(--ease)}
+.copy{margin-top:11px; padding:10px 15px; border-radius:var(--r-pill); border:1px solid rgba(var(--accent-rgb),.4); background:rgba(var(--accent-rgb),.1); color:var(--accent); font:inherit; font-size:var(--fs-sm); font-weight:var(--fw-b); cursor:pointer; transition:transform .16s var(--ease)}
 .copy:active{transform:scale(var(--press-l))}
 .note{font-size:var(--fs-xs); color:var(--mut); line-height:1.7; margin-top:8px}
 .note b{color:var(--fg-2)} .note code{color:var(--fg-2)}
 footer{max-width:1000px; margin:26px auto 0; font-size:var(--fs-xs); color:var(--mut); line-height:1.7; border-top:1px solid var(--glass-line); padding-top:16px}
 </style>
 
-<h1>다이얼 선형 게이지바 — 플레이그라운드</h1>
-<p class="sub">「생각 깊이」 카드를 탭하면 <b>카드 안에서</b> 선형 게이지가 촤르륵 펼쳐지고, 라인을 밀면 위의 값 문구(최대·깊게·빠름·매우 빠름)가 바뀐다. 좌측 = 매우 빠름(소넷·코발트) · 점선 경계 · 우측 = Opus 노력도(라임 램프).</p>
+<h1>대화 깊이 통합 게이지바 — 플레이그라운드</h1>
+<p class="sub">「대화 모델」+「생각 깊이」를 <b>한 행</b>으로 합침(같은 레벨). Sonnet 3단 + Opus 3단 = <b>6단 선형 게이지</b>. 라인을 밀면 위 값 <b>[모델] [빠름·중간·깊게]</b>가 실시간 변경. 좌 = Sonnet(코발트) · 점선 경계 · 우 = Opus(라임).</p>
 
 <div class="wrap">
-  <!-- ① 실물 재현 -->
   <div class="phone"><div class="scr">
     <div class="mini-ttl">⚙ SETTING</div>
     <div class="mini-sec">대화</div>
 
-    <button class="row" id="rowModel" type="button">
-      <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
-      <span class="lbl"><span class="t">대화 모델</span><span class="d">생각 깊이와 연동 · 다음 답장부터</span></span>
-      <span class="v"><span class="vt" id="vModel">Opus 4.8</span></span>
-    </button>
-
-    <div class="row eff" id="rowEff">
+    <div class="row" id="rowEff">
       <button class="eff-head" id="effHead" type="button" aria-expanded="false">
         <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
-        <span class="lbl"><span class="t">생각 깊이 (EFFORT)</span><span class="d">라인을 밀어 조정</span></span>
-        <span class="v"><span class="vt mod" id="vEff">최대</span><span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></span></span>
+        <span class="lbl"><span class="t">대화 깊이</span><span class="d">모델 × 노력 · 라인으로 조정</span></span>
+        <span class="v"><span class="vchip vmodel" id="vModel">OPUS</span><span class="vchip veff" id="vEff">깊게</span><span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></span></span>
       </button>
       <div class="si-gauge">
-        <div class="gwrap" id="gwrap" data-v="3">
-          <div class="gline"></div>
-          <input type="range" class="eff-range" id="effRange" min="0" max="3" step="1" value="3" aria-label="생각 깊이">
-          <div class="eff-ticks"><i>매우 빠름</i><i>빠름</i><i>깊게</i><i>최대</i></div>
+        <div class="gwrap" id="gwrap" data-model="o">
+          <div class="gtrack">
+            <div class="gline"></div>
+            <input type="range" class="eff-range" id="effRange" min="0" max="5" step="1" value="5" aria-label="대화 깊이">
+          </div>
+          <div class="eff-legend">
+            <div class="half hs"><div class="efforts"><i>빠름</i><i>중간</i><i>깊게</i></div><div class="mname">SONNET</div></div>
+            <div class="half ho act"><div class="efforts"><i>빠름</i><i>중간</i><i>깊게</i></div><div class="mname">OPUS</div></div>
+          </div>
         </div>
       </div>
     </div>
 
-    <div class="hint">「생각 깊이」 탭 = 카드 안에서 라인 펼침 · 라인 드래그 = 위 값 문구 실시간 변경<br>맨 왼쪽 <b>매우 빠름</b> = Sonnet(코발트) · 나머지 = Opus 노력도(라임)</div>
+    <div class="hint">「대화 깊이」 탭 = 카드 안 라인 펼침 · 밀면 위 <b>[모델][노력]</b> 실시간 변경<br>좌 3칸 = <b>Sonnet</b> 빠름·중간·깊게 · 우 3칸 = <b>Opus</b> 빠름·중간·깊게</div>
   </div></div>
 
-  <!-- 컨트롤 -->
   <div class="panel">
     <div class="card">
       <h2><span class="n">2</span>프리셋</h2>
@@ -208,123 +178,76 @@ footer{max-width:1000px; margin:26px auto 0; font-size:var(--fs-xs); color:var(-
         <button class="pbtn" data-preset="soft" type="button">점선 은은</button>
       </div>
     </div>
-
     <div class="card">
       <h2><span class="n">3</span>미세조정</h2>
       <div class="grp-h">라인</div>
       <div class="sld"><span class="sn">라인 높이</span><input type="range" id="glh" min="5" max="12" step="1" value="7"><span class="sv" id="glh_v">7px</span></div>
-      <div class="sld"><span class="sn">썸 지름</span><input type="range" id="glthumb" min="16" max="26" step="1" value="22"><span class="sv" id="glthumb_v">22px</span></div>
+      <div class="sld"><span class="sn">썸 지름</span><input type="range" id="glthumb" min="16" max="26" step="1" value="20"><span class="sv" id="glthumb_v">20px</span></div>
       <div class="grp-h">그라데이션 · 점선</div>
-      <div class="sld"><span class="sn">코발트 존 폭</span><input type="range" id="glcob" min="8" max="28" step="1" value="16"><span class="sv" id="glcob_v">16%</span></div>
-      <div class="sld"><span class="sn">라임 시작(약)</span><input type="range" id="glacclo" min="8" max="50" step="1" value="26"><span class="sv" id="glacclo_v">.26</span></div>
-      <div class="sld"><span class="sn">점선 투명도</span><input type="range" id="gldash" min="0" max="90" step="1" value="55"><span class="sv" id="gldash_v">.55</span></div>
+      <div class="sld"><span class="sn">램프 시작(약)</span><input type="range" id="gllo" min="12" max="60" step="1" value="32"><span class="sv" id="gllo_v">.32</span></div>
+      <div class="sld"><span class="sn">점선 투명도</span><input type="range" id="gldash" min="0" max="90" step="1" value="60"><span class="sv" id="gldash_v">.60</span></div>
     </div>
-
     <div class="card">
       <h2><span class="n">4</span>선택값 · 복사</h2>
       <pre class="out" id="out"></pre>
       <button class="copy" id="copy" type="button">CSS 복사</button>
-      <div class="note"><b>계승</b> = 선형 트랙·썸 = <code>.yset-range</code> 정본 계승(성향 16축과 동형) · 색 전부 <span class="tok" style="color:var(--accent)">var(--accent-rgb)</span>·<span style="color:#7f9dff">var(--cobalt-rgb)</span> 토큰(알파만 로컬) · <b>신규 :root 토큰 0</b>. 이식 = 「생각 깊이」 행을 <code>&lt;button&gt;</code>→<code>&lt;div&gt;</code>(헤드+게이지)로 열어 <code>&lt;input type=range&gt;</code> 내장(중첩 버튼 회피).</div>
+      <div class="note"><b>계승</b> = 선형 트랙·썸 = <code>.yset-range</code> 정본 계승 · 색 전부 <span class="tok" style="color:var(--accent)">var(--accent-rgb)</span>·<span style="color:#7f9dff">var(--cobalt-rgb)</span> 토큰(알파만 로컬) · <b>신규 :root 토큰 0</b>. 6단 = 서버 화이트리스트(2모델×3노력) 그대로 · 「대화 모델」 별행 폐지(통합).</div>
     </div>
   </div>
 </div>
 
 <footer>
-<b>재현 한계</b> — ① 폰트 = 시스템 폴백(실앱 = LEMONMILK·Paperlogy) · ② 배경 영상·글래스 블러 근사 · ③ 값 매핑 = 매우빠름(sonnet×low·vfast) · 빠름(opus×low) · 깊게(opus×'') · 최대(opus×max) = 현행 사다리 그대로 · 라인이 매우빠름에 닿으면 「대화 모델」도 Sonnet 5로 동기(vfast 결합) · ④ 실앱 매우빠름 진입 = "품질 저하" 확인 팝업 1회 계승 예정 · ⑤ 이 플그는 <b>시안</b> — 확정하면 <code>viewer/index.html</code> 다이얼에 이식.
+<b>재현 한계</b> — ① 폰트 = 시스템 폴백 · ② 배경 영상·글래스 근사 · ③ 6단 매핑 = 1 Sonnet빠름(=현 매우빠름/vfast)·2 Sonnet중간·3 Sonnet깊게·4 Opus빠름(=현 기본)·5 Opus중간·6 Opus깊게(=현 최대) → 서버 model/effort 2파라미터 그대로 · ④ 실앱 Sonnet 진입 = "품질 저하" 확인 1회 계승 예정 · ⑤ 이 플그 = <b>시안</b>, 확정 시 viewer 다이얼 이식(2행 → 1행).
 </footer>
 
 <script>
 var MAP = [
-  {v:0, model:'Sonnet 5', mmod:true,  eff:'매우 빠름', emod:true},
-  {v:1, model:'Opus 4.8', mmod:false, eff:'빠름',      emod:false},
-  {v:2, model:'Opus 4.8', mmod:false, eff:'깊게',      emod:true},
-  {v:3, model:'Opus 4.8', mmod:false, eff:'최대',      emod:true}
+  {model:'SONNET', eff:'빠름', m:'s'}, {model:'SONNET', eff:'중간', m:'s'}, {model:'SONNET', eff:'깊게', m:'s'},
+  {model:'OPUS', eff:'빠름', m:'o'}, {model:'OPUS', eff:'중간', m:'o'}, {model:'OPUS', eff:'깊게', m:'o'}
 ];
-var root = document.documentElement;
-var range = document.getElementById('effRange');
-var gwrap = document.getElementById('gwrap');
-var ticks = document.querySelectorAll('.eff-ticks i');
+var root=document.documentElement, range=document.getElementById('effRange'), gwrap=document.getElementById('gwrap');
+var halves=document.querySelectorAll('.half'), effGroups=[document.querySelectorAll('.hs .efforts i'), document.querySelectorAll('.ho .efforts i')];
 
 function paintVal(){
-  var v = +range.value, m = MAP[v];
-  gwrap.dataset.v = v;
-  var ve = document.getElementById('vEff'); ve.textContent = m.eff; ve.className = 'vt' + (m.emod ? ' mod' : '');
-  var vm = document.getElementById('vModel'); vm.textContent = m.model; vm.className = 'vt' + (m.mmod ? ' mod' : '');
-  ticks.forEach(function(t, i){ t.classList.toggle('on', i === v); });
+  var v=+range.value, m=MAP[v];
+  gwrap.dataset.model=m.m;
+  var vm=document.getElementById('vModel'); vm.textContent=m.model; vm.className='vchip vmodel'+(m.m==='s'?' s':'');
+  document.getElementById('vEff').textContent=m.eff;
+  var half = v<3?0:1, idx = v%3;
+  halves[0].classList.toggle('act', half===0); halves[1].classList.toggle('act', half===1);
+  effGroups.forEach(function(g,gi){ g.forEach(function(t,ti){ t.classList.toggle('on', gi===half && ti===idx); }); });
 }
 range.addEventListener('input', paintVal);
 
-/* 헤드 탭 = 카드 안 게이지 촤르륵 토글 */
-var rowEff = document.getElementById('rowEff'), effHead = document.getElementById('effHead');
-effHead.addEventListener('click', function(){
-  var open = rowEff.classList.toggle('open');
-  effHead.setAttribute('aria-expanded', open ? 'true' : 'false');
-});
-/* 모델 행 탭 = 게이지도 열어줌(모델·노력 한 게이지) */
-document.getElementById('rowModel').addEventListener('click', function(){
-  rowEff.classList.add('open'); effHead.setAttribute('aria-expanded','true');
-});
+var rowEff=document.getElementById('rowEff'), effHead=document.getElementById('effHead');
+effHead.addEventListener('click', function(){ var o=rowEff.classList.toggle('open'); effHead.setAttribute('aria-expanded', o?'true':'false'); });
 
-/* ── 슬라이더 → CSS var + 출력 ── */
+/* 슬라이더 */
 function alpha(v){ var s=(v/100).toFixed(2); return s==='1.00'?'1':s.replace(/^0/,'').replace(/0$/,''); }
-var S = {
+var S={
   glh:['--gl-h', function(v){return v+'px';}],
   glthumb:['--gl-thumb', function(v){return v+'px';}],
-  glcob:['--gl-cob', function(v){return String(v);}, function(v){return v+'%';}],
-  glacclo:['--gl-acc-lo', function(v){return alpha(v);}, function(v){return alpha(v);}],
+  gllo:['--gl-lo', function(v){return alpha(v);}, function(v){return alpha(v);}],
   gldash:['--gl-dash-a', function(v){return alpha(v);}, function(v){return alpha(v);}]
 };
-function apply(id){
-  var el=document.getElementById(id), v=+el.value, spec=S[id];
-  root.style.setProperty(spec[0], spec[1](v));
-  document.getElementById(id+'_v').textContent = (spec[2]||spec[1])(v);
-  el.style.setProperty('--p', ((v-el.min)/(el.max-el.min)*100)+'%');
-  render();
-}
+function apply(id){ var el=document.getElementById(id), v=+el.value, sp=S[id]; root.style.setProperty(sp[0], sp[1](v)); document.getElementById(id+'_v').textContent=(sp[2]||sp[1])(v); el.style.setProperty('--p', ((v-el.min)/(el.max-el.min)*100)+'%'); render(); }
 Object.keys(S).forEach(function(id){ document.getElementById(id).addEventListener('input', function(){ apply(id); }); });
-
 function gv(id){ return +document.getElementById(id).value; }
 function render(){
   var o='';
-  o += '<span class="cmt">/* 선형 게이지 트랙 — 색 = 토큰 계승·알파/치수만 로컬 */</span>\n';
-  o += '.gline{ height:'+gv('glh')+'px; border-radius:<span class="tok">var(--r-pill)</span>;\n';
-  o += '  background:linear-gradient(90deg,\n';
-  o += '    rgba(<span class="cob">var(--cobalt-rgb)</span>,.9) 0%,\n';
-  o += '    rgba(<span class="cob">var(--cobalt-rgb)</span>,.5) '+gv('glcob')+'%,      <span class="cmt">/* 매우빠름 존 */</span>\n';
-  o += '    rgba(<span class="tok">var(--accent-rgb)</span>,'+alpha(gv('glacclo'))+') '+(gv('glcob')+6)+'%,  <span class="cmt">/* 라임 시작 */</span>\n';
-  o += '    rgba(<span class="tok">var(--accent-rgb)</span>,1) 100%);           <span class="cmt">/* 노력도↑ 세짐 */</span>\n';
-  o += '}\n';
-  o += '.gline::after{ <span class="cmt">/* 경계 점선(살짝) */</span>\n';
-  o += '  left:'+(gv('glcob')+3)+'%; border-left:1.5px dashed rgba(<span class="tok">var(--fg-rgb)</span>,'+alpha(gv('gldash'))+'); }\n';
-  o += '.eff-range::-webkit-slider-thumb{ width:'+gv('glthumb')+'px; height:'+gv('glthumb')+'px; <span class="cmt">/* .yset-range 계승 */</span> }';
-  document.getElementById('out').innerHTML = o;
+  o+='<span class="cmt">/* 통합 6단 트랙 — 색 = 토큰 계승·알파/치수만 로컬 */</span>\n';
+  o+='.gline{ height:'+gv('glh')+'px; border-radius:<span class="tok">var(--r-pill)</span>;\n';
+  o+='  background:linear-gradient(90deg,\n';
+  o+='    rgba(<span class="cob">var(--cobalt-rgb)</span>,'+alpha(gv('gllo'))+') 0%, rgba(<span class="cob">var(--cobalt-rgb)</span>,1) 44%,   <span class="cmt">/* Sonnet 램프 */</span>\n';
+  o+='    rgba(<span class="tok">var(--accent-rgb)</span>,'+alpha(gv('gllo'))+') 56%, rgba(<span class="tok">var(--accent-rgb)</span>,1) 100%); <span class="cmt">/* Opus 램프 */</span> }\n';
+  o+='.gline::after{ left:50%; border-left:1.5px dashed rgba(<span class="tok">var(--fg-rgb)</span>,'+alpha(gv('gldash'))+'); } <span class="cmt">/* 모델 경계 */</span>\n';
+  o+='.eff-range::-webkit-slider-thumb{ width:'+gv('glthumb')+'px; height:'+gv('glthumb')+'px; } <span class="cmt">/* .yset-range 계승 · Sonnet=코발트 썸 */</span>';
+  document.getElementById('out').innerHTML=o;
 }
+var PRE={ rec:{glh:7,glthumb:20,gllo:32,gldash:60}, thin:{glh:5,glthumb:17,gllo:36,gldash:50}, soft:{glh:7,glthumb:20,gllo:32,gldash:25} };
+document.querySelectorAll('.pbtn').forEach(function(b){ b.addEventListener('click', function(){ document.querySelectorAll('.pbtn').forEach(function(x){x.classList.remove('on');}); b.classList.add('on'); var p=PRE[b.dataset.preset]; Object.keys(p).forEach(function(id){ document.getElementById(id).value=p[id]; apply(id); }); }); });
+document.getElementById('copy').addEventListener('click', function(){ var t=document.getElementById('out').textContent, b=this; (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(function(){ b.textContent='복사됨 ✓'; setTimeout(function(){b.textContent='CSS 복사';},1400); }).catch(function(){ b.textContent='길게 눌러 선택'; }); });
 
-/* ── 프리셋 ── */
-var PRE = {
-  rec:  {glh:7,  glthumb:22, glcob:16, glacclo:26, gldash:55},
-  thin: {glh:5,  glthumb:18, glcob:14, glacclo:30, gldash:45},
-  soft: {glh:7,  glthumb:22, glcob:16, glacclo:26, gldash:25}
-};
-document.querySelectorAll('.pbtn').forEach(function(b){
-  b.addEventListener('click', function(){
-    document.querySelectorAll('.pbtn').forEach(function(x){ x.classList.remove('on'); });
-    b.classList.add('on');
-    var p = PRE[b.dataset.preset];
-    Object.keys(p).forEach(function(id){ document.getElementById(id).value = p[id]; apply(id); });
-  });
-});
-
-/* ── 복사 ── */
-document.getElementById('copy').addEventListener('click', function(){
-  var txt=document.getElementById('out').textContent, btn=this;
-  (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(function(){
-    btn.textContent='복사됨 ✓'; setTimeout(function(){ btn.textContent='CSS 복사'; }, 1400);
-  }).catch(function(){ btn.textContent='길게 눌러 선택'; });
-});
-
-/* init */
-Object.keys(S).forEach(apply);
-paintVal();
+Object.keys(S).forEach(apply); paintVal();
 setTimeout(function(){ rowEff.classList.add('open'); effHead.setAttribute('aria-expanded','true'); }, 440);
 </script>
