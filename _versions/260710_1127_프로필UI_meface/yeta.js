@@ -18,9 +18,7 @@
 //   vapikey {}                     : 보이스톡(브라우저 통화 · Vapi Web SDK) 공개키 — env VAPI_PUBLIC_KEY(공개 축 · Origins 제한 권장)
 //   calllog {}                     : 🩺 통화 진단 — Vapi 메타데이터만(상태·종료사유·비용 — transcript/PII 반환 금지)
 //   tune  {persona, g[16]}         : 캐릭터 성향 게이지(L2 · 숫자 배열만 = 프롬프트 주입 차단)
-//   me    {call, about}            : 유저 프로필(호칭+소개 · "AI가 나를 부르는 법") — 전 방 공유 · stripMarkers(고정점)+캡(러너가 비신뢰 격리 주입) · 서버 관리 필드(avatar) 보존
-//   meface {}                      : 프로필 이미지 만들기(260710) — 소개 기반 생성 dispatch(yeta-meface.yml → me.avatar 주입 · ⚠️ OpenAI 유료 → 일 상한 기본 2 = YETA_MEFACE_MAX_PER_DAY · 클라 텍스트 0)
-//   pinset {old, next}             : 게스트 PIN 셀프 변경(260710 · R2 재설계) — 비공개 R2 auth/overrides.json {원래해시:새해시} CAS(main 커밋 무유발) · auth가 effectiveHash 대조 = 원래 PIN 무효화 · 새 PIN 4자리(언락 패드 일치) · 시도 상한 기본 5 = YETA_PINSET_MAX_PER_DAY(실패도 소비)
+//   me    {call, about}            : 유저 프로필(호칭+소개 · "AI가 나를 부르는 법") — 전 방 공유 · stripMarkers(고정점)+캡(러너가 비신뢰 격리 주입)
 //   policy {} | {p, pin}           : 3계층 정책 — GET 정의+현재값(무인증) / SET enum 정수만(⚠️ 관리자 PIN 필수)
 //   auth  {pin}                    : PIN 로그인 — admin = env YETA_PIN_ADMIN(레포 무노출) / guest = apps/yeta/users.json 해시(깃 SSOT)
 //   reset {}                       : 세션 초기화(페르소나도 비움 → 재뽑기 · tunes/policy/me 승계)
@@ -125,13 +123,6 @@ export async function onRequestPost({ request, env }) {
     return { sess: null, abort: { error: '세션 경합 — 잠시 후 다시' } };
   };
   const TH = (s, t) => (s.threads || {})[t];   // 스레드 접근(없으면 undefined — 신설은 draw 단일 경로 · 보안 감사①)
-
-  // ── PIN 해시 + R2 오버라이드(운영자 260710 R2 재설계 · pinset 보안 BLOCK 해소) ──
-  // 게스트 PIN 셀프변경 = users.json(공개 레포·main) 무커밋 → 비공개 R2 `auth/overrides.json`에 {원래해시: 새해시} 저장.
-  // auth는 effectiveHash = overrides[user.pin_h] || user.pin_h 로 대조 = 새 PIN 인증 + 원래 PIN 자동 무효화. main 커밋 유발 축(무인증→GitHub 쓰기) 제거.
-  const OVKEY = 'auth/overrides.json';
-  const pinHash = async (pin) => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`${pin}:yeta`)))].map(b => b.toString(16).padStart(2, '0')).join('');   // auth 잠금 해시 규약(sha256('<PIN>:yeta'))
-  const readOv = async () => { try { const o = await env.YETA_R2.get(OVKEY); if (!o) return { ov: {}, etag: null }; let j = {}; try { const p = await o.json(); if (p && typeof p === 'object' && !Array.isArray(p)) j = p; } catch {} return { ov: j, etag: o.etag }; } catch { return { ov: {}, etag: null }; } };
 
   if (op === 'get') {   // 폴 — lazy 리퍼(전 스레드 순회): awaiting 10분 초과 = 러너 사망 판정 → 스레드별 error 플립/오프닝 idle 강등
     let sess = await readSess();
@@ -260,60 +251,18 @@ export async function onRequestPost({ request, env }) {
     if (!/^\d{4,8}$/.test(pin)) return json({ ok: false });
     const APIN = String(env.YETA_PIN_ADMIN || '');
     if (APIN && pin === APIN) return json({ ok: true, role: 'admin', name: '운영자' });
-    try {   // users.json 대조 — pin_h = sha256('<PIN>:yeta') (뷰어 잠금 해시 규약과 동일) · R2 오버라이드(셀프변경분) 반영
+    try {   // users.json 대조 — pin_h = sha256('<PIN>:yeta') (뷰어 잠금 해시 규약과 동일)
       const u = await fetch(`https://raw.githubusercontent.com/${REPO}/main/apps/yeta/users.json`,
         { headers: { 'user-agent': 'nomute-viewer' }, cf: { cacheTtl: 60, cacheEverything: true } });
       if (u.ok) {
         const db = await u.json();
-        const h = await pinHash(pin);
-        const { ov } = await readOv();   // {원래해시: 새해시} — effectiveHash로 대조 = 셀프변경 PIN 인증 + 원래 PIN 무효화(운영자 260710 R2 재설계)
-        const hit = (db.users || []).find(x => x && x.pin_h && (ov[x.pin_h] || x.pin_h) === h);   // 오버라이드 있으면 새 해시, 없으면 원래 해시
+        const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`${pin}:yeta`));
+        const h = [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+        const hit = (db.users || []).find(x => x && x.pin_h === h);
         if (hit) return json({ ok: true, role: hit.role === 'admin' ? 'guest' : String(hit.role || 'guest'), name: String(hit.name || '') });   // users.json의 admin 참칭 차단 — admin은 env 단일 경로
       }
     } catch {}
     return json({ ok: false });
-  }
-
-  if (op === 'pinset') {   // 게스트 PIN 셀프 변경(운영자 260710 "그 외에는 변경 가능하게" · R2 재설계 = 평의회 보안 BLOCK 해소) — users.json(공개 레포·main) 무커밋 · 비공개 R2 오버라이드에 CAS 저장(auth가 effectiveHash 대조 · 원래 PIN 무효화). 관리자 PIN(env)은 웹 불변.
-    // 가드: 시도 즉시 상한 소비(실패 브루트포스도 카운트 · 평의회 보안) · 새 PIN 정확히 4자리(언락 패드 YM_LEN=4 일치 · 평의회 뷰어 FINDING B 자기잠금 차단)·무중복 · admin/타 사용자 effectiveHash 충돌 차단(권한 상승·계정 뒤섞임). GitHub 쓰기 축 제거 = GH_TOKEN 불요.
-    const old = String(body.old || ''), next = String(body.next || '');
-    // ⚠️ 시도 카운트 = 검증 이전 소비(성공 전 = 실패 추측도 상한에 걸림 · 종전 성공만 카운트하던 브루트포스 구멍 봉합). RMW 비원자는 약간 언더카운트 허용이나 유계(무인증 공개 = 게스트 보안벽 아님 전제 · 운영자 260710 R2 방향).
-    let cap = parseInt(env.YETA_PINSET_MAX_PER_DAY ?? '5', 10);
-    if (!Number.isFinite(cap)) cap = 5;
-    const kst = new Date(Date.now() + 9 * 3600e3).toISOString().slice(2, 10).replace(/-/g, '');
-    const qkey = `quota/pinset-${kst}.json`;
-    let used = 0;
-    const qo = await env.YETA_R2.get(qkey);
-    if (qo) { try { used = (await qo.json()).n || 0; } catch { used = 0; } }
-    if (cap > 0 && used >= cap) return json({ error: `오늘 PIN 변경 시도 상한(${cap}회) 도달 — 내일 다시` }, 429);
-    await env.YETA_R2.put(qkey, JSON.stringify({ n: used + 1 }), { httpMetadata: { contentType: 'application/json' } });   // 시도 소비(성공/실패 무관)
-    if (!/^\d{4}$/.test(old)) return json({ error: '현재 PIN이 올바르지 않아' }, 400);
-    if (!/^[1-9]{4}$/.test(next) || new Set(next).size !== next.length) return json({ error: '새 PIN은 1~9 숫자 4개 — 같은 숫자 없이(잠금 패턴 규칙)' }, 400);
-    const APIN = String(env.YETA_PIN_ADMIN || '');
-    if (APIN && old === APIN) return json({ error: '관리자 계정은 불가 — 관리자 PIN은 서버(환경변수)에서만' }, 403);
-    if (APIN && next === APIN) return json({ error: '쓸 수 없는 PIN이야 — 다른 번호로' }, 400);   // admin PIN 충돌 = 권한 상승 원천 차단
-    const oldH = await pinHash(old), nextH = await pinHash(next);
-    let db;
-    try {   // users.json = 읽기 전용(커밋 없음 · raw fetch) — 역할·id 조회용
-      const u = await fetch(`https://raw.githubusercontent.com/${REPO}/main/apps/yeta/users.json`,
-        { headers: { 'user-agent': 'nomute-viewer' }, cf: { cacheTtl: 60, cacheEverything: true } });
-      if (!u.ok) return json({ error: `사용자 DB 로드 실패(${u.status})` }, 502);
-      db = await u.json();
-    } catch { return json({ error: '사용자 DB 로드 실패' }, 502); }
-    const users = db.users || [];
-    for (let i = 0; i < 4; i++) {   // R2 오버라이드 CAS 루프(etag if-match · 교차 writer 봉합)
-      const { ov, etag } = await readOv();
-      const eff = x => (x && x.pin_h) ? (ov[x.pin_h] || x.pin_h) : null;   // effectiveHash(오버라이드 반영)
-      const hit = users.find(x => eff(x) === oldH);
-      if (!hit) return json({ error: '현재 PIN이 맞지 않아 — 다시 로그인해줘' }, 403);
-      if (users.some(x => x !== hit && eff(x) === nextH)) return json({ error: '쓸 수 없는 PIN이야 — 다른 번호로' }, 400);   // 타 사용자 effectiveHash 충돌 = 계정 뒤섞임 차단
-      const nv = { ...ov, [hit.pin_h]: nextH };   // 원래 pin_h를 키로 새 해시(재변경도 원래 키 고정 = 단조)
-      try {
-        const r = await env.YETA_R2.put(OVKEY, JSON.stringify(nv), { httpMetadata: { contentType: 'application/json' }, onlyIf: etag ? { etagMatches: etag } : undefined });
-        if (r !== null) return json({ ok: true });
-      } catch {}
-    }
-    return json({ error: '경합 — 잠시 후 다시' }, 409);
   }
 
   if (op === 'policy') {   // 3계층 정책(운영자 260706) — GET(정의+현재값 · 무인증) / SET(L0 토글+L1 축 = 관리자 PIN 필수 · enum 정수만 = 프롬프트 주입 원천 차단 · 라벨/문구 정본 = apps/yeta/policy.json, 러너가 직접 읽음)
@@ -361,38 +310,9 @@ export async function onRequestPost({ request, env }) {
     const clean = s => stripMarkers(s).replace(/\s+/g, ' ').trim();   // 마커 제거(고정점 SSOT) + 공백붕괴(다줄 위장 차단)
     const call = clean(body.call).slice(0, 24);    // 호칭 = 이름 길이(invite/kick name 동형 캡)
     const about = clean(body.about).slice(0, 300);  // 소개 = 한두 문장
-    let saved;
-    const { abort } = await casPut(s => { s.me = { ...(s.me || {}), call, about }; saved = s.me; });   // 스프레드 = 서버 관리 필드(avatar 등) 보존(260710 — 종전 통짜 대입이 생성 아바타를 지움)
+    const { abort } = await casPut(s => { s.me = { call, about }; });
     if (abort) return json(abort, 409);
-    return json({ ok: true, me: saved || { call, about } });
-  }
-
-  if (op === 'meface') {   // 프로필 이미지 만들기(운영자 260710) — 소개(sess.me.about) 기반 1장. ⚠️ OpenAI 유료 종량제 + 무인증 공개 → 일 상한 기본 2(YETA_MEFACE_MAX_PER_DAY) · 클라 텍스트 0(소개는 서버가 세션에서 읽음 = 주입 축 없음)
-    if (!env.GH_TOKEN) return json({ error: '서버 미설정 — GH_TOKEN 필요' }, 500);
-    const pre = await readSess();
-    if (!String((pre.me || {}).about || '').trim()) return json({ error: '내 소개부터 써줘 — 소개를 읽고 그려' }, 400);
-    if ((pre.me || {}).avatar) return json({ error: '이미 프로필 이미지가 있어 — 바꾸려면 사진을 직접 올려줘' }, 409);   // avatar 가드(평의회 파이프라인④ 타이밍 스큐 재과금 차단 · UI도 av 有면 게이지 숨김과 정합)
-    let cap = parseInt(env.YETA_MEFACE_MAX_PER_DAY ?? '2', 10);
-    if (!Number.isFinite(cap)) cap = 2;   // 미설정·오타 = 보수 기본 2(유료 가드 · ring 동형)
-    const kst = new Date(Date.now() + 9 * 3600e3).toISOString().slice(2, 10).replace(/-/g, '');
-    const qkey = `quota/meface-${kst}.json`;
-    let used = 0;
-    const qo = await env.YETA_R2.get(qkey);
-    if (qo) { try { used = (await qo.json()).n || 0; } catch { used = 0; } }
-    if (cap > 0 && used >= cap) return json({ error: `오늘 프로필 생성 상한(${cap}회) 도달 — 내일 다시`, remain: 0 }, 429);
-    // ⚠️ pending 선점 = CAS 원자(평의회 보안②) — 동시 버스트가 같은 used를 읽어 다중 dispatch 하던 우회 차단: pending 게이트를 casPut 안에 두면 단 1개만 통과(quota RMW 비원자여도 앞단 직렬화). pending 3분 TTL = 러너 사망 시 영구 잠김 방지(invite 결).
-    const { abort } = await casPut(s => {
-      const mf = s.meface || {};
-      if (mf.pending && Date.now() - mf.pending < 180000) return { abort: { error: '이미 만드는 중이야 — 잠깐만' } };
-      if ((s.me || {}).avatar) return { abort: { error: '이미 프로필 이미지가 있어 — 바꾸려면 사진을 직접 올려줘' } };   // CAS 내 재확인(read 중 도착 레이스)
-      s.meface = { ...(s.meface || {}), pending: Date.now() };
-    });
-    if (abort) return json(abort, 409);
-    await env.YETA_R2.put(qkey, JSON.stringify({ n: used + 1 }), { httpMetadata: { contentType: 'application/json' } });   // 선점 성공자만 차감(단일 통과 보장 뒤)
-    const st = await dispatch(env, 'yeta-meface.yml', {});
-    if (st === 204) return json({ ok: true, remain: cap > 0 ? cap - used - 1 : -1 });
-    await casPut(s => { if (s.meface) s.meface.pending = 0; });   // 발사 실패 = pending 즉시 해제(재시도 가능)
-    return json({ error: `GitHub dispatch ${st}` }, 502);
+    return json({ ok: true, me: { call, about } });
   }
 
   if (op === 'pin') {   // 채팅방 고정 토글(운영자 260707 롱프레스 액티브) — 숫자/불리언만 수용 · 스레드 실존 요구(신설 금지 · 보안 감사①)
