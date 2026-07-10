@@ -2291,41 +2291,50 @@ function yMefaceStart() {
     _mfT = Date.now(); yProfileRender(); yMefaceTick();
   }).catch(() => miniToast('생성 시작 실패 — 잠시 후 다시'));
 }
-function yMefaceTick() {   // 5s 폴 — me.avatar 도착 = 완료 · 150s = 안내 후 해제(러너 지연 시 다음 프로필 진입 때 자연 반영)
+function yMefaceTick() {   // 5s 폴 — me.avatar 도착 = 완료 · 185s(서버 pending TTL 180s 초과 정렬 · 평의회 파이프④) = 해제. 프로필 닫혀도 지속(도착 시 우상단·미로우 반영) · YSESS는 me만 병합(전역 통짜 교체 금지 = 채팅 뷰 경합 차단 · 평의회 뷰어 D)
   clearTimeout(_mfPoll);
   if (!_mfT) return;
-  if (Date.now() - _mfT > 150000) { _mfT = 0; miniToast('생성이 늦어지고 있어 — 잠시 후 프로필을 다시 열어봐'); if ($('#ycprofile').classList.contains('on')) yProfileRender(); return; }
+  if (Date.now() - _mfT > 185000) {   // 타임아웃 = 조용히 해제 · 생성 중 기기 사진을 올렸으면(avatar 有) 오도성 안내 억제(평의회 뷰어 D)
+    _mfT = 0;
+    if (!yMeAva()) miniToast('생성이 늦어지고 있어 — 잠시 후 프로필을 다시 열어봐');
+    if ($('#ycprofile').classList.contains('on')) yProfileRender();
+    return;
+  }
   _mfPoll = setTimeout(() => {
     yApi('get').then(r => {
-      if (r && r.ok && r.sess) {
-        YSESS = r.sess;
-        if (((r.sess.me || {}).avatar) && !yMeGet('avatar')) {   // 도착(기기 사진이 그새 생겼으면 그게 우선 = 표시 변화만 없음)
-          _mfT = 0; yMeApply(); try { yMeRow(); } catch (x) {}
-          if ($('#ycprofile').classList.contains('on')) yProfileRender();
-          miniToast('프로필 이미지 나왔어 — 소개 읽고 그렸어'); return;
-        }
+      const mav = r && r.ok && r.sess && ((r.sess.me || {}).avatar);
+      if (mav && !yMeGet('avatar')) {   // 도착(기기 사진이 그새 생겼으면 그게 우선 = 표시 변화만 없음) — me만 병합(threads/전역 상태 무접촉)
+        if (YSESS) YSESS.me = r.sess.me; else YSESS = r.sess;
+        _mfT = 0; yMeApply(); try { yMeRow(); } catch (x) {}
+        if ($('#ycprofile').classList.contains('on')) yProfileRender();
+        miniToast('프로필 이미지 나왔어 — 소개 읽고 그렸어'); return;
       }
+      if (mav) { if (YSESS) YSESS.me = r.sess.me; _mfT = 0; return; }   // 서버엔 있는데 로컬 기기사진이 우선 = 폴만 종료(표시 유지)
       yMefaceTick();
     }).catch(() => yMefaceTick());
   }, 5000);
 }
-function yPinChangeOpen() {   // 게스트 PIN 셀프 변경(운영자 260710) — 현재 PIN = 언락 메모리(_ypin) 재사용 · 새 PIN = 패턴 제약(1~9 · 중복 없음 · 4~8자리) → op pinset(서버가 users.json 커밋)
+function yPinChangeOpen() {   // 게스트 PIN 셀프 변경(운영자 260710) — 현재 PIN = 언락 메모리(_ypin) 재사용 · 새 PIN = 언락 패턴 패드와 동일 제약(1~9 · 중복 없음 · 정확히 4자리 = YM_LEN)
   if (!_ypin) { miniToast('보안을 위해 다시 로그인한 뒤 바꿀 수 있어'); return; }
-  yEditOpen('새 PIN (패턴 순서 숫자)', '', v => {
+  yEditOpen('새 PIN (4자리 · 잠금 패턴 순서)', '', v => {
     const next = String(v || '').trim();
-    if (!/^[1-9]{4,8}$/.test(next) || new Set(next).size !== next.length) { miniToast('PIN은 1~9 숫자 4~8개 — 같은 숫자 반복 없이(패턴 규칙)'); return; }
+    // ⚠️ 정확히 4자리 = 언락 패드 YM_LEN(4점) 고정과 일치(평의회 뷰어 FINDING B 치명) — 5자리+ 설정 시 다음 언락에서 4점만 입력 가능 = 영구 자기잠금. 무중복 = 패턴은 점 재방문 불가.
+    if (!/^[1-9]{4}$/.test(next) || new Set(next).size !== next.length) { miniToast('새 PIN은 1~9 숫자 4개 — 같은 숫자 없이(잠금 패턴 규칙)'); return; }
     if (next === _ypin) { miniToast('지금 쓰는 PIN이랑 같아'); return; }
     yApi('pinset', { old: _ypin, next }).then(r => {
-      if (r && r.ok) { _ypin = next; miniToast('PIN 바꿨어 — 잠금 화면 반영까지 몇 분 걸릴 수 있어'); }
+      if (r && r.ok) { _ypin = next; miniToast('PIN 바꿨어 — 새 번호로 다시 잠금 풀면 확정돼'); }   // 완료예고 대신 확인 방법(평의회 규정 · 절대명령 #12 · CDN 전파는 시간 약속 금지)
       else miniToast((r && r.error) || 'PIN 변경 실패 — 잠시 후 다시');
     }).catch(() => miniToast('PIN 변경 실패 — 잠시 후 다시'));
-  }, 8);
+  }, 4);
   const inp = document.getElementById('yeditIn'); if (inp) { inp.setAttribute('inputmode', 'numeric'); inp.setAttribute('pattern', '[1-9]*'); }   // 숫자 키패드(이 열림 한정 — yEditOpen이 매번 리셋)
 }
 function yShowProfile() {   // 내 프로필 = 현재 창 위 오버레이(운영자 260709 "이동 말고 위에" — cd-keep = 뒤 탭 패널·시즌 헤더 유지 · 반투명 시트가 그 위에 부상)
   yMeHydrate();
   if (yMeGet('dirty')) yMePush(true);   // 지난 동기화 실패분 조용히 재푸시(best-effort · 평의회5 Q2)
   yProfileRender();
+  if (!_mfT && !yMeGet('avatar')) yApi('get').then(r => {   // 프로필 진입 = 서버 생성 아바타 최신화(meface 폴이 죽은 뒤 도착분 반영 · 비차단 · me만 병합 = 평의회 파이프④ stale 재과금 차단)
+    if (r && r.ok && r.sess && ((r.sess.me || {}).avatar)) { if (YSESS) YSESS.me = r.sess.me; else YSESS = r.sess; yMeApply(); if ($('#ycprofile').classList.contains('on')) yProfileRender(); }
+  }).catch(() => {});
   const d = $('#ycprofile'); d.classList.remove('out'); d.classList.add('on'); d.scrollTop = 0;
   document.getElementById('ymain').classList.add('cd-open', 'cd-keep');
   navOpen('ycprofile', yHideProfile);   // 뒤로가기 레이어 등재(운영자 260707)
