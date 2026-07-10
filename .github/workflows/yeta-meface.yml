@@ -1,0 +1,41 @@
+name: yeta-meface
+
+# 유저 프로필 이미지 생성(운영자 260710) — 소개(sess.me.about) 기반 1장 · ⚠️ OpenAI 유료 종량제(챗 구독 OAuth와 별개 축).
+# 트리거 = op meface(일 상한 기본 2 · YETA_MEFACE_MAX_PER_DAY 가드 뒤 dispatch) / 수동 workflow_dispatch. cron 금지.
+# 흐름: 비공개 R2 세션에서 me(호칭·소개)만 읽음(대화 turns 무접촉) → 로스터 초상 동일 스타일(BASE = yeta_face.py SSOT 임포트) →
+#       공개 R2 yeta_face/me.png 업로드 → (apply) sess.me.avatar CAS 주입 · (sample) URL 로그만(세션 무기록 — 개발 검증용).
+# ⚠️ public 레포 = 공개 로그 → 소개·호칭 원문은 절대 로그 출력 금지(길이만) · git 폴백 없음(개인화 이미지 레포 커밋 회피 — 공개 R2 필수).
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'apply(기본 — 세션 me.avatar 주입) | sample(세션 무기록 · URL 로그만)'
+        required: false
+        default: 'apply'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: yeta-meface
+  cancel-in-progress: false
+
+jobs:
+  gen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10   # 1장 ≈ 1~2분 + 재시도 여유
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: 프로필 이미지 생성 + 세션 주입
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY_nomute || secrets.OPENAI_API_KEY }}   # yeta-face.yml 동일 폴백 체인
+          OPENAI_IMAGE_MODEL: ${{ vars.OPENAI_IMAGE_MODEL }}   # 선택 — 미설정 = 스크립트 기본(gpt-image-2)
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}                  # 공개 버킷(≠ YETA_R2_BUCKET 비공개 세션)
+          R2_PUBLIC_BASE: ${{ secrets.R2_PUBLIC_BASE }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          YETA_R2_BUCKET: ${{ secrets.YETA_R2_BUCKET }}        # 비공개 세션(소개 읽기 + avatar 주입)
+          MEFACE_MODE: ${{ github.event.inputs.mode }}
+        run: python3 .github/scripts/yeta_meface.py
