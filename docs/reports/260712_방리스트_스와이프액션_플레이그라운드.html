@@ -1,0 +1,203 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>방 리스트 스와이프 액션 — 플레이그라운드 (260712)</title>
+<style>
+  :root{
+    --fg:#FFFFFF; --fg-2:#E7ECE7; --mut:#8B8F8A; --bg:#161716;
+    --accent:#CFFF40; --accent-rgb:207,255,64; --think:#3EE0C8;
+    --glass-line:rgba(255,255,255,.08); --glass-line-0:rgba(255,255,255,.066);
+    --glass-0:rgba(255,255,255,.002);
+    --danger:#ff5b4a; --danger-rgb:255,91,74;
+    --r-s:9px; --r-m:11px; --r-l:16px; --r-pill:999px;
+    --sp-2:12px; --sp-3:18px;
+    --fs-h3:14px; --fs-sm:12px; --fs-xs:11px; --fs-meta:8.25px;
+    --fw-x:800; --fw-b:700; --lgap:6px;
+    --ease:cubic-bezier(.2,.7,.3,1); --blur-m:29px;
+    --press-m:.9; --press-l:.95;
+    --pin-ac:var(--accent); --pin-ac-rgb:var(--accent-rgb);
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{ background:#0d0e0d; color:var(--fg); font-family:-apple-system,system-ui,'Segoe UI',sans-serif; -webkit-font-smoothing:antialiased; line-height:1.6; padding:28px 18px 80px; }
+  .wrap{ max-width:1080px; margin:0 auto; }
+  h1{ font-size:22px; font-weight:800; letter-spacing:-.01em; }
+  h1 .em{ color:var(--accent); }
+  .lede{ color:var(--fg-2); font-size:14px; margin:10px 0 4px; }
+  .meta{ color:var(--mut); font-size:12px; margin-bottom:26px; }
+  h2{ font-size:15px; font-weight:800; margin:34px 0 14px; padding-bottom:8px; border-bottom:1px solid rgba(255,255,255,.1); }
+  h2 .n{ color:var(--accent); margin-right:8px; }
+  .row{ display:flex; gap:22px; flex-wrap:wrap; align-items:flex-start; }
+  .col{ flex:1 1 300px; min-width:280px; }
+  .cap{ font-size:12px; color:var(--mut); margin:10px 2px 0; text-align:center; }
+  .cap b{ color:var(--fg); }
+
+  /* ── 실제 구현 이식(viewer/index.html) ── */
+  .phone{ width:320px; margin:0 auto; background:var(--bg); border:1px solid var(--glass-line); border-radius:22px; overflow:hidden; box-shadow:0 24px 60px rgba(0,0,0,.42); }
+  .phone-hd{ padding:16px 16px 8px; }
+  .ssn-tag{ color:var(--accent); font-weight:800; font-style:italic; font-size:13px; letter-spacing:.01em; text-shadow:0 0 5px rgba(var(--accent-rgb),.9),0 0 16px rgba(var(--accent-rgb),.55); }
+  .ssn-nm{ font-weight:800; font-size:15px; margin-left:8px; }
+  .ssn-tl{ color:var(--fg-2); font-size:11.5px; margin-top:9px; }
+  .ylist{ padding:8px; }
+  .ylist-group{ background:var(--glass-0); border:1px solid var(--glass-line-0); border-radius:var(--r-m); overflow:hidden; }
+  .ylr-wrap{ position:relative; border-top:1px solid var(--glass-line-0); background:rgba(18,18,18,.3); overflow:hidden; }
+  .ylr-wrap:first-child{ border-top:none; }
+  .ylist-row{ display:flex; align-items:center; gap:12px; width:100%; padding:var(--sp-2); background:none; border:none; color:var(--fg); font:inherit; text-align:left; cursor:pointer; position:relative; z-index:1; -webkit-tap-highlight-color:transparent; user-select:none; transition:padding-right .3s var(--ease); }
+  .ylr-wrap.ylr-open .ylist-row{ padding-right:calc(var(--sp-2) + 60px); }   /* 열림 = 콘텐츠 우측 확보 → … 처리(트레이 밑 잘림 해소) */
+  .ylist-row:active{ transform:scale(var(--press-l)); }
+  .ylist-ava{ flex:none; width:50px; height:50px; border-radius:50%; display:grid; place-items:center; font-size:15px; font-weight:800; background:rgba(255,255,255,.06); border:1px solid var(--glass-line); box-shadow:0 0 6px rgba(var(--accent-rgb),.21); background-size:cover; }
+  .ylist-mid{ flex:1; min-width:0; display:flex; flex-direction:column; }
+  .ylist-nm{ display:flex; align-items:center; min-width:0; font-weight:800; font-size:var(--fs-h3); margin-bottom:calc(var(--lgap)*.55); }
+  .ylist-pin{ flex:none; width:12px; height:12px; margin-right:4px; color:var(--pin-ac); }
+  .ynm-t{ flex:none; max-width:6em; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .yjob{ margin-left:8px; color:var(--mut); font-size:var(--fs-xs); font-weight:700; white-space:nowrap; }
+  .ylist-tht{ font-size:var(--fs-sm); color:var(--think); margin-bottom:calc(var(--lgap)*.7); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .ylist-tht.na{ color:var(--mut); }
+  .ylist-last{ font-size:var(--fs-sm); color:var(--fg); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+  /* 스와이프 트레이(신규) */
+  .ylr-tray{ position:absolute; top:0; right:0; bottom:0; width:60px; z-index:2; display:flex; flex-direction:column; overflow:hidden;
+    background:linear-gradient(165deg,rgba(24,25,28,.94),rgba(16,17,19,.96)); backdrop-filter:blur(26px); -webkit-backdrop-filter:blur(26px);
+    border-left:1px solid var(--glass-line); transform:translateX(100%); transition:transform .3s var(--ease); }
+  .ylr-wrap.ylr-open .ylr-tray{ transform:translateX(0); }
+  .ylr-act{ flex:1; display:flex; align-items:center; justify-content:center; border:none; background:none; color:var(--fg); cursor:pointer; -webkit-tap-highlight-color:transparent; transition:background .2s var(--ease); }
+  .ylr-act+.ylr-act{ border-top:1px solid var(--glass-line-0); }
+  .ylr-act svg{ width:19px; height:19px; transition:transform .2s var(--ease); }
+  .ylr-act:active svg{ transform:scale(var(--press-m)); }
+  .ylr-act[data-act=pin]{ color:var(--pin-ac); }
+  .ylr-act[data-act=pin].on{ background:rgba(var(--pin-ac-rgb),.16); }
+  .ylr-act[data-act=leave]{ color:var(--fg-2); }
+  .ylr-act[data-act=leave].armed{ color:var(--danger); background:rgba(var(--danger-rgb),.18); }
+  .hint{ text-align:center; color:var(--mut); font-size:11px; margin-top:12px; }
+  .hint kbd{ background:rgba(255,255,255,.1); border-radius:5px; padding:1px 6px; font-size:10px; }
+
+  table{ border-collapse:collapse; width:100%; font-size:13px; margin-top:6px; }
+  th,td{ border:1px solid rgba(255,255,255,.1); padding:9px 12px; text-align:left; vertical-align:top; }
+  th{ background:rgba(255,255,255,.04); color:var(--fg-2); font-weight:700; }
+  td .g{ color:var(--accent); font-weight:700; } td .r{ color:var(--danger); font-weight:700; } td .b{ color:var(--think); font-weight:700; }
+  .idea{ background:rgba(var(--accent-rgb),.05); border:1px solid rgba(var(--accent-rgb),.2); border-radius:var(--r-m); padding:14px 16px; margin-top:12px; font-size:13px; }
+  .idea b{ color:var(--accent); }
+  ul{ padding-left:20px; } li{ margin:4px 0; font-size:13px; }
+  .pincand{ width:70px; height:70px; margin:0 auto; display:grid; place-items:center; border-radius:var(--r-m); background:linear-gradient(165deg,rgba(24,25,28,.94),rgba(16,17,19,.96)); border:1px solid var(--glass-line); }
+  .pincand svg{ width:28px; height:28px; color:var(--pin-ac); }
+</style>
+<div class="wrap">
+  <h1><span class="em">방 리스트</span> 좌 스와이프 액션 — 전/후·리스크 시안</h1>
+  <div class="lede">각 대화방을 <b>좌측으로 밀면</b> 우측에 2칸 픽토그램(고정·나가기)이 드러난다. 기존 우클릭/롱프레스 팝업을 대체.</div>
+  <div class="meta">260712 · viewer/index.html 실제 구현 이식 · 값 = 루트 토큰 계승(신규 토큰 0)</div>
+
+  <h2><span class="n">1</span>인터랙티브 데모 (직접 밀어보기)</h2>
+  <div class="row">
+    <div class="col" style="flex:0 0 auto;">
+      <div class="phone" id="live">
+        <div class="phone-hd">
+          <div><span class="ssn-tag">SEASON 01</span><span class="ssn-nm">무음동</span></div>
+          <div class="ssn-tl">밤이 유난히 긴 골목, 자정과 새벽 3시 사이</div>
+        </div>
+        <div class="ylist"><div class="ylist-group" id="rows"></div></div>
+      </div>
+      <div class="hint">터치: 행을 <b>좌로 스와이프</b> · 데스크톱: 행을 <kbd>마우스로 좌 드래그</kbd></div>
+    </div>
+    <div class="col">
+      <p style="font-size:13px;color:var(--fg-2)">동작 규칙</p>
+      <ul>
+        <li><b>좌로 밀기</b> → 트레이 열림(오른쪽에서 슬라이드인, 손 떼도 유지 = 액티브)</li>
+        <li><b>우로 밀기 / 다른 곳 탭 / 뒤로가기</b> → 닫힘</li>
+        <li><b class="g">고정</b>(라임) → 토글, 고정되면 픽토 배경 점등 유지</li>
+        <li><b class="r">나가기</b>(레드) → 한 번 누르면 armed(레드 점등), 한 번 더 = 실행(2탭 안전)</li>
+        <li>세로 스크롤·탭(방 열기)은 그대로 — 가로 우세 제스처만 트레이</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2><span class="n">2</span>상태 스냅샷 (전 → 후)</h2>
+  <div class="row" id="snaps"></div>
+
+  <h2><span class="n">3</span>리스크 · 장단점</h2>
+  <table>
+    <tr><th>항목</th><th>내용</th><th>대응</th></tr>
+    <tr><td>세로 스크롤 방해</td><td>가로/세로 제스처 혼선 시 스크롤이 막힐 위험</td><td>첫 10px에서 방향 박제 · 가로 우세(1.2배)+44px 임계만 트레이 · 세로는 스크롤 양보</td></tr>
+    <tr><td>탭 전환 충돌</td><td>메인 좌우 스와이프(탭 이동)와 방 행 스와이프가 겹침</td><td>ySwipeBind 제외에 <code>.ylr-wrap</code> 추가 = 행에서 시작한 가로 제스처는 탭 전환 무시</td></tr>
+    <tr><td>오발 방 진입</td><td>스와이프 릴리스가 합성 click으로 방을 여는 오발</td><td>justSwipe 래치(80ms)로 합성 click 소비 · 롱프레스 justLong 계보 계승</td></tr>
+    <tr><td>접근성</td><td>닫힌 트레이 버튼이 탭 포커스/SR에 노출</td><td>닫힘 = <code>aria-hidden</code>+<code>tabindex=-1</code>, 열림에만 포커스 대상</td></tr>
+    <tr><td>뒤로가기 정합</td><td>열린 트레이가 back 스택에 안 잡히면 앱 이탈</td><td>navOpen('yltray') 레이어 등재 = 뒤로가기=닫기(구 ylmenu 계승)</td></tr>
+  </table>
+  <p style="font-size:13px;margin-top:14px"><b style="color:var(--accent)">장점</b> — 우클릭/롱프레스(숨은 제스처)보다 발견성↑ · 카톡/iOS 메시지 결과 동일한 익숙함 · 한 손 엄지 조작 · 고정/나가기 색 구분으로 오탭↓. &nbsp; <b style="color:var(--danger)">단점</b> — 세로 리스트에서 가로 제스처 학습 필요 · 트레이 폭(60px)만큼 픽토 터치 영역이 다소 좁음.</p>
+
+  <h2><span class="n">4</span>고정 픽토 후보 (하나 골라줘)</h2>
+  <div class="row" id="pincands" style="align-items:flex-start"></div>
+  <p style="font-size:12px;color:var(--mut);margin-top:10px">현재 코드엔 <b style="color:var(--accent)">B(별 · 즐겨찾기)</b> 적용 — 트레이 픽토 + 이름줄 고정 표식 통일. 다른 게 좋으면 번호로 말해줘 — 한 줄 교체.</p>
+
+  <h2><span class="n">5</span>대안 · 새 아이데이션</h2>
+  <div class="idea"><b>대안 A (현 구현)</b> — 픽토 2개 = <span style="color:var(--accent)">고정</span> + <span style="color:var(--danger)">나가기</span>. 팝업 내용 전체를 트레이로 노출 = 팝업 소멸. <b>가장 단순·카톡 결.</b></div>
+  <div class="idea"><b>대안 B</b> — 픽토 2개 = <span style="color:var(--danger)">나가기</span> + <span style="color:var(--think)">더보기(⋯)</span>. 더보기 누르면 기존 팝업(고정 등 확장 액션)이 뜸. 향후 액션이 3개+로 늘 때 확장 여지.</div>
+  <div class="idea"><b>대안 C</b> — 실시간 추종(손가락 따라 트레이가 열리는 러버밴드). 더 물성감 있으나 구현 복잡·저사양 저크 리스크. 현재는 <b>임계 스냅</b>으로 안정 우선.</div>
+  <p style="font-size:12px;color:var(--mut);margin-top:12px">기본 채택 = 대안 A. 픽토 매핑/폭/방향을 바꾸고 싶으면 말해줘 — 트레이 폭(60px)·임계(44px)·픽토 구성은 한 줄 조정.</p>
+</div>
+
+<script>
+const PIN='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.3 5.9 20.4l1.4-6.8L2.2 9l6.9-.7z"/></svg>';
+// 고정 픽토 후보(운영자 260712 "핀셋 어색" → "즐겨찾기가 맞는거같음" = B 별 확정)
+const PIN_CANDS=[
+  ['B. 별 — 즐겨찾기 (현 채택)', '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.3 5.9 20.4l1.4-6.8L2.2 9l6.9-.7z"/></svg>'],
+  ['A. 위로 고정 압정', '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 12V4h1a1 1 0 0 0 0-2H7a1 1 0 0 0 0 2h1v8l-2 2v2h5.2v6h1.6v-6H19v-2l-3-2z"/></svg>'],
+  ['C. 북마크', '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 3h12a1 1 0 0 1 1 1v18l-7-4-7 4V4a1 1 0 0 1 1-1z"/></svg>'],
+  ['D. 대각 압정 (구 · 핀셋 오인)', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3l5 5-5.5 2-1 6.5L12 14l-6 7-1-1 7-6L9.5 11.5 16 10l-2-1.5z"/></svg>'],
+];
+const LEAVE='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg>';
+const DATA=[
+  {nm:'루시', job:'안드로이드', pin:true,  tht:'(무슨 생각을 하는진 모르겠다)', last:'이 밤은 아직 안 끝났어.', na:true},
+  {nm:'하서연', job:'국어교사', pin:false, tht:'오늘 네 문장이 조금 젖어 있었어', last:'늦었네. 문 잠갔어?'},
+  {nm:'홍석천', job:'포차 사장', pin:false, tht:'(무슨 생각을 하는진 모르겠다)', last:'한 잔 더 하고 가.', na:true},
+];
+function rowHTML(d,i){
+  return `<div class="ylr-wrap" data-i="${i}">
+    <button class="ylist-row">
+      <span class="ylist-ava">${d.nm[0]}</span>
+      <span class="ylist-mid">
+        <span class="ylist-nm">${d.pin?'<svg class="ylist-pin" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.3 5.9 20.4l1.4-6.8L2.2 9l6.9-.7z"/></svg>':''}<i class="ynm-t">${d.nm}</i><span class="yjob">${d.job}</span></span>
+        <span class="ylist-tht${d.na?' na':''}">${d.tht}</span>
+        <span class="ylist-last">${d.last}</span>
+      </span>
+    </button>
+    <div class="ylr-tray" aria-hidden="true">
+      <button class="ylr-act${d.pin?' on':''}" data-act="pin" tabindex="-1" aria-label="고정">${PIN}</button>
+      <button class="ylr-act" data-act="leave" tabindex="-1" aria-label="나가기">${LEAVE}</button>
+    </div>
+  </div>`;
+}
+// 고정 픽토 후보
+document.getElementById('pincands').innerHTML=PIN_CANDS.map(([lbl,svg])=>`<div class="col" style="flex:0 0 auto"><div class="pincand">${svg}</div><div class="cap" style="max-width:140px">${lbl}</div></div>`).join('');
+// 라이브
+document.getElementById('rows').innerHTML=DATA.map(rowHTML).join('');
+// 스냅샷 3업
+const snaps=[
+  {t:'① 기본(닫힘)', open:-1, arm:false},
+  {t:'② 좌로 밀면(열림)', open:1, arm:false},
+  {t:'③ 나가기 armed(2탭 대기)', open:1, arm:true},
+];
+document.getElementById('snaps').innerHTML=snaps.map(s=>`<div class="col" style="flex:0 0 auto"><div class="phone">
+  <div class="ylist"><div class="ylist-group">${DATA.slice(0,2).map(rowHTML).join('')}</div></div></div><div class="cap"><b>${s.t}</b></div></div>`).join('');
+[...document.querySelectorAll('#snaps .phone')].forEach((ph,idx)=>{
+  const s=snaps[idx]; if(s.open<0) return;
+  const w=ph.querySelectorAll('.ylr-wrap')[s.open]; if(!w) return;
+  w.classList.add('ylr-open'); w.querySelector('.ylr-tray').setAttribute('aria-hidden','false');
+  if(s.arm) w.querySelector('[data-act=leave]').classList.add('armed');
+});
+// 라이브 제스처
+(function(){
+  const box=document.getElementById('rows'); let open=null, x0=0,y0=0,tgt=null,dec=0,hz=0,arm=0;
+  const rst=()=>{tgt=null;dec=0;hz=0;};
+  const close=()=>{ if(!open)return; open.classList.remove('ylr-open'); open.querySelector('.ylr-tray').setAttribute('aria-hidden','true'); const a=open.querySelector('.armed'); if(a)a.classList.remove('armed'); open=null; arm=0; };
+  const openW=w=>{ if(open===w)return; close(); w.classList.add('ylr-open'); w.querySelector('.ylr-tray').setAttribute('aria-hidden','false'); open=w; };
+  box.addEventListener('pointerdown',e=>{ if(e.target.closest('.ylr-tray')){rst();return;} const r=e.target.closest('.ylist-row'); if(!r){rst();return;} x0=e.clientX;y0=e.clientY;tgt=r.closest('.ylr-wrap');dec=0;hz=0; });
+  box.addEventListener('pointermove',e=>{ if(!tgt||dec)return; const dx=e.clientX-x0,dy=e.clientY-y0; if(Math.abs(dx)>10||Math.abs(dy)>10){dec=1;hz=Math.abs(dx)>Math.abs(dy)*1.2?1:0;} });
+  box.addEventListener('pointerup',e=>{ if(!tgt)return; const w=tgt,dx=e.clientX-x0,dy=e.clientY-y0,wh=hz; rst(); if(wh&&Math.abs(dx)>Math.abs(dy)*1.2&&Math.abs(dx)>44){ if(dx<0)openW(w); else if(open===w)close(); w._sw=1; setTimeout(()=>w._sw=0,80);} });
+  box.addEventListener('pointercancel',rst);
+  box.addEventListener('click',e=>{ const a=e.target.closest('.ylr-act'); if(a){ e.stopPropagation();e.preventDefault();
+      if(a.dataset.act==='pin'){ a.classList.toggle('on'); close(); }
+      else { if(!arm){arm=1;a.classList.add('armed');setTimeout(()=>{arm=0;a.classList.remove('armed');},2600);} else {arm=0; const w=a.closest('.ylr-wrap'); close(); w.style.transition='opacity .3s'; w.style.opacity='.3';} }
+      return; }
+    const w=e.target.closest('.ylr-wrap'); if(w&&w._sw){w._sw=0;e.stopPropagation();e.preventDefault();return;}
+    if(open){e.stopPropagation();e.preventDefault();close();return;}
+  },true);
+})();
+</script>
