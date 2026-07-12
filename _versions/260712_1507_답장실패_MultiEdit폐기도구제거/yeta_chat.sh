@@ -497,7 +497,7 @@ gen_out() {
   for attempt in $(seq 1 "$INLINE_TRIES"); do
     OUT="$(printf '%s' "$prompt" | METER_SRC=yeta METER_REF="$PERSONA" METER_MODEL="$MODEL" METER_EFFORT="$EFF" METER_LAST=/tmp/yeta_meter_last.json claude_meter 240 \
           --model "$MODEL" $SAFE "${SYS_ARGS[@]}" "${EFF_ARGS[@]}" \
-          --disallowedTools "Write,Edit,NotebookEdit,Bash,Task,WebFetch,WebSearch,Read,Glob,Grep" \
+          --disallowedTools "Write,Edit,MultiEdit,NotebookEdit,Bash,Task,WebFetch,WebSearch,Read,Glob,Grep" \
           --max-turns 1 \
           2> /tmp/yeta.err)"
     rc=$?
