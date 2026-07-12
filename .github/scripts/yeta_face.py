@@ -112,14 +112,17 @@ def openai_image(prompt):
 
 
 def set_avatar(text, pid, url):
-    """roster.json 라인 정규식 — "id":"<pid>" 줄의 "avatar":"…" 만 교체(수제 1줄=1명 포맷 보존)."""
-    out, hit = [], False
-    for line in text.splitlines(keepends=True):
-        if re.search(r'"id"\s*:\s*"%s"' % re.escape(pid), line):
-            line, n = re.subn(r'"avatar"\s*:\s*"[^"]*"', '"avatar": "%s"' % url, line, count=1)
-            hit = hit or n > 0
-        out.append(line)
-    return "".join(out), hit
+    """roster.json — "id":"<pid>" 객체 블록 안의 "avatar" 값 교체(멀티라인 pretty JSON 대응 · 260712 픽스).
+    이전 '1줄=1명' 가정은 pretty JSON(id·avatar 다른 줄)에서 '라인 못 찾음'으로 주입 실패했다."""
+    m = re.search(r'"id"\s*:\s*"%s"' % re.escape(pid), text)
+    if not m:
+        return text, False
+    nxt = re.search(r'"id"\s*:\s*"', text[m.end():])   # 다음 캐릭터 객체 시작 = 이 블록 끝
+    end = m.end() + nxt.start() if nxt else len(text)
+    seg, n = re.subn(r'"avatar"\s*:\s*"[^"]*"', '"avatar": "%s"' % url, text[m.end():end], count=1)
+    if n == 0:
+        return text, False   # 이 객체에 avatar 키 없음(신규 캐릭터 = 별도 처리 필요)
+    return text[:m.end()] + seg + text[end:], True
 
 
 def main():
