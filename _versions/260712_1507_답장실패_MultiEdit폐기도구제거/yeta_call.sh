@@ -117,7 +117,7 @@ ${HIST:-"(없음)"}
   for attempt in $(seq 1 "$INLINE_TRIES"); do
     out="$(printf '%s' "$prompt" | METER_SRC=yeta-call METER_REF="$PERSONA" METER_MODEL="$MODEL" METER_EFFORT="$EFF" claude_meter 240 \
           --model "$MODEL" $SAFE "${EFF_ARGS[@]}" \
-          --disallowedTools "Write,Edit,NotebookEdit,Bash,Task,WebFetch,WebSearch,Read,Glob,Grep" \
+          --disallowedTools "Write,Edit,MultiEdit,NotebookEdit,Bash,Task,WebFetch,WebSearch,Read,Glob,Grep" \
           --max-turns 1 \
           2> /tmp/yeta_call.err)"
     rc=$?
