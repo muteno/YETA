@@ -427,7 +427,7 @@ export async function onRequestPost({ request, env }) {
     if (curO) { try { const prev = migrateV3(JSON.parse(new TextDecoder().decode(await (await env.YETA_R2.get(KEY)).arrayBuffer()))); keepTunes = prev.tunes || {}; keepPolicy = prev.policy || {}; keepMe = prev.me || keepMe; } catch {} }
     const fresh = EMPTY(); fresh.tunes = keepTunes; fresh.policy = keepPolicy; fresh.me = keepMe;   // 유저 프로필(호칭·소개)은 전체 초기화에도 승계 = 내 정체성(tunes/policy 결)
     await putSess(fresh);   // 전체 초기화 = 무조건 put(의도된 전량 대체)
-    return json({ ok: true, sess: fresh });   // sess 반환 = 뷰어 리로드 없이 빈 목록 즉시 재렌더(threads:{} = redact no-op · 형제 t-reset 경로 대칭)
+    return json({ ok: true });
   }
 
   if (op === 'draw') {   // v3 = 그 캐릭터의 대화방 열기(스레드 신설 = 이 op 단일 경로 · 보안 감사①) — 기존 방 = cur 전환만
