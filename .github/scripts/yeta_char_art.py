@@ -4,10 +4,12 @@
 
 기존 얼굴 파이프(yeta_face.py = grounded 웹툰 프사)와 별개 축 = **판타지컬 반신 초상**(2:3 · 각 카드 판타지 서사 + roster 포인트색 아우라 반영).
 수동 dispatch 전용(⚠️ OpenAI 유료 종량제 · 자동 트리거 금지 = 이미지 파이프 공통 규약).
-OpenAI Images API(gpt-image) → `viewer/assets/yeta_char/<id>.png`(+webp 768w) 커밋 = git 정본(운영자 편집 베이스 · roster 자동주입 안 함 = 편집 후 운영자가 배정).
+OpenAI Images API(gpt-image) → `viewer/assets/yeta_char/<id>.png`(+webp 768w) 커밋 = git 정본(큰 그림 = 운영자 편집 베이스).
++ 작은 얼굴 자동화(운영자 260713 "완전 자동 ㄱㄱ"): 큰 그림 상단·가로중앙 정사각을 512² webp `av/<id>.webp`로 떼고 roster avatar 슬롯에 자동 주입.
+  = 〔큰 그림 → 작은 얼굴 크롭 → roster 배선〕 한 dispatch로 hands-off. 큰 그림 편집 베이스 성격은 유지(원하면 운영자가 png 손보고 재크롭).
 멱등: 이미 있는 id는 skip(FORCE=1 재생성). 게이트 = OPENAI_API_KEY(없으면 no-op).
 """
-import base64, json, os, shutil, subprocess, sys, time, urllib.request
+import base64, json, os, re, shutil, subprocess, sys, time, urllib.request
 
 KEY = os.environ.get("OPENAI_API_KEY", "") or os.environ.get("OPENAI_API_KEY_nomute", "")
 MODEL = (os.environ.get("OPENAI_IMAGE_MODEL") or "gpt-image-2").strip()
@@ -15,6 +17,9 @@ API = "https://api.openai.com/v1/images/generations"
 FORCE = os.environ.get("FORCE", "") == "1"
 ONLY = os.environ.get("YETA_CHAR_ONLY", "").strip()   # 특정 id 하나만(비용 절감 테스트)
 OUT = "viewer/assets/yeta_char"
+AVDIR = os.path.join(OUT, "av")                       # 작은 얼굴(아바타) 512²
+ROSTER = "apps/yeta/characters/roster.json"
+AV_URL = "assets/yeta_char/av/%s.webp"                # 뷰어 상대경로(roster avatar 슬롯)
 
 # 판타지 초상 공통 결 — 무음동 판타지 개편(각 카드 = 판타지·무협 주인공 서사) · 반신·아우라 허용(얼굴 파이프의 'not costume fantasy' 가드 해제).
 BASE = ("Fantasy character portrait, polished Korean manhwa / webtoon key-art illustration, painterly semi-realistic, "
@@ -51,6 +56,37 @@ def webp(path):
         print(f"  ⚠️ webp 변환 실패(비치명): {e}", flush=True)
 
 
+def avatar_crop(png_path, cid):
+    """큰 반신(1024×1536)에서 상단·가로중앙 정사각(iw/2)만 떼 512² webp = 작은 얼굴.
+    프레이밍 = 운영자 수동 av/ 크롭 10인 역산·눈검증분(260713: crop 512²@x256,y0 ≈ 수동과 동일).
+    해상도 무관식(iw/2·iw/4)이라 size 바뀌어도 안전. ffmpeg 없으면 None(주입 생략)."""
+    if not shutil.which("ffmpeg"):
+        print("  ⚠️ ffmpeg 없음 — av 크롭 생략", flush=True); return None
+    os.makedirs(AVDIR, exist_ok=True)
+    out = os.path.join(AVDIR, f"{cid}.webp")
+    try:
+        subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-i", png_path,
+                        "-vf", "crop=iw/2:iw/2:iw/4:0,scale=512:512", "-quality", "86", out],
+                       check=True, timeout=120)
+        return out
+    except Exception as e:
+        print(f"  ⚠️ av 크롭 실패(비치명): {e}", flush=True); return None
+
+
+def set_avatar(text, pid, url):
+    """roster.json — "id":"<pid>" 객체 블록 안 "avatar" 값 교체(멀티라인 pretty JSON 대응 · yeta_face.py 260712 픽스 계승).
+    id 블록 = 그 "id" 매치부터 다음 "id" 전까지 → 그 안 avatar 1개만 치환(수제 포맷·타 캐릭터 불변)."""
+    m = re.search(r'"id"\s*:\s*"%s"' % re.escape(pid), text)
+    if not m:
+        return text, False
+    nxt = re.search(r'"id"\s*:\s*"', text[m.end():])
+    end = m.end() + nxt.start() if nxt else len(text)
+    seg, n = re.subn(r'"avatar"\s*:\s*"[^"]*"', '"avatar": "%s"' % url, text[m.end():end], count=1)
+    if n == 0:
+        return text, False
+    return text[:m.end()] + seg + text[end:], True
+
+
 def openai_image(prompt):
     payload = {"model": MODEL, "prompt": prompt, "size": "1024x1536", "n": 1}   # 세로 2:3(반신 초상)
     req = urllib.request.Request(API, data=json.dumps(payload).encode(),
@@ -81,20 +117,38 @@ def main():
     os.makedirs(OUT, exist_ok=True)
     chars = [c for c in CHARS if not ONLY or c[0] == ONLY]
     made = 0
+    wired = []                        # av 크롭까지 있는 id = roster 주입 대상
     for cid, desc in chars:
         path = os.path.join(OUT, f"{cid}.png")
         if os.path.exists(path) and not FORCE:
-            print(f"skip {cid}(기존)"); continue
+            print(f"skip {cid}(기존)")
+            if os.path.exists(os.path.join(AVDIR, f"{cid}.webp")):
+                wired.append(cid)     # 기존분도 roster 정합만 보장(값 동일=멱등)
+            continue
         print(f"생성 {cid} …", flush=True)
         png = openai_image(BASE + desc)
         if not png:
             continue
         open(path, "wb").write(png)
         webp(path)
+        if avatar_crop(path, cid):
+            wired.append(cid)
         made += 1
         print(f"  ✓ {path} ({len(png)//1024}KB)", flush=True)
         time.sleep(2)
-    print(f"완료 — 신규 {made}장")
+    # roster 자동 주입 — 큰 그림=편집 베이스 유지, 작은 얼굴만 avatar 슬롯 배선(lucy/winter=CHARS 밖 = 불가침)
+    if wired and os.path.exists(ROSTER):
+        roster = open(ROSTER, encoding="utf-8").read()
+        hits = 0
+        for cid in wired:
+            roster, ok = set_avatar(roster, cid, AV_URL % cid)
+            if ok:
+                hits += 1
+            else:
+                print(f"  ⚠️ roster 주입 실패 {cid}(avatar 키 없음?)", flush=True)
+        open(ROSTER, "w", encoding="utf-8").write(roster)
+        print(f"roster avatar 주입 — {hits}/{len(wired)}")
+    print(f"완료 — 신규 {made}장 · 배선 {len(wired)}인")
     return 0
 
 

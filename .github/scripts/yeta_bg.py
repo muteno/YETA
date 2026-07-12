@@ -30,7 +30,8 @@ R2_ON = all([R2_ACCOUNT, R2_BUCKET, R2_PUBLIC, R2_KEY, R2_SECRET])
 
 # 공통 스타일 — 채팅 배경용(무인·야간·저대비·텍스트 프리·full-bleed). 뷰어가 위에 어두운 그라데를 얹으므로 무드 중심.
 BASE = ("서울 변두리, 밤이 긴 골목 '무음동'의 한 장면. 세로 9:16 모바일 채팅 배경. "
-        "사람 없음(무인 공간). 실사 사진 질감, 어둡고 차분한 여름밤 톤, 은은한 인공조명, 낮은 대비. "
+        "사람 없음(무인 공간). 반실사 애니 일러스트 배경 아트(semi-realistic anime-style illustrated background, glossy painterly rendering — 캐릭터 초상과 같은 톤·NOT 실사 사진), "
+        "어둡고 차분한 여름밤 톤, 은은한 인공조명, 낮은 대비, 몽환적이고 은은한 판타지 분위기. "
         "글자·간판 텍스트·자막·워터마크·로고 없음. 화면 가장자리까지 장면으로 꽉 채움(여백·레터박스 금지). ")
 
 # 무대 8장면 → 페르소나 매핑(10인 전원 커버 · 찻집=무디·하은 / 골목=가을·백 공유)
@@ -133,14 +134,17 @@ def r2_head(key):
 
 
 def set_bg(text, pid, url):
-    """roster.json 라인 정규식 — "id": "<pid>" 줄의 "bg": "…" 만 교체(수제 1줄=1명 포맷 보존)."""
-    out, hit = [], False
-    for line in text.splitlines(keepends=True):
-        if re.search(r'"id"\s*:\s*"%s"' % re.escape(pid), line):
-            line, n = re.subn(r'"bg"\s*:\s*"[^"]*"', '"bg": "%s"' % url, line, count=1)
-            hit = hit or n > 0
-        out.append(line)
-    return "".join(out), hit
+    """roster.json — "id":"<pid>" 객체 블록 안의 "bg" 값 교체(멀티라인 pretty JSON 대응 · 260712 픽스).
+    이전 '1줄=1명' 가정은 pretty JSON(id·bg 다른 줄)에서 '라인 못 찾음'으로 주입 실패했다."""
+    m = re.search(r'"id"\s*:\s*"%s"' % re.escape(pid), text)
+    if not m:
+        return text, False
+    nxt = re.search(r'"id"\s*:\s*"', text[m.end():])   # 다음 캐릭터 객체 시작 = 이 블록 끝
+    end = m.end() + nxt.start() if nxt else len(text)
+    seg, n = re.subn(r'"bg"\s*:\s*"[^"]*"', '"bg": "%s"' % url, text[m.end():end], count=1)
+    if n == 0:
+        return text, False
+    return text[:m.end()] + seg + text[end:], True
 
 
 def main():

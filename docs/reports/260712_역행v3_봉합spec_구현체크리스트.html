@@ -1,0 +1,108 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>역행 v3 봉합 spec — 5인 기틀검증 구현 체크리스트</title>
+<style>
+  :root{--bg:#121212;--panel:#181818;--panel2:#1f1f1f;--line:rgba(255,255,255,.09);--fg:#f4f4f4;--fg2:#b8b8b8;--mut:#8b8b8b;--accent:#CFFF40;--cobalt:#3D6BFF;--danger:#ff5b4a;--r:14px}
+  *{box-sizing:border-box}html,body{margin:0}
+  body{background:var(--bg);color:var(--fg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased;padding:0 0 70px}
+  .wrap{max-width:1000px;margin:0 auto;padding:0 20px}
+  header{padding:40px 0 22px;border-bottom:1px solid var(--line);margin-bottom:8px}
+  .kick{color:var(--accent);font-weight:700;letter-spacing:.04em;font-size:12.5px;text-transform:uppercase}
+  h1{font-size:26px;line-height:1.25;margin:.3em 0 .28em}
+  .sub{color:var(--fg2);font-size:14.5px;margin:0}
+  .meta{color:var(--mut);font-size:12.5px;margin-top:12px}
+  h2{font-size:18px;margin:32px 0 10px;display:flex;align-items:center;gap:10px}
+  h2 .n{display:inline-flex;align-items:center;justify-content:center;width:25px;height:25px;border-radius:8px;background:var(--accent);color:#111;font-size:13px;font-weight:800}
+  h3{font-size:15px;margin:18px 0 6px}
+  p{margin:.5em 0}code{background:#0c0c0c;border:1px solid var(--line);border-radius:6px;padding:1px 6px;font-size:12px;color:var(--accent)}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;margin:12px 0}
+  .verdict{background:linear-gradient(180deg,rgba(207,255,64,.09),rgba(207,255,64,.02));border-color:rgba(207,255,64,.28)}
+  .pill{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;margin:1px 2px}
+  .p-ok{background:rgba(207,255,64,.16);color:var(--accent)}
+  .p-warn{background:rgba(255,91,74,.14);color:#ff9083}
+  .p-cob{background:rgba(61,107,255,.16);color:#8ea9ff}
+  table{width:100%;border-collapse:collapse;margin:10px 0;font-size:12.5px}
+  th,td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{background:var(--panel2);color:var(--fg2);font-size:11px;text-transform:uppercase}
+  .tbl-scroll{overflow-x:auto}
+  ul{margin:.3em 0;padding-left:20px}li{margin:.25em 0}
+  .ck{list-style:none;padding-left:4px}.ck li{margin:.35em 0}.ck li::before{content:"☐ ";color:var(--mut)}
+  .callout{border-left:3px solid var(--accent);padding:4px 0 4px 14px;margin:12px 0;color:var(--fg2);font-size:13.5px}
+  .callout.warn{border-color:var(--danger)}.callout.warn b{color:#ff9083}
+  .foot{margin-top:34px;padding-top:16px;border-top:1px solid var(--line);color:var(--mut);font-size:12px}
+</style>
+
+<header><div class="wrap">
+  <div class="kick">5인 기틀검증 봉합 · 구현 직전 정본</div>
+  <h1>친밀도 역행 v3 — 봉합 spec · 구현 체크리스트</h1>
+  <p class="sub">5인 전원 <b>CONCERNS · STOP 0</b>(뼈대 승인) → 선결 봉합을 통합한 구현 정본. 이 문서가 코드의 단일 기준.</p>
+  <div class="meta">검증 = 뷰어수학 · 러너emit · 게이트웨이마이그 · 지침안전 · 통합레드팀(opus 5인) · 결정 = 하서연 7w6 · 역행 빨강(게이지 한정) · GO</div>
+</div></header>
+
+<div class="wrap">
+
+<div class="card verdict">
+  <p style="margin-top:0"><b>평결 종합.</b> 5인 전원 CONCERNS(재설계 STOP 0). 핵심 안전판 <b><code>adj=0</code> → 기존 yBond와 bit-identical</b> 실측 확인(기존 유저 무영향). 아래 봉합 반영 시 GO.</p>
+  <p style="margin-bottom:0"><b>최대 교정(위원1):</b> 반목·육각 구동원 = <b><code>yHurt</code>(감점 직독)</b>이지 <code>yBond&lt;0</code>이 아니다 — 이래야 완충된 관계의 상처도 보이고(2축 사수), <code>n≳33</code> 반목 도달불가 결함도 소멸(네 "별도 채널" 취지 사수).</p>
+</div>
+
+<h2><span class="n">A</span> 마커·필드 통일</h2>
+<ul class="ck">
+  <li>마커 = <code>&lt;&lt;HURT:slight|cold|betray&gt;&gt;</code> · <code>&lt;&lt;HEAL&gt;&gt;</code> 확정. <code>&lt;&lt;BOND:±n&gt;&gt;</code> 폐기(티어=magnitude 결정적 우위). 역행 v2 정본 HTML의 BOND 표기도 정정.</li>
+  <li>필드 = <code>adj</code> 단일. <code>grudge</code> 전면 폐기(지뢰B 처방 <code>(+th.grudge||0)</code>→<code>(+th.adj||0)</code> 정정).</li>
+  <li><b>4곳 동시 배선</b>: <code>yeta.js</code> stripMarkers + <code>inject_character.sh</code> clean(:53) + 러너 파서(:296) + 러너 표시-strip(:299) — 전부 <code>HURT|HEAL|BOND</code> 포함(위장주입 무한하락 차단).</li>
+</ul>
+
+<h2><span class="n">B</span> 뷰어 (읽기·2축·계층)</h2>
+<ul class="ck">
+  <li><code>yBond</code> = <code>pos + adj·(1−recover)·pen</code> · <code>adj=0</code>이면 bit-identical · <code>(+th.adj||0)</code> NaN 봉인.</li>
+  <li><code>yHurt = adj·(1−recover)</code> 신규 = <b>반목·육각 구동원</b>(완충 무관 상처 노출).</li>
+  <li><b>육각 수축 = <code>yStatBoost</code>의 <code>yBond&lt;0</code> 분기 폐기 → <code>yHurt</code> 구동</b>. 구조 <code>b≥2.5 / yHurt&lt;0 / else null</code>(NaN 자동 null·낙관렌더 첫페인트 폭발 차단).</li>
+  <li><b>왜곡벡터 = roster 수치필드 신설</b>(제23조 per-캐릭터 급증/급감 프로파일 · 코드0 준수). <code>yHexSvg</code> = 급증(base 바깥)+급감(base 안쪽) <b>동시 렌더</b>. 스칼라 W-미러 금지(세라 텐션 반대부호 오류 차단).</li>
+  <li><code>yEstranged</code>에 <code>bond≥0</code> 가드 + <b><code>yColdWar</code> 신규</b>(반목·비차단).</li>
+  <li><b>소비처 9곳 전수</b>: <code>grp</code>(2285)·<b><code>yListRender</code>(2117 목록탭)</b>·좌레일(2224)에 yColdWar 분기(반목이 정상행으로 새는 것 차단). <code>yNearCalc</code>(2965) 회복 pool 재편입.</li>
+  <li><code>yFallRate</code>/<code>yThawMul</code> = <b>뷰어 JS만</b>(러너 파이썬 포팅 회피·이중 SSOT 방지). 하서연 7w6 포함 tune 파생.</li>
+</ul>
+<div class="callout warn"><b>빨강 범위(위원 절충 + 운영자 확인 대기):</b> 역행 빨강 = <b>육각 게이지 곡선(<code>.hx-n</code>)에만</b> · 반목 아바타/레이어는 <b>무채색(grayscale·<code>--mut</code>)</b>(§🎨 "--danger=앱오류 오독" 조화). <code>.hx-n</code>을 <code>.yb.fail</code>과 시각 분리 · viewer 실값 <code>--danger:#ff5b4a</code> 기준 재프리뷰.</div>
+
+<h2><span class="n">C</span> 러너 (emit·저장·주입)</h2>
+<ul class="ck">
+  <li>티어토큰 파서 = MOOD/NOTE 옆(:296). <b>러너는 raw 티어만 저장</b>(yFallRate 환산은 뷰어) → <code>adj</code> 절대값 재평가·누락보존(NOTE식 :348 미러·<code>+=</code> 누산 금지=이중가산 차단).</li>
+  <li><code>adj</code> surface: <code>extract_mat</code>(:224)이 <code>s.get("adj")</code> 꺼냄 → <code>state_block</code>(:446) <b>프롬프트 말미</b> 자연어 1줄 역주입(<code>adj&lt;0</code> 게이트·최신성 편향 드리프트 방지). 호칭온도는 <code>rel_lv</code> 편승.</li>
+  <li>욕설 = 맥락무관·첫 1~2회 당황→급가속(누적성 or <code>slur_n</code> 절대값).</li>
+  <li>목격 게이트 = <code>co_name</code>(합석) <b>또는</b> <code>barge_debut+via=="place"</code> — <code>place_nm</code> 단독 금지(매턴 오발동).</li>
+  <li>비용 불변: dispatch 1회·char:main 단일그룹·CBLOCK 캐시접두 무손상.</li>
+</ul>
+
+<h2><span class="n">D</span> 게이트웨이·마이그·롤백</h2>
+<ul class="ck">
+  <li><code>stripMarkers</code>(yeta.js:44)에 <code>HURT|HEAL|BOND</code> 추가(고정점 루프 방어 상속).</li>
+  <li>migrate 백필 = <b>no-op 브랜치</b>(JS:89·Py:15 — v3 현행 세션이 오는 곳)에서 <code>s.threads</code> 순회 <code>adj??=0</code>. JS <code>??=</code> ↔ Py <code>setdefault</code> clamp 시맨틱 문자 동형(<code>≤0 정수 아니면 0</code>) · <b>양성 테스트</b>(v3+thread(adj無)→adj=0).</li>
+  <li><b>롤백 strip 마이그 실구현</b>(범프+백아웃 스크립트) — R2 좀비 adj 제거(비대칭 롤백 봉합).</li>
+</ul>
+
+<h2><span class="n">E</span> 지침·안전 (내 관할)</h2>
+<ul class="ck">
+  <li>00_지침 §📤에 HURT/HEAL emit 규칙(유형 공포 찌를 때·욕설·목격) + <code>rel_lv↔adj</code> 동기화 규칙.</li>
+  <li><b>온기가드 하드실링</b>: 역행 = 냉담·거리·무호칭까지만 · 친밀 고백(NOTE:ME)·급소를 공격 탄약 무기화 금지 · 실존(윈터) 역행 시 실인 비방 소급 금지.</li>
+  <li><b>dark pattern 차단</b>: 사과 조르기·애정 순종조건화·죄책감/집착 붙잡기 금지 · 시간 자가감쇠 병존(사과 단독 게이트=강요된 사과 함정).</li>
+  <li><b>유형 누출</b>: HURT/HEAL 백스테이지 한정 · 애니어 공포(제9조)·유형·MBTI 대사 명명 금지(L0 meta).</li>
+</ul>
+
+<h2><span class="n">F</span> 배포 순서 · 판례</h2>
+<div class="tbl-scroll"><table>
+  <tr><th>단계</th><th>대상</th><th>성격</th></tr>
+  <tr><td>1</td><td><code>yeta.js</code> stripMarkers (+마커)</td><td class="p-ok">무해·먼저(주입창 차단)</td></tr>
+  <tr><td>2</td><td>뷰어 (yBond·yHurt·yColdWar·yHexSvg·roster 왜곡필드)</td><td class="p-cob">읽기전용·수동적(adj 부재=0 무변화)</td></tr>
+  <tr><td>3</td><td>러너+지침 (emit·adj 영속)</td><td class="p-warn">쓰기 주체·최후(되돌릴 수 없는 데이터 생성 시작점)</td></tr>
+</table></div>
+<ul class="ck">
+  <li>동시 4파일 금지(비원자 2채널 = CF Pages ↔ Actions 러너).</li>
+  <li>판례 갱신 1줄 원장(<code>작업이력.md</code>): "감정 결정론 금지" 예외 사유(adj=rel_lv/MOOD 영속 선례 연장·소프트 힌트 유지).</li>
+</ul>
+
+<h2><span class="n">!</span> 운영자 관할 (내가 안 건드림)</h2>
+<div class="callout warn"><b><code>policy.json</code> L0·L1 안전(위원4 R1·R2):</b> "존엄" 4항("자해조장 가능"·"미성년 성적 망설임")이 <code>00_지침</code> 안전가드와 정면충돌 · 최근 커밋 <code>da00fe5</code>가 주입되는 L1 문구("절대선 불변"·"유저 물러서면 후퇴") 삭제. <b>현재 런타임 미주입(급성 위험 아님)</b>이나 뷰어 정본이 안전자세를 반대로 선언 중. 운영자 "본인 수정중" → 전달만.</div>
+
+<div class="foot">5인 기틀검증(opus·READ-ONLY) 봉합 통합 · 역행 v2 정본 = <code>260712_친밀도음수역행_평의회설계.html</code> · 성향 = <code>성향_DB.md</code>(제22~24조 왜곡벡터) · 이 문서 = 구현 단일 기준(코드 착수 시 이 체크리스트 소진).</div>
+</div>
