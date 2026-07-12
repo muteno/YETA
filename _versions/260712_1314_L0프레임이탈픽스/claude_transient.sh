@@ -44,31 +44,3 @@ claude_failover() {
   fi
   return 1
 }
-
-# is_frame_break(): claude -p 출력이 '캐릭터 프레임 이탈'(메타발화·Claude Code로 응답·영어 논평·프롬프트 구조 설명)인지 —
-#   L0(메타발화 차단) 최종 기계 백스톱. yeta 생성 경로(chat/nudge/call) 공용 SSOT. 260712 신설(스크린샷 사고 대응).
-#   호출부는 이탈이면 실패 처리(재시도, 끝내 지속 = error 기록 = 유출 텍스트를 캐릭터 대사로 박제 안 함 — is_quota rc=0 가드와 동형 계보).
-#   판정 = (a) 리터럴 시그니처(정상 한국어 대사엔 절대 안 나오는 표지) || (b) 한국어 출력계약 위반(지문·마커 제거 후 긴 대사가 영어 위주·한글 희박).
-is_frame_break() {
-  local raw="${1:-}"
-  # (a) 리터럴 시그니처 — 어디에 있든 유출(00_지침이 캐릭터의 시스템/프롬프트 언급을 금하므로 정상 대사엔 부재).
-  if printf '%s' "$raw" | grep -qiE 'claude code|</?user_message>|runtime payload|system prompt|시스템 프롬프트|an actual coding task|as an ai( language)? model|프롬프트를 (보여|출력|공개|인용|요약)'; then
-    return 0
-  fi
-  # (b) 한국어 계약 위반 — 지문(*..*)·기억/무드 마커·코드펜스 제거 후 남은 대사가 40자↑인데 알파벳 중 한글<15% = 영어 메타 유출(스크린샷 케이스).
-  #     짧은 대사·외래어 혼용("OK 그래")은 길이 게이트+한글 다수라 무영향 = 오탐 회피.
-  printf '%s' "$raw" | python3 -c '
-import re, sys
-t = sys.stdin.read()
-t = re.split(r"<<\s*NOTE(?:\s*:\s*\w+)?\s*>>", t, flags=re.I)[0]
-t = re.sub(r"<<\s*/?\s*(?:NOTE|MOOD)(?:\s*:\s*\w+)?\s*>>", "", t, flags=re.I)
-t = re.sub(r"\*[^*\n]{1,400}\*", "", t)
-t = re.sub(r"[`_*]", "", t).strip()
-letters = [c for c in t if c.isalpha()]
-if len(t) <= 40 or not letters:
-    sys.exit(1)
-han = sum(1 for c in letters if "가" <= c <= "힣" or "㄰" <= c <= "㆏")
-sys.exit(0 if han / len(letters) < 0.15 else 1)
-' && return 0
-  return 1
-}
