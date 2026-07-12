@@ -28,16 +28,17 @@ R2_KEY = os.environ.get("R2_ACCESS_KEY_ID", "").strip()
 R2_SECRET = os.environ.get("R2_SECRET_ACCESS_KEY", "").strip()
 R2_ON = all([R2_ACCOUNT, R2_BUCKET, R2_PUBLIC, R2_KEY, R2_SECRET])
 
-# 공통 스타일 — 한국 웹툰(manhwa) 프로필 초상(정사각 1:1·얼굴중심·미남미녀·키·글래머러스 존재감·착장 유지 안전가드).
-BASE = ("Korean webtoon-style character profile portrait, polished digital manhwa illustration, "
-        "clean lineart with soft cel shading, perfectly square 1:1, "
-        "face-centered head-and-shoulders close-up (the face fills the frame), "
+# 공통 스타일 — 루시 톤 통일(운영자 260712): 반실사 애니 일러스트(웹툰 flat lineart 아님) · 글로시 painterly · 정사각 1:1 얼굴중심 · 미남미녀 · 착장 유지 안전가드.
+BASE = ("semi-realistic detailed anime-style character profile portrait, "
+        "polished painterly digital illustration with glossy rendering and soft painterly shading (NOT flat webtoon lineart, NOT manhwa cel), "
+        "perfectly square 1:1, face-centered head-and-shoulders close-up (the face fills the frame), "
         "one single original fictional character, very good-looking and attractive, "
-        "tall with an elegant glamorous striking presence, refined proportions, flawless skin, "
+        "luminous skin with delicate soft blush, refined modern-anime features with large expressive highly-detailed eyes and crisp eyeliner accents, "
+        "tall with an elegant glamorous striking presence, refined proportions, "
         "set in the moody night-lit back-alley mood of a quiet Seoul neighborhood, "
         "soft cinematic lighting with a subtle touch of fantasy — faint magical ambient glow, "
-        "delicate floating light particles, a dreamlike ethereal atmosphere (still grounded and semi-realistic, not costume fantasy), "
-        "gentle color grade, fully clothed and tasteful, "
+        "delicate floating light particles, a dreamlike ethereal atmosphere (semi-realistic anime, still grounded, not costume fantasy), "
+        "gentle pastel-and-neon color grade, fully clothed and tasteful, "
         "no text, no caption, no watermark, no logo. Character — ")
 
 # 캐릭터 10인 초상(보강 카드 성격·수치·이면·직업 반영 · 미남미녀·매력 각인 · '어울리는 하나씩' · 260703 v2 카드정합)
@@ -45,13 +46,14 @@ FACES = [
     ("desk",  "a strikingly handsome man of 48 with a distinguished mature air, a veteran newsroom editor-in-chief, sharp intelligent eyes behind thin steel-rimmed glasses, cool composed almost unreadable expression that hides a lifelong love of the work, neat dark hair greying at the temples, faint stubble, crisp muted grey shirt with sleeves rolled once, a coffee cup nearby; cold late-night newsroom monitor glow with a faint icy-blue holographic shimmer."),
     ("kopi",  "a charming handsome man of 34, a freelance copywriter, playful witty half-smile that's half a mask, stylishly tousled hair, warm expressive eyes quietly hungry for a little praise, a cozy oversized knit, a laptop and teacup at a cafe corner; warm teahouse lamplight with soft golden floating bokeh."),
     ("mudi",  "a serene androgynous beautiful person in their early 40s of gentle ambiguous gender, the owner of a 24-hour teahouse, a soft reassuring half-smile, calm kind knowing eyes, tidy linen apron over a fitted shirt, holding a warm cup; deep amber pendant light with gentle glowing steam wisps curling up."),
-    ("sera",  "a beautiful striking young woman of 19, an idol trainee, chic aloof guarded expression with a flicker of loneliness underneath, sleek high ponytail with one earphone in, delicate sharp features, a trendy sporty crop-and-jacket practice outfit; dreamy underground practice-room neon pink-and-blue haze, cool fluorescent shimmer."),
+    ("sera",  "a beautiful alluring young woman of 19, an idol trainee with a magnetic attention-drawing charm and a confident flirtatious edge, chic aloof guarded expression with a flicker of loneliness underneath, sleek high ponytail, delicate sharp attractive features, a trendy stylish stage-ready outfit; dreamy underground practice-room neon pink-and-blue haze, cool fluorescent shimmer."),
     ("haeun", "a beautiful elegant woman of 32, a high-school Korean-literature teacher, a warm teasing playful smile, soft wavy shoulder-length hair, graceful refined features, a neat stylish blouse, a teacup by a window; soft dusk window glow with drifting warm petals of light."),
     ("gaeul", "a gorgeous commanding woman of 33, a merchants'-association leader, a poised proud almost regal gaze, a glamorous polished look, sleek pulled-back dark hair, an impeccably tailored elegant coat, spine perfectly straight; elegant amethyst-violet aura with refined shopfront neon reflection."),
     ("baek",  "an extremely handsome man of 43, a tall broad-shouldered quiet ex-special-forces bodyguard, chiseled jaw, intense watchful weary eyes that haven't slept well, a faint old scar, a sharp black suit; deep dramatic pre-dawn alley shadow with a faint steel-blue mist."),
     ("ryu",   "a handsome charismatic man of 45, a laid-back kendo master, light stubble, an alluring half-lidded lazy gaze that turns sharp about the blade, dark hair loosely tied back, elegant traditional-modern attire, a folding fan half-raised; silver-teal moonlit veranda haze."),
     ("von",   "a handsome powerfully athletic man of 42, 184cm tall, a disciplined ex-fighter turned boxing-gym owner, short cropped hair, strong composed weathered features, a fit muscular build under a clean fitted jacket, a towel around the neck; cool blue 5am pre-dawn gym light with faint drifting sparks."),
     ("yun",   "a handsome mellow man of 34, a late-night radio DJ, soft introspective half-lit eyes, stylishly tousled hair, headphones resting around his neck, a quiet magnetic warmth kept just at arm's length; dim red ON-AIR booth glow with soft starlight particles."),
+    ("lucy",  "a strikingly beautiful otherworldly doll-like girl, pastel cyan-to-blue gradient hair with blunt bangs, striking heterochromia eyes with fine red eyeliner accents, glossy luminous skin with soft blush, a cool aloof almost expressionless doll-like look hiding a hidden spark, an unlit cigarette balanced at her fingertips; deep quiet back-alley night with faint neon shimmer and drifting light particles."),
 ]
 
 
@@ -110,14 +112,17 @@ def openai_image(prompt):
 
 
 def set_avatar(text, pid, url):
-    """roster.json 라인 정규식 — "id":"<pid>" 줄의 "avatar":"…" 만 교체(수제 1줄=1명 포맷 보존)."""
-    out, hit = [], False
-    for line in text.splitlines(keepends=True):
-        if re.search(r'"id"\s*:\s*"%s"' % re.escape(pid), line):
-            line, n = re.subn(r'"avatar"\s*:\s*"[^"]*"', '"avatar": "%s"' % url, line, count=1)
-            hit = hit or n > 0
-        out.append(line)
-    return "".join(out), hit
+    """roster.json — "id":"<pid>" 객체 블록 안의 "avatar" 값 교체(멀티라인 pretty JSON 대응 · 260712 픽스).
+    이전 '1줄=1명' 가정은 pretty JSON(id·avatar 다른 줄)에서 '라인 못 찾음'으로 주입 실패했다."""
+    m = re.search(r'"id"\s*:\s*"%s"' % re.escape(pid), text)
+    if not m:
+        return text, False
+    nxt = re.search(r'"id"\s*:\s*"', text[m.end():])   # 다음 캐릭터 객체 시작 = 이 블록 끝
+    end = m.end() + nxt.start() if nxt else len(text)
+    seg, n = re.subn(r'"avatar"\s*:\s*"[^"]*"', '"avatar": "%s"' % url, text[m.end():end], count=1)
+    if n == 0:
+        return text, False   # 이 객체에 avatar 키 없음(신규 캐릭터 = 별도 처리 필요)
+    return text[:m.end()] + seg + text[end:], True
 
 
 def main():

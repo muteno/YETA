@@ -44,9 +44,11 @@ jobs:
         run: |
           git config user.name "yeta-char-art[bot]"
           git config user.email "actions@users.noreply.github.com"
+          # pathspec 분리 필수(한 add에 없는 경로 섞이면 전체 무스테이징 — yeta-face 전례). av/ = yeta_char/ 하위라 포함.
           git add viewer/assets/yeta_char/ 2>/dev/null || true
+          git add apps/yeta/characters/roster.json 2>/dev/null || true
           git diff --cached --quiet && { echo "신규 없음 — 커밋 생략"; exit 0; }
-          git commit -m "무음동 10인 판타지 캐릭터 초상 생성 — yeta-char-art 수동 dispatch"
+          git commit -m "무음동 캐릭터 초상 생성 + 작은얼굴(av) 크롭 + roster avatar 자동주입 — yeta-char-art dispatch"
           # 장시간 런 중 main 전진 대비 — pull --rebase 후 push 재시도(신규 파일뿐이라 충돌 없음)
           for i in 1 2 3 4 5; do
             git pull --rebase origin main && git push && exit 0

@@ -1,0 +1,118 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>사주 부적 — 컨셉 설계(무음동 신규 기능)</title>
+<style>
+  :root{--bg:#121212;--panel:#181818;--panel2:#1f1f1f;--line:rgba(255,255,255,.09);--fg:#f4f4f4;--fg2:#b8b8b8;--mut:#8b8b8b;--accent:#CFFF40;--cobalt:#3D6BFF;--season:#8E2DBF;--danger:#ff5b4a;--r:14px}
+  *{box-sizing:border-box}html,body{margin:0}
+  body{background:var(--bg);color:var(--fg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;line-height:1.62;-webkit-font-smoothing:antialiased;padding:0 0 70px}
+  .wrap{max-width:960px;margin:0 auto;padding:0 20px}
+  header{padding:42px 0 24px;border-bottom:1px solid var(--line);margin-bottom:8px}
+  .kick{color:var(--season);font-weight:700;letter-spacing:.04em;font-size:12.5px;text-transform:uppercase}
+  h1{font-size:27px;line-height:1.25;margin:.3em 0 .28em}
+  .sub{color:var(--fg2);font-size:15px;margin:0}
+  .meta{color:var(--mut);font-size:12.5px;margin-top:12px}
+  h2{font-size:19px;margin:34px 0 12px;display:flex;align-items:center;gap:10px}
+  h2 .n{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:8px;background:var(--season);color:#fff;font-size:13px;font-weight:800}
+  h3{font-size:15.5px;margin:20px 0 7px}
+  p{margin:.5em 0}code{background:#0c0c0c;border:1px solid var(--line);border-radius:6px;padding:1px 6px;font-size:12.5px;color:var(--accent)}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px;margin:14px 0}
+  .season{background:linear-gradient(180deg,rgba(142,45,191,.12),rgba(142,45,191,.03));border-color:rgba(142,45,191,.3)}
+  .pill{display:inline-block;font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:999px;margin:1px 3px 1px 0}
+  .p-sea{background:rgba(142,45,191,.18);color:#c78be6}.p-acc{background:rgba(207,255,64,.16);color:var(--accent)}.p-warn{background:rgba(255,91,74,.14);color:#ff9083}
+  table{width:100%;border-collapse:collapse;margin:10px 0;font-size:13px}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{background:var(--panel2);color:var(--fg2);font-size:11.5px;text-transform:uppercase}
+  .tbl-scroll{overflow-x:auto}
+  ul{margin:.4em 0;padding-left:20px}li{margin:.3em 0}
+  .flow{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}
+  .step{flex:1;min-width:150px;background:var(--panel2);border:1px solid var(--line);border-radius:11px;padding:13px 14px}
+  .step .sn{color:var(--season);font-weight:800;font-size:12px}
+  .step .st{font-weight:700;font-size:14px;margin:3px 0}
+  .step .sd{color:var(--fg2);font-size:12.5px}
+  .callout{border-left:3px solid var(--season);padding:4px 0 4px 14px;margin:12px 0;color:var(--fg2);font-size:13.5px}
+  .callout.warn{border-color:var(--danger)}.callout.warn b{color:#ff9083}
+  .foot{margin-top:36px;padding-top:16px;border-top:1px solid var(--line);color:var(--mut);font-size:12px}
+</style>
+
+<header><div class="wrap">
+  <div class="kick">신규 기능 컨셉 · 설계만(구현 전) · 무음동 시즌 특전 축</div>
+  <h1>사주 부적 — 사주를 받아 맞춤 부적을 지어주는 기능</h1>
+  <p class="sub">유저의 사주(생년월일시)를 받아 해석하고, 그 결과로 <b>그 사람만의 부적</b>(이미지+문구)을 지어준다. 무음동의 오래된 존재가 손수 써주는 서사.</p>
+  <div class="meta">위상 = 캐릭터챗 위 얹는 신규 축(기틀 = 운영자 승인·5인 검증 후 구현) · 이미지 파이프라인 = 기존 yeta_face 패턴 재사용 · 이 문서 = 컨셉 설계</div>
+</div></header>
+
+<div class="wrap">
+
+<div class="card season">
+  <p style="margin-top:0"><b>왜 무음동에 맞나.</b> 무음동 = 경계가 얇은 골목·각성자·도깨비·몇백 년 산 찻집 주인. <b>사주·부적은 이 판타지 톤과 정확히 맞물린다</b> — 점집이 아니라 "이 동네의 신비한 존재가 네 기운을 읽고 지켜줄 부적을 써주는" 서사. 시즌 특전(<code>--season</code> 보라 축)으로 얹기 좋다.</p>
+  <p style="margin-bottom:0"><b>핵심 = 개인화.</b> 얼굴 프로필(<code>meface</code>)처럼, 사주 부적도 <b>유저 고유 입력 → 고유 산출물</b>. 재미·소장 가치·공유 훅.</p>
+</div>
+
+<h2><span class="n">1</span> 유저 플로우 (4단)</h2>
+<div class="flow">
+  <div class="step"><div class="sn">STEP 1</div><div class="st">사주 입력</div><div class="sd">생년월일 + 태어난 시(모르면 '시 모름') + 양/음력. 뷰어 폼 · 한 번 입력 = <code>me.saju</code> 저장(재입력 불요)</div></div>
+  <div class="step"><div class="sn">STEP 2</div><div class="st">사주 해석</div><div class="sd">간지 변환 → 오행 균형·십신·용신 산출(규칙 계산) → 캐릭터가 "네 기운"을 읽어 풀이(LLM·판타지 톤)</div></div>
+  <div class="step"><div class="sn">STEP 3</div><div class="st">부적 생성</div><div class="sd">해석 결과(부족한 오행·용신) → 맞춤 부적 <b>이미지</b>(전통 부적 스타일) + <b>축원 문구</b> 생성</div></div>
+  <div class="step"><div class="sn">STEP 4</div><div class="st">부적 카드</div><div class="sd">부적 이미지 + 풀이 + 문구를 카드로 · 저장·공유 · 무음동 존재의 서명</div></div>
+</div>
+
+<h2><span class="n">2</span> 아키텍처 (기존 배관 재사용)</h2>
+<div class="tbl-scroll"><table>
+  <tr><th>층</th><th>설계</th><th>재사용</th></tr>
+  <tr><td>입력·저장</td><td>뷰어 폼 → op <code>saju</code>(게이트웨이) → <code>sess.me.saju</code>{생년월일시·양음력} CAS 저장. 텍스트 0 클라 노출(meface 패턴)</td><td><code>me</code> op·프로필 패턴</td></tr>
+  <tr><td>사주 계산</td><td><b>규칙 계산</b>(결정적): 만세력 간지 변환·오행 카운트·용신 = <code>.github/scripts/yeta_saju.py</code>(무과금·결정적 · LLM 아님 = 정확성)</td><td>yeta_place.py(결정적 판정) 패턴</td></tr>
+  <tr><td>해석 풀이</td><td>계산 결과 + 캐릭터 카드 → <code>claude -p</code>(판타지 톤 풀이) = 답장 파이프 재사용</td><td>yeta_chat.sh dispatch</td></tr>
+  <tr><td>부적 이미지</td><td>용신·오행 → 프롬프트 조립 → gpt-image(전통 부적 스타일·붉은 주사·전서체 느낌) → 공개 R2 <code>yeta_talisman/&lt;uid&gt;.png</code></td><td><b>yeta_face.py 패턴</b>(방금 픽스한 주입 로직)</td></tr>
+  <tr><td>트리거</td><td>op <code>talisman</code>(⚠️유료 가드 = 일 상한 <code>YETA_TALISMAN_MAX_PER_DAY</code> 기본 1~2 · meface 패턴) or 수동 dispatch</td><td>meface 유료 가드 축</td></tr>
+</table></div>
+<p class="callout"><b>계산은 규칙·풀이는 LLM.</b> 사주 간지·오행은 <b>결정적 규칙</b>으로(만세력 = 수학) — LLM에 맡기면 틀린다(십신·용신 계산은 명확한 알고리즘). LLM은 그 결과를 <b>캐릭터 톤으로 풀어주는 역할만</b>. yeta_place.py가 동선을 결정적으로 판정하는 것과 같은 분리.</p>
+
+<h2><span class="n">3</span> 누가 지어주나 (캐릭터 연계)</h2>
+<div class="card">
+  <p style="margin-top:0"><b>후보 A — 홍석천(찻집 주인·9w1)</b>: 몇백 년 산 존재·판단 없이 품는 리스너. "네 기운을 읽고 지켜줄 걸 써줄게" = 자연스러움. 기존 캐릭터라 신규 0.</p>
+  <p style="margin:0"><b>후보 B — 신규 시즌 캐릭터(역술가·무당)</b>: 부적 전담 캐릭터(시즌 특전). 세계관 확장이나 신규 캐릭터 = 기틀.</p>
+  <p style="margin-bottom:0"><b>후보 C — 캐릭터 무관 앱 기능</b>: "무음동 부적소" 기능으로 서사 최소. 가장 가벼움.</p>
+  <p style="margin:8px 0 0;color:var(--mut)">추천 = <b>A(홍석천)</b> — 서사 정합·신규 0·시즌 없이 즉시. 운영자 택.</p>
+</div>
+
+<h2><span class="n">4</span> 사주 해석 요소 (규칙 계산)</h2>
+<div class="tbl-scroll"><table>
+  <tr><th>요소</th><th>계산</th><th>부적 반영</th></tr>
+  <tr><td>사주 팔자</td><td>생년월일시 → 4주(년월일시) 각 천간·지지(간지)</td><td>기본 8글자</td></tr>
+  <tr><td>오행 균형</td><td>목화토금수 카운트 → 과다·부족</td><td><b>부족한 오행을 부적이 보충</b>(색·상징)</td></tr>
+  <tr><td>일간·십신</td><td>일간 기준 십신(비겁·식상·재성·관성·인성)</td><td>풀이 성향·올해 흐름</td></tr>
+  <tr><td>용신</td><td>사주 균형을 잡는 핵심 오행</td><td><b>부적의 중심 기운</b>(예 용신=수 → 물·검정·지혜 부적)</td></tr>
+</table></div>
+
+<h2><span class="n">5</span> 안전·품질 가드 <span class="pill p-warn">필수</span></h2>
+<div class="callout warn"><b>운세 = 오락·엔터, 단정 예언 금지(L0 정합).</b> ① 의료·수명·죽음·질병 단정 금지 ② 금전·투자·도박 구체 조언 금지 ③ "반드시·확정" 류 운명 단정 금지 → "~기운이 강한 편·~을 조심하면 좋아" 완곡·긍정 프레임 ④ 불안 조장 금지(부적은 <b>지켜주는 것</b>·저주·액운 강조 X) ⑤ 실존 종교·무속 비하 금지. = policy L0 존엄·품질 축에 편입.</div>
+<div class="callout"><b>부적 이미지 안전:</b> 전통 부적 스타일(붉은 주사·상징)로 <b>tasteful</b> · 실제 종교 부적 위조·특정 종교 성물 모사 금지 · "재미·판타지 소품" 톤 유지.</div>
+
+<h2><span class="n">6</span> UI 스케치 (계승)</h2>
+<ul>
+  <li><b>입력</b> = 프로필 설정 옆 "사주 부적" 진입 → 생년월일시 폼(<code>--glass</code> 시트·기존 설정 UI 계승)</li>
+  <li><b>부적 카드</b> = 세로 카드(부적 이미지 + 풀이 접기/펼치기 + 축원 문구 + 무음동 서명) · <code>--season</code> 보라 프레임(시즌 특전 축)</li>
+  <li><b>재생성</b> = 유료 가드(일 상한) · meface처럼 2탭 재확인</li>
+</ul>
+
+<h2><span class="n">7</span> 구현 규모 (설계 단계 참고)</h2>
+<div class="tbl-scroll"><table>
+  <tr><th>파일</th><th>작업</th><th>기틀?</th></tr>
+  <tr><td><code>yeta_saju.py</code>(신규)</td><td>간지·오행·용신 결정적 계산</td><td>신규 스크립트</td></tr>
+  <tr><td><code>yeta_talisman.py</code>(신규)</td><td>부적 이미지 생성(yeta_face 패턴) + R2 주입</td><td>이미지 파이프</td></tr>
+  <tr><td><code>yeta.js</code></td><td>op <code>saju</code>·<code>talisman</code>(유료 가드) 추가</td><td><b>게이트웨이</b></td></tr>
+  <tr><td><code>viewer/index.html</code></td><td>사주 폼 + 부적 카드(토큰 계승)</td><td>§🎨</td></tr>
+  <tr><td>세션 스키마</td><td><code>me.saju</code>·부적 URL 필드</td><td><b>스키마</b></td></tr>
+</table></div>
+
+<div class="card" style="border-color:rgba(142,45,191,.3)">
+  <p style="margin-top:0"><b>다음 단계</b>(이 설계 승인 후)</p>
+  <ul style="margin-bottom:0">
+    <li><b>1.</b> 컨셉·캐릭터 연계(A/B/C) 확정 → 상세 설계</li>
+    <li><b>2.</b> 기틀(게이트웨이·스키마·이미지 파이프) = 5인 기틀검증</li>
+    <li><b>3.</b> §수정 모드 구현 → 사주 계산 정확성 검증(만세력 대조) → UI 플레이그라운드</li>
+  </ul>
+</div>
+
+<div class="foot">신규 기능 컨셉 설계(구현 전) · 이미지 파이프라인 = 방금 픽스한 <code>yeta_face.py</code> 주입 패턴 재사용 · 안전 = L0 운세 오락·단정예언 금지 · 이 문서 = <code>docs/reports/260712_사주부적_컨셉설계.html</code> · PR #260 동봉</div>
+</div>
