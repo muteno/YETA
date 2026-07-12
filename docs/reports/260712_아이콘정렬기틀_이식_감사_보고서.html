@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>아이콘·픽토그램 정렬 기틀 이식 + 첫 감사 픽스 2건 — 보고서</title>
+<style>
+:root{--bg:#121212;--fg:#E7ECE7;--mut:#8a938c;--accent:#CFFF40;--cobalt:#3D6BFF;--danger:#ff5c72;--line:rgba(255,255,255,.1);--glass:rgba(255,255,255,.05);--r:14px}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--fg);font:15px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif;padding:26px 18px 60px;max-width:940px;margin:0 auto;-webkit-font-smoothing:antialiased}
+h1{font-size:22px;line-height:1.3;margin-bottom:6px}
+h2{font-size:17px;margin:30px 0 10px;padding-top:16px;border-top:1px solid var(--line);color:var(--accent)}
+h3{font-size:14px;margin:18px 0 6px;color:var(--fg)}
+p,li{color:#cdd4cd}small,.mut{color:var(--mut)}
+.sub{color:var(--mut);font-size:13px;margin-bottom:8px}
+code{background:var(--glass);border:1px solid var(--line);border-radius:6px;padding:1px 5px;font:12px ui-monospace,monospace;color:#dfe6df}
+table{border-collapse:collapse;width:100%;margin:10px 0;font-size:13px;overflow-x:auto;display:block}
+th,td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:var(--glass);color:var(--fg);white-space:nowrap}
+.tag{display:inline-block;font-size:11px;padding:1px 8px;border-radius:20px;border:1px solid var(--line);color:var(--mut)}
+.ok{color:var(--accent)}.bad{color:var(--danger)}
+.card{background:var(--glass);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin:12px 0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:640px){.grid2{grid-template-columns:1fr}}
+.stage{position:relative;height:150px;background:#0c0c0c;border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:6px 0}
+.pill{position:absolute;left:10px;right:10px;display:flex;align-items:center;border:1px solid rgba(255,255,255,.12);border-radius:24px;background:#232323;min-height:34px}
+.h-top{top:12px;gap:8px}.in-bot{bottom:12px;gap:4px;padding:5px 6px}
+.grow{flex:1;min-width:0;color:#7d857e;font-size:13px;padding:0 6px;white-space:nowrap;overflow:hidden}
+.rgrp{margin-left:auto;display:flex;align-items:center;gap:6px}
+.btn{flex:none;width:34px;height:34px;display:grid;place-items:center;align-self:center;background:none;border:0;padding:0}
+.btn svg{display:block;width:22px;height:22px;fill:none;stroke-width:1.8}
+.lead svg{width:20px;height:20px;stroke:#9aa;fill:none;stroke-width:1.8}
+.lead{flex:none;width:34px;height:34px;display:grid;place-items:center;background:none;border:0}
+.plumb{position:absolute;top:0;bottom:0;width:1px;background:repeating-linear-gradient(var(--cobalt) 0 5px,transparent 5px 10px);z-index:5}
+.pop{position:relative;border:1px solid rgba(255,255,255,.12);border-radius:16px;background:#232323;padding:6px;font-size:13px}
+.prow{display:flex;align-items:center;gap:10px;padding:6px 10px}
+.pnm{color:#fff;white-space:nowrap}
+.go{padding:4px 12px;border-radius:20px;background:rgba(207,255,64,.12);border:1px solid rgba(207,255,64,.4);color:var(--accent);font-size:12px;flex:none}
+.go.fix{margin-left:auto}
+.readout{font:12px/1.5 ui-monospace,monospace;color:#7fd88a;background:#0a0a0a;border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-top:6px;white-space:pre-wrap}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:20px;overflow:hidden;margin:4px 0}
+.seg button{background:none;border:0;color:var(--mut);padding:5px 12px;font:13px system-ui;cursor:pointer}
+.seg button.on{background:var(--accent);color:#111;font-weight:700}
+ul{padding-left:18px}li{margin:3px 0}
+.pill-note{font-size:11px;color:var(--mut);position:absolute;left:12px;top:2px}
+</style></head>
+<body>
+<h1>아이콘·픽토그램 정렬 기틀 (이식팩) 이식 + 첫 감사가 잡은 실드리프트 2건 픽스</h1>
+<div class="sub">yeta 180차 · 260712 · 신규 :root 토큰 0(순수 계승) · 좌표는 chromium 헤드리스 실측(§5 · 눈짐작 아님)</div>
+
+<div class="card">
+<b>한 줄 요지.</b> 운영자가 준 「아이콘 정렬 기틀」 일반형 규칙 문서를 이 레포에 이식(문서·CLAUDE.md §🎨 9항·정본인덱스·AGENTS 미러)하고, 그 규칙으로 <b>첫 1회 감사</b>를 돌리자마자 <b>신규 토큰 0으로 고칠 실드리프트 2건</b>이 잡혀 계승 픽스했다. 정렬 기준 = 버튼 셀이 아니라 <b>아이콘 path 시각중심</b> · 정렬 지배값(padding·셀폭)은 <b>연쇄 = 하나 바꾸면 짝 값 함께 + 좌표 재검증</b>.
+</div>
+
+<h2>1. 픽스 ① — 상하 알약 트레일링 아이콘 3px 어긋남 <span class="tag">§2-1 짝값 미갱신</span></h2>
+<p class="sub">챗 헤더 <code>.yeta-h</code>(가로 인셋 9)와 입력행 <code>.yeta-in</code>(가로 인셋 6)이 <b>같은 부모·같은 <code>left:10/right:10</code></b>인데 padding 짝이 안 맞아, 상단 수화기(<code>#yetaCallBtn</code>)와 하단 종이비행기(<code>.yeta-send</code>)가 세로로 정확히 3px 어긋난 앵커선에 놓였다. 파란 점선 = 입력행 전송 아이콘 중심 기준선.</p>
+
+<div style="margin:8px 0"><span class="mut" style="font-size:13px">헤더 정렬 방향(택1 · 라이브 미리보기):</span>
+<span class="seg" id="dirSeg">
+  <button data-dir="h6" class="on">헤더 인셋 9→6 (채택)</button>
+  <button data-dir="in9">입력행 6→9 (대안)</button>
+  <button data-dir="before">옛 상태 (9 vs 6)</button>
+</span></div>
+
+<div class="grid2">
+  <div><h3>BEFORE — 3px 어긋남 <span class="bad">✗</span></h3>
+    <div class="stage" id="stageBefore"></div></div>
+  <div><h3>AFTER — 정렬 <span class="ok">✓</span></h3>
+    <div class="stage" id="stageAfter"></div></div>
+</div>
+<div class="readout" id="roHeader">측정 중…</div>
+<p class="sub" style="margin-top:8px">수정 = 헤더 가로 인셋을 입력행 짝값 <b>6</b>으로 통일(신규 토큰 0). 코드에 「짝값」 주석을 박아(§6-1) 다음 작업이 다시 깨는 것을 막음. 가로 인셋은 대응 토큰이 없는 레이아웃 축(§🔒 raw 예외) — 두 표면이 공유하는 캡슐 인셋이라 정석은 공유 토큰 1개 신설이나, 이번은 값 일치로 계승(후속에 토큰화 검토).</p>
+
+<h2>2. 픽스 ② — 초대 필 우측 앵커 누락 <span class="tag">§3-2 같은 슬롯 두 상태 기준 불일치</span></h2>
+<p class="sub">초대 팝업 <code>#yetaInv</code> 후보 행 <code>[초대]</code>(<code>.yinv-go</code>)가 형제 <code>[보내기]</code>(<code>.yinv-x</code>)의 <code>margin-left:auto</code>를 누락 → 이름 길이마다 필이 좌우로 흔들리고 팝업 우측 앵커선에 안 붙었다.</p>
+<div class="grid2">
+  <div><h3>BEFORE — 이름 길이 따라 흔들림 <span class="bad">✗</span></h3>
+    <div class="pop" id="popBefore"></div></div>
+  <div><h3>AFTER — 우측 한 줄 정렬 <span class="ok">✓</span></h3>
+    <div class="pop" id="popAfter"></div></div>
+</div>
+<div class="readout" id="roPop">측정 중…</div>
+<p class="sub" style="margin-top:8px">수정 = 형제 선언 그대로 <code>margin-left:auto</code> 계승(신규 토큰 0).</p>
+
+<h2>3. 이식 변경 (문서·규칙 축 · 신규 :root 토큰 0)</h2>
+<table>
+<tr><th>파일</th><th>변경</th><th>역할</th></tr>
+<tr><td><code>docs/아이콘_픽토그램_정렬_기틀.md</code></td><td>신규(정본)</td><td>포터블 원문 §0~8 + yeta 매핑·감사·실측 = 부록 A(포터블성 보존)</td></tr>
+<tr><td><code>CLAUDE.md</code> §🎨</td><td>9항 신설</td><td>§3 대원칙 요약+포인터(시각중심·동일 셀폭·앵커선·연쇄 재검증) · 상위 일반원칙 = 세부는 CII 계승</td></tr>
+<tr><td><code>docs/절대명령2_정본인덱스.md</code> §2</td><td>등재 + 라벨</td><td>규칙 표 등재(미등재=정본 아님) · §🎨 라벨 <code>7항→9항</code> 정정(기존 드리프트)</td></tr>
+<tr><td><code>AGENTS.md</code> 🎨</td><td>6항 미러</td><td>타모델(비-Claude) 드리프트 차단</td></tr>
+<tr><td><code>viewer/index.html</code></td><td>CSS 2속성</td><td>① <code>.yeta-h</code> padding 9→6 ② <code>.yinv-go</code> +<code>margin-left:auto</code></td></tr>
+</table>
+
+<h2>4. 검증 (기틀검증 교차 + 자가검증 · §5 좌표 실측)</h2>
+<ul>
+<li><b>기틀검증(read-only 1인)</b> = <b>REVISE</b> → 골격은 정합, 5보강 지시 전부 반영: §2 등재 스텝 명시화 · 위임 스코핑(광학→<code>yeta-design</code>·픽토규격→<code>구성도/픽토그램.html</code>·닫기→CII·<code>--press-*</code>=별개축) · AGENTS 미러 · 7→9 라벨 · 자동게이트 유보.</li>
+<li><b>자가검증</b> = <code>check_refs</code> rc=0(신규 토큰/경고 0 · 기존 <code>--bg-scrim/--line2</code> 무관) + <b>chromium 헤드리스 좌표 실측</b>(헤더 Δ−3→0 · 초대 56→0 · 전송 pathCenterX 편심 0) + 스크린샷.</li>
+</ul>
+
+<h2>5. 장단점 · 리스크 · 후속</h2>
+<table>
+<tr><th>축</th><th>내용</th></tr>
+<tr><td class="ok">장점</td><td>정렬 재발을 규칙(§🎨 9항·문서·AGENTS)+감사로 근절 시동 · 정렬 기틀이 첫 감사에 실드리프트 2건 실증(이식 가치) · 신규 토큰 0(순수 계승) · 서버·스키마·dispatch 0</td></tr>
+<tr><td>리스크</td><td>낮음 — 문서 + CSS 2속성 계승. 기틀(라우터·<code>:root</code>·파이프라인·모델ID) 무접촉 · 롤백 = <code>_versions/260712_1514</code></td></tr>
+<tr><td>후속 ㉮</td><td><b>헤드리스 정렬 실측 CI</b> = 새 워크플로 = <b>기틀 = 별도 승인·교차검증</b>. ⚠️ 광학정렬은 의도적 비-기하중심(방향성 아이콘 1px 보정이 정답)이라 순진한 기하중심 게이트는 의도 오프셋을 오탐 → 게이트는 '같은 부류 상대 정렬차'를 재야지 절대 기하중심 강제 금지. 설계 신중 대상이라 즉시 신설 안 함.</td></tr>
+<tr><td>후속 ㉯㉰</td><td>방향성 아이콘(수화기·종이비행기·user-plus) 광학 1px 편심 보정(raw 허용) · 설정 저장 배지 좌/우 규약 통일(성향 vs 정책 푸터) — 정렬 축 아닌 consistency</td></tr>
+</table>
+
+<h2>6. 운영자 확인 포인트</h2>
+<p>라이브(<code>yeta.soong.kr</code>)에서 1회: ① 챗 헤더 <b>수화기</b> ↔ 입력행 <b>전송</b>이 세로 일직선 ② 초대 팝업 후보 <b>[초대]</b> 필이 우측 한 줄 정렬. 헤더 정렬 방향은 <b>헤더 인셋 축소(9→6)</b> 채택 — 대안(입력행 6→9 확대)을 선호하면 위 세그먼트로 미리보고 1줄 플립 가능.</p>
+<p class="sub">한계: 3px는 미세해 실기기 눈검수는 사람 감각 축(좌표는 위 실측이 정본). 이 보고서의 미리보기·좌표는 브라우저에서 라이브 렌더한 것.</p>
+
+<script>
+var SVG={
+ back:'<svg viewBox="0 0 24 24"><path d="M15 5 8 12 15 19"/></svg>',
+ mic:'<svg viewBox="0 0 24 24"><path d="M12 3v12"/><path d="M9 7a3 3 0 0 1 6 0v5a3 3 0 0 1-6 0z"/></svg>',
+ call:'<svg viewBox="0 0 24 24" stroke="#9aa"><path d="M7 4h4l2 5-3 2a12 12 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A18 18 0 0 1 5 6a2 2 0 0 1 2-2z"/></svg>',
+ send:'<svg viewBox="0 0 24 24" stroke="#CFFF40"><path d="M22 2 11 13"/><path d="M22 2 15 22 11 13 2 9z"/></svg>'
+};
+function pill(cls,pad,lead,trailWrap){return '<div class="pill '+cls+'" style="padding:'+pad+'"><button class="lead">'+SVG[lead]+'</button><div class="grow">하서연</div>'+trailWrap+'</div>';}
+function headerPill(pad){return pill('h-top',pad,'back','<div class="rgrp"><button class="btn" data-role="call">'+SVG.call+'</button></div>');}
+function inputPill(){return pill('in-bot','5px 6px','mic','<button class="btn" data-role="send">'+SVG.send+'</button>');}
+function renderStages(dir){
+ var headPad = dir==='h6'?'7px 6px':(dir==='in9'?'7px 9px':'7px 9px');
+ var inPad   = dir==='in9'?'5px 9px':'5px 6px';
+ // BEFORE stage always shows old (9 vs 6); AFTER shows chosen direction
+ var sB=document.getElementById('stageBefore'), sA=document.getElementById('stageAfter');
+ sB.innerHTML='<span class="pill-note">헤더 9 · 입력 6</span>'+headerPill('7px 9px')+'<div class="pill in-bot" style="padding:5px 6px"><button class="lead">'+SVG.mic+'</button><div class="grow">메시지…</div><button class="btn" data-role="send">'+SVG.send+'</button></div>';
+ var noteA = dir==='in9'?'헤더 9 · 입력 9':(dir==='before'?'헤더 9 · 입력 6':'헤더 6 · 입력 6');
+ sA.innerHTML='<span class="pill-note">'+noteA+'</span><div class="pill h-top" style="padding:'+headPad+'"><button class="lead">'+SVG.back+'</button><div class="grow">하서연</div><div class="rgrp"><button class="btn" data-role="call">'+SVG.call+'</button></div></div><div class="pill in-bot" style="padding:'+inPad+'"><button class="lead">'+SVG.mic+'</button><div class="grow">메시지…</div><button class="btn" data-role="send">'+SVG.send+'</button></div>';
+ // plumb line at input send center of AFTER
+ measureHeader();
+}
+function cx(el){var r=el.getBoundingClientRect();return r.left+r.width/2;}
+function measureHeader(){
+ var sB=document.getElementById('stageBefore'), sA=document.getElementById('stageAfter');
+ var bCall=cx(sB.querySelector('[data-role=call] svg')), bSend=cx(sB.querySelector('[data-role=send] svg'));
+ var aCall=cx(sA.querySelector('[data-role=call] svg')), aSend=cx(sA.querySelector('[data-role=send] svg'));
+ // draw plumb on AFTER at send center (relative to stage)
+ var sar=sA.getBoundingClientRect();
+ var old=sA.querySelector('.plumb'); if(old)old.remove();
+ var pl=document.createElement('div');pl.className='plumb';pl.style.left=(aSend-sar.left)+'px';sA.appendChild(pl);
+ var sbr=sB.getBoundingClientRect();var old2=sB.querySelector('.plumb');if(old2)old2.remove();
+ var pl2=document.createElement('div');pl2.className='plumb';pl2.style.left=(bSend-sbr.left)+'px';sB.appendChild(pl2);
+ document.getElementById('roHeader').textContent=
+   'BEFORE  header.call cx='+bCall.toFixed(2)+'  input.send cx='+bSend.toFixed(2)+'  Δ='+(bCall-bSend).toFixed(2)+'px  ← 3px 어긋남\n'+
+   'AFTER   header.call cx='+aCall.toFixed(2)+'  input.send cx='+aSend.toFixed(2)+'  Δ='+(aCall-aSend).toFixed(2)+'px  '+(Math.abs(aCall-aSend)<0.6?'← 정렬 ✓':'');
+}
+function renderPop(){
+ function row(nm,fix){return '<div class="prow"><span class="pnm">'+nm+'</span><button class="go'+(fix?' fix':'')+'" data-go>초대</button></div>';}
+ document.getElementById('popBefore').innerHTML=row('류가온',false)+row('홍석천 프로듀서',false);
+ document.getElementById('popAfter').innerHTML=row('류가온',true)+row('홍석천 프로듀서',true);
+ var pb=document.getElementById('popBefore').querySelectorAll('[data-go]'), pa=document.getElementById('popAfter').querySelectorAll('[data-go]');
+ function rt(el){return el.getBoundingClientRect().right;}
+ document.getElementById('roPop').textContent=
+   'BEFORE  짧은이름 goRight='+rt(pb[0]).toFixed(1)+'  긴이름 goRight='+rt(pb[1]).toFixed(1)+'  두 행 차='+(rt(pb[0])-rt(pb[1])).toFixed(1)+'px  ← 이름 길이 따라 흔들림\n'+
+   'AFTER   짧은이름 goRight='+rt(pa[0]).toFixed(1)+'  긴이름 goRight='+rt(pa[1]).toFixed(1)+'  두 행 차='+(rt(pa[0])-rt(pa[1])).toFixed(1)+'px  ← 우측 앵커선 고정 ✓';
+}
+document.getElementById('dirSeg').addEventListener('click',function(e){
+ var b=e.target.closest('button[data-dir]');if(!b)return;
+ this.querySelectorAll('button').forEach(function(x){x.classList.remove('on')});b.classList.add('on');
+ renderStages(b.dataset.dir);
+});
+renderStages('h6');renderPop();
+window.addEventListener('resize',function(){measureHeader();});
+</script>
+</body></html>
