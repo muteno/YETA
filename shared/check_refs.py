@@ -640,8 +640,9 @@ def check_judge_bare():
     ⚠️ 진짜 원인(260701 실측 정정): --bare는 OAuth를 안 읽는다(CLI 2.1.197 --help 명시 "Anthropic auth is
     strictly ANTHROPIC_API_KEY or apiKeyHelper — OAuth and keychain are never read"). 이 레포는 구독 OAuth 전용
     (종량제 키 없음 · 워크플로가 ANTHROPIC_API_KEY도 unset)이라 judge에 --bare면 *인증부터* rc=1 즉사 = #1264(260630)
-    사고의 진짜 원인. (당시 'MultiEdit matches no known tool' stderr는 *비치명 노이즈* — normal/safe 모드에서도 뜨고 rc=0,
-    MultiEdit은 CLI 2.1.197에 아예 없는 도구일 뿐. 도구충돌은 원인 아니었음·실측 260701.)
+    #1264 사고의 진짜 원인. (당시 'MultiEdit matches no known tool' stderr는 CLI 2.1.197에선 *비치명 노이즈*(rc=0)였으나 —
+    260712 러너 CLI(주28)에서 unknown deny 규칙이 *치명 rc=1*로 엄격화 = 답장/오프닝 전량 실패의 실제 원인이 됨(로컬 2.1.207은 여전히 비치명 = 버전 드리프트).
+    → gen_out --disallowedTools 3곳(chat/call/nudge)에서 폐기 도구 MultiEdit 제거·실측 260712. 잔여 목록 known 스모크 rc=0.)
     ∴ CLAUDE.md 로드 스킵(cache_w 절감)이 필요하면 반드시 --safe-mode(Auth·built-in 도구·permissions 정상 유지).
     게이트: judge 스크립트가 '--bare'를 emit(코드경로)하면 rc=1 · 생성경로(claude_meter·more_images)도 --bare 기본 ON이면 rc=1(OAuth 즉사).
     정본 = CLAUDE.md §📰 + docs/인계_bare도구충돌_judge복구_프로세스개선.md."""

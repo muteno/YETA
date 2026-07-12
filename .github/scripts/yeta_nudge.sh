@@ -88,7 +88,7 @@ rc=1; out=""
 for attempt in 1 2; do
   out="$(printf '%s' "$prompt" | METER_SRC=yeta-nudge METER_REF="$PERSONA" claude_meter 180 \
         --model "${NUDGE_MODEL:-claude-sonnet-5}" $SAFE --effort low \
-        --disallowedTools "Write,Edit,MultiEdit,NotebookEdit,Bash,Task,WebFetch,WebSearch,Read,Glob,Grep" \
+        --disallowedTools "Write,Edit,NotebookEdit,Bash,Task,WebFetch,WebSearch,Read,Glob,Grep" \
         --max-turns 1 2> /tmp/yeta_nudge.err)" && rc=0 || rc=$?
   { [ $rc -eq 0 ] && [ -n "${out// }" ]; } && break
   if claude_failover "$out$(cat /tmp/yeta_nudge.err 2>/dev/null)"; then continue; fi
