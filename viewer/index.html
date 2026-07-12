@@ -1152,21 +1152,26 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   .yssn-nm small { font-weight:var(--fw-b); color:var(--fg-2); font-size:var(--fs-sm); }   /* 한자 부기 */
   .yssn-date { margin-left:auto; flex:none; font-family:'LEMONMILK',Pretendard,sans-serif; font-weight:400; font-style:normal; font-size:10px; color:var(--fg); letter-spacing:.04em; font-variant-numeric:tabular-nums; }   /* 날짜 = 흰색(운영자 260707 항목4 — mut 폐지) */
   .yssn-tl { margin-top:9px; text-align:left; font-size:11.5px; color:var(--fg-2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }   /* 설명 = 살짝 옅은 흰(fg-2) · 좌측 정렬 = SEASON 01과 같은 좌측선(운영자 260709 "설명 기준 좌측정렬" — 구 가운데 고정 폐지) · 1줄 초과 = … */
-  .ylr-wrap { position:relative; margin-bottom:10px; border-radius:var(--r-l); }   /* 행 래퍼(분할 리스트 획 셀렉터 앵커 — 스와이프 폐지 260707 = overflow·transition 잔재 제거) */
-  .ylr-wrap .ylist-row { margin-bottom:0; position:relative; z-index:1; -webkit-touch-callout:none; user-select:none; }   /* 롱프레스 = 텍스트 선택/콜아웃 차단(.ypick-row 관례 계승 · UX감사①c) */
-  /* 롱프레스 액티브 메뉴(운영자 260707 "길게 누르면 X · 액티브 2개[고정·나가기]") — 표면 = .yeta-pick 정본 계승 · 등장 msgUnfold · 퇴장 = .out 후 제거(즉발 hidden 금지 · 북극성) */
-  .ylmenu { position:absolute; left:56px; z-index:9; display:flex; gap:4px; padding:5px;
+  .ylr-wrap { position:relative; margin-bottom:10px; border-radius:var(--r-l); overflow:hidden; }   /* 행 래퍼(분할 리스트 획 셀렉터 앵커) · overflow = 스와이프 액션 트레이 감춤(운영자 260712) */
+  .ylr-wrap .ylist-row { margin-bottom:0; position:relative; z-index:1; -webkit-touch-callout:none; user-select:none; transition:padding-right .3s var(--ease); }   /* 스와이프 = 텍스트 선택/콜아웃 차단(.ypick-row 관례 계승 · UX감사①c) */
+  .ylr-wrap.ylr-open .ylist-row { padding-right:calc(var(--sp-2) + 60px); }   /* 열림 = 트레이 폭만큼 콘텐츠 우측 확보 → 최근말·메타가 트레이 밑서 잘리지 않고 … 처리(운영자 260712) */
+  /* ── 스와이프 액션 트레이(운영자 260712 "좌로 밀면 우측 2칸 픽토[고정·나가기] · 우클릭 팝업 대체 · 기존 우클릭 삭제") — 2x2 중 우측 열(세로 2칸) · 표면 = .ylmenu 정본 계승(무채 크롬 = 뒤 색 비침 차단 §🎨) · 픽토 색만 구분(고정 라임·나가기 레드) ── */
+  .ylr-tray { position:absolute; top:0; right:0; bottom:0; width:60px; z-index:2; display:flex; flex-direction:column; overflow:hidden;
     background:linear-gradient(165deg,rgba(24,25,28,.94),rgba(16,17,19,.96)); backdrop-filter:blur(26px) saturate(0); -webkit-backdrop-filter:blur(26px) saturate(0);
-    border:1px solid rgba(255,255,255,.14); border-radius:var(--r-m); transform-origin:top left;
-    animation:msgUnfold .26s cubic-bezier(.22,.61,.36,1) both; }
-  .ylmenu.out { animation:ybOut .2s var(--ease) both; pointer-events:none; }
-  .ylmenu button { display:flex; align-items:center; gap:6px; padding:9px 14px; border:none; border-radius:var(--r-s); background:none; color:var(--fg);
-    font:inherit; font-size:var(--fs-sm); font-weight:var(--fw-b); cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
-  .ylmenu button:active { transform:scale(var(--press-m,.9)); }
-  .ylmenu button svg { width:15px; height:15px; }
-  .ylmenu button.armed { color:var(--danger); }   /* 나가기 2탭 재확인 = 파괴 액션 톤(구 .ylr-leave.armed 계약 이관) */
+    border-left:1px solid var(--glass-line);
+    transform:translateX(100%); transition:transform .3s var(--ease); }   /* 우측 밖 숨김 → 좌로 밀면 슬라이드인 · wrap overflow가 모서리 클립 · 폭 60 = "우측 조금만"(운영자) */
+  .ylr-wrap.ylr-open .ylr-tray { transform:translateX(0); }
+  .ylr-act { flex:1; display:flex; align-items:center; justify-content:center; border:none; background:none; color:var(--fg);
+    cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent; transition:background .2s var(--ease); }
+  .ylr-act + .ylr-act { border-top:1px solid var(--glass-line-0); }   /* 2칸 구분 획(카톡 헤어라인 계승) */
+  .ylr-act svg { width:19px; height:19px; transition:transform .2s var(--ease); }
+  .ylr-act:active svg { transform:scale(var(--press-m,.9)); }   /* 눌림 = --press 사다리 계승 */
+  .ylr-act[data-act="pin"] { color:var(--pin-ac); }   /* 고정 픽토 = 핀 라임 */
+  .ylr-act[data-act="pin"].on { background:rgba(var(--pin-ac-rgb),.16); }   /* 고정됨 = 액티브 유지(운영자 260712 "눌렀을때 액티브 유지") */
+  .ylr-act[data-act="leave"] { color:var(--fg-2); }   /* 나가기 픽토 = 톤 맞춘 뉴트럴(운영자 260712 "전경색 말고 톤 맞춰") · 위험색은 armed에서만 */
+  .ylr-act[data-act="leave"].armed { color:var(--danger); background:rgba(var(--danger-rgb),.18); }   /* 2탭 재확인 = 위험 강조(danger) + 액티브 유지 */
   .ylist-pin { flex:none; width:12px; height:12px; margin-right:4px; color:var(--pin-ac); }   /* 고정 표식 = 핀 토큰색(flex 이름행 아이템) */
-  @media (prefers-reduced-motion:reduce){ .yssn { animation:none; } .ylmenu, .ylmenu.out { animation:none; } }
+  @media (prefers-reduced-motion:reduce){ .yssn { animation:none; } .ylr-tray { transition:none; } }
   /* 챗 헤더 X → 뒤로가기로 대체(260705) · 잔여 tool-x(콜 등) 픽토 통일 스코프 유지 */
   #yetadlg .tool-x { background:none; border:none; color:var(--fg-2); }
   #yetadlg .tool-x svg { width:19px; height:19px; }
@@ -1497,7 +1502,7 @@ document.addEventListener('DOMContentLoaded', () => {   // 팝업 바인딩 — 
 // ── 좌우 스와이프 내비(운영자 260709 "좌우 스크롤 = 그 방향 메뉴 · 대화창 = 이전 메뉴") — 가로 우세(1.6배)+64px 임계 · 입력칸·슬라이더·패턴패드 제외 ──
 function ySwipeBind(el, fn) {
   let x0 = 0, y0 = 0, on = false;
-  el.addEventListener('touchstart', e => { if (e.touches.length !== 1) { on = false; return; } const t = e.touches[0]; x0 = t.clientX; y0 = t.clientY; on = !e.target.closest('input,textarea,select,.lk-pat'); }, { passive: true });
+  el.addEventListener('touchstart', e => { if (e.touches.length !== 1) { on = false; return; } const t = e.touches[0]; x0 = t.clientX; y0 = t.clientY; on = !e.target.closest('input,textarea,select,.lk-pat,.ylr-wrap'); }, { passive: true });   // .ylr-wrap 제외 = 방 행 가로 스와이프(트레이)가 탭 전환과 충돌 안 하게(운영자 260712)
   el.addEventListener('touchend', e => { if (!on) return; on = false; const t = e.changedTouches[0], dx = t.clientX - x0, dy = t.clientY - y0;
     if (Math.abs(dx) < 64 || Math.abs(dx) < Math.abs(dy) * 1.6) return; fn(dx < 0 ? 1 : -1); }, { passive: true });
 }
@@ -2080,7 +2085,7 @@ async function yListRender() {
   const sig = rows.map(r => `${r.id}:${r.pin ? 1 : 0}:${r.updated || 0}:${(r.turns || []).length}:${r.state}:${yReadTs(r.id)}`).join('|') + `#${rows.length}@${Math.floor(Date.now() / 60000)}`;   // 행 수(dormant 전환·항목17) + 분 버킷(상대시간 매분 노화) — 병합 260707
   if (sig === _ylSig) return;   // 렌더 시그니처 가드 — 무변경 재호출 = no-op(전행 stagger 재트리거·리스트 튐 차단 · UX감사③A)
   const firstPaint = !_ylPainted; _ylSig = sig; _ylPainted = true;   // QA13: firstPaint = 전용 래치(구 !_ylSig는 loc-sync/pin/leave의 _ylSig='' 리셋에 오염돼 재렌더마다 전행 stagger 플래시) — sig 리셋은 가드 우회로만 유지
-  yLMenuClose(true);   // 재렌더 = 앵커 행 파괴 → 액티브 메뉴 강제 회수(UX감사⑤)
+  yLrClose(true);   // 재렌더 = 앵커 행 파괴 → 스와이프 트레이 강제 회수(UX감사⑤)
   box.innerHTML = `<div class="ylist-group">` + rows.map(r => {
     const grp = !yPersona(r.id);   // 단톡 스레드(g 접두 = 비페르소나 id · 운영자 260712)
     const host = grp ? (yPersona((r.room || [])[0]) || yPersona(r.last_sp)) : yPersona(r.id);
@@ -2105,76 +2110,90 @@ async function yListRender() {
     const meta = last ? `<span class="ylist-meta">${yAgo(last.ts)}${(() => { try { const L = yLocOf(r); return L && L.nm ? `<span class="ylist-loc${L.on ? ' on' : ''}">${esc(L.nm)}</span>` : ''; } catch (e) { return ''; } })()}</span>` : '';   // 항목1(260708): 절대시각(ylist-t) 폐지 → 상대시간(mut) → 최근 장소
     return `<div class="ylr-wrap"><button type="button" class="ylist-row${es ? ' estr' : ''}" data-t="${esc(r.id)}">`
       + `<span class="ylist-ava${p.avatar ? ' has-img' : ''}"${p.avatar ? ` style="background-image:url('${esc(p.avatar)}')"` : ''}>${p.avatar ? '' : esc(p.initial || p.name[0])}${unTxt ? `<span class="ylist-badge">${unTxt}</span>` : ''}</span>`
-      + `<span class="ylist-mid"><span class="ylist-nm">${r.pin ? '<svg class="ylist-pin" viewBox="0 0 24 24" fill="currentColor" aria-label="고정됨"><path d="M16 3l5 5-5.5 2 -1 6.5L12 14l-6 7-1-1 7-6-2.5-2.5L16 10l-2-1.5z"/></svg>' : ''}<i class="ynm-t">${esc(dispName)}</i>${grp ? '<span class="yjob">단톡</span>' : yJobBadge(p) + badges}${meta}</span>`
-      + tht + lastLn + `</span></button></div>`;   // 4줄 체계(운영자 260707 최신) + 직업/변신 배지 = 이름 직후(운영자 "이름 옆") — 옛 우측 2행은 메타 스택으로 병합 개정
+      + `<span class="ylist-mid"><span class="ylist-nm">${r.pin ? '<svg class="ylist-pin" viewBox="0 0 24 24" fill="currentColor" aria-label="고정됨"><path d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.3 5.9 20.4l1.4-6.8L2.2 9l6.9-.7z"/></svg>' : ''}<i class="ynm-t">${esc(dispName)}</i>${grp ? '<span class="yjob">단톡</span>' : yJobBadge(p) + badges}${meta}</span>`
+      + tht + lastLn + `</span></button>`
+      + `<div class="ylr-tray" role="group" aria-label="대화 관리" aria-hidden="true">`   // 좌로 밀면 나오는 우측 2칸(운영자 260712) — 우클릭 팝업 대체
+      + `<button type="button" class="ylr-act${r.pin ? ' on' : ''}" data-act="pin" data-t="${esc(r.id)}" tabindex="-1" aria-label="${r.pin ? '고정 해제' : '고정'}">${YLR_PIN_SVG}</button>`
+      + `<button type="button" class="ylr-act" data-act="leave" data-t="${esc(r.id)}" tabindex="-1" aria-label="나가기">${YLR_LEAVE_SVG}</button>`
+      + `</div></div>`;   // 4줄 체계(운영자 260707 최신) + 직업/변신 배지 = 이름 직후 · 우측 스와이프 트레이(고정·나가기 픽토)
   }).join('') + `</div>`;
   if (firstPaint) box.querySelectorAll('.ylist-row').forEach((el, i) => { el.style.animationDelay = (i * 0.04) + 's'; });   // 첫 진입만 stagger(재렌더 무애니)
   else box.querySelectorAll('.ylist-row').forEach(el => { el.style.animation = 'none'; });
 }
 let _ylSig = '', _ylPainted = false;   // _ylPainted = firstPaint 전용 래치(QA13 · _ylSig 리셋과 독립)
-// ── 롱프레스 액티브 메뉴(운영자 260707 "나가기 상시 노출 X — 길게 누르면 · 액티브 2개[고정·나가기]") — 스와이프 나가기 대체 ──
-let _ylMenuEl = null, _ylMenuT = null, _ylJustLong = false, _ylArm = 0;
-function yLMenuClose(force) {   // 닫기 전 경로 = navBack 단일(78차 레이어 정합 · UX감사⑤) · force = 재렌더 강제 회수
-  if (!_ylMenuEl) return;
-  if (!force) { navBack('ylmenu'); return; }
-  const el = _ylMenuEl; _ylMenuEl = null;
-  const i = _navStack.map(l => l.id).lastIndexOf('ylmenu'); if (i >= 0) _navStack.splice(i, 1);   // 스택 잔류 소거(재렌더 = 앵커 소멸)
-  el.remove();
+// ── 스와이프 액션 트레이(운영자 260712 "좌로 밀면 우측 2칸 픽토[고정·나가기] · 우클릭 팝업 대체 · 기존 우클릭 삭제") — 세로 2칸 · 픽토 색 구분(고정 라임·나가기 레드) · 눌림 액티브 유지 ──
+const YLR_PIN_SVG = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.3 5.9 20.4l1.4-6.8L2.2 9l6.9-.7z"/></svg>';   // 고정 = 별(운영자 260712 "즐겨찾기가 맞는거같음" · 이름줄 표식과 통일)
+const YLR_LEAVE_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg>';
+let _ylrOpen = null, _ylrArm = 0, _ylrJustSwipe = 0;   // 열린 wrap · 나가기 armed · 스와이프 직후 합성 click 소비 래치
+function _yLrApply(w, open) {   // 시각 상태 반영(스택 조작 없음) — 트레이 슬라이드 + a11y 토글
+  w.classList.toggle('ylr-open', open);
+  const tr = w.querySelector('.ylr-tray'); if (tr) tr.setAttribute('aria-hidden', open ? 'false' : 'true');
+  w.querySelectorAll('.ylr-act').forEach(b => b.setAttribute('tabindex', open ? '0' : '-1'));   // 열림만 탭 포커스 대상(WCAG 2.4.3)
+  if (!open) { const a = w.querySelector('.ylr-act.armed'); if (a) a.classList.remove('armed'); }
 }
-function _ylMenuDie() {   // navStack close 콜백 — 퇴장 트랜지션 후 제거(즉발 hidden 금지 · 북극성 · UX감사⑥)
-  const el = _ylMenuEl; _ylMenuEl = null; _ylArm = 0;
-  if (!el) return;
-  el.classList.add('out');
-  const rm = () => el.remove();
-  el.addEventListener('animationend', rm, { once: true });
-  setTimeout(rm, 300);
+function yLrClose(force) {   // 닫기 = navBack 단일 경로(78차 레이어 정합 · UX감사⑤) · force = 재렌더 강제 회수
+  if (!_ylrOpen) return;
+  if (!force) { navBack('yltray'); return; }
+  const w = _ylrOpen; _ylrOpen = null; _ylrArm = 0;
+  const i = _navStack.map(l => l.id).lastIndexOf('yltray'); if (i >= 0) _navStack.splice(i, 1);   // 스택 잔류 소거(재렌더 = 앵커 소멸)
+  _yLrApply(w, false);
 }
-function yLMenuOpen(row) {
-  yLMenuClose(true);
-  const t = row.dataset.t; const th = YTH(t); if (!th) return;
-  const wrap = row.closest('.ylr-wrap');
-  const m = document.createElement('div');
-  m.className = 'ylmenu';
-  m.innerHTML = `<button type="button" data-act="pin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3l5 5-5.5 2-1 6.5L12 14l-6 7-1-1 7-6L9.5 11.5 16 10l-2-1.5z"/></svg>${th.pin ? '고정 해제' : '고정'}</button>`
-    + `<button type="button" data-act="leave"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg>나가기</button>`;
-  m.style.top = (wrap.offsetTop + wrap.offsetHeight - 6) + 'px';   // 앵커 = 무변형 wrap(행 :active 축소 좌표 왜곡 회피 · UX감사①b)
-  $('#ylistRows').appendChild(m);
-  _ylMenuEl = m; _ylArm = 0;
-  navOpen('ylmenu', _ylMenuDie);   // 뒤로가기 = 메뉴 닫기(레이어 등재 — 미등재면 목록서 뒤로 = 앱 이탈 재발 · UX감사⑤)
-  m.addEventListener('click', async e => {
-    const b = e.target.closest('button'); if (!b) return;
-    const c = yPersona(t) || { id: t, name: t };
-    if (b.dataset.act === 'pin') {
-      const r = await yApi('pin', { t, on: !th.pin }).catch(() => null);
-      if (r && r.ok) { if (YTH(t)) YTH(t).pin = r.pin ? Date.now() : 0; _ylSig = ''; yLMenuClose(); yListRender(); }
-      else miniToast('고정 실패 — 잠시 후 다시');
-      return;
-    }
-    if (b.dataset.act === 'leave') {   // 2탭 armed 계약 이관(스와이프 leave 승계)
-      if (!_ylArm) { _ylArm = 1; b.classList.add('armed'); miniToast('한 번 더 누르면 대화에서 나가 (기록 초기화)'); setTimeout(() => { _ylArm = 0; b.classList.remove('armed'); }, 2600); return; }
-      _ylArm = 0;
-      const r = await yApi('reset', { t }).catch(() => null);
-      if (r && r.ok) { YSESS = r.sess || YSESS; try { localStorage.removeItem('yeta_read_' + t); } catch {} _ylSig = ''; yLMenuClose(); yListRender(); miniToast('대화에서 나갔어'); }
-      else miniToast('나가기 실패 — 잠시 후 다시');
-    }
-  });
+function _yLrDie() {   // navStack close 콜백(popstate 발) — 시각 정리만(스택은 pop이 처리)
+  const w = _ylrOpen; _ylrOpen = null; _ylrArm = 0;
+  if (w) _yLrApply(w, false);
 }
-(function yLBind() {   // 롱프레스 500ms · 이동 10px/스크롤/pointercancel/멀티터치 = 취소 · 릴리스 합성 click 소비(justLong 래치 = 스와이프 justDrag 정본 계승 · UX감사①a)
+function yLrOpen(wrap) {
+  if (_ylrOpen === wrap) return;
+  if (_ylrOpen) yLrClose(true);   // 다른 열린 트레이 강제 회수(한 번에 하나)
+  _ylrOpen = wrap; _ylrArm = 0;
+  _yLrApply(wrap, true);
+  navOpen('yltray', _yLrDie);   // 뒤로가기 = 트레이 닫기(레이어 등재 — 미등재면 목록서 뒤로 = 앱 이탈 · UX감사⑤)
+}
+async function yLrAct(b) {   // 트레이 픽토 = 고정/나가기(구 .ylmenu 액션 계승)
+  const t = b.dataset.t, th = YTH(t); if (!th) return;
+  if (b.dataset.act === 'pin') {
+    const r = await yApi('pin', { t, on: !th.pin }).catch(() => null);
+    if (r && r.ok) { if (YTH(t)) YTH(t).pin = r.pin ? Date.now() : 0; _ylSig = ''; yLrClose(); yListRender(); }
+    else miniToast('고정 실패 — 잠시 후 다시');
+    return;
+  }
+  if (b.dataset.act === 'leave') {   // 2탭 armed 재확인(구 계약 이관)
+    if (!_ylrArm) { _ylrArm = 1; b.classList.add('armed'); miniToast('한 번 더 누르면 대화에서 나가 (기록 초기화)'); setTimeout(() => { _ylrArm = 0; b.classList.remove('armed'); }, 2600); return; }
+    _ylrArm = 0;
+    const r = await yApi('reset', { t }).catch(() => null);
+    if (r && r.ok) { YSESS = r.sess || YSESS; try { localStorage.removeItem('yeta_read_' + t); } catch {} _ylSig = ''; yLrClose(); yListRender(); miniToast('대화에서 나갔어'); }
+    else miniToast('나가기 실패 — 잠시 후 다시');
+  }
+}
+(function yLrBind() {   // 좌 스와이프 = 트레이 열기 · 우 스와이프 = 닫기 · 가로 우세(1.2배)+44px 임계 · 세로 스크롤/멀티터치/pointercancel = 무시(justSwipe 래치 = 릴리스 합성 click 소비)
   const box = $('#ylistRows');
-  let x0 = 0, y0 = 0, tgt = null;
-  const cancel = () => { if (_ylMenuT) { clearTimeout(_ylMenuT); _ylMenuT = null; } tgt = null; };
+  let x0 = 0, y0 = 0, tgt = null, decided = 0, horiz = 0;
+  const reset = () => { tgt = null; decided = 0; horiz = 0; };
   box.addEventListener('pointerdown', e => {
-    const row = e.target.closest('.ylist-row'); if (!row || !e.isPrimary) { cancel(); return; }
-    x0 = e.clientX; y0 = e.clientY; tgt = row;
-    _ylMenuT = setTimeout(() => { _ylMenuT = null; _ylJustLong = true; yLMenuOpen(row); }, 500);
+    if (e.target.closest('.ylr-tray')) { reset(); return; }   // 트레이 픽토 = click 핸들러 처리(드래그 아님)
+    const row = e.target.closest('.ylist-row'); if (!row || !e.isPrimary) { reset(); return; }
+    x0 = e.clientX; y0 = e.clientY; tgt = row.closest('.ylr-wrap'); decided = 0; horiz = 0;
   });
-  box.addEventListener('pointermove', e => { if (_ylMenuT && (Math.abs(e.clientX - x0) > 10 || Math.abs(e.clientY - y0) > 10)) cancel(); });
-  box.addEventListener('pointerup', cancel); box.addEventListener('pointercancel', cancel);
-  $('#ylist') && $('#ylist').addEventListener('scroll', cancel, { passive: true });
-  box.addEventListener('contextmenu', e => { const row = e.target.closest('.ylist-row'); if (row) { e.preventDefault(); yLMenuOpen(row); } });   // 우클릭 = 합성 click 없음 → 래치 미세팅(다음 좌클릭 삼킴 방지 · 재검증 관찰)   // 데스크톱 우클릭 = 동일 메뉴(길게누름 콜아웃 대체)
+  box.addEventListener('pointermove', e => {
+    if (!tgt || decided) return;
+    const dx = e.clientX - x0, dy = e.clientY - y0;
+    if (Math.abs(dx) > 10 || Math.abs(dy) > 10) { decided = 1; horiz = Math.abs(dx) > Math.abs(dy) * 1.2 ? 1 : 0; }   // 첫 10px = 방향 박제(가로 우세만 스와이프 · 세로 = 스크롤 양보)
+  });
+  box.addEventListener('pointerup', e => {
+    if (!tgt) return;
+    const w = tgt, dx = e.clientX - x0, dy = e.clientY - y0, wasH = horiz; reset();
+    if (wasH && Math.abs(dx) > Math.abs(dy) * 1.2 && Math.abs(dx) > 44) {
+      if (dx < 0) yLrOpen(w); else if (_ylrOpen === w) yLrClose();
+      _ylrJustSwipe = 1; setTimeout(() => _ylrJustSwipe = 0, 80);   // 스와이프 릴리스 합성 click 소비(방 오발 진입 차단)
+    }
+  });
+  box.addEventListener('pointercancel', reset);
+  $('#ylist') && $('#ylist').addEventListener('scroll', reset, { passive: true });
   box.addEventListener('click', e => {
-    if (_ylJustLong) { _ylJustLong = false; e.stopImmediatePropagation(); e.preventDefault(); return; }   // 롱프레스 릴리스 합성 click 소비 — 메뉴 위 챗 오발 진입 차단
-    if (_ylMenuEl && !e.target.closest('.ylmenu')) { yLMenuClose(); e.stopImmediatePropagation(); e.preventDefault(); return; }   // 바깥 탭 = 닫기(navBack 경유)
+    const act = e.target.closest('.ylr-act');
+    if (act) { e.stopImmediatePropagation(); e.preventDefault(); yLrAct(act); return; }   // 트레이 픽토 = 액션
+    if (_ylrJustSwipe) { _ylrJustSwipe = 0; e.stopImmediatePropagation(); e.preventDefault(); return; }   // 스와이프 릴리스 합성 click 소비
+    if (_ylrOpen) { e.stopImmediatePropagation(); e.preventDefault(); yLrClose(); return; }   // 열린 트레이 있음 = 아무 데나 탭 = 닫기(방 안 염 · 바깥 탭 닫기 계승)
     const row = e.target.closest('.ylist-row'); if (row) yOpenThread(row.dataset.t);
   }, true);
 })();
