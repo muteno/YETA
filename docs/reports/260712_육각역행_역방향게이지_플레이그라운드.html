@@ -1,0 +1,185 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>육각 역행 게이지 — 발전가능성의 역(빨간 점선) 플레이그라운드</title>
+<style>
+  :root{
+    --bg:#121212;--panel:#181818;--panel2:#1f1f1f;--line:rgba(255,255,255,.09);
+    --fg:#f4f4f4;--fg2:#b8b8b8;--mut:#8b8b8b;
+    --accent:#CFFF40;--danger:#ff5c5c;--r:14px;
+    --accent-rgb:207,255,64;--danger-rgb:255,92,92;--mut-rgb:139,139,139;
+  }
+  *{box-sizing:border-box}html,body{margin:0}
+  body{background:var(--bg);color:var(--fg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased;padding:0 0 70px}
+  .wrap{max-width:960px;margin:0 auto;padding:0 20px}
+  header{padding:40px 0 22px;border-bottom:1px solid var(--line);margin-bottom:8px}
+  .kick{color:var(--accent);font-weight:700;letter-spacing:.04em;font-size:12.5px;text-transform:uppercase}
+  h1{font-size:26px;line-height:1.25;margin:.3em 0 .28em}
+  .sub{color:var(--fg2);font-size:14.5px;margin:0}
+  h2{font-size:18px;margin:34px 0 12px;display:flex;align-items:center;gap:10px}
+  h2 .n{display:inline-flex;align-items:center;justify-content:center;width:25px;height:25px;border-radius:8px;background:var(--accent);color:#111;font-size:13px;font-weight:800}
+  p{margin:.5em 0}code{background:#0c0c0c;border:1px solid var(--line);border-radius:6px;padding:1px 6px;font-size:12.5px;color:var(--accent)}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px;margin:14px 0}
+  .stage{display:grid;grid-template-columns:320px 1fr;gap:22px;align-items:start}
+  @media(max-width:720px){.stage{grid-template-columns:1fr}}
+  .hexwrap{background:radial-gradient(120% 120% at 50% 30%,#1c1c1c,#131313);border:1px solid var(--line);border-radius:18px;padding:14px}
+  svg.hex{width:100%;height:auto;display:block}
+  .legend{display:flex;flex-direction:column;gap:7px;margin-top:12px;font-size:12.5px;color:var(--fg2)}
+  .legend span{display:inline-flex;align-items:center;gap:9px}
+  .sw{width:26px;height:0;border-top-width:2.5px;flex:none}
+  .sw.dash{border-top-style:dashed}
+  .ctrl{display:flex;flex-direction:column;gap:14px}
+  .axis{display:grid;grid-template-columns:52px 1fr 42px;align-items:center;gap:10px}
+  .axis label{font-size:13px;font-weight:600;color:var(--fg2)}
+  .axis .val{font-size:12px;font-family:ui-monospace,monospace;text-align:right}
+  .axis .val.pos{color:var(--accent)}.axis .val.neg{color:var(--danger)}
+  input[type=range]{width:100%;accent-color:var(--accent);height:22px}
+  .presets{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 2px}
+  .presets button{background:var(--panel2);border:1px solid var(--line);color:var(--fg);border-radius:999px;padding:6px 13px;font-size:12.5px;font-weight:600;cursor:pointer;transition:.15s}
+  .presets button:hover{border-color:rgba(var(--accent-rgb),.5);color:var(--accent)}
+  .presets button.on{background:rgba(var(--accent-rgb),.16);border-color:rgba(var(--accent-rgb),.4);color:var(--accent)}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:10px}
+  @media(max-width:620px){.row2{grid-template-columns:1fr}}
+  .mini{text-align:center}.mini h4{margin:0 0 6px;font-size:12.5px;color:var(--fg2);font-weight:600}
+  .mini svg{width:170px;height:170px}
+  .callout{border-left:3px solid var(--accent);padding:4px 0 4px 14px;margin:12px 0;color:var(--fg2);font-size:14px}
+  .callout.warn{border-color:var(--danger)}.callout.warn b{color:#ff8f8f}
+  table{width:100%;border-collapse:collapse;margin:10px 0;font-size:13px}
+  th,td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--line)}
+  th{color:var(--fg2);font-size:11.5px;text-transform:uppercase}
+  .foot{margin-top:36px;padding-top:16px;border-top:1px solid var(--line);color:var(--mut);font-size:12px}
+</style>
+
+<header><div class="wrap">
+  <div class="kick">디자인 시안 · 플레이그라운드 · 실물 재현</div>
+  <h1>육각 역행 게이지 — 발전가능성의 <span style="color:var(--danger)">역방향</span></h1>
+  <p class="sub">흰 점선(발전 가능성·상방)의 대칭으로 <b>빨간 점선(역행·하방)</b>을 base 안쪽에 같은 점선·투명도 겹침으로. 축마다 늘고(튀어나가고) 줄고(파이고) 다르게.</p>
+</div></header>
+
+<div class="wrap">
+
+<div class="card">
+  <p style="margin-top:0"><b>3층 육각</b> — 현재 2층(발전+현재)에 역행 1층을 대칭 추가:</p>
+  <table>
+    <tr><th>층</th><th>의미</th><th>표기</th><th>토큰(계승)</th></tr>
+    <tr><td>발전 ↑</td><td>친밀도 상승분(도달 가능한 상방)</td><td>흰 점선 둘레 + 뮤트 음영 · base <b>바깥</b></td><td><code>--fg</code> 점선 · <code>--mut</code> .34</td></tr>
+    <tr><td>현재</td><td>지금 유효 스탯</td><td>라임 채움 폴리곤</td><td><code>--accent</code></td></tr>
+    <tr><td>역행 ↓ <b>신규</b></td><td>역행으로 꺾인 하방(악영향)</td><td><b>빨간 점선</b> 둘레 + 빨간 음영 · base <b>안쪽</b></td><td><code>--danger</code> 점선 · <code>--danger</code> .30</td></tr>
+  </table>
+</div>
+
+<h2><span class="n">1</span> 인터랙티브 — 축별로 늘리고 꺾어보기</h2>
+<div class="stage">
+  <div>
+    <div class="hexwrap"><svg class="hex" id="hex" viewBox="0 0 100 100"></svg></div>
+    <div class="legend">
+      <span><i class="sw dash" style="border-color:var(--fg)"></i> 발전 가능성 (base 바깥 · 흰 점선)</span>
+      <span><i class="sw" style="border-color:var(--accent)"></i> 현재 유효 스탯 (라임)</span>
+      <span><i class="sw dash" style="border-color:var(--danger)"></i> 역행 (base 안쪽 · 빨간 점선)</span>
+    </div>
+  </div>
+  <div class="ctrl">
+    <div class="presets" id="presets"></div>
+    <p style="font-size:12.5px;color:var(--mut);margin:2px 0 4px">축 슬라이더: <span style="color:var(--accent)">+</span> = 발전(바깥으로) · <span style="color:var(--danger)">−</span> = 역행(안쪽으로) · 0 = base</p>
+    <div id="axes"></div>
+  </div>
+</div>
+
+<h2><span class="n">2</span> 전 · 후</h2>
+<div class="row2">
+  <div class="card mini"><h4>지금 (2층 — 발전만)</h4><svg id="hexBefore" viewBox="0 0 100 100"></svg><p style="font-size:12px;color:var(--mut);margin:6px 0 0">좋아질 여력만 흰 점선. 나빠짐은 안 보임.</p></div>
+  <div class="card mini"><h4>제안 (3층 — 발전 + 역행)</h4><svg id="hexAfter" viewBox="0 0 100 100"></svg><p style="font-size:12px;color:var(--mut);margin:6px 0 0">역행하면 빨간 점선이 안쪽으로 파인다.</p></div>
+</div>
+
+<h2><span class="n">3</span> 리스크 · 판단 포인트</h2>
+<div class="callout warn"><b>빨강 = 오류 오독 우려:</b> 앱에서 <code>--danger</code> 빨강은 에러·재시도에 쓰던 색이라, 육각의 빨간 음영이 "고장/경고"로 읽힐 수 있다(평의회 UX 위원 지적). <b>운영자 명시 지시 = 빨강</b>이라 이 시안은 <code>--danger</code> 계승으로 갔다. 대안: 역행을 <code>--mut</code> 탈채도(무채색 파임)로 하면 "냉담"으로 읽히고 오류 오독이 없다 — 프리셋 <b>[대안: 무채색]</b>로 비교해봐.</div>
+<div class="callout"><b>기하 예외:</b> 점선 <code>dasharray</code>·폴리곤 좌표는 토큰 없는 기하축(계산값) — §🎨 raw 허용. 색만 <code>--danger</code>/<code>--mut</code> 토큰 계승. 신규 색 창작 0.</div>
+<div class="callout"><b>배선:</b> <code>yHexSvg(stats, big, plus)</code> → <code>yHexSvg(stats, big, plus, <b>minus</b>)</code> 확장. <code>minus</code> = 역행 스탯(<code>min(minus, base)</code> = base 안쪽만). 신규 CSS 2줄 <code>.hx-n</code>(빨간 음영)·<code>.hx-no</code>(빨간 점선 둘레). 역행값 소스 = 역행 v2의 <code>yHurt</code>(활성 상처가 온기·장난·텐션 축을 base 밑으로).</div>
+
+<div class="foot">플레이그라운드 시안 · 실물 <code>yHexSvg</code> 로직 재현 · 값=<code>viewer/index.html :root</code> 계승 · 정본 배선은 승인 후 <code>viewer/index.html</code></div>
+</div>
+
+<script>
+const AX = ['온기','장난','신비','직진','텐션','절제'];
+// base·발전여력(성장 가능)·역행폭(악영향 가능) — 프리셋
+const PRESETS = {
+  '루시 (현재)':      {base:[2,4,4,3,3,2], d:[0,0,0,0,0,0]},
+  '좋은 관계 (발전)':  {base:[2,4,4,3,3,2], d:[1.6,1.2,0,0,.9,0]},
+  '살짝 틀어짐':       {base:[2,4,4,3,3,2], d:[-0.8,-1.0,0,0,-0.5,0]},
+  '반목 (급락)':       {base:[2,4,4,3,3,2], d:[-1.6,-2.2,0,0,-1.3,-0.4]},
+  '축마다 제각각':     {base:[3,3,3,3,3,3], d:[1.8,-1.5,.8,-2.0,1.2,-0.6]},
+  '대안: 무채색':      {base:[2,4,4,3,3,2], d:[1.4,-1.8,0,0,-1.0,0], gray:true},
+};
+let cur = JSON.parse(JSON.stringify(PRESETS['반목 (급락)']));
+let grayMode = false;
+
+const C=50, R=40;
+const pt=(i,r)=>{const a=(-90+i*60)*Math.PI/180; return [(C+r*Math.cos(a)), (C+r*Math.sin(a))];};
+const ring=r=>Array.from({length:6},(_,i)=>pt(i,r).map(n=>n.toFixed(1)).join(',')).join(' ');
+const poly=(arr)=>arr.map((v,i)=>pt(i, Math.max(.6,Math.min(5,v))/5*R).map(n=>n.toFixed(1)).join(',')).join(' ');
+
+function render(svg, base, d, opt={}){
+  const eff = base.map((v,i)=> v + (d[i]||0));                     // 현재 유효 = base + 델타
+  const plus = base.map((v,i)=> Math.max(v, eff[i]));              // 발전 = max(base, 유효) 바깥
+  const minus = base.map((v,i)=> Math.min(v, eff[i]));            // 역행 = min(base, 유효) 안쪽
+  const hasPlus = plus.some((v,i)=> v-base[i] > .05);
+  const hasMinus = minus.some((v,i)=> base[i]-v > .05);
+  const negCol = opt.gray ? 'var(--mut)' : 'var(--danger)';
+  const negRGB = opt.gray ? 'var(--mut)' : 'var(--danger)';
+  let s = '';
+  s += `<polygon points="${ring(R)}" fill="none" stroke="rgba(255,255,255,.10)" stroke-width="1"/>`;
+  s += `<polygon points="${ring(R/2)}" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="1"/>`;
+  // 역행 음영 (base와 minus 사이가 파인 것 — 여기선 minus 폴리곤 채움)
+  if(hasMinus && !opt.hideNeg) s += `<polygon points="${poly(minus)}" fill="${negCol}" fill-opacity="${opt.gray?.30:.22}" stroke="none"/>`;
+  // 발전 음영 (base 바깥)
+  if(hasPlus) s += `<polygon points="${poly(plus)}" fill="var(--mut)" fill-opacity=".30" stroke="none"/>`;
+  // 현재 유효 (라임)
+  s += `<polygon points="${poly(eff.map((v,i)=>Math.max(v, base[i]>eff[i]?eff[i]:v)))}" fill="rgba(var(--accent-rgb),.20)" stroke="var(--accent)" stroke-width="1.6" stroke-linejoin="round"/>`;
+  // 발전 흰 점선 둘레
+  if(hasPlus) s += `<polygon points="${poly(plus)}" fill="none" stroke="var(--fg)" stroke-width="1" stroke-dasharray="3 2.6" stroke-linejoin="round" opacity=".9"/>`;
+  // 역행 빨간 점선 둘레
+  if(hasMinus && !opt.hideNeg) s += `<polygon points="${poly(minus)}" fill="none" stroke="${negRGB}" stroke-width="1.1" stroke-dasharray="3 2.6" stroke-linejoin="round" opacity=".92"/>`;
+  if(opt.labels) s += base.map((v,i)=>{const[x,y]=pt(i,R+8.5); return `<text x="${x.toFixed(1)}" y="${(y+3).toFixed(1)}" text-anchor="middle" fill="var(--fg2)" font-size="6.5" font-weight="600">${AX[i]}</text>`;}).join('');
+  svg.innerHTML = s;
+}
+
+function paint(){
+  render(document.getElementById('hex'), cur.base, cur.d, {labels:true, gray:grayMode});
+  render(document.getElementById('hexBefore'), cur.base, cur.d, {hideNeg:true});
+  render(document.getElementById('hexAfter'), cur.base, cur.d, {gray:grayMode});
+}
+
+// 슬라이더
+const axesEl = document.getElementById('axes');
+AX.forEach((name,i)=>{
+  const row=document.createElement('div'); row.className='axis';
+  row.innerHTML=`<label>${name}</label><input type="range" min="-2.5" max="2.5" step="0.1" data-i="${i}"><span class="val" id="v${i}"></span>`;
+  axesEl.appendChild(row);
+});
+function syncSliders(){
+  cur.d.forEach((v,i)=>{
+    const inp=axesEl.querySelector(`input[data-i="${i}"]`); inp.value=v;
+    const el=document.getElementById('v'+i); el.textContent=(v>0?'+':'')+v.toFixed(1);
+    el.className='val '+(v>0.05?'pos':v<-0.05?'neg':'');
+  });
+}
+axesEl.addEventListener('input', e=>{
+  const i=+e.target.dataset.i; cur.d[i]=+e.target.value;
+  document.querySelectorAll('.presets button').forEach(b=>b.classList.remove('on'));
+  syncSliders(); paint();
+});
+
+// 프리셋
+const pEl=document.getElementById('presets');
+Object.keys(PRESETS).forEach(name=>{
+  const b=document.createElement('button'); b.textContent=name;
+  b.onclick=()=>{
+    cur=JSON.parse(JSON.stringify(PRESETS[name])); grayMode=!!cur.gray;
+    document.querySelectorAll('.presets button').forEach(x=>x.classList.remove('on')); b.classList.add('on');
+    syncSliders(); paint();
+  };
+  pEl.appendChild(b);
+});
+
+syncSliders(); paint();
+document.querySelectorAll('.presets button').forEach(b=>{ if(b.textContent==='반목 (급락)') b.classList.add('on'); });
+</script>

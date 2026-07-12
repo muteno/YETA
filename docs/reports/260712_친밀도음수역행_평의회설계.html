@@ -1,0 +1,348 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>친밀도 음수 역행 — 6인 평의회 설계 정본</title>
+<style>
+  :root{
+    --bg:#121212; --panel:#181818; --panel2:#1f1f1f; --line:rgba(255,255,255,.09);
+    --fg:#f4f4f4; --fg2:#b8b8b8; --mut:#8b8b8b;
+    --accent:#CFFF40; --cobalt:#3D6BFF; --season:#8E2DBF; --danger:#ff5c5c; --arm:#ffd93d;
+    --r:14px; --r-s:9px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg); color:var(--fg);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    line-height:1.62; -webkit-font-smoothing:antialiased; padding:0 0 80px}
+  .wrap{max-width:940px; margin:0 auto; padding:0 20px}
+  header{padding:44px 0 26px; border-bottom:1px solid var(--line); margin-bottom:8px}
+  .kick{color:var(--accent); font-weight:700; letter-spacing:.04em; font-size:12.5px; text-transform:uppercase}
+  h1{font-size:29px; line-height:1.25; margin:.32em 0 .28em; letter-spacing:-.01em}
+  .sub{color:var(--fg2); font-size:15px; margin:0}
+  .meta{color:var(--mut); font-size:12.5px; margin-top:14px; display:flex; gap:8px 18px; flex-wrap:wrap}
+  .meta b{color:var(--fg2); font-weight:600}
+  h2{font-size:19px; margin:38px 0 12px; padding-top:10px; display:flex; align-items:center; gap:10px}
+  h2 .n{display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:8px;
+    background:var(--accent); color:#111; font-size:14px; font-weight:800; flex:none}
+  h3{font-size:15.5px; margin:22px 0 8px; color:var(--fg)}
+  p{margin:.5em 0}
+  .lead{font-size:16px; color:var(--fg)}
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:var(--r); padding:18px 20px; margin:14px 0}
+  .verdict{background:linear-gradient(180deg,rgba(207,255,64,.09),rgba(207,255,64,.02)); border-color:rgba(207,255,64,.28)}
+  .verdict .lead{margin-top:0}
+  .pill{display:inline-block; font-size:12px; font-weight:700; padding:3px 10px; border-radius:999px; margin:2px 4px 2px 0}
+  .p-acc{background:rgba(207,255,64,.16); color:var(--accent); border:1px solid rgba(207,255,64,.3)}
+  .p-cob{background:rgba(61,107,255,.16); color:#8ea9ff; border:1px solid rgba(61,107,255,.3)}
+  .p-warn{background:rgba(255,92,92,.14); color:#ff8f8f; border:1px solid rgba(255,92,92,.3)}
+  table{width:100%; border-collapse:collapse; margin:12px 0; font-size:13.5px; overflow:hidden; border-radius:10px}
+  th,td{text-align:left; padding:9px 11px; border-bottom:1px solid var(--line); vertical-align:top}
+  th{background:var(--panel2); color:var(--fg2); font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:.03em}
+  td code,p code,li code{background:#0c0c0c; border:1px solid var(--line); border-radius:6px; padding:1px 6px; font-size:12.5px; color:var(--accent)}
+  .tbl-scroll{overflow-x:auto; -webkit-overflow-scrolling:touch}
+  pre{background:#0b0b0b; border:1px solid var(--line); border-radius:10px; padding:15px 16px; overflow-x:auto; font-size:12.8px; line-height:1.6}
+  pre code{color:#e6e6e6; font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  .cm{color:var(--mut)} .kw{color:#c792ea} .fn{color:#82aaff} .num{color:#f78c6c} .str{color:var(--accent)}
+  ul{margin:.4em 0; padding-left:20px} li{margin:.28em 0}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:14px}
+  @media(max-width:680px){.grid2{grid-template-columns:1fr}}
+  .ladder{display:flex; flex-direction:column; gap:8px; margin:12px 0}
+  .rung{display:flex; align-items:center; gap:14px; padding:12px 15px; border-radius:11px; border:1px solid var(--line); background:var(--panel)}
+  .rung .swatch{width:44px; height:44px; border-radius:50%; flex:none; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:800; color:#fff; position:relative; overflow:hidden}
+  .rung .rmid{flex:1; min-width:0}
+  .rung .rt{font-weight:700; font-size:14.5px}
+  .rung .rd{color:var(--fg2); font-size:12.8px}
+  .rung .rc{font-family:ui-monospace,monospace; font-size:12px; color:var(--mut); white-space:nowrap}
+  .av-face{filter:grayscale(0)}
+  .av-estr{filter:grayscale(.7) brightness(.55)}
+  .av-cold{filter:grayscale(1) brightness(.5)}
+  .callout{border-left:3px solid var(--accent); padding:4px 0 4px 15px; margin:14px 0; color:var(--fg2)}
+  .callout.warn{border-color:var(--danger)}
+  .callout.warn b{color:#ff8f8f}
+  .foot{margin-top:40px; padding-top:18px; border-top:1px solid var(--line); color:var(--mut); font-size:12.5px}
+  svg{max-width:100%; height:auto; display:block}
+  .legend{display:flex; gap:18px; flex-wrap:wrap; font-size:12.5px; color:var(--fg2); margin-top:8px}
+  .legend span{display:inline-flex; align-items:center; gap:6px}
+  .dot{width:11px; height:11px; border-radius:3px; display:inline-block}
+</style>
+
+<header><div class="wrap">
+  <div class="kick">6인 평의회 · 기틀검증 트랙 · READ-ONLY 감사</div>
+  <h1>친밀도를 음수(역행)로 — 대칭 확장 설계 정본</h1>
+  <p class="sub">"하한 0" 은 하한이 아니라 <b>발화 수 카운트의 부산물</b>이다. 진짜 필요한 건 관계-손상이라는 새 축이다.</p>
+  <div class="meta">
+    <span><b>접수</b> 2026-07-12 17:17 KST</span>
+    <span><b>평의회</b> 아키텍처·신호원·수학·tune·UX·레드팀 (6/6 수렴)</span>
+    <span><b>운영자 결정</b> 하이브리드 트리거 · 완충·관통·히스테리시스(2축) · 전원 on</span>
+    <span><b>상태</b> 설계 v2(정예 3인 검증) · 회복모델 1개 확정 대기 → 5인 기틀검증 → 구현</span>
+  </div>
+</div></header>
+
+<div class="wrap">
+
+<div class="card verdict">
+  <p class="lead" style="font-size:17px"><b>결론.</b> 이건 <code>yBond</code> 한 줄 수정이 아니다. <code>yBond = 내 발화 수(n) × 감쇠</code> 는 n이 카운트라 <b>수학적으로 음수가 안 나온다</b> — 0은 하한이 아니라 "발화가 없다"는 뜻이다. 역행을 만들려면 <b>페르소나가 emit하는 부호있는 감점(grudge)</b> 이라는 새 영속 축을 신설해야 하고, 그 순간 세션 스키마·러너·뷰어를 건드리는 <b>기틀 변경</b>이 된다.</p>
+  <p style="margin-bottom:0">네가 고른 3개 분기 위에서 6인이 수렴한 설계가 아래다. 감쇠는 <b>같은 수식</b>을 부호있는 값에 그대로 걸어 "동일 개념"을 보존한다.</p>
+</div>
+
+<h2><span class="n">1</span> 진단 — 왜 지금 0이 하한인가</h2>
+<p>현재 <code>viewer/index.html:2947</code> 의 유효 친밀도:</p>
+<pre><code><span class="kw">function</span> <span class="fn">yBond</span>(c){
+  <span class="kw">const</span> n = (th.turns||[]).<span class="fn">filter</span>(t=>t.role===<span class="str">'user'</span>).length;  <span class="cm">// 내 발화 수 (≥0)</span>
+  <span class="kw">const</span> ease = smoothstep(1일→7일 방치);                     <span class="cm">// 0 → 1</span>
+  <span class="kw">return</span> n * (<span class="num">1</span> - <span class="num">.5</span>*ease);                              <span class="cm">// 승수 ∈ [0.5, 1]</span>
+}</code></pre>
+<p><b>n ≥ 0</b> 이고 감쇠 승수는 <b>[0.5, 1]</b> 이라 곱은 절대 음수가 못 된다. 방치해도 <code>0.5·n</code>(절반)까지만 식고 0으로도 안 간다. 즉 <b>"악화"라는 개념이 코드에 아예 없다</b> — 지금은 나쁜 대화조차 발화 수를 <b>올린다</b>. 소원(<code>yEstranged</code>)도 원인은 오직 <b>방치</b>지 갈등이 아니다.</p>
+
+<h2><span class="n">2</span> 네가 고른 3개 분기 (설계 확정)</h2>
+<div class="grid2">
+  <div class="card">
+    <span class="pill p-acc">① 트리거 = 하이브리드</span>
+    <p style="margin-bottom:0">페르소나가 진짜 모욕·반복 냉대를 감지하면 <code>&lt;&lt;BOND:−n&gt;&gt;</code> 마커 emit(의미 판단) <b>+</b> 합석 거절·강퇴·장기 무시 같은 기계 규칙이 결정적 바닥. "말로 준 상처"도 잡고 일관성도 확보.</p>
+  </div>
+  <div class="card">
+    <span class="pill p-cob">② 역사 버퍼 = 별도 채널</span>
+    <p style="margin-bottom:0">감점을 발화 수와 <b>네팅하지 않는다.</b> 활성 감점이 있으면 그게 관계를 지배 — <b>배신은 대화 역사와 무관하게 깊게 벤다.</b> 단 역사(n)는 밑에 보존돼, 감점이 풀리면 원래 관계로 복귀.</p>
+  </div>
+  <div class="card">
+    <span class="pill p-acc">③ 적용 = 전원 기본 on</span>
+    <p style="margin-bottom:0">10인 전원 역행 상시 적용. 가장 리얼하지만 "앱이 불쾌·차단될" 리스크가 실재 → <b>§5의 온기 가드가 필수 짝</b>(음수 = 냉담·거리 축이지 학대 축 아님).</p>
+  </div>
+  <div class="card" style="background:var(--panel2)">
+    <span class="pill p-warn">기각된 것</span>
+    <p style="margin-bottom:0"><b>영구 "절연" 계층</b> — 말벗 앱에 영구 단절은 제품 자살(UX 위원). 회복로는 <b>항상</b> 존재한다. <b>rel_lv 재사용</b> — 부호없는 한자리·§🔓 게이트축과 충돌(아키텍처 위원).</p>
+  </div>
+</div>
+
+<h2><span class="n">3</span> 대칭 수학 — 같은 감쇠, 부호만 보존</h2>
+<p>"기존 알고리즘과 동일 개념"의 핵심: 감쇠는 원래 <b>raw에 걸리는 승수</b>다. 부호있는 값에 그대로 곱하면 양·음이 자동 대칭이 된다. 시간은 원한을 0으로 <b>지우지 않고</b> 절반까지만 식힌다(양수 반감과 동일). 완전 회복은 시간이 아니라 <b>재회·사과 이벤트</b>가 한다(소원 회복이 이미 이벤트 기반인 것과 정합).</p>
+
+<div class="card">
+<svg viewBox="0 0 900 300" role="img" aria-label="대칭 감쇠 곡선">
+  <line x1="60" y1="150" x2="860" y2="150" stroke="#8b8b8b" stroke-width="1"/>
+  <text x="866" y="154" fill="#8b8b8b" font-size="12">시간(방치일)</text>
+  <line x1="60" y1="20" x2="60" y2="280" stroke="#8b8b8b" stroke-width="1"/>
+  <text x="66" y="30" fill="#8b8b8b" font-size="12">bond</text>
+  <text x="30" y="46" fill="#CFFF40" font-size="12">+6</text>
+  <text x="34" y="154" fill="#b8b8b8" font-size="12">0</text>
+  <text x="30" y="262" fill="#ff8f8f" font-size="12">−6</text>
+  <!-- day gridlines -->
+  <g stroke="rgba(255,255,255,.06)">
+    <line x1="260" y1="20" x2="260" y2="280"/><line x1="460" y1="20" x2="460" y2="280"/>
+    <line x1="660" y1="20" x2="660" y2="280"/>
+  </g>
+  <text x="255" y="296" fill="#666" font-size="11">1일</text>
+  <text x="655" y="296" fill="#666" font-size="11">7일+</text>
+  <!-- positive channel: n=6 -> decays to 3 (half) -->
+  <path d="M60,40 L260,40 C360,40 400,70 660,95 L860,95" fill="none" stroke="#CFFF40" stroke-width="2.5"/>
+  <circle cx="60" cy="40" r="4" fill="#CFFF40"/><text x="70" y="36" fill="#CFFF40" font-size="12">발화 채널 n=6 → 3(반감)</text>
+  <!-- negative channel: g=-6 -> decays to -3 (half), mirror -->
+  <path d="M60,260 L260,260 C360,260 400,230 660,205 L860,205" fill="none" stroke="#ff5c5c" stroke-width="2.5" stroke-dasharray="1 0"/>
+  <circle cx="60" cy="260" r="4" fill="#ff5c5c"/><text x="70" y="278" fill="#ff8f8f" font-size="12">감점 채널 g=−6 → −3(반감·같은 곡선)</text>
+  <!-- parking seam ±3 area -->
+  <text x="690" y="130" fill="#8b8b8b" font-size="11">±3 = 절반 주차선(냉각)</text>
+</svg>
+<div class="legend">
+  <span><i class="dot" style="background:#CFFF40"></i> 양수 = 발화 수 × 감쇠 (기존 그대로)</span>
+  <span><i class="dot" style="background:#ff5c5c"></i> 음수 = 감점 × <b>같은 감쇠</b> (신규·부호 보존)</span>
+</div>
+</div>
+
+<h3>제안 수식 (별도 채널 확정판)</h3>
+<pre><code><span class="kw">function</span> <span class="fn">yBond</span>(c){
+  <span class="kw">const</span> th = ((YSESS||{}).threads||{})[c&&c.id]; <span class="kw">if</span>(!th) <span class="kw">return</span> <span class="num">0</span>;
+  <span class="kw">const</span> n = (th.turns||[]).<span class="fn">filter</span>(t=>t.role===<span class="str">'user'</span>).length;
+  <span class="kw">const</span> g = Math.<span class="fn">max</span>(<span class="num">-12</span>, (+th.grudge||<span class="num">0</span>));      <span class="cm">// ★신규 감점 채널 ≤0 · 바닥 −12 · undefined→0 (NaN 가드)</span>
+  <span class="kw">if</span>(!n && !g) <span class="kw">return</span> <span class="num">0</span>;
+  <span class="kw">const</span> d = Math.<span class="fn">max</span>(<span class="num">0</span>,(Date.<span class="fn">now</span>()-(th.updated||<span class="num">0</span>))/<span class="num">86400e3</span>);
+  <span class="kw">const</span> t = Math.<span class="fn">min</span>(<span class="num">1</span>,Math.<span class="fn">max</span>(<span class="num">0</span>,(d-<span class="num">1</span>)/<span class="num">6</span>)), ease = t*t*(<span class="num">3</span>-<span class="num">2</span>*t);
+  <span class="kw">const</span> decay = <span class="num">1</span> - <span class="num">.5</span>*ease;                       <span class="cm">// 양·음 공용 승수 [0.5,1]</span>
+  <span class="kw">return</span> (g &lt; <span class="num">0</span> ? g : n) * decay;              <span class="cm">// ★별도 채널: 감점 살아있으면 감점이 지배(역사 무관)</span>
+}                                                <span class="cm">//  g 풀리면(→0) 발화 채널 복귀 = 역사 보존</span></code></pre>
+<p class="callout"><b>왜 별도 채널이 우아한가:</b> 관계 역사 <code>n</code> 은 파괴되지 않고 <b>밑에 그대로 살아있다.</b> 감점 <code>g</code> 가 위에 음수로 덮여 관계를 가리고, 재회·사과로 <code>g→0</code> 이 되면 <code>n·decay</code> 양수 관계가 <b>그대로 되살아난다.</b> "깊게 베이되 영구 파괴는 아니다"가 수식 한 줄에 들어간다.</p>
+
+<h3 id="hex">육각 스탯도 대칭 — 역행하면 <span style="color:var(--danger)">수축</span>한다 <span class="pill p-acc" style="margin-left:4px">운영자 추가 260712</span></h3>
+<p>지금 <code>yStatBoost</code>(<code>index.html:2265</code>)는 친밀도가 오르면 온기·장난·텐션 축을 <b>base 위로만</b> 키운다 — 육각이 커지고 상승분이 음영(<code>--mut</code>)으로 삐져나온다(<b>점진</b>). 네 지적대로 이건 <b>단방향</b>이다. 대칭으로 <b>반대 방향</b>을 넣는다: bond가 음수로 가면 <b>같은 축이 base 밑으로 수축</b>해 육각이 눈에 띄게 쪼그라든다. <b>최근 역행일수록</b>(감쇠가 최근성을 이미 반영) 더 줄어든다.</p>
+<div class="card">
+<svg viewBox="0 0 760 260" role="img" aria-label="육각 스탯 대칭 — 상승 vs 수축">
+  <!-- 상승 -->
+  <g transform="translate(190,130)">
+    <polygon points="0,-78 68,-39 68,39 0,78 -68,39 -68,-39" fill="none" stroke="rgba(255,255,255,.14)" stroke-width="1"/>
+    <polygon points="0,-40 40,-22 34,20 0,40 -36,22 -40,-20" fill="rgba(255,255,255,.06)" stroke="#8b8b8b" stroke-width="1"/>
+    <polygon points="0,-58 55,-30 40,24 0,46 -40,24 -46,-24" fill="rgba(207,255,64,.2)" stroke="#CFFF40" stroke-width="1.6"/>
+    <text x="0" y="105" fill="#CFFF40" font-size="13" text-anchor="middle" font-weight="700">친밀 상승 → 확장 (기존)</text>
+  </g>
+  <text x="380" y="135" fill="#8b8b8b" font-size="26" text-anchor="middle">↔</text>
+  <!-- 수축 -->
+  <g transform="translate(570,130)">
+    <polygon points="0,-78 68,-39 68,39 0,78 -68,39 -68,-39" fill="none" stroke="rgba(255,255,255,.14)" stroke-width="1"/>
+    <polygon points="0,-40 40,-22 34,20 0,40 -36,22 -40,-20" fill="none" stroke="#8b8b8b" stroke-width="1" stroke-dasharray="3 2.6"/>
+    <polygon points="0,-22 22,-12 19,11 0,22 -20,12 -22,-11" fill="rgba(139,139,139,.28)" stroke="#8b8b8b" stroke-width="1.6" filter="grayscale(1)"/>
+    <text x="0" y="105" fill="#ff8f8f" font-size="13" text-anchor="middle" font-weight="700">역행 → 수축 (신규)</text>
+  </g>
+</svg>
+<div class="legend">
+  <span><i class="dot" style="background:#CFFF40"></i> 라임 폴리곤 = 유효 스탯</span>
+  <span><i class="dot" style="background:#8b8b8b"></i> 흰 점선 = 성향 base(고정)</span>
+  <span>수축 = base 밑으로 <b>탈채도 음영</b>(잃은 온기·장난)</span>
+</div>
+</div>
+<pre><code><span class="kw">function</span> <span class="fn">yStatBoost</span>(c){
+  <span class="kw">if</span>(!c || !Array.<span class="fn">isArray</span>(c.stats) || c.stats.length!==<span class="num">6</span> || <span class="fn">yUnmet</span>(c) || <span class="fn">yLockLabel</span>(c)) <span class="kw">return</span> <span class="kw">null</span>;
+  <span class="kw">const</span> b = <span class="fn">yBond</span>(c), W=[<span class="num">1</span>,<span class="num">.7</span>,<span class="num">0</span>,<span class="num">0</span>,<span class="num">.55</span>,<span class="num">0</span>];               <span class="cm">// 온기·장난·텐션 축만</span>
+  <span class="kw">if</span>(b &gt;= <span class="num">2.5</span>){                                    <span class="cm">// 상승(기존) — 정서축 성장</span>
+    <span class="kw">const</span> k=Math.<span class="fn">min</span>(<span class="num">1</span>,b/<span class="num">12</span>);
+    <span class="kw">const</span> out=c.stats.<span class="fn">map</span>((v,i)=>Math.<span class="fn">min</span>(<span class="num">5</span>, v + <span class="num">1.3</span>*k*W[i]));
+    <span class="kw">return</span> out.<span class="fn">some</span>((v,i)=>v-c.stats[i]&gt;<span class="num">.05</span>) ? out : <span class="kw">null</span>;
+  }
+  <span class="kw">if</span>(b &lt; <span class="num">0</span>){                                       <span class="cm">// ★역행(신규) — 같은 축이 base 밑으로 수축</span>
+    <span class="kw">const</span> k=Math.<span class="fn">min</span>(<span class="num">1</span>,-b/<span class="num">12</span>);                        <span class="cm">// |b|/12 · 감쇠가 최근성 반영</span>
+    <span class="kw">const</span> out=c.stats.<span class="fn">map</span>((v,i)=>Math.<span class="fn">max</span>(<span class="num">0</span>, v - <span class="num">1.3</span>*k*W[i]));    <span class="cm">// 하한 0(스탯 바닥)</span>
+    <span class="kw">return</span> out.<span class="fn">some</span>((v,i)=>c.stats[i]-v&gt;<span class="num">.05</span>) ? out : <span class="kw">null</span>;
+  }
+  <span class="kw">return</span> <span class="kw">null</span>;                                      <span class="cm">// 0~2.5 = 중립(델타 없음)</span>
+}</code></pre>
+<p class="callout warn"><b>렌더 주의(§🎨):</b> <code>yHexSvg</code>(2253)는 지금 상승분만 <b>base 바깥으로</b> 그린다("삐져나온 델타만 보임"). 수축은 유효 폴리곤이 base <b>안쪽</b>이라, 잃은 영역(base와 유효 사이)을 <b>탈채도 음영</b>으로 채우는 렌더 분기가 필요하다 — 색은 반목과 같은 <code>--mut</code> 계승(새 색 창작 금지). 이 표기는 <b>플레이그라운드로 전·후 실물 확정</b> 후 배선.</p>
+
+<h2 id="v2"><span class="n">3+</span> 완충·관통·히스테리시스 — 자연스러운 인간관계 <span class="pill p-acc" style="margin-left:4px">운영자 정교화 260712 · 정예 3인 검증</span></h2>
+<p class="lead">운영자 방향: <b>"일정 이상 틀어지면 복구도 그만큼 어렵고, 좋아지면 뭐라 해도 감쇠가 적어지고, 아예 틀어지는 계기가 생기면 확 떨어지기도 하는"</b> 자연스러운 관계. 이건 아까 <b>별도 채널</b>(배신은 역사 무관)을 <b>3역학</b>으로 정교화한다.</p>
+<div class="grid2">
+  <div class="card"><span class="pill p-acc">① 완충</span><p style="margin-bottom:0">관계가 좋으면(발화 자본 <code>pos</code> 큼) <b>작은 부정</b>(짜증·서운)은 그냥 삼켜진다. 좋은 사이엔 웬만한 건 안 흔들림.</p></div>
+  <div class="card"><span class="pill p-warn">② 관통</span><p style="margin-bottom:0"><b>큰 계기</b>(배신·모욕)는 <b>관통계수 <code>pen</code></b> 으로 완충을 뚫고 확 떨어진다. 가까울수록(<code>pos</code>↑) 더 깊이 벤다.</p></div>
+  <div class="card"><span class="pill p-cob">③ 히스테리시스</span><p style="margin-bottom:0">깊이 틀어질수록(<code>|adj|</code>↑) 회복 항 <code>recover</code>가 <b>초선형으로 질겨진다</b>. 서운함은 몇 마디로, 배신은 오래.</p></div>
+  <div class="card" style="background:var(--panel2)"><span class="pill p-warn">레드팀 함정 → 2축으로 해소</span><p style="margin-bottom:0"><b>넷 bond 하나만 보면</b> 좋은 관계(pos 큼)가 상처를 흡수해 <b>배신당한 절친이 삐진 지인보다 육각이 화사</b>해진다. → <b>친밀도(완충된 bond)와 상처(adj)를 분리 노출</b>.</p></div>
+</div>
+
+<h3>2축 모델 — 넷 관계값 + 활성 상처</h3>
+<div class="tbl-scroll"><table>
+  <tr><th>파생값</th><th>정의</th><th>구동</th></tr>
+  <tr><td><code>yBond</code> (넷)</td><td><code>pos + adjEff</code> — 완충·관통 반영된 순 관계값</td><td>계층 게이트(소원 차단 · 반목 = 넷이 음수로 = 관계 붕괴)</td></tr>
+  <tr><td><code>yHurt</code> (상처)</td><td><code>adj·(1−recover)</code> — 지금 살아있는 상처 크기(완충·pos 무관)</td><td><b>육각 수축량 · 냉담 표기</b> — 넷 bond가 아직 양수여도 "지금 틀어짐"을 보여줌</td></tr>
+</table></div>
+<p class="callout"><b>왜 2축인가:</b> 절친과 크게 싸워도 <b>관계 자체(bond)는 완충으로 버티지만</b>(차단 안 됨), <b>냉담함(hurt)은 육각·톤에 즉시 드러난다.</b> 흡수된 작은 마찰 = 육각 살짝 식음 · 관통한 배신 = 넷 bond 음수 = 반목. 운영자 세 문장이 그대로 구현된다.</p>
+
+<pre><code><span class="kw">const</span> YB_R0=<span class="num">.5</span>, YB_K=<span class="num">3</span>, YB_SHOCK=<span class="num">5</span>;                  <span class="cm">// 자가회복 상한·깊이 스케일·관통 문턱</span>
+<span class="kw">function</span> <span class="fn">yBond</span>(c){                                     <span class="cm">// 넷 관계값(완충됨) — 계층 게이트용 · adj=0이면 기존과 bit-identical</span>
+  <span class="kw">const</span> th=((YSESS||{}).threads||{})[c&&c.id]; <span class="kw">if</span>(!th) <span class="kw">return</span> <span class="num">0</span>;
+  <span class="kw">const</span> n=(th.turns||[]).<span class="fn">filter</span>(t=>t.role===<span class="str">'user'</span>).length;
+  <span class="kw">const</span> adj=Math.<span class="fn">max</span>(<span class="num">-12</span>, Math.<span class="fn">min</span>(<span class="num">0</span>, +th.adj||<span class="num">0</span>));       <span class="cm">// ★저장 상처(≤0·러너 절대 재평가·누락=보존)</span>
+  <span class="kw">if</span>(!n && !adj) <span class="kw">return</span> <span class="num">0</span>;
+  <span class="kw">const</span> d=Math.<span class="fn">max</span>(<span class="num">0</span>,(Date.<span class="fn">now</span>()-(th.updated||<span class="num">0</span>))/<span class="num">86400e3</span>);
+  <span class="kw">const</span> t=Math.<span class="fn">min</span>(<span class="num">1</span>,Math.<span class="fn">max</span>(<span class="num">0</span>,(d-<span class="num">1</span>)/<span class="num">6</span>)), ease=t*t*(<span class="num">3</span>-<span class="num">2</span>*t);
+  <span class="kw">const</span> pos=n*(<span class="num">1</span>-<span class="num">.5</span>*ease);                              <span class="cm">// 발화자본(기존 그대로 · decay는 양수 전용)</span>
+  <span class="kw">const</span> recover=Math.<span class="fn">max</span>(<span class="num">0</span>,Math.<span class="fn">min</span>(<span class="num">1</span>, YB_R0/(<span class="num">1</span>+Math.<span class="fn">abs</span>(adj)/YB_K)));  <span class="cm">// 얕으면 자가회복·깊으면 질김</span>
+  <span class="kw">const</span> pen=Math.<span class="fn">min</span>(<span class="num">3</span>, <span class="num">1</span>+<span class="num">.07</span>*pos);                        <span class="cm">// ★관통: 가까울수록 큰 상처가 더 깊이 벤다</span>
+  <span class="kw">return</span> Math.<span class="fn">max</span>(<span class="num">-12</span>, pos + adj*(<span class="num">1</span>-recover)*pen);
+}
+<span class="kw">function</span> <span class="fn">yHurt</span>(c){                                     <span class="cm">// ★활성 상처(완충 무관) — 육각 수축·냉담 표기용</span>
+  <span class="kw">const</span> th=((YSESS||{}).threads||{})[c&&c.id]; <span class="kw">if</span>(!th) <span class="kw">return</span> <span class="num">0</span>;
+  <span class="kw">const</span> adj=Math.<span class="fn">max</span>(<span class="num">-12</span>, Math.<span class="fn">min</span>(<span class="num">0</span>, +th.adj||<span class="num">0</span>)); <span class="kw">if</span>(!adj) <span class="kw">return</span> <span class="num">0</span>;
+  <span class="kw">const</span> recover=Math.<span class="fn">max</span>(<span class="num">0</span>,Math.<span class="fn">min</span>(<span class="num">1</span>, YB_R0/(<span class="num">1</span>+Math.<span class="fn">abs</span>(adj)/YB_K)));
+  <span class="kw">return</span> adj*(<span class="num">1</span>-recover);                             <span class="cm">// ≤0 · |값| = 지금 살아있는 상처</span>
+}</code></pre>
+
+<h3>튜닝값 (정예 밸런스 위원 · roster 실값 기반)</h3>
+<div class="tbl-scroll"><table>
+  <tr><th>파라미터</th><th>초기값</th><th>근거</th></tr>
+  <tr><td>emit 스케일</td><td>짜증 −1 · 서운 −2 · 냉대 −4 · 상처 −6 · 배신 −9 · 기계 −12</td><td>임계 1.5 · 만개 12 · 바닥 −12 누진</td></tr>
+  <tr><td>관통 문턱 SHOCK</td><td>5</td><td>냉대(−4)는 완충 · 상처(−6)부터 관통</td></tr>
+  <tr><td>관통 pen</td><td><code>min(3, 1+.07·pos)</code></td><td>발화가 반목을 <b>심화</b>시키지 않는 상한(κ≤1/12)</td></tr>
+  <tr><td>회복 K</td><td><code>3·(|adj|/3)^1.6 / yThawMul</code></td><td>서운(−3)=3발화 63% · 배신(−9)=수십 발화(질김)</td></tr>
+  <tr><td>회복 소스 R</td><td>사과 +3 · 재회 +2 · 시간 단독 ≤.5</td><td>정식 화해 = adj 0 클리어(고착 방지)</td></tr>
+  <tr><td>tune 연동</td><td>완충·관통 = <code>yFallRate</code> · 회복 = <code>yThawMul</code></td><td>삐7·낙8↑ 깊게 받고 늦게 풀림 / 인내6·온기5↑ 관대</td></tr>
+</table></div>
+
+<h3>시나리오 워크스루 (fresh·decay 1)</h3>
+<div class="tbl-scroll"><table>
+  <tr><th>상황</th><th>계산</th><th>결과</th><th>역학</th></tr>
+  <tr><td>좋은 사이 <code>n25</code> + 짜증 <code>−2</code>(하은)</td><td>adj −2.24 &lt; SHOCK → 흡수</td><td>bond 25→<b>22.8 정상</b> · 육각 거의 불변 · 1~2발화 후 24</td><td><span class="pill p-acc">완충</span></td></tr>
+  <tr><td>좋은 사이 <code>n25</code> + 배신 <code>−9</code>(하은)</td><td>adj −10.1 ≥ SHOCK · pen 2.75</td><td>bond 25→<b>−2.7 반목</b> · 육각 수축·탈채도 → 사과+8발화 → <b>+9 복귀</b></td><td><span class="pill p-warn">관통+회복</span></td></tr>
+  <tr><td>반목 <code>adj−8</code> 회복(세라·pos10)</td><td>K16 · 사과+발화 누적</td><td>−3.6 → 굼뜨다 임계서 <b>확 풀림</b>(+11) — 해빙 곡선</td><td><span class="pill p-cob">히스테리시스</span></td></tr>
+</table></div>
+
+<h3>회복(치유) 모델 — <span style="color:var(--danger)">여기 하나만 네 확정 필요</span></h3>
+<p>상처 <code>adj</code>가 어떻게 풀리는가가 유일한 남은 갈림이다. 레드팀·밸런스 둘 다 "발화 스팸으로 배신이 무마되면 서사 붕괴" 경고. 두 안:</p>
+<ul>
+  <li><b>(권장) 진짜 화해만 치유</b> — 페르소나가 사과·화해를 인정할 때만 <code>&lt;&lt;BOND:+n&gt;&gt;</code> emit으로 adj 감쇠. 얕은 서운함만 시간이 자가 완화(recover 항). 깊은 상처는 <b>사과가 있어야</b> 풀림. → "배신은 말 몇 마디로 안 풀린다"가 지켜짐.</li>
+  <li><b>(대안) 대화 지속으로 서서히</b> — 사과 없이도 대화 이어가면 발화·시간으로 서서히 회복. 더 관대하지만 "무시하고 떠들면 배신도 잊혀짐" 위험.</li>
+</ul>
+
+<h2><span class="n">4</span> 관계 계층 — 소원 밑에 "반목" 딱 1개</h2>
+<p>결정적 함정: 음수 bond가 그냥 들어가면 <code>yEstranged(bond&lt;1.5)</code> 를 참으로 뒤집어 <b>소원=탭 차단</b>으로 삼켜버린다. 그건 "악화됐지만 대화는 되는 반목"의 <b>정반대</b>다. 반목은 <b>차단 아님</b>(냉담하게라도 대화는 됨)으로 별 술어 분리가 필수.</p>
+<div class="ladder">
+  <div class="rung">
+    <div class="swatch av-face" style="background:linear-gradient(135deg,#3a4a20,#CFFF40)">정상</div>
+    <div class="rmid"><div class="rt">대화 가능 / 대화 중</div><div class="rd">평상 관계 — 실명·카드 전문·육각 스탯</div></div>
+    <div class="rc">bond ≥ 1.5</div>
+  </div>
+  <div class="rung">
+    <div class="swatch av-estr" style="background:linear-gradient(135deg,#444,#999)">소원</div>
+    <div class="rmid"><div class="rt">소원 <span style="color:var(--mut);font-weight:400;font-size:12px">(기존)</span></div><div class="rd">한동안 뜸했더니 서먹 — 반실루엣 · <b>차단</b> · 회복=마주침/난입(우연·수동)</div></div>
+    <div class="rc">0 ≤ bond &lt; 1.5</div>
+  </div>
+  <div class="rung" style="border-color:rgba(255,255,255,.16)">
+    <div class="swatch av-cold" style="background:linear-gradient(135deg,#555,#888)">반목</div>
+    <div class="rmid"><div class="rt">반목 <span class="pill p-acc" style="margin-left:4px">신규</span></div><div class="rd">틀어진 사이 — 이름 보임·<b>탈채도(grayscale)</b>로 냉담 · <b>대화는 됨(차단 아님)</b> · 회복=사과/재회(능동+우연)</div></div>
+    <div class="rc">bond &lt; 0</div>
+  </div>
+</div>
+<p class="callout"><b>색 = 계승만.</b> 새 빨강 창작 금지(<code>design-tokens.lock</code> 게이트가 커밋 차단). 반목 = <code>--mut</code> + <b>탈채도 grayscale(1)</b> = "아는 얼굴인데 색이 빠짐" = 냉담. <code>--danger</code>/<code>--arm</code>(빨강·노랑)은 <b>앱 오류로 오독</b>되므로 금지.</p>
+
+<h2><span class="n">5</span> 역행 페르소나 — tune 축 매핑</h2>
+<p>선례가 이미 있다: <code>yReadMs</code> 가 <code>tune[7](삐짐)</code> 을 계수 140의 부정축으로 쓴다. 같은 형식으로 역행 속도·깊이·회복을 성향에서 파생한다. <b>경계심(11)은 제외</b> — 그건 접근 게이트(<code>yFarNeed</code>) 전용이라, 재사용하면 "차갑지만 의리형"(백)이 이중 페널티로 오분류된다.</p>
+<pre><code><span class="cm">// 나쁜 턴 감점 배율 — 삐짐(7)·낙차(8)↑ 쉽게·깊게 / 인내심(6)·온기(5)↑ 관대</span>
+<span class="kw">function</span> <span class="fn">yFallRate</span>(c){ <span class="kw">const</span> g=<span class="fn">yTuneCur</span>(c);
+  <span class="kw">return</span> Math.<span class="fn">max</span>(<span class="num">.3</span>, Math.<span class="fn">min</span>(<span class="num">2.5</span>, <span class="num">1</span> + g[<span class="num">7</span>]*<span class="num">.12</span> + g[<span class="num">8</span>]*<span class="num">.06</span> - g[<span class="num">6</span>]*<span class="num">.09</span> - g[<span class="num">5</span>]*<span class="num">.05</span>)); }
+<span class="cm">// 회복 배율 — 온기·인내심↑ 용서 빠름 / 삐짐·경계심↑ 뒤끝</span>
+<span class="kw">function</span> <span class="fn">yThawMul</span>(c){ <span class="kw">const</span> g=<span class="fn">yTuneCur</span>(c);
+  <span class="kw">return</span> Math.<span class="fn">max</span>(<span class="num">.4</span>, Math.<span class="fn">min</span>(<span class="num">2</span>, <span class="num">1</span> + (g[<span class="num">5</span>]+g[<span class="num">6</span>])*<span class="num">.06</span> - (g[<span class="num">7</span>]+g[<span class="num">11</span>])*<span class="num">.05</span>)); }</code></pre>
+<div class="tbl-scroll"><table>
+  <tr><th>역할</th><th>캐릭터</th><th>tune 근거</th><th>거동</th></tr>
+  <tr><td><span class="pill p-warn">역행형</span></td><td>세라</td><td>삐짐7=6 · 낙차8=10 · 인내6=3</td><td>가장 쉽게·일찍 식음 (yFallRate≈1.70)</td></tr>
+  <tr><td><span class="pill p-warn">역행형</span></td><td>루시</td><td>삐짐7=7 · 낙차8=10 · 인내6=3</td><td>낙차 최대 + 뒤끝(yThawMul≈0.78)</td></tr>
+  <tr><td><span class="pill p-cob">회복 비대칭</span></td><td>하서연</td><td>삐짐7=7 이나 인내6=7·온기5=9</td><td>"쉽게 삐지고 금방 푸는" 표본</td></tr>
+  <tr><td><span class="pill p-acc">관대형</span></td><td>홍석천·백</td><td>삐짐7=0 · 인내6=8</td><td>웬만해선 안 틀어짐 (클램프 .3 바닥)</td></tr>
+</table></div>
+
+<h2><span class="n">6</span> 반드시 막아야 할 지뢰 (레드팀 실측)</h2>
+<div class="tbl-scroll"><table>
+  <tr><th>#</th><th>지뢰</th><th>증상</th><th>처방</th></tr>
+  <tr><td>A</td><td><b>술어 붕괴 / 즉사</b></td><td>음수가 <code>yEstranged&lt;1.5</code>를 뒤집어 소원=탭 차단으로 삼킴 → 반목이 "대화 불가"로 즉사</td><td><code>yEstranged</code>에 <code>bond≥0</code> 가드 추가 → 음수는 신규 <code>yColdWar</code>로 낙하(차단 아님)</td></tr>
+  <tr><td>B</td><td><b>NaN 크래시</b></td><td>옛 세션 <code>grudge=undefined</code> → <code>NaN&lt;2.5=false</code> → <code>yStatBoost</code> 게이트 통과 → 육각 SVG 폭발</td><td>수식의 <code>(+th.grudge||0)</code> + <code>migrateV3</code> 백필</td></tr>
+  <tr><td>C</td><td><b>영구 고착</b></td><td>마주침 회복이 <code>updated</code>만 리셋 → 감점 잔존 → 반목/소원 영구</td><td>회복 이벤트가 <code>grudge</code>도 클리어/감쇠</td></tr>
+  <tr><td>D</td><td><b>이중 가산</b></td><td>웜루프·재시도가 같은 답장 재처리 → 델타면 감점 중복</td><td><b>절대값 emit</b>(누산기 금지) 또는 턴별 필드(mood 동형)</td></tr>
+  <tr><td>E</td><td><b>마커 주입</b></td><td>클라가 <code>&lt;&lt;BOND:−9&gt;&gt;</code> 위장 주입 → 무한 하락</td><td><code>yeta.js</code> stripMarkers 정규식에 <code>|BOND</code> 추가 필수</td></tr>
+  <tr><td>F</td><td><b>온기 계약 파괴</b></td><td>음수가 페르소나를 학대·모욕으로 몰면 L0 존엄·품질 존립 위반</td><td>지침에 "음수 = 냉담·거리 축, 잔인 축 아님" 명시(L1 말투 불변 계승)</td></tr>
+</table></div>
+
+<h2><span class="n">7</span> 구현 계획 (파일 · 라인)</h2>
+<div class="tbl-scroll"><table>
+  <tr><th>층</th><th>파일</th><th>지점</th><th>변경</th><th>기틀?</th></tr>
+  <tr><td>수식</td><td><code>viewer/index.html</code></td><td>2947 <code>yBond</code></td><td>감점 채널 + 대칭 감쇠 + 바닥 −12</td><td>술어</td></tr>
+  <tr><td>계층</td><td><code>viewer/index.html</code></td><td>2954 <code>yEstranged</code> · 2285 <code>grp</code></td><td><code>bond≥0</code> 가드 + <code>yColdWar</code> 신규 + 계층 분기</td><td>술어</td></tr>
+  <tr><td>스탯</td><td><code>viewer/index.html</code></td><td>2265 <code>yStatBoost</code></td><td>NaN 가드 + <b>음수 수축 미러</b>(<code>b&lt;0</code>면 온기·장난·텐션 base 밑으로)</td><td>대칭</td></tr>
+  <tr><td>육각</td><td><code>viewer/index.html</code></td><td>2253 <code>yHexSvg</code></td><td>base <b>안쪽</b> 수축 델타를 탈채도 음영으로 렌더(현재는 바깥 상승분만)</td><td>§🎨</td></tr>
+  <tr><td>표기</td><td><code>viewer/index.html</code></td><td>행 렌더 2291~</td><td>반목 문구·아바타 탈채도(<code>--mut</code>)</td><td>§🎨</td></tr>
+  <tr><td>성향</td><td><code>viewer/index.html</code></td><td>2927 부근</td><td><code>yFallRate</code>·<code>yThawMul</code> 신규(tune 파생)</td><td>주변부</td></tr>
+  <tr><td>신호</td><td><code>.github/scripts/yeta_chat.sh</code></td><td>파서 296 · 기입 350</td><td><code>&lt;&lt;BOND:±n&gt;&gt;</code> → <code>adj</code> <b>절대값 재평가·누락=보존</b>(NOTE식) · +BOND=화해 치유</td><td><b>러너</b></td></tr>
+  <tr><td>주입</td><td><code>.github/scripts/yeta_chat.sh</code></td><td>상태블록 677·937</td><td>현재 <code>adj</code>를 프롬프트에 주입(LLM 매턴 재판단 지터 차단·결정성)</td><td><b>러너</b></td></tr>
+  <tr><td>2축</td><td><code>viewer/index.html</code></td><td><code>yHurt</code> 신규 · 육각·행렌더</td><td>육각 수축·냉담은 <code>yHurt</code> 직독(완충돼도 "틀어짐" 노출 = 죽은코드 함정 해소)</td><td>대칭</td></tr>
+  <tr><td>회복로</td><td><code>viewer/index.html</code></td><td>2977 <code>yNearCalc</code></td><td>소원·반목을 마주침 회복 pool에 <b>재편입</b>(현재 estranged 제외 = 회복 차단)</td><td>술어</td></tr>
+  <tr><td>지침</td><td><code>apps/yeta/00_지침_캐릭터챗.md</code></td><td>출력 계약</td><td>언제 음수 emit할지 + 온기 가드(F)</td><td>콘텐츠</td></tr>
+  <tr><td>주입</td><td><code>functions/api/yeta.js</code></td><td>stripMarkers ~44</td><td>정규식에 <code>|BOND</code> 추가(주입 차단)</td><td><b>게이트웨이</b></td></tr>
+  <tr><td>마이그</td><td><code>yeta.js:88</code> · <code>yeta_v3.py:9</code></td><td><code>migrateV3</code></td><td>옛 세션 <code>adj</code> 백필(B) · <b>JS·Python 둘 다</b>(시뮬 동형 불변식) · 롤백용 strip 범프</td><td><b>스키마</b></td></tr>
+  <tr><td>문서</td><td><code>SCHEMA.md</code></td><td>불변식 33·4</td><td>"순수 파생" → "감점 입력 보유" 개정</td><td>정본</td></tr>
+</table></div>
+
+<div class="card" style="border-color:rgba(255,92,92,.28)">
+  <p style="margin-top:0"><b>다음 단계</b> — 이건 기틀(러너·세션 스키마·게이트웨이)이라 바로 못 짓는다.</p>
+  <ul style="margin-bottom:0">
+    <li><b>1.</b> 이 설계 승인 → <b>5인 기틀검증</b>(독립 병렬·적대 감사·전원 APPROVE 아니면 STOP)</li>
+    <li><b>2.</b> 통과 후 <b>§수정 모드</b>로 구현 → <code>check_refs</code> rc=0 → PR → main 머지 → <code>git show origin/main</code> read-back</li>
+    <li><b>3.</b> 반목 표기(탈채도)는 실물 미리보기 <b>플레이그라운드 HTML</b>로 전·후 확정 후 배선</li>
+  </ul>
+</div>
+
+<div class="foot">
+  6인 평의회(READ-ONLY·최상위 모델 병렬) 수렴 · 메인이 레포 변경의 유일 행위자 · 실측 라인 근거 · 이 문서 = <code>docs/reports/260712_친밀도음수역행_평의회설계.html</code> 정본 · 원장 = <code>docs/작업이력.md</code>
+</div>
+
+</div>
