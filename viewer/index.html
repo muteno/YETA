@@ -333,7 +333,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   .ypd-mood em { font-style:normal; font-size:var(--fs-body); line-height:1; font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif; }   /* 감정 = 이모지+라벨(선택값 · .yme-mood em 선례 축) */
   .ypd-acts { display:flex; gap:14px; margin-top:4px; }
   .ypd-act { display:flex; flex-direction:column; align-items:center; gap:4px; background:none; border:none; padding:0 3px; color:var(--fg-2); cursor:pointer; touch-action:manipulation; font:inherit; }   /* 좌우 3px = 폭 40 확보(평의회D · gap 14 잔여로 무겹침) */
-  .ypd-act i { width:var(--btn); height:var(--btn); display:grid; place-items:center; border-radius:50%; background:var(--glass); border:1px solid var(--glass-line); box-shadow:inset 0 1px 0 var(--glass-line); font-style:normal; }   /* 액션 = 글래스 원형 34(선택값 · .ycd-gear 결) */
+  .ypd-act i { width:var(--btn); height:var(--btn); display:grid; place-items:center; border-radius:50%; background:var(--glass); border:1px solid var(--glass-line); font-style:normal; }   /* 액션 = 글래스 원형 34 — .ycd-gear 선언 완전 계승(평의회C — sheen 가산 제거 = 재설계 금지) */
   .ypd-act svg { width:19px; height:19px; }
   .ypd-act span { font-size:var(--fs-meta); color:var(--mut); font-weight:var(--fw-b); }
   .ypd-act:active i { transform:scale(var(--press-m,.9)); }
@@ -341,7 +341,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   .ystk { display:flex; align-items:center; justify-content:center; flex:none; min-width:40px; min-height:40px; padding:0 2px; background:none; border:none; cursor:pointer; touch-action:manipulation; }   /* 실효 히트 ≥40(원칙16 — 시각 26 유지 · 평의회D) */
   .ystk:active { transform:scale(var(--press-m,.9)); }
   .ystk:focus-visible { outline:none; border-radius:var(--r-pill); box-shadow:0 0 0 2px rgba(var(--accent-rgb),.5); }
-  .ystk .sa { width:26px; height:26px; border-radius:50%; display:grid; place-items:center; background:rgba(var(--fg-rgb),.06); background-size:cover; background-position:center; border:2px solid rgba(18,18,18,.9); font-size:var(--fs-meta); font-weight:var(--fw-x); color:var(--yeta-ac,var(--accent)); }   /* 근처 스택 아바타 26 · 밑판 갭 테(선택값 · .yprof-cam 갭 결 = --bg 계보) · 라이브 도트 없음(선택값) */
+  .ystk .sa { width:26px; height:26px; border-radius:50%; display:grid; place-items:center; background:rgba(var(--fg-rgb),.06); background-size:cover; background-position:center; border:2px solid var(--bg); font-size:var(--fs-meta); font-weight:var(--fw-x); color:var(--yeta-ac,var(--accent)); }   /* 근처 스택 아바타 26 · 밑판 갭 테 = var(--bg) 완전 계승(.yprof-cam 동일 · 평의회C — raw 스테일 #121212 교정) · 라이브 도트 없음(선택값) */
   .ystk .sa:first-child { position:relative; z-index:1; }
   .ystk .sa + .sa { margin-left:-14px; }   /* 겹침 -14(선택값) */
   #yetaInv.yinv { left:auto; right:10px; transform-origin:top right; }   /* 초대 2차 팝업 = 우상단 앵커(스택 진입점 정합 · 팝오버 = 선택값 · 표면 .yeta-pick 정본 그대로) */
@@ -2787,8 +2787,9 @@ function yView(mode) {   // 'list' ↔ 'chat' 헤더·영역 토글
   const _a2 = $('#yetaAva2'); if (_a2) _a2.style.display = list ? 'none' : '';   // 단톡 스택 둘째도 동반 토글(합석 260707)
   $('#yside').hidden = list || !YCHARS.length;   // 좌 레일 = 챗뷰에서만(운영자 260705)
   if (!list) ySideRender();
-  const chev = $('#yetaWho').querySelector('.yw-chev'); if (chev) chev.style.display = list ? 'none' : '';
-  if (list) { $('#yetaTitle').textContent = '무음동 사람들'; $('#yetaTag').textContent = '대화할 상대를 골라'; yStopPoll(); yPickToggle(false); yInvToggle(false); yProfPop(false); }
+  const who = $('#yetaWho'), chev = who.querySelector('.yw-chev'); if (chev) chev.style.display = list ? 'none' : '';
+  if (list) { who.removeAttribute('role'); who.removeAttribute('tabindex'); } else { who.setAttribute('role', 'button'); who.setAttribute('tabindex', '0'); }   // 리스트 모드 = 버튼 시맨틱 해제(동작 없는 focusable no-op 차단 — 평의회B)
+  if (list) { $('#yetaTitle').textContent = '무음동 사람들'; $('#yetaTag').textContent = '대화할 상대를 골라'; yStopPoll(); yPickToggle(false); yInvToggle(false); yProfPop(false); try { yPdClose(); } catch (x) {} }
 }
 function yRenderList() {   // 캐릭터 = SNS 리스트(.ypick-row 계승) + 🎲 랜덤 — 미대면 = ??? 표기(진입은 yEnterChat 가드)
   $('#yetaList').innerHTML = ySortChars(YCHARS).map(c => `<button type="button" class="ypick-row" data-id="${esc(c.id)}">${yAva(c)}<span class="yp-col"><span class="yp-name">${yUnmet(c) ? `<span class="yqm">${YUNMET_NM}</span>` : esc(c.name)}${yGradeBadge(c)}${window.yPremBadge ? yPremBadge(c) : ''}</span><span class="yp-tag">${esc(c.tagline || '')}</span></span></button>`).join('')
@@ -3284,20 +3285,20 @@ function yPdClose() { const pdc = $('#yetaPdc'); if (!pdc) return; pdc.classList
 (() => {   // 드래그 추종(높이 = 손 위치) + 임계 40 판정 + 탭(<6px) 토글 — 포인터 캡처 · 마우스/터치 공용
   const who = $('#yetaWho'), pdc = $('#yetaPdc'); if (!who || !pdc) return;
   let dr = null;
-  who.addEventListener('pointerdown', e => { if (_yView !== 'chat' || e.target.closest('#yetaAva, #yetaAva2')) return; dr = { y0: e.clientY, m: 0, on: 0 }; try { who.setPointerCapture(e.pointerId); } catch (x) {} });   // 아바타 = 그래버 제외(포인터 캡처가 프사 팝오버 클릭을 삼키는 회귀 차단 — 프사 탭 = 기존 yProfPop 유지)
+  who.addEventListener('pointerdown', e => { if (_yView !== 'chat' || e.target.closest('#yetaAva, #yetaAva2')) return; dr = { y0: e.clientY, x0: e.clientX, m: 0, mx: 0, on: 0 }; try { who.setPointerCapture(e.pointerId); } catch (x) {} });   // 아바타 = 그래버 제외(포인터 캡처가 프사 팝오버 클릭을 삼키는 회귀 차단 — 프사 탭 = 기존 yProfPop 유지)
   who.addEventListener('pointermove', e => {
     if (!dr) return;
-    const dy = Math.max(0, e.clientY - dr.y0); dr.m = Math.max(dr.m, dy);
+    const dy = Math.max(0, e.clientY - dr.y0); dr.m = Math.max(dr.m, dy); dr.mx = Math.max(dr.mx, Math.abs(e.clientX - dr.x0));
     if (dy > 4 && !pdc.classList.contains('on')) {
       if (!dr.on) { if (!yPdRender()) { dr = null; return; } yProfPop(false); yPickToggle(false); yInvToggle(false); dr.on = 1; }
       pdc.classList.add('drag'); pdc.style.height = Math.min(dy, 285) + 'px';
     }
   });
   who.addEventListener('pointerup', () => {
-    if (!dr) return; const m = dr.m, live = dr.on; dr = null;
+    if (!dr) return; const m = dr.m, mx = dr.mx, live = dr.on; dr = null;
     if (live && m > 40) { yPdOpen(); return; }   // 임계 초과 = 열림(러버밴드 복귀는 아래)
     pdc.classList.remove('drag'); pdc.style.height = '';
-    if (m < 6) { pdc.classList.contains('on') ? yPdClose() : yPdOpen(); }   // 탭 = 토글(드래그+탭 = 선택값)
+    if (m < 6 && mx < 6) { pdc.classList.contains('on') ? yPdClose() : yPdOpen(); }   // 탭 = 토글(가로 드래그 = 탭 아님 — 스와이프백 미달 제스처 오발 차단 · 평의회B)
   });
   who.addEventListener('pointercancel', () => { if (dr) { dr = null; pdc.classList.remove('drag'); pdc.style.height = ''; } });
   who.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pdc.classList.contains('on') ? yPdClose() : yPdOpen(); } });   // 키보드(role=button · WCAG 2.1.1)
