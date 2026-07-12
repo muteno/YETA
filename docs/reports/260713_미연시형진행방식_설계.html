@@ -1,0 +1,272 @@
+<meta charset="utf-8">
+<title>미연시형 진행 방식 — 설계</title>
+<style>
+  :root{
+    --bg:#121212; --panel:#1a1a1a; --panel2:#202020; --line:#2c2c2c;
+    --fg:#f3f3f3; --mut:#a8a8a8; --dim:#7a7a7a;
+    --accent:#CFFF40; --cobalt:#3D6BFF; --season:#8E2DBF; --danger:#ff6b6b;
+    --keep:#7ee0a3; --kill:#ff8a8a;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Pretendard,Roboto,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    line-height:1.68;font-size:15px;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1020px;margin:0 auto;padding:40px 22px 90px}
+  header{border-bottom:1px solid var(--line);padding-bottom:22px;margin-bottom:28px}
+  h1{font-size:26px;margin:0 0 8px;letter-spacing:-.01em}
+  h1 .sub{color:var(--season);font-weight:800}
+  .lede{color:var(--mut);font-size:14.5px;margin:6px 0 0}
+  .tags{margin-top:14px;display:flex;gap:8px;flex-wrap:wrap}
+  .tag{font-size:11.5px;padding:3px 10px;border-radius:999px;border:1px solid var(--line);color:var(--mut);background:var(--panel)}
+  .tag.hot{border-color:var(--season);color:#e6c6ff}
+  h2{font-size:19.5px;margin:40px 0 12px;padding-top:8px;letter-spacing:-.01em;border-top:1px solid var(--line)}
+  h2:first-of-type{border-top:none}
+  h2 .n{display:inline-block;min-width:1.7em;color:var(--accent);font-weight:800}
+  h3{font-size:15.5px;margin:20px 0 8px;color:#eee}
+  p{margin:9px 0}
+  code{background:#0c0c0c;border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:12.5px;color:#d7e6a8;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin:14px 0}
+  .card.season{border-color:#3a2148;background:linear-gradient(180deg,#1d1526,#181818)}
+  .card.spine{border-color:#4a4020;background:linear-gradient(180deg,#211d10,#181818)}
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13.5px}
+  th,td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top}
+  th{background:var(--panel2);color:#dcdcdc;font-weight:700}
+  .keepkill{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0}
+  @media(max-width:680px){.keepkill{grid-template-columns:1fr}}
+  .kk{border-radius:12px;padding:14px 16px;border:1px solid var(--line)}
+  .kk.keep{background:linear-gradient(180deg,#14201a,#161616);border-color:#274b38}
+  .kk.kill{background:linear-gradient(180deg,#201414,#161616);border-color:#4b2727}
+  .kk h4{margin:0 0 8px;font-size:14px} .kk.keep h4{color:var(--keep)} .kk.kill h4{color:var(--kill)}
+  .kk ul{margin:0;padding-left:18px} .kk li{margin:5px 0;font-size:13.5px}
+  .red{border-left:3px solid var(--danger);background:#1e1414;padding:9px 14px;border-radius:0 10px 10px 0;margin:7px 0;font-size:13.5px}
+  .red b{color:var(--danger)}
+  .idea{border:1px solid var(--line);border-radius:11px;padding:13px 16px;margin:11px 0;background:var(--panel)}
+  .idea h4{margin:0 0 5px;font-size:14.5px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .idea .why{color:var(--mut);font-size:13px;margin:6px 0 0}
+  .idea .why b{color:#cfe0b0;font-weight:600}
+  .ph{font-size:10.5px;padding:2px 8px;border-radius:999px;font-weight:800;letter-spacing:.02em;white-space:nowrap}
+  .ph-free{background:#183a28;color:#8ff0b8} .ph-frame{background:#3a2348;color:#e2b6ff} .ph-view{background:#1c2c48;color:#a8c6ff}
+  .pill{display:inline-block;font-size:11px;padding:2px 8px;border-radius:999px;font-weight:700}
+  .p-keep{background:#183a28;color:#8ff0b8} .p-mod{background:#3a3418;color:#f0e08f} .p-kill{background:#3a1818;color:#ffb0b0}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--mut);margin:8px 0 2px}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .dot{width:9px;height:9px;border-radius:3px;display:inline-block}
+  .foot{margin-top:44px;border-top:1px solid var(--line);padding-top:16px;color:var(--dim);font-size:12px}
+  .star{color:var(--accent)}
+</style>
+
+<div class="wrap">
+<header>
+  <h1>말벗 제타 — <span class="sub">미연시형 진행 방식</span> 설계</h1>
+  <p class="lede">기존 <code>LV</code>·해금·<code>yBond</code>·마주침 축 위에 〔루트 · 이벤트 · 엔딩 · CG해금 · 선택지 · 진행 가시화〕를 얹는다 — <b>엔진 신설이 아니라, 매 턴 이미 배출되는 관계기억을 읽어 채팅 밖에 그리는 것</b>.</p>
+  <div class="tags">
+    <span class="tag hot">설계 전용 · 구현 0</span>
+    <span class="tag">컴패니언 챗 정체성 불변</span>
+    <span class="tag">비용 불변 · 2번째 dispatch 0</span>
+    <span class="tag">자유대화 대원칙</span>
+    <span class="tag">L0/policy 불가침</span>
+    <span class="tag">근거 = 레포 실측 + 평의회 3인</span>
+  </div>
+</header>
+
+<h2><span class="n">0.</span>한 줄 비전 — “관계의 침전물”</h2>
+<div class="card season">
+  <p style="font-size:16px;margin:0 0 8px"><b>“메뉴도 세이브도 게임오버도 없이 — 매 턴 <span class="star">공짜로 배출되는 관계기억</span>(<code>NOTE:ME</code>의 <code>[LV]</code>·<code>[★]</code>·<code>[사건]</code>·<code>MOOD</code>)을 ‘결(grain)’로 읽어, 자유대화는 한 글자도 안 좁힌 채 루트·사건·칭호·CG·스탯을 <span class="star">관계의 침전물</span>처럼 채팅 밖(프로필·앨범·지도)에 떠오르게 하는, ‘내가 대해온 방식이 곧 우리의 도달점’인 미연시.”</b></p>
+  <p class="note" style="color:var(--mut);font-size:13.5px;margin:10px 0 0">엔진을 새로 만들 필요가 없다. 이미 <code>dispatch 1회</code> 안에서 모델이 관계 상태를 배출 중이다 — 이건 돌아가는 진행 기계다. 설계의 정체 = <b>㉮ 배출물을 살짝 더 풍부하게</b>(같은 dispatch·서브라인 몇 줄) + <b>㉯ 결정론으로 읽어</b>(<code>yBond</code>·<code>places.py</code>·날짜연산·CSS — LLM 0회) + <b>㉰ 채팅 밖에 그린다</b>(프로필·앨범·지도). 대화는 배경 레이어만 얹히고, ‘진행하는 맛’만 남는다.</p>
+</div>
+
+<h2><span class="n">1.</span>이미 깔려 있는 미연시 DNA (인벤토리)</h2>
+<p>신설이 아니라 이 재료들의 재정의·조립이 설계의 본체다. <b>매 턴 공짜로 배출·계산되는 것들</b>이 이미 있다.</p>
+<table>
+  <tr><th>미연시 개념</th><th>이미 있는 yeta 재료</th><th>배출·저장</th></tr>
+  <tr><td>은닉 호감도 미터</td><td><code>yBond</code>(발화수×감쇠·서버 결정값) + <code>[LV 0~5]</code>(모델 판정·질적) — <b>수치 비노출이 원칙</b></td><td>매 턴 공짜</td></tr>
+  <tr><td>티어 게이팅·이벤트</td><td>카드 <code>해금 에피소드 [LV n+]</code> 4단 래더 — <b>12카드 전원 보편</b>(기틀 계약)</td><td>카드 정적</td></tr>
+  <tr><td>두 겹 플래그</td><td><code>[★]</code> 감정가중 · <code>[사건]</code> 이벤트 로그(NOTE:ME/PUB)</td><td>매 턴 공짜</td></tr>
+  <tr><td>이벤트 트리거</td><td>위치 마주침(<code>places.json</code>+<code>yeta_place.py</code> 결정론) · 합석/난입(<code>barge_check</code> 무LLM) · 시간대 <code>mode</code></td><td>결정론 계산</td></tr>
+  <tr><td>루트(캐릭터별 서사)</td><td>캐릭터별 독립 스레드 <code>threads[&lt;id&gt;]</code>(방마다 맥락 독립·기억 공유)</td><td>R2 세션</td></tr>
+  <tr><td>배드엔딩·냉각</td><td><b>역행</b>(배신 시 LV 하락) + <code>yEstranged</code> 소원 계층(<b>회복 가능</b>)</td><td>결정론+역행설계</td></tr>
+  <tr><td>CG·감정 연출</td><td><code>&lt;&lt;MOOD:base/warm/tense/blue&gt;&gt;</code> 배경 무드 크로스페이드 · 미대면 <code>???</code>+실루엣</td><td>매 턴 공짜</td></tr>
+  <tr><td>CG 갤러리 자산</td><td>시즌 미디어 매니페스트(루시 <code>media.json</code>+스틸 다수+<code>lucy_clip.mp4</code>) · 얼굴/배경/보이스 파이프</td><td>정적 에셋</td></tr>
+  <tr><td>스탯 시트</td><td>roster <code>stats</code> = <b>6원소 배열</b>(12인 전원) — 관계 육각 오버레이의 베이스</td><td>정적</td></tr>
+  <tr><td>호칭 변화(데레)</td><td>호칭 사다리(너→이름→별명, 역행 시 강등) + <code>me</code> 프로필 “AI가 나를 부르는 법”</td><td>카드+세션</td></tr>
+  <tr><td>특별 공략(레어)</td><td><code>grade</code>(루시 season·윈터 idol) · <code>locked</code> · <code>met</code>(하서연·루시만 true)</td><td>roster</td></tr>
+</table>
+
+<h2><span class="n">2.</span>설계 대원칙 — 살릴 것 / 버릴 것</h2>
+<p>적대적 실현가능성 감사(READ-ONLY·레포 실측) 결론: <b>미연시를 ‘엔진으로 신설’하면 비용·자유대화·보안 제약을 정면으로 깬다. ‘기존 축의 변형·강화’로 재정의하면 대부분 합법.</b></p>
+<div class="keepkill">
+  <div class="kk keep">
+    <h4>✓ 살린다 (컴패니언 챗과 양립)</h4>
+    <ul>
+      <li>LV 게이트 <b>이벤트</b> — 결정적·무LLM 트리거(<code>barge_check</code> 패턴)</li>
+      <li>정적 CG의 <b>클라이언트 해금</b> — 미리 만든 에셋을 단계 도달 시 개방</li>
+      <li>모델 <b>연출형 서사 정점</b> — LV5+ 관계의 절정(열린 상태 유지)</li>
+      <li>스레드=루트 · <code>yBond</code>(게이트)+LV(연출) 이중 플래그</li>
+      <li><b>침묵·부재를 관계 신호로</b> — 자유대화 챗만의 고유 강점</li>
+    </ul>
+  </div>
+  <div class="kk kill">
+    <h4>✕ 버린다 (정체성 붕괴 요인)</h4>
+    <ul>
+      <li><b>메뉴형 A/B/C 선택지</b> — 자유대화를 스크립트로 경직</li>
+      <li><b>상호배타 강제 루트</b>(A 고르면 B 잠금) — 방 독립·기억 공유와 충돌</li>
+      <li><b>비가역 터미널 엔딩</b>(game-over·방 닫힘) — 지속 관계와 충돌</li>
+      <li><b>플래그 도달 자동 CG 생성</b> — 유료 종량제 = 비용 폭탄</li>
+      <li><b>노출 수치·스탯 육성 미니게임</b> — 로맨스의 은닉성·톡결 파괴</li>
+    </ul>
+  </div>
+</div>
+<h3>레드라인 (절대 불가침 · 감사 지정)</h3>
+<div class="red"><b>①</b> 진행 판정용 <b>별도 dispatch 신설 금지</b> — 이벤트/루트/엔딩 판정은 <code>barge_check</code>처럼 결정적·무LLM이거나 그 턴의 단일 답장에 태운다(<code>char:main</code> 단일 그룹·스레드별 분기 금지 불변).</div>
+<div class="red"><b>②</b> 강제 메뉴·상호배타 루트 잠금 금지 — 진행은 대화 위 <b>배경 레이어</b>까지만, 대화를 대체하는 레일이면 안 된다.</div>
+<div class="red"><b>③</b> 플래그 도달 <b>자동 이미지 생성 금지</b> — CG는 사전 생성 정적 에셋 + 수동/상한 dispatch만, 해금은 뷰어 클라 게이트일 뿐.</div>
+<div class="red"><b>④</b> 진행 상태를 <b>레포 커밋 금지</b>(R2 세션에만) · L0 출력 계약(NOTE/MOOD) 임의 개조 금지. 새 제어 마커는 <code>stripMarkers</code> 화이트리스트 편입 + enum/숫자화 필수(유저 위조 주입 차단).</div>
+<div class="red"><b>⑤</b> 비가역 엔딩·선형 호감도 누적으로 관계 모델 대체 금지 — LV는 오르내리고 소원은 회복 가능. 지속 컴패니언 관계가 정본.</div>
+
+<h2><span class="n">3.</span>미연시 12 메커니즘 → yeta 적합도 (웹 리서치)</h2>
+<p>오토메·VN·챗형 오토메(Mystic Messenger)·AI 컴패니언(Replika) 교차 조사. <span class="pill p-keep">그대로</span> <span class="pill p-mod">변형</span> <span class="pill p-kill">폐기</span></p>
+<table>
+  <tr><th>#</th><th>메커니즘</th><th>판정</th><th>yeta 매핑</th></tr>
+  <tr><td>1</td><td>은닉 호감도 미터</td><td><span class="pill p-mod">변형</span></td><td>LV0~5가 이미 변형판 · 교훈 = <b>수치 절대 비노출</b></td></tr>
+  <tr><td>2</td><td>관계 티어 게이팅</td><td><span class="pill p-keep">그대로</span></td><td>해금 에피소드가 정확히 이것 + Replika식 <b>관계 성향축</b>(친구/연인) 추가</td></tr>
+  <tr><td>3</td><td>루트 분기·PONR</td><td><span class="pill p-mod">변형</span></td><td>방=이미 개별 루트 · 하드락→<b>끈적한 기억(soft lock)</b></td></tr>
+  <tr><td>4</td><td>이벤트 트리거(시·장소·플래그)</td><td><span class="pill p-keep">그대로 · 최강</span></td><td><code>places.json</code>·마주침·시간 인프라 이미 보유 → 즉시 확장</td></tr>
+  <tr><td>5</td><td>두 겹 플래그(수치+이진)</td><td><span class="pill p-mod">변형</span></td><td>LV(수치층)+<code>[사건]</code>(이진 플래그) — 데이터 모델로 채택</td></tr>
+  <tr><td>6</td><td>선택지 가중 증감</td><td><span class="pill p-kill">폐기</span></td><td>메뉴 없음 · 원리(“내 말이 관계를 움직임”)만 = LV 판정</td></tr>
+  <tr><td>7</td><td>침묵·부재·타임드</td><td><span class="pill p-keep">그대로 · 고유강점</span></td><td>부재=그리움/거리감 신호 · 전화/보이스톡=시간압박축</td></tr>
+  <tr><td>8</td><td>엔딩 체계</td><td><span class="pill p-mod">변형</span></td><td>종착 부적합 → <b>관계 마일스톤/장 매듭</b> · 하렘→10인 탐색</td></tr>
+  <tr><td>9</td><td>CG 마일스톤 갤러리</td><td><span class="pill p-keep">그대로(변형)</span></td><td>이미지 파이프 재사용 → 개인 앨범 해금(회차 훅 메움)</td></tr>
+  <tr><td>10</td><td>스탯 육성(Tokimeki)</td><td><span class="pill p-kill">대부분 폐기</span></td><td>스케줄 미니게임 부적합 · <b>누적·임계</b> 사상만</td></tr>
+  <tr><td>11</td><td>부정 역학(질투·역행·파국)</td><td><span class="pill p-mod">변형</span></td><td>공유세계 10인+합석=질투/소문 무대 · <b>파국은 재회와 한 쌍</b></td></tr>
+  <tr><td>12</td><td>실시간 페이싱+Caution 체크포인트</td><td><span class="pill p-keep">그대로 · 정장르</span></td><td>실시간 dispatch·웜루프·푸시·통화 보유 → 주기적 관계 체크포인트</td></tr>
+</table>
+<p class="note" style="color:var(--mut);font-size:13px"><b>컴패니언 챗 최적 상위 5 =</b> ④ 이벤트 트리거 엔진(압도적 1위·나머지가 이 위에 올라탐) · ⑫ 실시간 페이싱+Caution · ②+① 티어게이팅+은닉미터 · ⑦ 침묵·부재 신호 · ⑨ CG 마일스톤 갤러리. (⑤ 두 겹 플래그 = 이들의 데이터 모델로 내장.)</p>
+
+<div class="legend">
+  <span><span class="dot" style="background:#8ff0b8"></span> <b class="ph ph-free">공짜</b> 무추가 dispatch · 결정론/뷰어 (75% 위임 가능)</span>
+  <span><span class="dot" style="background:#e2b6ff"></span> <b class="ph ph-frame">기틀</b> 출력계약 골격 변경 (운영자 승인+5인 검증)</span>
+  <span><span class="dot" style="background:#a8c6ff"></span> <b class="ph ph-view">뷰어</b> 순수 프론트</span>
+</div>
+
+<h2><span class="n">4.</span>루트 — 메뉴 없이 방향을 갖기 <span class="pill p-mod">변형</span></h2>
+<p>유저가 뭘 <i>고른</i> 게 아니라, 계속 그렇게 <i>대해온</i> 결(grain)이 쌓여 루트가 된다.</p>
+<div class="idea"><h4>4-1. 결(grain) 서브라인 = 잠재 루트 <span class="ph ph-frame">기틀·핵심</span></h4>
+NOTE:ME 첫 줄 <code>[LV n]</code> 아래로 <code>[결:라이벌]</code>·<code>[결:다정]</code>·<code>[결:관찰자]</code>·<code>[결:정면]</code> 한 줄을 모델이 누적 태도에서 추론해 박제(같은 dispatch·토큰 몇 개).
+<p class="why"><b>왜</b>: 메뉴 0개인데 루트가 생긴다. 세라를 계속 맞받아치면 라이벌 결, 챙기면 다정 결로 해금 에피소드의 온도가 달라진다 — “내가 만든 관계”라는 미연시 최고의 쾌감.</p></div>
+<div class="idea"><h4>4-2. 호칭 사다리 = 눈에 보이는 루트 마커 <span class="ph ph-free">공짜</span></h4>
+캐릭터가 나를 부르는 법(<code>야/너</code>→이름→애칭)을 <code>[호칭:…]</code>으로 박제, 결마다 애칭이 갈림(라이벌=“야, 맞수” / 다정=이름+부드럽게). <code>me</code> “나를 부르는 법”과 맞물림.
+<p class="why"><b>왜</b>: 루트 진행이 <b>호칭 한 단어</b>로 매 턴 체감. 이미 있는 me축을 진행 게이지로 승격 — 추가 UI 0.</p></div>
+<div class="idea"><h4>4-3. 초반 3~5턴 = 인상 각인창 <span class="ph ph-free">공짜</span></h4>
+카드 <code>relationship</code>이 출발점이듯 첫 몇 턴을 결 판정에 가중(STATE_BLOCK “아직 인상 형성 중” 힌트). 첫인상이 이후 결의 기울기를 크게 정함.
+<p class="why"><b>왜</b>: “처음이 중요하다”는 긴장을 선택지 화면 없이. 재방문(reset)마다 다른 결 = 리플레이성.</p></div>
+<div class="idea"><h4>4-4. tunes(L2)가 루트 색을 미리 칠함 <span class="ph ph-free">공짜</span></h4>
+유저가 tune을 따뜻하게 밀면 다정 결이, 날카롭게 밀면 라이벌 결이 도달하기 쉬운 소프트 바이어스(러너가 tune 배열 읽어 STATE_BLOCK 한 줄).
+<p class="why"><b>왜</b>: 루트 주도권을 메뉴가 아니라 <b>성향 슬라이더</b>로 — 자유대화 대원칙과 충돌 0.</p></div>
+<div class="idea"><h4>4-5. 안티루트 = 실패가 아니라 다른 결 <span class="ph ph-free">공짜</span></h4>
+차갑게·적대적으로 일관해도 game-over가 아니라 앙숙/라이벌/츤데레-상호 같은 <b>정당한 관계 텍스처</b>로 침전(<code>yEstranged</code>가 메커니즘).
+<p class="why"><b>왜</b>: 오답이 없다. 어떤 일관된 태도든 읽히는 관계가 되니 유저가 겁 없이 자기답게 — 컴패니언 챗 정체성 그대로.</p></div>
+
+<h2><span class="n">5.</span>이벤트 — 경직 트리거 없이 ‘발견’으로 <span class="pill p-mod">변형(핵심 지뢰)</span></h2>
+<p>이벤트가 “발사”가 아니라 “발견”으로 온다. 모든 트리거는 결정론·무LLM(러너) + STATE_BLOCK 주입 → 그 턴의 단일 dispatch가 연출. <b>2번째 dispatch 0.</b></p>
+<div class="idea"><h4>5-1. STATE_BLOCK ‘오늘의 계기’ 시드 <span class="ph ph-frame">기틀-근접</span></h4>
+<code>날짜+bond+장소</code> 결정론 시드가 앰비언트 훅 하나(날씨·기념일·마주침)를 기존 프롬프트에 주입(회상의 확장판). 모델은 <b>꺼낼지 말지 스스로 판단</b>.
+<p class="why"><b>왜</b>: 경직 트리거 특유의 삐걱임 없이 사건이 자연 발생. 새 dispatch 0.</p></div>
+<div class="idea"><h4>5-2. 기념일 = <code>[사건]</code>·<code>[★]</code> 타임스탬프 회귀 <span class="ph ph-free">공짜</span></h4>
+이미 감정가중된 <code>[★]고백</code>·<code>[사건]다툼</code> 줄에 서버가 날짜연산만 얹어(“그날로부터 딱 한 달”) 계기 힌트로 주입.
+<p class="why"><b>왜</b>: 세상에 없던 나만의 기념일. 스크립트 이벤트를 유저-고유 로그로 대체 — 개인화 최상·비용 0.</p></div>
+<div class="idea"><h4>5-3. 위치 마주침 × 해금 게이트 = 무대 정렬 <span class="ph ph-free">공짜</span></h4>
+<code>places.py</code> 마주침이 LV 문턱과 겹칠 때 사건으로 승격. 세라 <code>[LV5+]</code> “무대 위 세라”가 옥상 마주침과 정렬되면 그게 곧 CG 이벤트 무대.
+<p class="why"><b>왜</b>: 있는 두 시스템(마주침+해금) 융합으로 “그 장소에서 그 일이 열렸다”는 필연. 신규 로직 최소.</p></div>
+<div class="idea"><h4>5-4. 시간대 변신(mode) = 하루 리듬 이벤트 <span class="ph ph-free">공짜</span></h4>
+백·루시의 <code>mode</code>(밤/낮 변신)를 앰비언트로 노출해 밤에만 열리는 결·심야 라디오(세라가 매일 듣는) 같은 반복 이벤트를 시계로 발생.
+<p class="why"><b>왜</b>: 하루 시간대가 콘텐츠가 된다. “밤에 만나러 가는” 리듬 = 미연시 시간표 감각을 공짜로.</p></div>
+<div class="idea"><h4>5-5. 역행 = 위기 이벤트, 재회 = 페이오프 <span class="ph ph-free">공짜</span></h4>
+bond 하락이 숫자로만 끝나지 않고 “소원해진 정적” 앰비언트 주입 → 화해-마주침이 이벤트가 되고 <b>재회가 보상</b>.
+<p class="why"><b>왜</b>: 갈등이 죽은 끝이 아니라 서사의 산. 역행을 다룰 줄 아는 미연시는 드물다 — 여기선 공짜로.</p></div>
+
+<h2><span class="n">6.</span>엔딩 — game-over 없이 ‘칭호’라는 지속 상태 <span class="pill p-mod">재정의</span></h2>
+<div class="idea"><h4>6-1. 관계 칭호 = 종료 아닌 진입 상태 <span class="ph ph-frame">기틀</span></h4>
+LV5 지속 시 NOTE:ME에 <code>[칭호:연인]</code>·<code>[소울메이트]</code>·<code>[절친]</code>·<code>[스승-제자]</code>·<code>[필생의 맞수]</code>·<code>[절연]</code>이 결정화되고 배지로 노출. <b>끝나는 화면이 아니라 들어가 있는 방</b>.
+<p class="why"><b>왜</b>: “엔딩 봤다”의 카타르시스를 주면서 챗은 안 죽는다. 컴패니언의 근본 제약을 미연시 문법으로 푼 지점.</p></div>
+<div class="idea"><h4>6-2. 분기 = 결 × 최고 LV 교차표 <span class="ph ph-free">공짜</span></h4>
+도달 칭호 = (4장의 지배 결)×(최고 bond) 결정론 매핑. 라이벌 결+LV5=필생의 맞수, 다정 결+LV5=연인/소울메이트.
+<p class="why"><b>왜</b>: 4장의 루트가 6장의 엔딩으로 회수되며 한 시스템으로 닫힘 — “내가 대해온 방식이 곧 도달점”.</p></div>
+<div class="idea"><h4>6-3. 절연 = 정당한 엔딩 + 재회로(路) <span class="ph ph-free">공짜</span></h4>
+깊은 배신은 <code>[절연]</code>(차갑고 닫힌 텍스처)로 가되, 마주침 재회로 회복 경로가 열림. “졌다”가 아니라 <b>하나의 결말이자 다시 여는 문</b>.
+<p class="why"><b>왜</b>: game-over 금지를 정면으로 지킴. 배신이 실패가 아니라 콘텐츠.</p></div>
+<div class="idea"><h4>6-4. 회차 없이 앙상블 엔딩 <span class="ph ph-free">공짜</span></h4>
+방이 캐릭터별·기억 공유라 한 명과 연인·다른 명과 스승 엔딩을 <b>동시 보유</b>. 루트락 없고 합석이 그 공존을 보여줌.
+<p class="why"><b>왜</b>: 강제 일부일처/루트락 없는 앙상블. 컴패니언의 다관계성을 엔딩까지 확장.</p></div>
+<div class="idea"><h4>6-5. 에필로그 = 살아있는 회상 <span class="ph ph-free">공짜</span></h4>
+도달 칭호가 회상을 가끔 트리거(“우리 그때…” <code>[★]</code> 마일스톤 재생) = 정지된 카드가 아니라 숨 쉬는 에필로그.
+<p class="why"><b>왜</b>: 회상 메커니즘 재탕으로 엔딩이 박제되지 않고 여운으로 이어짐.</p></div>
+
+<h2><span class="n">7.</span>CG 해금 — 있는 에셋을 마일스톤 보상으로 <span class="pill p-mod">변형(무과금 우선)</span></h2>
+<div class="idea"><h4>7-1. 얼굴 = 실루엣 → 선명 (이미지 1장 + CSS) <span class="ph ph-view">뷰어</span></h4>
+미대면 <code>???</code>+실루엣이 이미 있으니, <b>같은 avatar</b>에 blur/brightness 필터를 LV로 단계 해제(실루엣→흐림→선명). “처음 얼굴을 또렷이 본 순간”이 CG.
+<p class="why"><b>왜</b>: 미연시 정석 “캐릭터 등장 CG”를 이미 있는 이미지 1장+CSS로. 무과금·즉시.</p></div>
+<div class="idea"><h4>7-2. 무드 배경 = 감정 CG <span class="ph ph-free">공짜</span></h4>
+bg가 이미 warm/tense/blue 배리언트 보유. 고백·LV업 순간에 특별 무드-bg를 “장면 CG”로 고정 노출(옥상 배경 at LV5).
+<p class="why"><b>왜</b>: MOOD bg가 이미 존재 → 이벤트 CG로 용도 전환. 추가 생성 0.</p></div>
+<div class="idea"><h4>7-3. 보이스 = LV 게이트 첫 수신 <span class="ph ph-view">뷰어틀</span></h4>
+haeun <code>el:</code> 음색·걸려오는 전화 파이프가 이미 있음. <b>“처음 목소리를 듣는 순간”</b>을 LV 마일스톤 뒤로 게이트(TTS 유료지만 일 상한이 이미 가드).
+<p class="why"><b>왜</b>: “첫 보이스”는 관계 각인의 정점. 있는 음성축을 보상 타이밍으로만 재배치.</p></div>
+<div class="idea"><h4>7-4. 특별 스틸 = grade 감정배경/젬 배지 <span class="ph ph-free">공짜</span></h4>
+lucy(season 보라 감정배경)·winter(idol 실버 젬)의 등급 비주얼을 마일스톤 해제 = “프리미엄 CG”. 이미 만들어진 에셋.
+<p class="why"><b>왜</b>: 등급 아트를 스페셜 스틸 언락으로 재활용 — 완성품 재탕.</p></div>
+<div class="idea"><h4>7-5. 앨범(갤러리) = CG 도감 <span class="ph ph-view">뷰어</span></h4>
+해제한 얼굴/무드bg/보이스/배지를 모은 갤러리, 미해제분은 실루엣 티저(<code>[LV4+] ???</code>). 미연시의 “CG 도감”.
+<p class="why"><b>왜</b>: 수집·완성 욕구를 신규 에셋 0으로. “다음 CG 뭐지”가 진행 동력(챗에 없던 회차 훅).</p></div>
+
+<h2><span class="n">8.</span>선택지 — 소프트, 메뉴 없이 <span class="pill p-kill">원형 불가 / 변형만</span></h2>
+<div class="card">
+<ul style="margin:0;padding-left:20px">
+<li><b>유저 지문이 곧 선택</b> <span class="ph ph-free">공짜</span> — <code>(…)</code>·<code>*…*</code> = 실제 행위(운영자 260712 계약)가 이미 “선택”이다. 리터럴 A/B/C 메뉴는 폐기.</li>
+<li><b>비강제 제안 pill</b> <span class="ph ph-view">뷰어</span> — UI가 선택지를 원하면 탭 시 그 텍스트를 <b>유저 발화로 send</b>하는 제안 pill만. 분기 잠금 없음(스킵해도 무방).</li>
+<li><b>결정적 순간의 무게</b> <span class="ph ph-free">공짜</span> — 고백·배신·비밀공유 같은 관계 정의적 발화는 <code>[★]</code>·<code>[사건]</code>으로 기억에 박제돼 <b>대충 되돌려지지 않음</b>(soft lock = 미연시 PONR의 톡결 재해석).</li>
+<li><b>침묵·부재도 선택</b> <span class="ph ph-free">공짜</span> — 오랜 부재를 캐릭터가 그리움·서운함·거리감으로 읽음(<code>yEstranged</code>). 메뉴형 VN이 절대 못 하는 몰입 수단.</li>
+</ul>
+</div>
+
+<h2><span class="n">9.</span>진행 가시화 — 채팅은 순수, 대시보드는 옵트인 <span class="pill p-mod">변형</span></h2>
+<div class="idea"><h4>9-1. 관계 육각 = 고정 육각 위 진도 오버레이 <span class="ph ph-view">뷰어</span></h4>
+roster 정적 <code>stats[6]</code>(캐릭터 본성)은 그대로, 그 위에 NOTE:ME 파생 <b>관계 육각</b>(신뢰·설렘·편안·긴장·이해·역사) 오버레이. 프로필 시트(⚙·롱프레스)에만 — <b>채팅 스트림엔 절대 안 넣음</b>.
+<p class="why"><b>왜</b>: 6원소 배열이 이미 있으니 육각 위젯 재활용. RPG 스탯시트 쾌감을 옆칸에, 대화 방해 0.</p></div>
+<div class="idea"><h4>9-2. 관계 단계 = 아바타 링/pip <span class="ph ph-view">뷰어</span></h4>
+LV를 이름 옆 미세 링/점(등급 링 패턴)으로, bond 자라며 차오름. 채팅 안 숫자 대신 글랜서블 앰비언트 큐.
+<p class="why"><b>왜</b>: 진행이 곁눈에 늘 보이되 대화 침범 0. 기존 링 UI 재활용.</p></div>
+<div class="idea"><h4>9-3. 해금 목록 = 카드 뒷면(flip) 도감 <span class="ph ph-view">뷰어</span></h4>
+카드를 뒤집으면 해금 에피소드 체크리스트(잠긴 건 <code>[LV3+] ???</code> 티저). 12카드 전원의 <code>[LVn+]</code> 4단을 그대로 목록화.
+<p class="why"><b>왜</b>: “다음 목표”를 채팅 밖 지도로(공략집 감). 데이터는 이미 카드에.</p></div>
+<div class="idea"><h4>9-4. 루트 지도 = 무음동 지도 위 관계선 <span class="ph ph-view">뷰어</span></h4>
+이미 있는 무음동 지도(좌표 확정·아이소메트릭 시안)에 내 관계선 오버레이(색·굵기=bond, 선 스타일=결). <b>루트 지도가 곧 동네 지도.</b>
+<p class="why"><b>왜</b>: 지도 에셋 재활용으로 문자 그대로의 루트 시각화 — 관계도+오픈월드 동시.</p></div>
+<div class="idea"><h4>9-5. 채팅 내부 = 앰비언트로만 (지배 원칙) <span class="ph ph-free">공짜</span></h4>
+채팅 안 진행은 <b>오직 앰비언트</b> — bg 무드 전환·호칭 변화·문장 길이 성장·링 차오름. 팝업/토스트/숫자 금지. 하드 수치는 전부 옵트인 표면(프로필·앨범·지도). LV업 축하는 기존 <b>소멸형 pill</b>로 비모달.
+<p class="why"><b>왜</b>: <b>이 원칙이 자유대화를 지키는 방어선.</b> 대화는 순수, 게이지질은 대시보드로 격리 — “미연시인데 대화가 안 좁는다”의 실현점.</p></div>
+
+<h2><span class="n">10.</span>척추 — 이 설계의 유일한 기틀 변경 <span class="pill p-kill">승인 필요</span></h2>
+<div class="card spine">
+  <p style="margin:0 0 8px"><b>5축 전체의 척추 = NOTE:ME 서브라인 3종 신설</b> — <code>[결:…]</code>(루트) · <code>[칭호:…]</code>(엔딩) · <code>[호칭:…]</code>(데레 마커). 이게 <b>L0 출력 계약 골격 변경</b>이라 유일하게 <b>운영자 승인 + 5인 교차검증</b>이 필요하다.</p>
+  <ul style="margin:6px 0 0;padding-left:20px;font-size:13.5px">
+    <li>이 한 스키마 확장만 승인되면 <b>나머지 대부분은 뷰어/결정론</b>(공짜·75% 위임 가능).</li>
+    <li>보안 필수: 새 서브라인은 <code>stripMarkers</code> 화이트리스트 편입 + <b>fresh 모델 출력(OUT)만 스캔</b>(유저 hist/pending 스캔 금지 = 위조 주입 차단).</li>
+    <li>비용: 서브라인은 <b>같은 dispatch 안</b> 토큰 몇 개 · 2번째 호출 0. 계기 시드도 기존 STATE_BLOCK 주입이지 새 호출 아님.</li>
+    <li>자유대화·L0: 모델은 결·칭호를 <b>강제 발화 안 함</b>(전부 소프트 바이어스 + 채팅 밖 시각화). 해금 게이트는 이미 소프트.</li>
+  </ul>
+</div>
+
+<h2><span class="n">11.</span>구현 위상 요약 (승인 라우팅)</h2>
+<table>
+  <tr><th>위상</th><th>무엇</th><th>절차</th></tr>
+  <tr><td><span class="ph ph-frame">기틀</span></td><td>NOTE:ME <code>[결:]</code>·<code>[칭호:]</code>·<code>[호칭:]</code> 서브라인 + <code>stripMarkers</code> 화이트리스트</td><td>운영자 승인 → 5인 기틀검증 → 러너/게이트웨이 배선</td></tr>
+  <tr><td><span class="ph ph-free">공짜</span></td><td>결정론 읽기(<code>yBond</code>·<code>places.py</code>·날짜·tune)·계기 시드·기념일·역행 앰비언트</td><td>러너 사이드카(무LLM) — 75% 위임 가능</td></tr>
+  <tr><td><span class="ph ph-view">뷰어</span></td><td>관계 육각·아바타 링·해금 도감·루트 지도·CG 앨범·실루엣→선명 필터·제안 pill</td><td>순수 프론트(<code>:root</code> 토큰·CII 컴포넌트 계승 §🎨) — 75% 위임 가능</td></tr>
+  <tr><td>정적 에셋</td><td>CG(무드bg·등급 스틸·첫 얼굴·첫 보이스)</td><td>사전 생성·수동/상한 dispatch만 · 런타임 생성 금지</td></tr>
+</table>
+<p class="note" style="color:var(--dim);font-size:12.5px">이 문서 = 설계·개념만(구현 0). 실코드는 별도 세션 + 위 절차대로. 척추(NOTE:ME 서브라인) 승인이 5축의 첫 단추.</p>
+
+<div class="foot">
+  말벗 제타 · 미연시형 진행 방식 설계 (설계 전용 · 구현 0) · 근거 = 레포 실측 + READ-ONLY 평의회 3인(미연시 12메커니즘 웹 리서치 · 실현성 적대감사 · 크리에이티브 “관계의 침전물”) · 상세 경위 = <code>docs/작업이력.md</code>
+</div>
+</div>
