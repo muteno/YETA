@@ -1,0 +1,128 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>페르소나 알고리즘 웹 실증 검증 — 5인 리서치</title>
+<style>
+  :root{--bg:#121212;--panel:#181818;--panel2:#1f1f1f;--line:rgba(255,255,255,.09);--fg:#f4f4f4;--fg2:#b8b8b8;--mut:#8b8b8b;--accent:#CFFF40;--cobalt:#3D6BFF;--danger:#ff5c5c;--arm:#ffd93d;--r:14px}
+  *{box-sizing:border-box}html,body{margin:0}
+  body{background:var(--bg);color:var(--fg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;line-height:1.62;-webkit-font-smoothing:antialiased;padding:0 0 80px}
+  .wrap{max-width:1000px;margin:0 auto;padding:0 20px}
+  header{padding:44px 0 26px;border-bottom:1px solid var(--line);margin-bottom:8px}
+  .kick{color:var(--accent);font-weight:700;letter-spacing:.04em;font-size:12.5px;text-transform:uppercase}
+  h1{font-size:28px;line-height:1.25;margin:.32em 0 .28em;letter-spacing:-.01em}
+  .sub{color:var(--fg2);font-size:15px;margin:0}
+  .meta{color:var(--mut);font-size:12.5px;margin-top:14px;display:flex;gap:8px 18px;flex-wrap:wrap}.meta b{color:var(--fg2);font-weight:600}
+  h2{font-size:19px;margin:36px 0 12px;padding-top:10px;display:flex;align-items:center;gap:10px}
+  h2 .n{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:8px;background:var(--accent);color:#111;font-size:14px;font-weight:800;flex:none}
+  h3{font-size:15.5px;margin:20px 0 8px}
+  p{margin:.5em 0}.lead{font-size:16px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px;margin:14px 0}
+  .verdict{background:linear-gradient(180deg,rgba(207,255,64,.09),rgba(207,255,64,.02));border-color:rgba(207,255,64,.28)}
+  .pill{display:inline-block;font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:999px;margin:1px 3px 1px 0}
+  .p-acc{background:rgba(207,255,64,.16);color:var(--accent);border:1px solid rgba(207,255,64,.3)}
+  .p-cob{background:rgba(61,107,255,.16);color:#8ea9ff;border:1px solid rgba(61,107,255,.3)}
+  .p-warn{background:rgba(255,92,92,.14);color:#ff8f8f;border:1px solid rgba(255,92,92,.3)}
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px;border-radius:10px;overflow:hidden}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{background:var(--panel2);color:var(--fg2);font-weight:600;font-size:11.5px;text-transform:uppercase;letter-spacing:.03em}
+  td code,p code,li code{background:#0c0c0c;border:1px solid var(--line);border-radius:6px;padding:1px 6px;font-size:12px;color:var(--accent)}
+  .tbl-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  ul{margin:.4em 0;padding-left:20px}li{margin:.3em 0}
+  a{color:#8ea9ff;text-decoration:none;word-break:break-all}a:hover{text-decoration:underline}
+  .callout{border-left:3px solid var(--accent);padding:4px 0 4px 15px;margin:14px 0;color:var(--fg2)}
+  .callout.warn{border-color:var(--danger)}.callout.warn b{color:#ff8f8f}
+  .star{color:var(--accent)}
+  .foot{margin-top:40px;padding-top:18px;border-top:1px solid var(--line);color:var(--mut);font-size:12.5px}
+</style>
+
+<header><div class="wrap">
+  <div class="kick">5인 웹 리서치 평의회 · 외부 실증 교차검증</div>
+  <h1>페르소나 알고리즘 — 웹 실증 검증 + 개선 7</h1>
+  <p class="sub">"이 페르소나 알고리즘이 yeta의 핵심 · 진짜같아야 한다"(운영자) — 우리 설계를 학술·업계 실증과 대조했다.</p>
+  <div class="meta">
+    <span><b>범위</b> 성격모델 · 친밀도시스템 · 상처회복심리 · 페르소나일관성 · 호칭언어</span>
+    <span><b>판정</b> 대체로 실증 뒷받침 · 개선 7개 도출</span>
+  </div>
+</div></header>
+
+<div class="wrap">
+
+<div class="card verdict">
+  <p class="lead" style="margin-top:0"><b>결론.</b> yeta의 [2축 역행·완충·관통·히스테리시스·저작렌즈·티어토큰·상태블록·호칭라더]는 <b>학술·업계 실증과 정확히 정합</b>한다 — 임의 설계가 아니라 선례가 있다. 5인이 공통으로 짚은 <b>개선 7개(A~G)</b>가 이 리서치의 실질 수확이다.</p>
+</div>
+
+<h2><span class="n">1</span> 주제별 종합 — 우리 설계 판정</h2>
+<div class="tbl-scroll"><table>
+  <tr><th>주제</th><th>핵심 실증</th><th>우리 설계 판정</th></tr>
+  <tr><td><b>성격 모델</b></td><td>강한 모델은 자연어 성격 서술만으로 일관성 73.98%(약모델 13.83%) · 표층/심층 분리·대사 라벨 금지 = 표준 · 애니어그램 비검증(저작 스캐폴드만)</td><td class="p-acc">✅ "카드 레일·코드0" 최적 경로 확인</td></tr>
+  <tr><td><b>친밀도 시스템</b></td><td>위반이력↔협력점수 별도추적(arxiv 2510.24909) · 완충=스타듀 만렙패턴 · Persona 3 역행이 "불쾌"→P5 삭제</td><td class="p-cob">✅ 2축 정합 · ⚠️ 처벌감=이탈 경고</td></tr>
+  <tr><td><b>상처·회복 심리</b></td><td>완충=Gottman PSO(5:1) · 용서억제 최강=고의성 r=−.49 · 사과 부분 r=.42 · 신뢰 비대칭 · 감쇠 이원화(감정 지수/신뢰 sticky)</td><td class="p-cob">✅ 완충·비대칭 강함 · 관통은 의도로 보정 필요</td></tr>
+  <tr><td><b>페르소나 일관성</b></td><td>드리프트=어텐션 감쇠·재주입(SPR)이 유일 정답(+25%) · 롤플레이 탈옥 89.6% · Narrator Mode&gt;하드거부 · 큰모델 드리프트↑</td><td class="p-acc">✅ 티어토큰·상태블록·L0 정합 · 개선 3</td></tr>
+  <tr><td><b>호칭·언어</b></td><td>호칭변화=관계신호(T-V·부부6단계) · demand-withdraw 별개(PNAS) · 한국어 "너"=이미 각 · 전환은 계기 이벤트 동반</td><td class="p-warn">△ 방향 옳으나 역행 2트랙 누락</td></tr>
+</table></div>
+
+<h2><span class="n">2</span> 개선 7개 (설계 반영)</h2>
+
+<div class="card">
+  <span class="pill p-acc"><span class="star">★</span> A · 관통 = 의도 게이트</span>
+  <p style="margin-bottom:0">완충을 뚫는 기준은 <b>상처 크기(SHOCK)만이 아니라 "의도(고의성)"</b>다. Fehr 메타분석(175연구·26k명): 용서 억제 최강 요인 = 고의성 <code>r=−.49</code>. → <b>실수</b>는 완충·빠른 회복, <b>고의</b>(가치관 위반·배신)만 관통·깊고 느린 회복. 티어토큰에 <code>&lt;&lt;HURT:betray&gt;&gt;</code>(고의) vs <code>&lt;&lt;HURT:slight&gt;&gt;</code>(실수) 구분 = 이미 반영된 축을 <b>의도 기준으로 명문화</b>.</p>
+</div>
+<div class="card">
+  <span class="pill p-acc"><span class="star">★</span> B · 역행 = 처벌 아닌 서운함</span>
+  <p style="margin-bottom:0">Persona 3의 관계 역행(리버스/브레이크)은 가장 사실적이었으나 <b>"상호작용이 불쾌"해서 P4 완화·P5 전면 삭제</b>. AI컴패니언 감정조종(죄책감·만류)은 참여 14배↑지만 동력이 분노 → 이탈. → 역행은 <b>캐릭터의 자연스런 서운함</b>이어야지 유저를 벌주거나 죄책감으로 붙잡는 dark pattern이면 안 된다. UX 위원 "온기 계약"의 외부 실증.</p>
+</div>
+<div class="card">
+  <span class="pill p-acc"><span class="star">★</span> C · 호칭 역행 2트랙 (애니어그램 직결)</span>
+  <p style="margin-bottom:8px">관계 악화 언어는 <b>한 방향이 아니라 두 갈래</b>(demand-withdraw, PNAS): <b>폭발형</b>(공격: 너→야→욕) vs <b>냉각형</b>(철회·재격식화: 반말→<b>존댓말 복원</b>→무호칭). 한국어에서 존댓말 복원 = 최고 냉대. 현 라더(너→야→무호칭)는 폭발형만 있었다.</p>
+  <div class="tbl-scroll"><table style="margin:0">
+    <tr><th>트랙</th><th>역행 라더</th><th>유형(배정 연동)</th></tr>
+    <tr><td><b>폭발형</b></td><td>이름 → 너 → 야 → (욕·독설)</td><td>8도전·7열정·(3성취)</td></tr>
+    <tr><td><b>냉각형</b></td><td>이름 → 너 → <b>존댓말 복원</b> → 무호칭·침묵</td><td>5탐구·9평화·1개혁·6충성·4개인</td></tr>
+  </table></div>
+  <p style="margin:8px 0 0">+ 상승 라더도 4단 보강: <code>씨 → 이름 → 이름+아/야 → 애칭</code>. ⚠️ "너"는 중립 아닌 <b>1단 냉각</b>으로(한국어는 친해도 이름). 전환은 계기 이벤트(트리거 대사) 동반해야 자연스럽다.</p>
+</div>
+<div class="card">
+  <span class="pill p-cob">D · 완충=잔고 · 사과=부분회복</span>
+  <p style="margin-bottom:0">완충 = 관계 sentiment 잔고(Gottman <b>5:1</b> 앵커) — 고관계는 중립도 호의로 override, 저관계는 부정 override. 사과는 <b>부분 회복(r≈.42)</b>이지 완전 리셋 아님 → 회복모델 ㉮에 "사과=부분 상쇄" 반영. <b>단 5:1은 앵커일 뿐 상수 아님</b>(재현성 논란).</p>
+</div>
+<div class="card">
+  <span class="pill p-cob">E · 상태블록 말미 · L0 Narrator Mode</span>
+  <p style="margin-bottom:0">① 상태블록(<code>yHurt</code>·관계온도·호칭)은 <b>프롬프트 말미(생성 직전)</b>에 둬야 최신성 편향으로 어텐션을 받는다 — 앞부분 카드주입만으론 후반 턴 희석. ② L0 메타차단("나는 AI")을 <b>하드거부→서사 내 우회(Narrator Mode)</b>로 — 하드거부가 오히려 재탈옥 유발(롤플레이 탈옥 89.6%).</p>
+</div>
+<div class="card">
+  <span class="pill p-cob">F · 관통 등급제 · 영구는 절대선만</span>
+  <p style="margin-bottom:0">Maj'Eyal = 일반 적대는 시간 자동회복 / 아군 살해만 영구. → 우리 관통은 <b>"급락 + 긴 회복로"</b>, 영구 단절(절연)은 <b>절대선 위반에만</b>(이미 절연 기각과 정합). 회복로는 항상 존재.</p>
+</div>
+<div class="card" style="border-color:rgba(255,92,92,.28)">
+  <span class="pill p-warn">G · 놓친 벡터 (안전·품질)</span>
+  <ul style="margin:6px 0 0">
+    <li><b>opus 드리프트</b>: 큰 모델일수록 정체성 붕괴↑(arXiv 2412.00804) → 기본 opus 4.8 vs sonnet 다이얼 <b>일관성 A/B 관측</b> 권장.</li>
+    <li><b>notes 허구 누적</b>: 모델이 지어낸 자기설정이 <code>notes</code>/<code>note_pub</code> 전방공유로 복리 오염 → note 쓰기 검증.</li>
+    <li><b>다턴 점진 탈옥</b>: <code>stripMarkers</code>·길이캡은 라운드 누적 공격 못 막음 → 역할-질의 충돌 시 <b>in-fiction 거절</b>(declined 모델을 유해축까지 확장).</li>
+  </ul>
+</div>
+
+<h2><span class="n">3</span> 신뢰 소스 (교차검증)</h2>
+<div class="tbl-scroll"><table>
+  <tr><th>영역</th><th>핵심 출처</th></tr>
+  <tr><td>성격 일관성</td><td>arXiv 2402.14879(Big5 주입 73.98%) · 2412.00804(큰모델 드리프트) · 2402.10962(드리프트=어텐션)</td></tr>
+  <tr><td>용서·완충</td><td>Fehr 2010 메타분석(pubmed 20804242) · Gottman PSO·5:1(gottman.com)</td></tr>
+  <tr><td>신뢰 히스테리시스</td><td>arXiv 2510.24909(위반이력 별도추적) · 신뢰 비대칭</td></tr>
+  <tr><td>게임 관계 시스템</td><td>Persona 소셜링크(gamedeveloper.com) · 스타듀 위키 · Maj'Eyal · Replika</td></tr>
+  <tr><td>탈옥·안전</td><td>RoleBreak(arXiv 2409.16727·Narrator Mode) · Lakera(롤플레이 89.6%)</td></tr>
+  <tr><td>호칭 사회언어학</td><td>Brown&amp;Gilman T-V · demand-withdraw(PNAS 2114737119) · 한국어 반말(migaku)</td></tr>
+</table></div>
+
+<h2><span class="n">4</span> 실증의 한계 (과신 금지)</h2>
+<ul>
+  <li><b>Gottman 5:1</b> = thin-slicing 재현성 논란 → 앵커로만, 상수 취급 금지.</li>
+  <li><b>회복 곡선</b> = 대부분 횡단 상관(용서 양) — 연속 시간궤적은 측정 아닌 추론.</li>
+  <li><b>감쇠 함수</b>(지수·tanh) = 인간 데이터 피팅 아닌 공학 관례("그럴듯함"≠"측정됨").</li>
+  <li><b>애니어그램</b> = 비검증·신비주의 기원 → 저작 스캐폴드로만, "과학적 진실" 취급 금지.</li>
+  <li><b>"신뢰 10배" 류</b> = 대중 출처 과장 · 방향성만 신뢰.</li>
+</ul>
+
+<div class="foot">
+  5인 웹 리서치(READ-ONLY·WebSearch/WebFetch 교차검증) · 역행 설계 = <code>260712_친밀도음수역행_평의회설계.html</code> · 배정 = <code>260712_페르소나_애니어그램_배정_설계.html</code> · 이 문서 = <code>260712_페르소나_웹실증_검증.html</code>
+</div>
+
+</div>
