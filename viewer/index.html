@@ -881,7 +881,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   .ymis-play { position:relative; }
   .ymis-play::before { content:''; position:absolute; inset:-5px; border-radius:50%; }   /* 히트슬롭 40(원칙16 · 이웃 칩 = 비인터랙티브라 겹침 0) */
   .ymis-play svg { width:14px; height:14px; transform:translateX(1px); }   /* 재생 삼각 광학 1px 보정(예외축) */
-  .ymis-disk { position:absolute; right:14px; top:-13px; width:98px; height:98px; border-radius:50%; display:grid; place-items:center; font-size:var(--fs-h2); font-weight:var(--fw-x); color:var(--fg-2); background:rgba(255,255,255,.05); background-size:cover; background-position:center; border:2px solid rgba(var(--accent-rgb),.28); box-shadow:0 10px 24px rgba(0,0,0,.35); pointer-events:none; }   /* 캐릭터 디스크 98·돌출 13(선택값) — 카드 위 걸침 = 레퍼런스 결 */
+  .ymis-disk { position:absolute; right:14px; top:-13px; width:98px; height:98px; border-radius:50%; display:grid; place-items:center; font-size:var(--fs-h2); font-weight:var(--fw-x); color:var(--fg-2); background:rgba(255,255,255,.06); background-size:cover; background-position:center; border:2px solid rgba(var(--accent-rgb),.28); box-shadow:0 10px 24px rgba(0,0,0,.35); pointer-events:none; }   /* 캐릭터 디스크 98·돌출 13(선택값) — 카드 위 걸침 = 레퍼런스 결 */
   .ymis-disk.um { filter:grayscale(1) brightness(.5); }   /* 미대면 대상 = 실루엣(.ycrow.locked .yava 계승 — 정체 은닉) */
   .ypb-rail { display:flex; gap:11px; overflow-x:auto; scrollbar-width:none; width:100%; padding:2px 2px 6px; margin:0 -2px; }
   .ypb-rail::-webkit-scrollbar { display:none; }
@@ -904,7 +904,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   .ybd.t-season .ybd-core { box-shadow:inset 0 1px 0 var(--glass-line), inset 0 -2px 4px rgba(0,0,0,.35), 0 0 0 2px rgba(var(--season-rgb),.6), 0 0 12px rgba(var(--season-rgb),.28); }   /* 시즌 보라 = 배지 전용축(§🎨 7) */
   .ybd-em { font-size:28px; line-height:1; transform:translateY(.5px); font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji","Segoe UI Symbol",sans-serif; filter:drop-shadow(0 1px 1px rgba(0,0,0,.5)); }   /* 픽토그램 = 시스템 이모지(운영자 260712 "SVG 말고 픽토그램" — UI 아이콘 SVG-온리 규칙의 운영자 지시 예외축 · .yme-mood em 선례) · 전용 스택 = 본문 폰트 간섭 차단 · 0.5px 광학 */
   .ybd.lk .ybd-core { opacity:.5; }   /* 잠금 = 티저(선택값 α .5) */
-  .ybd.lk .ybd-em { filter:grayscale(1) brightness(.6); }   /* .ycrow.locked 실루엣 필터 계승 */
+  .ybd.lk .ybd-em { filter:grayscale(1) brightness(.6); }   /* .ycrow.locked 실루엣 결(.5) + 이모지 글리프 가독 보정 .6(평의회3 — 편차 의도 명시) */
   .ybd-lock { position:absolute; right:4%; bottom:4%; width:34%; aspect-ratio:1; border-radius:50%; display:grid; place-items:center; background:rgba(18,18,18,.88); border:1px solid var(--glass-line); }   /* 자물쇠 오버레이(선택값) — 밑판 = --bg 계보 스크림 결 */
   .ybd-lock svg { width:56%; height:56%; stroke:var(--fg); fill:none; stroke-width:2; opacity:.92; }
   .ybd-nm { font-size:var(--fs-xs); font-weight:var(--fw-b); color:var(--fg-2); line-height:1.2; }
