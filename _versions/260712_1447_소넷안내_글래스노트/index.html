@@ -1002,10 +1002,6 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   .ydepth-effs { display:flex; justify-content:space-between; }
   .ydepth-effs i { font-size:var(--fs-meta); color:var(--mut); font-style:normal; font-weight:var(--fw-b); transition:color .18s var(--ease); }
   .ydepth-effs i.on { color:var(--fg); }
-  /* 대화 깊이 안내(운영자 260712 "경고 감 X · 토글 아래 중앙정렬 · 작은 블러 글래스") — Sonnet 구간(data-model=s)일 때만 촤르륵 노출 · 경고 톤(danger) 아님 = 뉴트럴 정보 */
-  .ydepth-note { max-height:0; opacity:0; overflow:hidden; margin-top:0; text-align:center; transition:max-height .3s var(--ease), opacity .3s var(--ease), margin .3s var(--ease); }
-  .ydepth-wrap[data-model="s"] .ydepth-note { max-height:44px; opacity:1; margin-top:11px; }
-  .ydepth-note span { display:inline-block; padding:6px 12px; border-radius:var(--r-pill); background:var(--glass); backdrop-filter:blur(var(--blur-m)); -webkit-backdrop-filter:blur(var(--blur-m)); border:1px solid var(--glass-line); color:var(--fg-2); font-size:var(--fs-xs); font-weight:var(--fw-b); line-height:1.4; }
   .ydepth-mn { font-size:var(--fs-meta); font-weight:var(--fw-x); letter-spacing:.08em; text-align:center; opacity:.5; transition:opacity .18s var(--ease); }
   .ydepth-half.hs .ydepth-mn { color:var(--cobalt); } .ydepth-half.ho .ydepth-mn { color:var(--accent); }
   .ydepth-half.act .ydepth-mn { opacity:1; }
@@ -2455,7 +2451,7 @@ function yDepthRow() {
     + `<div class="ydepth-legend">`
     + `<div class="ydepth-half hs${s ? ' act' : ''}"><div class="ydepth-effs">${effs(true)}</div><div class="ydepth-mn">SONNET</div></div>`
     + `<div class="ydepth-half ho${s ? '' : ' act'}"><div class="ydepth-effs">${effs(false)}</div><div class="ydepth-mn">OPUS</div></div>`
-    + `</div><div class="ydepth-note"><span>소넷 모델은 빠르지만 품질은 낮을 수 있어</span></div></div></div></div>`;
+    + `</div></div></div></div>`;
 }
 function yShowSettings(noNav) {
   if (!noNav) navHome();   // 네비·스와이프 직진입 = 홈 레벨서 새로 열기 — 설정 위 약관 등 잔존 스택·중복 적재([설정,약관,설정]) 차단 · navSwap 경유(프로필→설정)는 이미 교체 등재라 스킵
@@ -2686,7 +2682,7 @@ $('#ycsettingsCard').addEventListener('click', e => {
 $('#ycsettingsCard').addEventListener('input', e => {   // 「대화 깊이」 통합 게이지 드래그 = model×effort 저장 + 헤더 칩·썸·범례 실시간 갱신(운영자 260710)
   const r = e.target.closest('.ydepth-range'); if (!r) return;
   const i = Math.max(0, Math.min(5, parseInt(r.value, 10) || 0)), s = i < 3, si = i % 3;
-  const d = YDIAL_DEPTH[i];
+  const wasSonnet = YDIAL.model === 'claude-sonnet-5', d = YDIAL_DEPTH[i];
   try { localStorage.setItem('yeta_dial_model', d[0]); localStorage.setItem('yeta_dial_effort', d[1]); localStorage.removeItem('yeta_dial_vfast'); } catch (x) {}
   yDialLoad(); yMeter();
   const wrap = document.getElementById('ydepthWrap'); if (wrap) wrap.dataset.model = s ? 's' : 'o';
@@ -2695,7 +2691,7 @@ $('#ycsettingsCard').addEventListener('input', e => {   // 「대화 깊이」 �
     const isS = hi === 0; h.classList.toggle('act', isS === s);
     h.querySelectorAll('.ydepth-effs i').forEach((t, ti) => t.classList.toggle('on', isS === s && ti === si));
   });
-  // Sonnet 안내 = 하단 경고 토스트 폐지 → 게이지 안 .ydepth-note(글래스·중앙·data-model=s CSS 자동표시)로 대체(운영자 260712)
+  if (!wasSonnet && s) miniToast('Sonnet 5 — 빠르지만 답변 품질은 낮아');   // Opus→Sonnet 넘어갈 때만 비차단 안내(옛 매우빠름 경고 모달 대체)
 });
 let _ydepthCloseT;
 $('#ycsettingsCard').addEventListener('change', e => {   // 「대화 깊이」 선택 완료(드래그 놓기 = change) = 여닫이 자동 닫힘 + 다음 옵션으로 카메라 이동(운영자 "고르고 나면 닫고 다음거 고르기 편하게")
