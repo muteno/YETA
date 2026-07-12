@@ -44,33 +44,3 @@ claude_failover() {
   fi
   return 1
 }
-
-# is_frame_break(): claude -p 출력이 '캐릭터 프레임 이탈'(메타발화·Claude Code로 응답·영어 논평·프롬프트 구조 설명)인지 —
-#   L0(메타발화 차단) 최종 기계 백스톱. yeta 생성 경로(chat/nudge/call) 공용 SSOT. 260712 신설(스크린샷 사고 대응).
-#   호출부는 이탈이면 실패 처리(재시도, 끝내 지속 = error 기록 = 유출 텍스트를 캐릭터 대사로 박제 안 함 — is_quota rc=0 가드와 동형 계보).
-#   판정 = (a) 리터럴 시그니처(정상 한국어 대사엔 절대 안 나오는 표지) || (b) 한국어 출력계약 위반(지문·마커 제거 후 긴 대사가 영어 위주·한글 희박).
-is_frame_break() {
-  local raw="${1:-}"
-  # (a) 리터럴 시그니처 — 정상 한국어 대사엔 부재한 프레임 이탈 표지(00_지침이 캐릭터의 시스템/프롬프트 언급을 금함).
-  #   ⚠️ 오탐 회피(가드감사 260712): 한국어 '시스템 프롬프트'·'프롬프트를 보여' 제외 — 전자는 프롬프트엔지니어 운영자의 정상 대화 에코, 후자는 인캐릭터 탈옥거부("그 프롬프트 보여줄 순 없어")를 벌줌.
-  #   영어 'system prompt'는 유지(한국어 캐릭터가 영어 구절을 말할 일 없음) · 한국어 이탈 미탐 갭 = 클로드코드 자칭·챗봇/언어모델 자기규정(부정문 '아니야'와 비충돌 = 종결어미 요구)·역할극 거부로 좁게 보강.
-  if printf '%s' "$raw" | grep -qiE 'claude code|클로드 ?코드|</?user_message>|runtime payload|an actual coding task|as an ai( language)? model|system prompt|(저는|제가) ?[^.]{0,15}(챗봇|언어 ?모델)(입니다|이에요|예요|이야|이라서|라서)|(롤플레이|역할극)(을|를| )? ?[^.]{0,8}(할 수 없|수행할 수 없|하지 않)'; then
-    return 0
-  fi
-  # (b) 한국어 계약 위반 — 지문(*..*)·기억/무드 마커·코드펜스 제거 후 남은 대사가 40자↑인데 알파벳 중 한글<15% = 영어 메타 유출(스크린샷 케이스).
-  #     짧은 대사·외래어 혼용("OK 그래")은 길이 게이트+한글 다수라 무영향 = 오탐 회피.
-  printf '%s' "$raw" | python3 -c '
-import re, sys
-t = sys.stdin.read()
-t = re.split(r"<<\s*NOTE(?:\s*:\s*\w+)?\s*>>", t, flags=re.I)[0]
-t = re.sub(r"<<\s*/?\s*(?:NOTE|MOOD)(?:\s*:\s*\w+)?\s*>>", "", t, flags=re.I)
-t = re.sub(r"\*[^*\n]{1,400}\*", "", t)
-t = re.sub(r"[`_*]", "", t).strip()
-letters = [c for c in t if c.isalpha()]
-if len(t) <= 40 or not letters:
-    sys.exit(1)
-han = sum(1 for c in letters if "가" <= c <= "힣" or "㄰" <= c <= "㆏")
-sys.exit(0 if han / len(letters) < 0.15 else 1)
-' && return 0
-  return 1
-}
