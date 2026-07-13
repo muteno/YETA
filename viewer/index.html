@@ -154,7 +154,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   @media (prefers-reduced-motion:reduce){ #yetadlg.ydlg-in, #yetadlg.ydlg-in::backdrop, #yetadlg.ydlg-in .yeta-h, #yetadlg.ydlg-in .yeta-stage, #yetadlg.ydlg-in .yeta-in { animation:none !important; } }
   .yeta-wrap { display:flex; flex-direction:column; height:100%; }
   /* 챗 헤더 = 플로팅 알약(운영자 260705 "상하단 네비처럼 감싸서 띄워" · 레퍼런스 결) — [←뒤로][프사+이름 전폭][수화기] · 상대가 좌우 한 폭 차지 */
-  .yeta-h { position:absolute; top:calc(10px + env(safe-area-inset-top)); left:10px; right:10px; z-index:3; display:flex; align-items:center; gap:8px; padding:7px 9px;
+  .yeta-h { position:absolute; top:calc(10px + env(safe-area-inset-top)); left:10px; right:10px; z-index:3; display:flex; align-items:center; gap:8px; padding:7px 6px;   /* 가로 인셋 6 = .yeta-in(:249) 짝 정합 — 상하 알약 동일 left10/right10이라 back↔mic·call↔send가 한 세로선(정렬기틀 §2-1 짝값 · 부록A · 옛 9는 3px 어긋남) */
     background:linear-gradient(var(--glass), var(--glass)), rgba(18,18,18,.75); border:1px solid var(--glass-line); border-radius:var(--r-pill);
     backdrop-filter:blur(var(--blur-l)) saturate(1); -webkit-backdrop-filter:blur(var(--blur-l)) saturate(1);
     box-shadow:inset 0 1px 0 var(--glass-line), var(--shadow-card); }   /* 밑칠 = 스포티파이 블랙 .75(운영자 260709 "뒤에 밝은 버블 오면 안 보여 — 불투명도 높이고 글래스는 유지" — 유리 틴트·blur·엣지 그대로 · 배지 .75 계보) */
@@ -358,7 +358,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   .ystk .sa + .sa { margin-left:-14px; }   /* 겹침 -14(선택값) */
   #yetaInv.yinv { left:auto; right:10px; transform-origin:top right; }   /* 초대 2차 팝업 = 우상단 앵커(스택 진입점 정합 · 팝오버 = 선택값 · 표면 .yeta-pick 정본 그대로) */
   .yinv-note { padding:7px 10px 5px; font-size:var(--fs-meta); color:var(--mut); line-height:1.5; }   /* 정원·거절 힌트(선택값 표시) */
-  .yinv-go { flex:none; position:relative; padding:4px 12px; border-radius:var(--r-pill); background:rgba(var(--accent-rgb),.12); border:1px solid rgba(var(--accent-rgb),.4); color:var(--accent); font-size:var(--fs-xs); font-weight:var(--fw-b); cursor:pointer; touch-action:manipulation; font-family:inherit; }   /* [초대] 필 = .yme-tag 플레이트 결 · 2탭 확정(선택값) */
+  .yinv-go { margin-left:auto; flex:none; position:relative; padding:4px 12px; border-radius:var(--r-pill); background:rgba(var(--accent-rgb),.12); border:1px solid rgba(var(--accent-rgb),.4); color:var(--accent); font-size:var(--fs-xs); font-weight:var(--fw-b); cursor:pointer; touch-action:manipulation; font-family:inherit; }   /* [초대] 필 = .yme-tag 플레이트 결 · 2탭 확정(선택값) · margin-left:auto = 형제 .yinv-x(:359) 짝 정합 = 팝업 우측 앵커선 통일(정렬기틀 §3-2 · 옛 누락 = 이름 길이마다 흔들림) */
   .yinv-go::before { content:''; position:absolute; inset:-8px -4px; border-radius:var(--r-pill); }   /* 히트슬롭 ~40(원칙16 — 행 간격 48 안 = 이웃 무겹침 · 평의회D) */
   .yinv-go.armed { background:none; border-color:rgba(var(--danger-rgb),.4); color:var(--arm); }   /* 2탭 재확인 = 수화기 armed 계승 */
   .yinv-go:disabled { opacity:.4; }
