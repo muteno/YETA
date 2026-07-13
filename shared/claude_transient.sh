@@ -29,6 +29,9 @@ claude_failover() {
   local n="${_CLAUDE_SWAPPED:-0}"
   if [ "$n" = "0" ] && [ -n "${CLAUDE_CODE_OAUTH_TOKEN_ALT:-}" ]; then
     export CLAUDE_CODE_OAUTH_TOKEN="$CLAUDE_CODE_OAUTH_TOKEN_ALT"; _CLAUDE_SWAPPED=1
+    # 활성 계정(ACTIVE_ACCOUNT) 첫 스왑 = '이번 런에 활성 계정이 쿼터로 막힘' 신호(sticky 승격용 · account_failover.py 가 읽음).
+    #   ⚠️ 첫 스왑(활성→서브1)에서만 남긴다 — 서브 계정 쿼터는 신호 안 남김(= 활성 계정 막힘만 카운트). best-effort.
+    : > "${NOMUTE_QUOTA_SIGNAL:-${GITHUB_WORKSPACE:-/tmp}/.nomute_active_quota}" 2>/dev/null || true
     echo "  🔄 계정 사용량 한도 — 서브1 계정으로 전환 후 재시도(account failover 1/3)"
     return 0
   fi
