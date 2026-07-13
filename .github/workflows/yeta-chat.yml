@@ -102,3 +102,13 @@ jobs:
           python3 -m pip install --quiet --break-system-packages pywebpush 2>/dev/null || exit 0
           python3 .github/scripts/push_send.py --notify "yeta" "답장 생성에 실패했어 — 열어서 다시 보내줘" \
             --url "/?yeta=${YETA_CHAR}" --tag "nomute-yeta-${YETA_CHAR}" || true
+
+      # 활성 계정이 이번 런에 쿼터로 폴오버됐으면(claude_failover 첫 스왑이 job-local 신호 파일을 남김) 누적 카운트 →
+      #   임계(기본 2)회+ 면 vars.ACTIVE_ACCOUNT 를 체인 다음 계정으로 자동 전진 = 죽은 계정부터 시작하는 낭비 제거.
+      #   ⚠️ GH_VARS_TOKEN(Variables 쓰기 PAT) 없으면 no-op = 라이브 무해(PAT 넣는 순간 켜짐). 카나리아 = 가장 자주 도는 챗 1곳.
+      - name: 활성 계정 자동 승격(쿼터 누적 시 · GH_VARS_TOKEN 없으면 no-op)
+        if: ${{ always() }}
+        env:
+          GH_VARS_TOKEN: ${{ secrets.GH_VARS_TOKEN }}
+          ACTIVE_ACCOUNT: ${{ vars.ACTIVE_ACCOUNT || 'MUTENO' }}
+        run: python3 shared/account_failover.py

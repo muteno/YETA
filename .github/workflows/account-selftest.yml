@@ -1,0 +1,18 @@
+name: account-selftest
+
+# GH_VARS_TOKEN(Variables 쓰기 PAT)이 repo Variables 를 실제로 read/write/delete 할 수 있는지 실측.
+# ⚠️ ACTIVE_ACCOUNT·ACTIVE_QUOTA_HITS 는 안 건드림 — 전용 probe 변수만 왕복(무손상). 수동 dispatch 전용.
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  selftest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Variables API PAT 실측(read/write/delete)
+        env:
+          GH_VARS_TOKEN: ${{ secrets.GH_VARS_TOKEN }}
+          ACTIVE_ACCOUNT: ${{ vars.ACTIVE_ACCOUNT || 'MUTENO' }}
+        run: python3 shared/account_failover.py --selftest

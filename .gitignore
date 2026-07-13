@@ -22,3 +22,6 @@ node_modules/
 
 # 빌드 산출(정적 서빙이라 없지만 방어)
 .wrangler/
+
+# 활성 계정 sticky 승격 신호 파일(claude_failover 첫 스왑 시 job-local 생성 · account_failover.py 소비 · 커밋 금지)
+.nomute_active_quota
