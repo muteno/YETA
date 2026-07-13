@@ -55,8 +55,8 @@ jobs:
       - name: CLI PATH
         run: echo "$HOME/.npm-global/bin" >> "$GITHUB_PATH"
 
-      - name: pywebpush (per-reply 푸시용 · pip 캐시라 수 초)
-        run: python3 -m pip install --quiet --break-system-packages pywebpush 2>/dev/null || echo "pywebpush 미설치 — 푸시 생략(비치명)"
+      - name: pywebpush (per-reply 푸시용 · 백그라운드 설치 = 콜드 첫 답장 경로에서 3~6s 제거 — 첫 푸시 시점(첫 답장 생성 후 ≥10s)엔 설치 완료 · 미완이면 푸시만 생략=비치명 현행 계약 유지)
+        run: (python3 -m pip install --quiet --break-system-packages pywebpush >/dev/null 2>&1 || true) &
 
       - name: 캐릭터 답장 생성 (claude -p · 세션 R2)
         id: chat
