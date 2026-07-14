@@ -71,13 +71,15 @@ claude_meter() {
   #   구 CLI가 stream 플래그를 거부하면 json 모드 1회 폴백(stdin은 버퍼해 재공급 · 호출처 yeta_chat = pipefail로 rc 보존).
   #   미설정(기본) = 이 분기 자체가 없던 일 — 타 호출처 무영향.
   if [ -n "${METER_STREAM:-}" ] && [ -f "${METER_STREAM}" ]; then
-    local _pin; _pin="$(cat)"
-    raw="$(printf '%s' "$_pin" | timeout "$to" claude -p $bare --output-format stream-json --include-partial-messages --verbose "$@" | python3 "$METER_STREAM")"
+    local _pin _serr=/tmp/claude_meter_stream.err; _pin="$(cat)"
+    # ⚠️ 플래그 거부는 stderr로 나온다 — stdout($raw) grep은 미발화 + --verbose 진단 라인 오탐(평의회 260714 플랫폼 HIGH) → stderr 파일 포집으로 판정.
+    raw="$(printf '%s' "$_pin" | timeout "$to" claude -p $bare --output-format stream-json --include-partial-messages --verbose "$@" 2>"$_serr" | python3 "$METER_STREAM")"
     rc=$?
-    if ! printf '%s' "$raw" | jq -e '.result | type == "string"' >/dev/null 2>&1 && printf '%s' "$raw" | grep -qiE 'unknown option|unrecognized|stream-json|include-partial'; then
+    if ! printf '%s' "$raw" | jq -e '.result | type == "string"' >/dev/null 2>&1 && grep -qiE 'unknown option|unrecognized|requires --verbose' "$_serr" 2>/dev/null; then
       raw="$(printf '%s' "$_pin" | timeout "$to" claude -p $bare --output-format json "$@")"
       rc=$?
     fi
+    cat "$_serr" >&2 2>/dev/null || true   # stderr 원류 재방류 — 호출부(gen_out /tmp/yeta.err) effort/system-prompt 거부·폴오버 매칭 계약 보존
   else
     raw="$(timeout "$to" claude -p $bare --output-format json "$@")"
     rc=$?

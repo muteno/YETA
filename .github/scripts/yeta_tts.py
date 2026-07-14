@@ -105,16 +105,21 @@ def main():
     if not text.strip():
         return 1
     v = roster_voice(persona)
-    b = None
+    b = None; eng = ""
     if v.startswith("el:"):                      # 프리미엄 = 클론 보이스 우선
         b = tts_elevenlabs(v[3:], text)
+        if b: eng = "el"                         # el = 44.1kHz mp3 · oa = 24kHz — 엔진 갈리면 raw 접합 불가(평의회 260714 오디오 HIGH)
     if not b and v.startswith("oa:"):
         b = tts_openai(persona, text, force_voice=v[3:])
+        if b: eng = "oa"
     if not b:
         b = tts_openai(persona, text, force_voice=os.environ.get("YETA_CALL_VOICE", "").strip())
+        if b: eng = "oa"
     if not b:
         return 1
     open(out, "wb").write(b)
+    try: open(out + ".eng", "w").write(eng)      # 엔진 사이드카 — ptt_voice 헤드 접합 전 동일성 대조(불일치 = 전문 폴백) · 타 호출처엔 무해한 잉여 tmp
+    except Exception: pass
     return 0
 
 

@@ -4,7 +4,7 @@
 // ops(POST 단일 — 폴링도 POST = originOk 대칭):
 //   chars {}                       : 페르소나 로스터(apps/yeta/characters/roster.json raw · 5분 캐시)
 //   get   {}                       : 세션 반환(뷰어 폴)
-//   watch {e}                      : 롱폴 감시(대화 속도 260714) — R2 etag 1s head 감시 · 변경 즉시 {changed}(뷰어가 get 재조회 = 픽업 ~0s) · 20s 무변경 = {none}(클라 재발사)
+//   watch {e, de}                  : 롱폴 감시(대화 속도 260714) — R2 etag 1s head 감시 · 변경 즉시 {changed}(뷰어가 get 재조회 = 픽업 ~0s) · 15s 무변경 = {none}(클라 재발사) · draft 변경 = 본문 동봉
 //   send  {text, model, effort}    : 유저 턴 append(다이얼 턴별 박제 · 화이트리스트) → yeta-chat.yml dispatch
 //   draw  {persona, name}          : 페르소나 뽑기/재뽑기 — sess.persona 갱신(+대화 중이면 sys 턴) · room=[persona] 리셋(단톡 해산)
 //   invite {persona, name}         : 합석 초대(단톡 · 정원 MAX_ROOM) — 원본 1:1 보존, 직전 3주고받기 시드 복사해 새 단톡 스레드(g 접두)로 분기 → cur 전환 + dispatch(수락/거절 = 러너 판정)
@@ -159,7 +159,7 @@ export async function onRequestPost({ request, env }) {
   if (op === 'watch') {   // 롱폴 감시(대화 속도 260714 한수) — 서버가 R2 etag를 1s 간격 head로 감시, 변경 즉시 응답 = 뷰어 픽업 지연 ~0s(타이머 폴 간격 한계 제거 · 대기 중 요청 수↓).
     // SSE(EventSource) 아닌 롱폴인 이유 = 전 op POST 통일(originOk CSRF 대칭) 온존. 세션 본문 판독은 뷰어가 이어 op get(리퍼·비활성 절단 로직 재사용 = 여기 중복 0).
     // + draft 감시(한수2 문장 스트리밍): 러너가 생성 중 문장을 sessions/*.draft.json 에 발행 — 변경 시 draft 본문 동봉(작음 = 겟 왕복 생략) · stripMarkers+'<<' 컷 = 이중 방어.
-    // 예산: head = I/O(CPU ~0) · 키 2개 × 1s × 15s 홀드 = 서브리퀘스트 ~32(<한도 50) — 홀드 15s 캡(만료 = 클라 즉시 재발사).
+    // 예산: head = I/O(CPU ~0) · 키 2개 × 1s × 15s 홀드 = head ~30 + draft-get(변경 시 · 최대 ~12) = 최악 ~42(<한도 50 · 평의회 260714 비용 정정 — 유료 Workers 1000이면 무관) — 홀드 15s 캡(만료 = 클라 즉시 재발사).
     const DKEY = KEY.replace(/\.json$/, '.draft.json');
     const known = String(body.e || '');
     let dknown = String(body.de || '');
