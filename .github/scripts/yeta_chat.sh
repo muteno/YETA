@@ -371,6 +371,12 @@ if kind == "ok":
                 turn["gen_s"] = int(os.environ.get("GEN_S", "0") or 0)
                 if _ti or _to:
                     turn["tok"] = {"i": _ti, "o": _to}   # 이 답장 생성의 실측 토큰(claude_meter METER_LAST) — 뷰어 좌상단 누적 미터(운영자 260709)
+                lat = {}                                 # 계기판(운영자 260714) — w = 픽업(유저턴→생성시작) · f = 첫문장(생성시작→첫 발행) 초 단위
+                for _k, _e in (("w", "LAT_W_MS"), ("f", "LAT_F_MS")):
+                    try: _v = int(os.environ.get(_e, "") or "x")
+                    except ValueError: continue
+                    if 0 <= _v <= 600000: lat[_k] = round(_v / 1000, 1)   # 0~10분 상식 밴드(시계 스큐·스테일 파일 가드)
+                if lat: turn["lat"] = lat
             if mood and ci == len(chunks) - 1:
                 turn["mood"] = mood                    # 장면 공기 = 마지막 버블(yLastMood = 최신 턴 스캔과 짝)
             turns.insert(ins + ci, turn)
@@ -571,7 +577,7 @@ PY
 gen_out() {
   local prompt="$1" inline_delay=15 attempt rc=1 _eff_dropped=0
   EFF_ARGS=(); [ -n "$EFF" ] && EFF_ARGS=(--effort "$EFF")   # 빈값 = 플래그 생략(gate_judge SSOT 패턴)
-  T0=$SECONDS; OUT=""; TOK_I=0; TOK_O=0; rm -f /tmp/yeta_meter_last.json   # 이 생성의 실측 토큰(METER_LAST) — finish가 답장 턴 tok으로 박제(뷰어 좌상단 미터 · 운영자 260709)
+  T0=$SECONDS; GEN_T0MS="$(date +%s%3N)"; OUT=""; TOK_I=0; TOK_O=0; rm -f /tmp/yeta_meter_last.json   # 이 생성의 실측 토큰(METER_LAST) — finish가 답장 턴 tok으로 박제(뷰어 좌상단 미터 · 운영자 260709) · GEN_T0MS = 계기판 lat(픽업 w·첫문장 f) 기준점(260714)
   for attempt in $(seq 1 "$INLINE_TRIES"); do
     OUT="$(printf '%s' "$prompt" | METER_SRC=yeta METER_REF="$PERSONA" METER_MODEL="$MODEL" METER_EFFORT="$EFF" METER_LAST=/tmp/yeta_meter_last.json claude_meter 240 \
           --model "$MODEL" $SAFE "${SYS_ARGS[@]}" "${EFF_ARGS[@]}" \
@@ -1095,6 +1101,7 @@ ${CONTRACT1}${GROUP_RULE}${ME_RULE}
   if [ -z "$CO_ID" ] && [ "${YETA_STREAM:-1}" != "0" ] && [ -f ".github/scripts/yeta_stream.py" ]; then
     export METER_STREAM=".github/scripts/yeta_stream.py" YETA_DRAFT_KEY="$DRAFT_KEY" YETA_DRAFT_BUCKET="$YETA_R2_BUCKET" YETA_DRAFT_EP="$EP" YETA_DRAFT_T="$THREAD" YETA_DRAFT_P="$PERSONA"
     rm -f /tmp/yeta_ptt_head.txt /tmp/yeta_ptt_head.mp3 /tmp/yeta_ptt_head.done /tmp/yeta_ptt_head.part   # 전 턴 잔재 소거(스테일 헤드 = 오접합 씨앗)
+    export YETA_STREAM_FIRST=/tmp/yeta_first_pub; rm -f /tmp/yeta_first_pub   # 계기판(260714) — 필터가 첫 문장 발행 시각(epoch ms)을 남김 = lat.f 재료
     if [ "$PTT" = "1" ]; then export YETA_PTT_HEAD="/tmp/yeta_ptt_head"; else export YETA_PTT_HEAD=""; fi   # 헤드 TTS 선굽기(한수3) — PTT 턴만(⚠️유료 TTS = 발동 축 종전과 동일 · 문자수 과금 총량 불변·호출 +1)
   fi
   if ! gen_out "$prompt"; then
@@ -1107,6 +1114,11 @@ ${CONTRACT1}${GROUP_RULE}${ME_RULE}
     finish error "답장 생성 실패 — 다시 보내면 재시도"; draft_clear; return 1
   fi
   export METER_STREAM=""   # 본답장 밖(초대 판정 등) 오발 금지 — 생성 직후 즉시 해제
+  # 계기판 lat(운영자 260714) — w = 유저 턴 ts → 생성 시작(픽업+큐 대기) · f = 생성 시작 → 첫 문장 발행(스트리밍). ms 원값 전달 = finish가 0.1s 반올림 박제.
+  LAT_W_MS=""; LAT_F_MS=""
+  [ -n "${ANCHOR_TS:-}" ] && [ -n "${GEN_T0MS:-}" ] && LAT_W_MS="$((GEN_T0MS - ANCHOR_TS))"
+  [ -s /tmp/yeta_first_pub ] && [ -n "${GEN_T0MS:-}" ] && LAT_F_MS="$(( $(cat /tmp/yeta_first_pub 2>/dev/null || echo 0) - GEN_T0MS ))"
+  export LAT_W_MS LAT_F_MS
   finish ok "$OUT" || { echo "::error::세션 반영 실패(R2 put)"; draft_clear; return 1; }
   draft_clear   # 확정 반영 뒤 회수(뷰어 = 세션 변경 먼저 픽업 → 버블 스왑 → 잔여 draft 소거)
   [ "$_did_reply" = 1 ] && { echo "yeta: 답장 완료(${#OUT}자 · ${GEN_S}s)"; push_reply "$OUT"; [ "$PTT" = "1" ] && ptt_voice "$OUT"; barge_check; }
