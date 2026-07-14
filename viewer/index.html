@@ -277,7 +277,10 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
     display:grid; place-items:center; cursor:pointer; touch-action:manipulation; }
   .yeta-plus svg { width:22px; height:22px; }
   .yeta-plus:active { transform:scale(var(--press-m,.9)); }
-  .yeta-plus.on { color:var(--accent); background:rgba(var(--accent-rgb),.16); border-radius:var(--r-pill); box-shadow:inset 0 1px 0 var(--glass-line), 0 0 18px rgba(var(--accent-rgb),.14); }   /* 상황 모드('#') 활성 = ydock .on 필 결 계승(토큰 동일 레시피 · 260714) */
+  .yeta-plus.on { color:var(--cobalt); background:rgba(var(--cobalt-rgb),.16); border-radius:var(--r-pill); box-shadow:inset 0 1px 0 var(--glass-line), 0 0 18px rgba(var(--cobalt-rgb),.16); }   /* 상황 모드('#') 활성 = ydock .on 필 레시피의 코발트 변주(운영자 260714 "블루톤" — 토큰 --cobalt 계승 · 라임=대화/코발트=연출 축 분리) */
+  .yeta-in.sc { border-color:rgba(var(--cobalt-rgb),.45); }   /* 상황 모드 = 입력행 자동 블루톤(운영자 260714) — 알약 테두리 코발트 */
+  .yeta-in.sc:focus-within { border-color:rgba(var(--cobalt-rgb),.6); }
+  .yeta-in.sc textarea { caret-color:var(--cobalt); }
   /* 페르소나 픽커 — 헤더 이름 탭 → 주민 직접 선택(msgpop 무채 글래스 계승 · saturate(0)=뒤 색 비침 차단 · §🎨 무채 크롬) */
   .yeta-who { flex:1; display:flex; align-items:center; gap:8px; min-width:0; color:inherit; font:inherit; padding:0; text-align:left; }   /* 상대 = 좌우 한 폭 차지(운영자 260705 · flex:1) · 표시 전용(전환 제거) */
   /* 대화상대 초대 = 헤더 프로필 옆 픽토(운영자 260707 항목12 "버튼 말고 픽토그램만 · 누르면 액티브 지속") — 입력행 +에서 이설 */
@@ -3474,8 +3477,13 @@ function yInvToggle(force) {   // 초대 2차 팝업(운영자 260712 재생 —
 }
 $('#yetaPlus').addEventListener('click', e => { e.stopPropagation(); $('#yetaFile').click(); });   // 입력행 + = 파일 첨부(항목11 · 초대는 헤더 픽토로 이설)
 let _yScOn = false;   // 상황 설명 모드(운영자 260714 '#') — 켠 채 전송 = 장면 설정 턴(sc · 상대에게 하는 말 아님) · 원샷(전송 성공 시 자동 해제)
-function yScSet(on) { _yScOn = !!on; const b = $('#yetaSc'); if (b) b.classList.toggle('on', _yScOn); const ta = $('#yetaText'); if (ta) ta.placeholder = _yScOn ? '지금 장면·상황을 써줘 — 상대에게 하는 말이 아니야' : '메시지'; }
-$('#yetaSc').addEventListener('click', e => { e.stopPropagation(); yScSet(!_yScOn); $('#yetaText').focus(); });
+function yScSet(on) { _yScOn = !!on; const b = $('#yetaSc'); if (b) b.classList.toggle('on', _yScOn); const row = $('#yetaIn'); if (row) row.classList.toggle('sc', _yScOn); const ta = $('#yetaText'); if (ta) ta.placeholder = _yScOn ? '지금 장면·상황을 써줘 — 상대에게 하는 말이 아니야' : '메시지'; }   // 모드 ON = 입력행 코발트 톤(운영자 260714 "자동 블루톤 전환")
+$('#yetaSc').addEventListener('click', e => {
+  e.stopPropagation(); yScSet(!_yScOn);
+  const ta = $('#yetaText');
+  if (_yScOn && ta.value.trim() && !/\n\n\s*$/.test(ta.value)) { ta.value = ta.value.replace(/\s*$/, '') + '\n\n'; ta.dispatchEvent(new Event('input', { bubbles: true })); }   // 누르면 2줄바꿈(운영자 260714) — 빈 줄 앞 = 대사 · 뒤 = 상황(전송 시 두 턴 분리 · ySend와 짝)
+  ta.focus();
+});
 $('#yetaInvBtn').addEventListener('click', e => { e.stopPropagation(); yPdClose(); yInvToggle(); });   // 헤더 초대 + = 초대 팝업(운영자 260712 · .off = pointer-events:none이라 만석·대기 시 무반응 = 자리만 유지)
 $('#yetaMeter').addEventListener('click', e => {   // 미터 탭 = 모델 토글(Opus↔Sonnet) / 노력 순환(빠름→깊게→최대→빠름) — 운영자 260712 · 6단 슬라이더와 별개 직접 전환
   const seg = e.target.closest('.ym-seg'); if (!seg) return; e.stopPropagation();
@@ -3757,31 +3765,47 @@ function yStartPoll() {   // 대기 감시 1선 = watch 롱폴(대화 속도 260
 }
 function yStopPoll() { if (_yPoll) clearInterval(_yPoll.t); _yPoll = null; if (_yWatchTk) { _yWatchTk.on = false; _yWatchTk = null; } }
 async function ySend() {
-  const ta = $('#yetaText'), text = ta.value.trim();
+  const ta = $('#yetaText'), rawV = ta.value, text = rawV.trim();
   if (_yFarOnly) { miniToast('멀리 있어서 문자는 안 닿아 — 전화로 걸어봐'); return; }   // 원거리 불가 상대 = 전화만(운영자 260709)
   if (YCUR && (YSESS || {}).cur === YCUR.id && yDead(YCUR)) { miniToast('사망 — 24시간 동안 연락이 닿지 않아'); return; }   // 사망(운영자 260714) — 입력 숨김의 이중 안전벨트(스테일 DOM 경로)
   if (!text || !YCUR) return;
   const btn = $('#yetaSend'); btn.disabled = true;
-  const sc = _yScOn;   // 상황 설명 턴(260714 '#') — 전송 시점 래치
+  const sc = _yScOn;   // 상황 설명 모드 래치(260714 '#')
+  // 분리 발송(운영자 260714 "누르면 2줄바꿈") — #가 넣은 첫 빈 줄 기준: 앞 = 대사 턴 · 뒤 = 상황 턴(sc). 대사만/상황만 = 한 턴(종전 결).
+  let parts = [{ x: text, sc: sc ? 1 : 0 }];
+  if (sc) {
+    const ix = rawV.indexOf('\n\n');
+    const a = ix >= 0 ? rawV.slice(0, ix).trim() : '', b = ix >= 0 ? rawV.slice(ix + 2).trim() : '';
+    if (ix > 0 && a && b) parts = [{ x: a, sc: 0 }, { x: b, sc: 1 }];
+    else if (ix >= 0 && a && !b) parts = [{ x: a, sc: 0 }];   // # 눌러놓고 상황을 안 썼으면 = 그냥 대사(빈 상황 턴 발사 방지)
+  }
   ta.value = ''; ta.style.height = '';
   const log = $('#yetaLog');   // 낙관적 표시(확정은 폴이 대체) — 내 버블 즉시 · 타이핑은 "읽는 시간" 뒤(운영자 260707 "보내자마자 1초도 안 돼 입력 중 = 어색")
-  if (sc) log.insertAdjacentHTML('beforeend', `<div class="ysit in">${yFmt(text)}</div>`);   // 상황 턴 = 장면 지문 결(.ysit 계승 · 말풍선 아님 · '1'/시각 없음)
-  else log.insertAdjacentHTML('beforeend', `<div class="ymrow me in">${yPrefOn('read', true) ? '<span class="yb-un">1</span>' : ''}<time class="ytime">${yTime(Date.now())}</time><div class="yb me">${yFmt(text)}</div></div>`);   // '1' = 읽음 표시 설정 ON일 때만(운영자 260709 설정 실동작)
-  const _meEl = log.lastElementChild; let _typEl = null;
+  const _opt = []; let _unEl = null;
+  for (const p of parts) {
+    if (p.sc) log.insertAdjacentHTML('beforeend', `<div class="ysit in">${yFmt(p.x)}</div>`);   // 상황 턴 = 장면 지문 결(.ysit 계승 · 말풍선 아님 · '1'/시각 없음)
+    else log.insertAdjacentHTML('beforeend', `<div class="ymrow me in">${yPrefOn('read', true) ? '<span class="yb-un">1</span>' : ''}<time class="ytime">${yTime(Date.now())}</time><div class="yb me">${yFmt(p.x)}</div></div>`);   // '1' = 읽음 표시 설정 ON일 때만(운영자 260709 설정 실동작)
+    _opt.push(log.lastElementChild);
+    if (!p.sc && !_unEl) _unEl = log.lastElementChild.querySelector('.yb-un');
+  }
+  let _typEl = null;
   const readMs = yReadMs();   // 페르소나별 읽는 속도(항목14B)
   _yTypOn = false; _meUnread = true; _yTypHold = Date.now() + readMs;   // 읽는 시간 후에야 "입력 중" · 그 전 = 내 버블 '1'(미읽음)
-  const _unEl = _meEl.querySelector('.yb-un');
   setTimeout(() => { _meUnread = false; if (_unEl && _unEl.isConnected) { _unEl.style.opacity = '0'; setTimeout(() => { if (_unEl) _unEl.remove(); }, 320); } }, readMs);   // 읽음 순간 '1' 소멸 = 낙관 버블 DOM 직접 + QA13: 래치 `_meUnread`도 내려 폴 재렌더가 '1' 재출현 못 하게
   clearTimeout(_yTypT); _yTypT = setTimeout(() => { if (Date.now() >= _yTypHold && !_yTypOn && YSESS) { log.insertAdjacentHTML('beforeend', yTypingHtml(true)); _typEl = log.lastElementChild; _yTypOn = true; log.scrollTop = log.scrollHeight; } }, 1150 + Math.random() * 1700);
   log.scrollTop = log.scrollHeight;
-  const r = await yApi('send', { t: (YSESS || {}).cur || (YCUR && YCUR.id) || '', text, model: YDIAL.model, effort: YDIAL.effort, ...(sc ? { sc: 1 } : {}) }).catch(() => ({ error: '네트워크 실패 — 다시 보내줘' }));
+  let r = { ok: true };
+  for (const p of parts) {   // 순차 발송 — 대사 먼저·상황 뒤(웜 러너가 pending 묶음으로 한 답에 소화)
+    r = await yApi('send', { t: (YSESS || {}).cur || (YCUR && YCUR.id) || '', text: p.x, model: YDIAL.model, effort: YDIAL.effort, ...(p.sc ? { sc: 1 } : {}) }).catch(() => ({ error: '네트워크 실패 — 다시 보내줘' }));
+    if (!r.ok) break;
+    if (_yLastN >= 0) _yLastN += 1;   // 낙관 버블은 이미 촤르륵함 — 폴 확정 재렌더에서 같은 턴 재애니 방지
+  }
   btn.disabled = false;
   if (sc && r.ok) yScSet(false);   // 원샷 — 상황 깔고 나면 자동으로 대화 모드 복귀(실패 시엔 유지 = 재전송 대비)
   if (!r.ok) {
-    if (_typEl) yOut(_typEl); yOut(_meEl); clearTimeout(_yTypT); _yTypOn = false; ta.value = text;   // 낙관 노드 = 촤르륵 접혀 복귀 + 입력 복원(운영자 "지워도 촤르륵")
+    if (_typEl) yOut(_typEl); _opt.forEach(yOut); clearTimeout(_yTypT); _yTypOn = false; ta.value = rawV;   // 낙관 노드 일괄 촤르륵 회수 + 원문(빈 줄 포함) 복원
     log.insertAdjacentHTML('beforeend', `<div class="yb fail in">${esc(r.error || '전송 실패')}</div>`); _yFailOn = true; log.scrollTop = log.scrollHeight; return;
   }
-  if (_yLastN >= 0) _yLastN += 1;   // 낙관 버블은 이미 촤르륵함 — 폴 확정 재렌더에서 같은 턴 재애니 방지
   ta.focus();
   yStartPoll();
 }
