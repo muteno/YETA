@@ -19,7 +19,7 @@ DEFAULT_EFF="low"                 # 30초 컷 — effort 미지정은 CLI 기본
 SAFE=""
 case "${YETA_SAFE:-1}" in 1|true|on) SAFE="--safe-mode" ;; esac   # 기본 ON — 런타임은 CLAUDE.md 미주입(개발 세션 전용 · 턴당 ~37k 토큰 절약 · 운영자 260704 · 회귀=YETA_SAFE=0) · ⚠️ --bare 절대 금지(OAuth 즉사)
 export CLAUDE_BARE=0              # 방어 명시 — 공유 기본값이 미래에 ON 회귀해도 챗은 불가(평의회①)
-RECENT_TURNS="${YETA_RECENT_TURNS:-12}"   # 8→12(평의회 260714 호환 MED) — 버블 분할(평균 1.4버블/답장)로 턴 단위 창이 실질 축소되던 대화기억 회귀 보정
+RECENT_TURNS="${YETA_RECENT_TURNS:-8}"
 INLINE_TRIES=4   # 4계정 폴오버 체인 깊이(서브3 MUTENONA까지 실호출) + 일시 과부하 흡수 — 4계정 확장 3→4(챗 안정성: 앞 3계정 쿼터 시 MUTENONA 실도달)
 WARM_WAIT="${YETA_WARM_WAIT:-300}"       # 웜 유휴 유예(s) — 무메시지면 조용히 종료
 WARM_POLL="${YETA_WARM_POLL:-2}"   # 웜 픽업 지연 평균 2.5s→1s(대화 속도 260713) — R2 GET 300s/2s=150회/창 = Class B 무료 티어에 무시량
@@ -386,19 +386,10 @@ if kind == "ok":
             k += 1
         if open_job:
             s.pop("opening", None); s.pop("awaiting_since", None)   # 오프닝 성공 = nonce 소거(웜루프 재생성 자연 차단 = assistant 턴 1 + 플래그 0)
-        def _keep_anchors(old, new):   # [★]/[사건] 라인 합집합 가드(평의회 260714 HIGH — 짧은호흡·생략 계약이 재작성 누락 확률을 올림) · 사망 급식 재주입과 동형 · 블록 통짜 대체의 비가역 소실 차단
-            try:
-                if not old or not new: return new
-                have = set(l.strip() for l in new.splitlines())
-                miss = [l.strip() for l in old.splitlines() if l.strip().startswith(("[★]", "[사건]")) and l.strip() not in have]
-                if not miss: return new
-                return (new.rstrip() + "\n" + "\n".join(miss))[:600]   # 캡 600 = NOTE 계약(넘치면 다음 턴 모델 재압축이 정리)
-            except Exception:
-                return new
         if "PUB" in notes_found:
-            S_ROOT["note_pub"] = _keep_anchors(S_ROOT.get("note_pub") or S_ROOT.get("note") or "", notes_found["PUB"]); S_ROOT.pop("note", None)   # 공용 기억 = top-level(스레드 밖 · 마이그감사③)
+            S_ROOT["note_pub"] = notes_found["PUB"]; S_ROOT.pop("note", None)   # 공용 기억 = top-level(스레드 밖 · 마이그감사③)
         if "ME" in notes_found and persona_env:
-            S_ROOT.setdefault("notes", {})[persona_env] = _keep_anchors((S_ROOT.get("notes") or {}).get(persona_env) or "", notes_found["ME"])     # 사적 기억 = 캐릭터 귀속 top-level
+            S_ROOT.setdefault("notes", {})[persona_env] = notes_found["ME"]     # 사적 기억 = 캐릭터 귀속 top-level
         if turn_persona and len([r for r in (s.get("room") or []) if r]) > 1:
             s["last_sp"] = turn_persona                # 마지막 화자(v3 = last_sp) = 단톡에서만 갱신 — 1:1 무갱신(5인검증⑤)
         if (s.get("barged") or {}).get("id") == turn_persona:
@@ -474,25 +465,22 @@ PY
   # 헤드 스트리밍 TTS(한수3 260714) — 생성 중 선굽기한 첫 문장 mp3가 있고 spoken 접두와 정확 일치하면 나머지만 굽고 프레임 연결.
   #   동일 엔진·동일 보이스(yeta_tts.py 같은 경로) = 동일 인코딩 → mp3 이어붙이기 안전(스플라이스 미세 글리치 = 무전기 결).
   #   불일치(재시도로 딴 답장·미완 헤드)·타임아웃 = 전문 TTS 폴백(종전 경로 그대로) — 전 단계 fail-soft.
-  local _head="" _hb=""
+  local _head=""
   if [ -f /tmp/yeta_ptt_head.txt ]; then
     _head="$(cat /tmp/yeta_ptt_head.txt 2>/dev/null)"
     if [ -n "$_head" ] && [ "${spoken:0:${#_head}}" = "$_head" ]; then
-      _hb="/tmp/yeta_ptt_head.$(printf '%s' "$_head" | python3 -c 'import hashlib,sys; print(hashlib.sha256(sys.stdin.buffer.read()).hexdigest()[:8])')"   # 콘텐츠 해시 결속(평의회 레이스 MED) — 재시도 attempt 교차에도 txt↔mp3 짝 보장 = 폐기 답장 헤드 오접합 원천 차단
       local _w=0
-      while [ ! -f "${_hb}.done" ] && [ "$_w" -lt 6 ]; do sleep 1; _w=$((_w + 1)); done   # 완주 대기 상한 6s(평의회 오디오 LOW — 헤드는 최적화 축 = 빠른 포기 · 보통 생성 중 이미 완료)
-      if [ -s "${_hb}.mp3" ]; then
+      while [ ! -f /tmp/yeta_ptt_head.done ] && [ "$_w" -lt 10 ]; do sleep 1; _w=$((_w + 1)); done   # 선굽기 완주 대기(상한 10s — 보통 생성 중 이미 완료)
+      if [ -s /tmp/yeta_ptt_head.mp3 ]; then
         local _rest="${spoken:${#_head}}"
         _rest="$(printf '%s' "$_rest" | sed 's/^[[:space:]]*//')"
-        if [ -z "$_rest" ]; then cp "${_hb}.mp3" /tmp/yeta_ptt.mp3; echo "  PTT 헤드 단독(한 문장 답장 · TTS 재합성 0)"
+        if [ -z "$_rest" ]; then cp /tmp/yeta_ptt_head.mp3 /tmp/yeta_ptt.mp3; echo "  PTT 헤드 단독(한 문장 답장 · TTS 재합성 0)"
         elif python3 .github/scripts/yeta_tts.py "$PERSONA" "$_rest" /tmp/yeta_ptt_rest.mp3; then
-          if [ -s "${_hb}.eng" ] && [ "$(cat "${_hb}.eng" 2>/dev/null)" = "$(cat /tmp/yeta_ptt_rest.mp3.eng 2>/dev/null)" ]; then   # 엔진 동일성 대조(el 44.1kHz vs oa 24kHz raw 접합 = 후반 깨짐 · 평의회 오디오 HIGH) — 사이드카 부재/불일치 = 접합 포기
-            cat "${_hb}.mp3" /tmp/yeta_ptt_rest.mp3 > /tmp/yeta_ptt.mp3; echo "  PTT 헤드+나머지 접합(선굽기 적중 · 엔진 $(cat "${_hb}.eng"))"
-          else echo "  PTT 헤드/나머지 엔진 불일치·사이드카 부재 — 접합 포기(전문 폴백)"; fi
+          cat /tmp/yeta_ptt_head.mp3 /tmp/yeta_ptt_rest.mp3 > /tmp/yeta_ptt.mp3; echo "  PTT 헤드+나머지 접합(선굽기 적중)"
         fi
       fi
     fi
-    rm -f /tmp/yeta_ptt_head.* /tmp/yeta_ptt_rest.*   # 해시 파생물 포함 전량 회수(스테일 오접합 차단)
+    rm -f /tmp/yeta_ptt_head.txt /tmp/yeta_ptt_head.mp3 /tmp/yeta_ptt_head.done /tmp/yeta_ptt_head.part /tmp/yeta_ptt_rest.mp3
   fi
   if [ ! -s /tmp/yeta_ptt.mp3 ]; then
     python3 .github/scripts/yeta_tts.py "$PERSONA" "$spoken" /tmp/yeta_ptt.mp3 || { echo "  PTT TTS 실패/미설정 — 텍스트만"; return 0; }
@@ -1098,8 +1086,8 @@ ${SCENE_BLOCK}
 
 [출력 계약 — 반드시 지켜라]
 ${CONTRACT1}${GROUP_RULE}${ME_RULE}
-- 길이(운영자 260714 확정 · 실측검증): 대사는 **1~3문장, 기본 80자 안**에서 끝내라 — 감정이 깊게 흐르는 장면만 120자까지. 단 narration 카드의 여운 장면·해금 에피소드(관계 단계가 여는 순간)는 지문 최대 2줄을 더 허용한다(그 순간만 숨 쉬게 · 평의회 260714). 카드 예시 대화의 말투·어미는 복제하되 **길이는 이 계약이 우선**(예시의 절반 호흡). 하고 싶은 말이 남으면 다음 턴을 위해 아껴라 — 대화는 캐치볼이다.
-- 대사가 끝나면, **이번 턴에 새로 남길 사실·진전이 있는 블록만** 아래 순서로 붙인다(확정 사실만·각 최대 600자·굵직한 사건은 [사건] 줄로 보존). 바뀐 게 없는 블록은 통째로 생략하라 — 생략 = 기존 기억 그대로 유지(안전 · 운영자 260714). 단 새 사실·관계 진전·이름은 반드시 그 턴에 기록하고, 신뢰·개방이 진전됐으면 NOTE:ME를 재발행해 [LV]을 갱신하라(생략으로 진급을 미루지 마라). 블록을 재작성할 땐 이전 [★]·[사건] 줄을 빠짐없이 옮겨라(누락분은 서버가 재주입하지만 네가 옮기는 게 정본이다):
+- 길이(운영자 260714 확정 · 실측검증): 대사는 **1~3문장, 기본 80자 안**에서 끝내라 — 감정이 깊게 흐르는 장면만 120자까지. 카드 예시 대화의 말투·어미는 복제하되 **길이는 이 계약이 우선**(예시의 절반 호흡). 하고 싶은 말이 남으면 다음 턴을 위해 아껴라 — 대화는 캐치볼이다.
+- 대사가 끝나면, **이번 턴에 새로 남길 사실·진전이 있는 블록만** 아래 순서로 붙인다(확정 사실만·각 최대 600자·굵직한 사건은 [사건] 줄로 보존). 바뀐 게 없는 블록은 통째로 생략하라 — 생략 = 기존 기억 그대로 유지(안전 · 운영자 260714). 단 새 사실·관계 진전·이름 같은 건 반드시 그 턴에 기록해라 — 빠뜨리면 다음 턴의 네가 잊는다:
 <<NOTE:PUB>>
 (갱신된 공용 기억 — 이 방 밖에서도 성립하는 유저 객관 사실·세계 사건만. 이 방에서만 나온 고백·비밀·관계 진도는 절대 PUB 금지 — 반드시 ME로)
 <</NOTE>>
@@ -1113,10 +1101,9 @@ ${CONTRACT1}${GROUP_RULE}${ME_RULE}
   # 문장 스트리밍(260714 한수2) — 본답장만 · 1:1만([이름표] 단톡 대본이 분할 전 raw로 노출 방지) · YETA_STREAM=0 = 회귀 노브
   if [ -z "$CO_ID" ] && [ "${YETA_STREAM:-1}" != "0" ] && [ -f ".github/scripts/yeta_stream.py" ]; then
     export METER_STREAM=".github/scripts/yeta_stream.py" YETA_DRAFT_KEY="$DRAFT_KEY" YETA_DRAFT_BUCKET="$YETA_R2_BUCKET" YETA_DRAFT_EP="$EP" YETA_DRAFT_T="$THREAD" YETA_DRAFT_P="$PERSONA"
-    rm -f /tmp/yeta_ptt_head.* /tmp/yeta_ptt_rest.*   # 전 턴 잔재 소거(해시 파생물 포함 · 스테일 헤드 = 오접합 씨앗)
-    draft_clear   # 직전 턴 잔여 draft 선삭제(러너 비정상 종료 잔존분 — 유령 버블 창 봉합 · 평의회 레이스 LOW)
-    export YETA_STREAM_FIRST=/tmp/yeta_first_pub; rm -f /tmp/yeta_first_pub   # 계기판(260714) — 필터가 첫 문장 '성공' 발행 시각(epoch ms)을 남김 = lat.f 재료
-    if [ "$PTT" = "1" ]; then export YETA_PTT_HEAD="/tmp/yeta_ptt_head"; else export YETA_PTT_HEAD=""; fi   # 헤드 TTS 선굽기(한수3) — PTT 턴만 · ⚠️일치 경로는 문자수 총량 불변(호출 +1)이나 불일치·재시도 시 헤드(≤200자) 이중과금 = el 30k캡 소진(평의회 비용 LOW — fail-soft·유계 감수)
+    rm -f /tmp/yeta_ptt_head.txt /tmp/yeta_ptt_head.mp3 /tmp/yeta_ptt_head.done /tmp/yeta_ptt_head.part   # 전 턴 잔재 소거(스테일 헤드 = 오접합 씨앗)
+    export YETA_STREAM_FIRST=/tmp/yeta_first_pub; rm -f /tmp/yeta_first_pub   # 계기판(260714) — 필터가 첫 문장 발행 시각(epoch ms)을 남김 = lat.f 재료
+    if [ "$PTT" = "1" ]; then export YETA_PTT_HEAD="/tmp/yeta_ptt_head"; else export YETA_PTT_HEAD=""; fi   # 헤드 TTS 선굽기(한수3) — PTT 턴만(⚠️유료 TTS = 발동 축 종전과 동일 · 문자수 과금 총량 불변·호출 +1)
   fi
   if ! gen_out "$prompt"; then
     export METER_STREAM=""
