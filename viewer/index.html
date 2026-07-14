@@ -3596,7 +3596,7 @@ function yAiMsg(t, fresh, cont) {   // 캐릭터 메시지 = 아바타 + 이름 
 let _yLastN = -1, _yTypOn = false, _yFailOn = false, _yTypHold = 0, _yTypT = null;   // 촤르륵 키드 + 타이핑 지연 홀드(읽는 시간 · 운영자 260707)
 let _yKickOn = false;   // 난입 내보내기 pill 등장 래치(_yFailOn 동형 — 재렌더 재애니 방지 · 합석 260707)
 let _yPaceN = -1, _yPaceT = 0;   // 답장 페이스 — 공개 승인된 턴 수(꼬리 답장 런은 길이 비례 타이핑 모션 후 공개 · 운영자 260706 "바로 대답 어색" · 항목13)
-let _yDraft = null, _yDraftOn = false;   // 문장 스트리밍 부분 답장(260714 한수2) — watch가 준 draft + 표시 래치(등장 1회 촤르륵 · 확정 도착 시 페이스 홀드 스킵 판정)
+let _yDraft = null, _yDraftOn = false, _yNoAnim = false;   // 문장 스트리밍 부분 답장(260714 한수2) — watch가 준 draft + 표시 래치 + 스왑 무애니 1회 플래그(re-whoosh 차단 · 평의회 UX)
 let _lastUserI = -1, _meUnread = false;   // 인챗 '1' 읽음표시(항목14A) — 마지막 미읽음 내 턴 인덱스 + 미읽음 래치(_yTypHold 경과 = 읽음)
 // ── 자동 재시도(운영자 260714 "재시도로 묻지 말고 자체 재시도 · 4회 이상 안되면 그냥 대화 이탈") — 실패 배너·버튼 폐지: 실패 감지 = retry op 무알림 자동 재발사(지수 백오프) · 그동안 '입력 중'만 유지 · 4회 소진 = 지문 한 줄 조용한 이탈(배너·토스트 0 = 바이브 보존)
 const YAR_MAX = 4;   // 자동 재시도 상한 — 소진 후엔 새 메시지(새 에피소드)로만 재개(쿼터 보호)
@@ -3633,7 +3633,7 @@ function yBubbles(t) {   // 버블 분할(운영자 260714 "2개 먼저 뱉고 2
   const out = [];
   for (const para of String(t || '').split(/\n[ \t]*\n/).map(x => x.trim()).filter(Boolean)) {
     if (/^\*[^*\n]{1,200}\*$/.test(para)) { out.push(para); continue; }
-    const sents = (para.match(/[^.!?…~]+[.!?…~]+\s*|[^.!?…~]+$/g) || [para]).map(x => x.trim()).filter(Boolean);
+    const sents = (para.match(/[\s\S]*?[.!?…~]+(?:\s+|$)|[\s\S]+$/g) || [para]).map(x => x.trim()).filter(Boolean);   // 경계 = 부호+공백/끝만(러너 (?<=[.!?…~])\s+ 와 동형 — 무공백 "좋다.진짜"는 한 버블 · 평의회 UX 재청크 불일치 봉합)
     let cur = [];
     for (const x of sents) { cur.push(x); if (cur.length >= 2) { out.push(cur.join(' ')); cur = []; } }
     if (cur.length) out.push(cur.join(' '));
@@ -3657,7 +3657,7 @@ function yRender() {
   //   버블 사이 = staged 유지 → 타이핑 점이 자연히 끼어 메신저 결. 각 홀드 = 그 버블 길이 비례(항목13 공식 온존 · 상한 4.2s).
   if (first || _yPaceN < 0 || _yPaceN > all.length) _yPaceN = all.length;
   else if (all.length > _yPaceN) {
-    if (_yDraftOn) { _yPaceN = all.length; _yDraft = null; }   // 문장 스트리밍으로 이미 본 답장(한수2) = 전량 즉시 스왑(드래프트가 보여준 텍스트가 숨는 축소 착시 방지)
+    if (_yDraftOn) { _yPaceN = all.length; _yDraft = null; _yNoAnim = true; }   // 문장 스트리밍으로 이미 본 답장(한수2) = 전량 즉시 스왑(축소 착시 방지) + 촤르륵 재생 억제(이미 보인 텍스트 re-whoosh 플래시 차단 · 평의회 UX)
     let cut = all.length; while (cut > 0 && all[cut - 1].role === 'assistant') cut--;   // 꼬리 답장 런 직전까지는 즉시 공개(낙관 내 버블 소실 방지)
     _yPaceN = Math.max(_yPaceN, cut);
     if (all.length > _yPaceN && !_yPaceT) {
@@ -3678,7 +3678,7 @@ function yRender() {
   if (YCUR && YCUR.enter_line && !turns.some(t => t.role === 'user')) h += `<div class="ysit">${esc(YCUR.enter_line)}</div>`;   // 대화 시작 장면 지문(운영자 260708) — 내 발화 전(오프닝 단계) = 상황(enter_line)을 인물 대사 위에 먼저("먼저 상황이 보이고, 그다음에 말") · 첫 내 메시지 후 퇴장
   if (!turns.length && YCUR && (!openingPending || openingStuck)) h += yAiMsg({ text: yGreet(YCUR), persona: YCUR.id });   // 첫인사 폴백 — 오프닝 인플라이트면 억제(타이핑만) · 미설정/막힘 시 정적 표시
   h += turns.map((t, i) => {
-    const fresh = !first && i >= prevN;   // 신규 턴만 촤르륵
+    const fresh = !first && i >= prevN && !_yNoAnim;   // 신규 턴만 촤르륵 · _yNoAnim = 스트리밍 스왑 1회 무애니(이미 보인 텍스트 재생 차단)
     const pv = turns[i - 1];              // 직전 턴 = 같은 화자면 그룹핑(cont)
     if (t.role === 'user') { const tm = yTime(t.ts); const un = i === _lastUserI && _meUnread && yPrefOn('read', true); return `<div class="ymrow me${fresh ? ' in' : ''}${pv && pv.role === 'user' ? ' cont' : ''}">${un ? '<span class="yb-un">1</span>' : ''}${tm ? `<time class="ytime">${tm}</time>` : ''}<div class="yb me">${yFmt(t.text)}</div></div>`; }   // 내 메시지 = [1][시각][버블] · 1 = 마지막 미읽음 내 턴(항목14A)
     if (t.role === 'assistant') return yAiMsg(t, fresh, pv && pv.role === 'assistant' && (pv.persona || '') === (t.persona || ''));
@@ -3707,7 +3707,7 @@ function yRender() {
   const invP = s.invite && Date.now() - (s.invite.ts || 0) < 600000 ? yPersona(s.invite.to) : null;   // 초대 판정 대기(단톡 260707)
   const typing = yPrefOn('typing', true) && !deadNow && !gaveUp && !openingStuck && (awaiting || staged || failNow) && !!YCUR && Date.now() >= _yTypHold;   // 타이핑 표시(설정) 끄면 "입력 중" 숨김 · staged = 답장 페이스 홀드 · failNow = 자동 재시도 중에도 점 유지(실패 무노출) · _yTypHold = 읽는 시간 경과 후에만(운영자 260707)
   if (!awaiting && !staged && _yDraft) _yDraft = null;   // 확정 반영·대기 종료 = 잔여 draft 폐기(다음 턴 유령 버블 차단)
-  const dr = _yDraft && awaiting && !deadNow && !gaveUp && _yDraft.t === ((YSESS || {}).cur || '') && (_yDraft.ts || 0) >= ((s.awaiting_since || 0) - 5000) && _yDraft.text ? _yDraft : null;   // 문장 스트리밍(한수2) — 현재 방 · 이번 대기분만(스테일 가드) · 사망/이탈 연출이 우선
+  const dr = _yDraft && awaiting && !deadNow && !gaveUp && Date.now() >= _yTypHold && _yDraft.t === ((YSESS || {}).cur || '') && (_yDraft.ts || 0) >= ((s.awaiting_since || 0) - 5000) && _yDraft.text ? _yDraft : null;   // 문장 스트리밍(한수2) — 현재 방 · 이번 대기분만(스테일 가드) · 사망/이탈 연출 우선 · 읽는시간(_yTypHold) 게이트 = 타이핑과 동일('1'과 답장 동시노출 차단 · 평의회 UX)
   if (deadNow) h += `<div class="ysit">…사망 — 그 시각부터 24시간, 어떤 연락도 닿지 않는다.</div>`;   // 사망 지문(운영자 260714 "사망으로 표기" · .ysit 계승) — 입력도 함께 잠김 · 24h 후 자연 해제
   else if (gaveUp) h += `<div class="ysit${_yFailOn ? '' : ' in'}">…답이 없다. 지금은 연락이 닿지 않는 모양이다.</div>`;   // 조용한 이탈 = 장면 지문(.ysit 계승 · 나레이션 결) — 새 메시지 보내면 새 에피소드로 재개
   else if (dr) { const lt = turns[turns.length - 1]; const pid = dr.p || (YCUR && YCUR.id) || ''; const pcont = !!(lt && lt.role === 'assistant' && (lt.persona || '') === pid);
@@ -3721,6 +3721,7 @@ function yRender() {
   yMeter();   // 누적 토큰 갱신(새 답장 턴 tok 합산 · 운영자 260709)
   const atBottom = log.scrollHeight - log.scrollTop - log.clientHeight < 80;   // 스크롤 강탈 방지(평의회⑨)
   log.innerHTML = h;
+  _yNoAnim = false;   // 스왑 무애니 = 1회성(다음 렌더부터 정상 촤르륵)
   if (atBottom) log.scrollTop = log.scrollHeight;
   if (((awaiting && waitMs <= zlim) || invP) && !deadNow) yStartPoll(); else yStopPoll();   // 초대 판정도 폴로 픽업(state 비점유) · 사망 방 = 폴 정지(운영자 260714 — 두절 연출)
 }

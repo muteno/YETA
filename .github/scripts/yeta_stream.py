@@ -11,7 +11,7 @@
 # env: YETA_DRAFT_KEY/BUCKET/EP(없으면 순수 수집만) · YETA_DRAFT_T(스레드)/YETA_DRAFT_P(페르소나) — 뷰어 스테일 가드용.
 #      YETA_PTT_HEAD(선택 · PTT 턴만) = 헤드 TTS 선굽기 경로 프리픽스 — 첫 문장이 확정되는 순간 백그라운드로 yeta_tts.py 발사
 #      (한수3 260714: 음성 대기 = 생성+전문TTS → 생성과 헤드TTS 병렬 · ptt_voice가 접두 일치 검증 후 나머지만 굽고 이어붙임 · 불일치 = 전문 폴백).
-import json, os, re, subprocess, sys, tempfile, time
+import hashlib, json, os, re, subprocess, sys, tempfile, time
 
 KEY = os.environ.get("YETA_DRAFT_KEY", "")
 BUCKET = os.environ.get("YETA_DRAFT_BUCKET", "")
@@ -47,15 +47,16 @@ def publish(force=False):
         body = json.dumps({"t": TH, "p": PS, "ts": int(now * 1000), "text": t}, ensure_ascii=False)
         f = tempfile.NamedTemporaryFile("w", suffix=".json", delete=False, encoding="utf-8")
         f.write(body); f.close()
-        subprocess.run(["aws", "s3api", "put-object", "--bucket", BUCKET, "--key", KEY, "--body", f.name,
-                        "--content-type", "application/json", "--endpoint-url", EP],
-                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=15, check=False)
+        r = subprocess.run(["aws", "s3api", "put-object", "--bucket", BUCKET, "--key", KEY, "--body", f.name,
+                            "--content-type", "application/json", "--endpoint-url", EP],
+                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=15, check=False)
         os.unlink(f.name)
+        if r.returncode != 0: return               # 실패 발행 = 상태 미전진(다음 틱 재시도) · FIRST 미기록 = 거짓 f 방지(평의회 260714 계측)
         last_pub = now; pub_len = len(t)
         global first_done
         if FIRST and not first_done:
             first_done = True
-            try: open(FIRST, "w").write(str(int(now * 1000)))   # 첫 문장 발행 시각 — 계기판 f 축
+            try: open(FIRST, "w").write(str(int(now * 1000)))   # 첫 문장 '성공' 발행 시각 — 계기판 f 축
             except Exception: pass
     except Exception:
         pass
@@ -78,10 +79,12 @@ def try_head():                           # 첫 문장 확정 순간 헤드 TTS 
     if not head: return
     head_fired = True                                 # 성공/실패 무관 1회(재발사 소음 방지)
     try:
+        # 콘텐츠 해시 결속(평의회 260714 레이스·오디오 MED) — gen_out 재시도로 attempt가 겹쳐도 txt↔mp3가 해시로 짝지어져 폐기 답장의 헤드 음성 오접합 원천 차단.
+        h = hashlib.sha256(head.encode("utf-8")).hexdigest()[:8]
         open(HEAD + ".txt", "w", encoding="utf-8").write(head)
         subprocess.Popen(["bash", "-c",
-            'python3 .github/scripts/yeta_tts.py "$1" "$2" "$3.part" >/dev/null 2>&1 && mv -f "$3.part" "$3.mp3"; echo done > "$3.done"',
-            "_", PS, head, HEAD], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            'python3 .github/scripts/yeta_tts.py "$1" "$2" "$3.part" >/dev/null 2>&1 && { mv -f "$3.part" "$3.mp3"; mv -f "$3.part.eng" "$3.eng" 2>/dev/null || true; }; echo done > "$3.done"',
+            "_", PS, head, HEAD + "." + h], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     except Exception:
         pass
 
@@ -92,10 +95,12 @@ for line in sys.stdin:
     try: ev = json.loads(s)
     except Exception: continue
     ty = ev.get("type")
-    if ty == "stream_event":              # 토큰 델타(--include-partial-messages)
-        d = (ev.get("event") or {}).get("delta") or {}
-        if d.get("type") == "text_delta":
-            buf.append(d.get("text") or ""); try_head(); publish()
+    if ty == "stream_event":              # 토큰 델타(--include-partial-messages) — 부작용(발행·헤드)은 예외 격리: 본답장 stdout(result 수집)이 절대 안 죽게(평의회 260714 플랫폼 MED)
+        try:
+            d = (ev.get("event") or {}).get("delta") or {}
+            if d.get("type") == "text_delta":
+                buf.append(str(d.get("text") or "")); try_head(); publish()
+        except Exception: pass
     elif ty == "assistant":               # 완결 어시스턴트 메시지 — 파셜 미지원 CLI에서도 메시지 단위 동기
         try:
             txt = "".join(c.get("text", "") for c in (ev.get("message") or {}).get("content") or [] if c.get("type") == "text")
