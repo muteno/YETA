@@ -1539,7 +1539,7 @@ function miniToast(msg) {   // 범용 미니 토스트(nm-toast 계승·초록·
 /* ── yeta 로직(L8435-8692) + 딥링크(L8717) — SNS/설정 아코디언 8693-8716 제외 ── */
 // ── yeta 말벗 제타 (프로필 메뉴 · 랜덤 페르소나 톡방 · 세션=R2 단일 스레드 — functions/api/yeta.js · 260703 v2) ──
 // 🎲 뽑기/재뽑기 = 맥락(턴·관계노트) 유지·화자만 교체. 다이얼 2개(모델×노력 — 턴별 박제·답장 캡션으로 곱 체감).
-// 프리웜 = 창 열면 러너 선부팅(warm op · 30초 목표). 폴 = 다이얼 적응형(깊게 8s/그외 4s · 좀비 임계 10분/5분).
+// 프리웜 = 창 열면·입력 포커스 시 러너 선부팅(warm op · 30초 목표). 폴 = 대기시간 적응형(기대 구간 2s/장기화 5s · 좀비 임계 5분).
 // *나레이션* = 이탤릭(제타 결). 페르소나 색/배경 = roster color·bg → --yeta-ac·log 배경(운영자 컨셉 훅).
 const yetadlg = $('#yetadlg');
 let YCHARS = [], YWORLD = null, YCUR = null, YREADY = false, YSESS = null, _yPoll = null;
@@ -3650,7 +3650,9 @@ function yRender() {
   if ((awaiting && waitMs <= zlim) || invP) yStartPoll(); else yStopPoll();   // 초대 판정도 폴로 픽업(state 비점유)
 }
 function yStartPoll() {   // 적응형 폴 — 웜 후속 턴(10~30s 답장)을 빨리 픽업(아이데이션⑤ · 대기 중에만 돎)
-  const iv = 4000;   // 적응형 폴(effort low 고정)
+  const s = YTH() || {};
+  const w = s.awaiting_since ? Date.now() - s.awaiting_since : 0;
+  const iv = w > 90000 ? 5000 : 2000;   // 답장 기대 구간(~90s) = 2s 즉픽업(체감 지연 −2s) · 장기화 = 5s 감속(요청 낭비 억제 · 전이는 다음 yLoad에서 자동)
   if (_yPoll && _yPoll.iv === iv) return;
   yStopPoll();
   _yPoll = { iv, t: setInterval(() => { if (document.visibilityState !== 'visible') return; if (!yetadlg.open) { yStopPoll(); return; } yLoad(); }, iv) };
@@ -3684,6 +3686,7 @@ async function ySend() {
 $('#yetaSend').addEventListener('click', ySend);
 $('#yetaText').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); ySend(); } });   // 폰 enterkeyhint=send · Shift+Enter=줄바꿈
 $('#yetaText').addEventListener('input', e => { const t = e.target; t.style.height = 'auto'; t.style.height = Math.min(120, t.scrollHeight) + 'px'; });
+$('#yetaText').addEventListener('focus', yWarm);   // 쓰기 시작 = 러너 선부팅(콜드 부팅 30~40s를 타이핑 시간과 겹침 — 유휴 복귀 첫 답장 단축 · 4.5분 디바운스는 yWarm 내장)
 // 🎲 재뽑기(주사위) 버튼 제거(운영자 260705 #8) · yDraw는 보존(향후 재도입 대비)
 // "새 대화"(reset) 버튼 제거(운영자 260705) — op reset 백엔드는 보존(향후 진입점 재배선 대비)
 let _yDlgClosing = false;

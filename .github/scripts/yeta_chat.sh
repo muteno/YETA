@@ -22,7 +22,7 @@ export CLAUDE_BARE=0              # 방어 명시 — 공유 기본값이 미래
 RECENT_TURNS="${YETA_RECENT_TURNS:-8}"
 INLINE_TRIES=4   # 4계정 폴오버 체인 깊이(서브3 MUTENONA까지 실호출) + 일시 과부하 흡수 — 4계정 확장 3→4(챗 안정성: 앞 3계정 쿼터 시 MUTENONA 실도달)
 WARM_WAIT="${YETA_WARM_WAIT:-300}"       # 웜 유휴 유예(s) — 무메시지면 조용히 종료
-WARM_POLL="${YETA_WARM_POLL:-5}"
+WARM_POLL="${YETA_WARM_POLL:-2}"   # 웜 픽업 지연 평균 2.5s→1s(대화 속도 260713) — R2 GET 300s/2s=150회/창 = Class B 무료 티어에 무시량
 SESSION_MAX="${YETA_SESSION_MAX:-3300}"  # 55분(잡 timeout 60분보다 낮게 = mid-turn 킬 차단 · 아이데이션③)
 PER_TURN_BUDGET="${YETA_TURN_BUDGET:-300}"   # 새 턴 시작 전 필요한 잔여 예산(claude 240 + finish 여유 · env = 테스트 노브)
 
