@@ -537,6 +537,52 @@ def check_x_char():
     return 0   # WARN-only(병렬작업 파일 비차단)
 
 
+# CLAUDE.md §<이모지> 앵커 해소 게이트(WARN-first · L8 평의회 설계 260714) — 참조는 있는데 CLAUDE.md에 그 `## <이모지>` 섹션 실물이 없으면 경고.
+_EMO = '[\U0001F000-\U0001FAFF☀-➿⬀-⯿⌀-⏿←-⇿]'
+_ANCHOR_REF = re.compile(r'CLAUDE\.md\s*§\s*(' + _EMO + ')')
+_ANCHOR_HEAD = re.compile(r'^#{1,6}\s+(' + _EMO + ')', re.M)
+_ANCHOR_GLOBS = ('*.md', 'docs/**/*.md', '구성도/**/*.md', '.claude/**/*.md')
+_ANCHOR_SKIP = ('docs/작업이력.md',)   # frozen append-only 원장 = 비대상(수정 금지)
+
+
+def check_claude_anchors():
+    """CLAUDE.md §<이모지> 참조가 CLAUDE.md의 `## <이모지>` 섹션으로 해소되는지 WARN(rc=0 고정).
+    v2 재작성이 접은 섹션(§📰/§📐/§🗺…)을 참조가 아직 가리키는 '침묵 dangling'을 목록화.
+    해소 = 섹션 복원 or 참조를 [N]·실물 경로로 repoint. 백로그 청산 후 하드(rc=1) 승격 검토(별건 [9])."""
+    try:
+        have = set(_ANCHOR_HEAD.findall(open(os.path.join(ROOT, 'CLAUDE.md'), encoding='utf-8').read()))
+    except OSError:
+        print('⚠️ check_claude_anchors 스킵(CLAUDE.md 없음)'); return 0
+    warns, seen = [], set()
+    for g in _ANCHOR_GLOBS:
+        for p in sorted(glob.glob(os.path.join(ROOT, g), recursive=True)):
+            rel = os.path.relpath(p, ROOT)
+            if rel.startswith('_versions') or rel in _ANCHOR_SKIP or rel in seen:
+                continue
+            seen.add(rel)
+            try:
+                raw = open(p, encoding='utf-8').read()
+            except OSError:
+                continue
+            in_fence = False
+            for ln, line in enumerate(raw.splitlines(), 1):
+                if line.lstrip().startswith('```'):
+                    in_fence = not in_fence; continue
+                if in_fence:
+                    continue
+                for e in _ANCHOR_REF.findall(re.sub(r'`[^`\n]+`', '', line)):   # 인라인 백틱 제거(예시 오탐 차단)
+                    if e not in have:
+                        warns.append('%s:%d → CLAUDE.md §%s (섹션 실물 없음)' % (rel, ln, e))
+    if warns:
+        print('⚠️ CLAUDE.md §앵커 해소 게이트(비차단·WARN-first) — 참조하나 섹션 실물 없음(%d):' % len(warns))
+        for w in warns:
+            print('  -', w)
+        print('  (해소 = CLAUDE.md에 `## §섹션` 복원 or 참조를 [N]·실물 경로로 repoint · 백로그 청산 후 하드 승격)')
+    else:
+        print('✅ CLAUDE.md §앵커 게이트 — CLAUDE.md §<이모지> 참조 전부 실물 섹션 해소.')
+    return 0
+
+
 def check_tokens_link():
     """공유 구조토큰 tokens.css 배선 하드게이트(§🎨 STAGE3·분신술7·260628).
     4뷰어(thumb/ly/k/comp)가 viewer/tokens.css를 <link>로 로드하는지 검증 — 미링크면 신규 컴포넌트가
@@ -769,6 +815,10 @@ def main():
         check_x_char()   # 닫기/삭제 × 문자 → SVG 권장(WARN-only·병렬작업 파일 비차단)
     except Exception as e:
         print('⚠️ check_x_char 스킵:', e)
+    try:
+        check_claude_anchors()   # CLAUDE.md §<이모지> 앵커 해소(WARN-first·L8 평의회 설계 260714 · 백로그 청산 후 하드 승격)
+    except Exception as e:
+        print('⚠️ check_claude_anchors 스킵:', e)
     try:
         if check_tokens_link() != 0:   # 공유 구조토큰 tokens.css 4뷰어 링크(하드 게이트·§🎨 STAGE3·260628)
             rc = 1
