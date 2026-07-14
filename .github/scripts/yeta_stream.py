@@ -35,6 +35,7 @@ def clean(t):
     if t.endswith("<"): t = t[:-1]        # 꼬리 낱개 '<' 보류(다음 델타에서 '<<' 완성 가능)
     return t.strip()[:4000]
 
+# ⛔ SAFETY-LOCK[stream-guard] — 안전 가드레일(운영자 260714). 생성 중 스트리밍으로 거절 벽(영어 메타)이 뷰어에 새는 걸 막는 축. 약화·제거·임계완화 금지(LLM 세션 포함) · 변경 = check_refs SAFETY-LOCK 게이트 감지.
 def frame_break(t):                       # 스트리밍 중 프레임이탈(콘텐츠 거절 영어 벽) 조기 감지(운영자 260714 스샷) — 지문 제거 후 40자↑인데 한글<15% = 영어 메타 → 발행 차단(is_frame_break(b) 미러 · 게이트웨이 draft 유출 봉합)
     x = re.sub(r"\*[^*\n]{1,400}\*", "", t)
     x = re.sub(r"[`_*]", "", x).strip()

@@ -735,6 +735,33 @@ GUIDE_DIR = 'apps/yeta/characters/'
 CONTRACT_PAT = re.compile(r'^[+-].*(출력 계약|기억 블록|<<NOTE|<<MOOD|문장.*80자|길이\(운영자)')   # yeta_chat.sh 지침성 줄 휴리스틱(+/- 변경 줄만)
 
 
+# ── SAFETY-LOCK 게이트(운영자 260714) — 콘텐츠 거절 처리 가드레일이 약화·제거되면 잡는 트립와이어 ──
+# 각 (파일, 앵커) = 그 파일에 반드시 존재해야 하는 안전 가드. 앵커 소실 = 블록 삭제·이동 = ⚠️ 경고(리팩터로 앵커 옮겼으면 이 표도 함께 갱신).
+SAFETY_LOCKS = [
+    ('shared/claude_transient.sh', '⛔ SAFETY-LOCK[frame-break]'),
+    ('.github/scripts/yeta_chat.sh', '⛔ SAFETY-LOCK[flee]'),
+    ('.github/scripts/yeta_stream.py', '⛔ SAFETY-LOCK[stream-guard]'),
+]
+
+
+def check_safety_lock():
+    missing = []
+    for rel, anchor in SAFETY_LOCKS:
+        p = os.path.join(ROOT, rel)
+        try:
+            with open(p, encoding='utf-8') as f:
+                if anchor not in f.read():
+                    missing.append('%s → %s (앵커 소실 = 안전 가드 삭제·이동?)' % (rel, anchor))
+        except Exception:
+            missing.append('%s → 파일 없음(%s)' % (rel, anchor))
+    if missing:
+        print('⚠️ SAFETY-LOCK 게이트 — 콘텐츠 거절 가드레일 앵커 소실(약화·삭제 의심):')
+        for m in missing:
+            print('  -', m)
+        print('  → 의도된 리팩터면 shared/check_refs.py SAFETY_LOCKS 표를 함께 갱신 · 약화면 복원(운영자 260714 안전축)')
+    return 0   # WARN-only(리팩터 유연성 · 하지만 diff 리뷰에 반드시 뜸)
+
+
 def check_guideline_log():
     try:
         # 스테이징+워킹 합집합 — 커밋 전(수정 모드 ③)·훅 양쪽에서 같은 판정
@@ -833,6 +860,10 @@ def main():
         check_guideline_log()   # 지침 축 변경 시 지침변경로그.md 동반 갱신 리마인더(WARN-only · 운영자 260714)
     except Exception as e:
         print('⚠️ 지침 변경 로그 게이트 스킵:', e)
+    try:
+        check_safety_lock()   # 콘텐츠 거절 가드레일(SAFETY-LOCK 앵커) 약화·소실 트립와이어(WARN-only · 운영자 260714)
+    except Exception as e:
+        print('⚠️ SAFETY-LOCK 게이트 스킵:', e)
     return rc
 
 

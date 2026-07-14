@@ -458,6 +458,7 @@ PY
 
 # 무전기(PTT) 답장 음성 — 텍스트 답장 반영 *후* 합성·부착(텍스트 지연 0 · 음성은 수 초 뒤 폴이 픽업 = "무전기 수신" 페이스).
 # TTS SSOT = yeta_tts.py(클론 보이스 el: 우선 = 프리미엄 · ⚠️유료 = ptt 턴에서만 발동) · 전 단계 fail-soft(텍스트 답장은 이미 확정).
+# ⛔ SAFETY-LOCK[flee] — 안전 가드레일(운영자 260714). 콘텐츠 거절 시 유해 생성 없이 인캐릭터 탈출+일시 두절로 그 흐름을 끊는 축. 약화·제거 금지(LLM 세션 포함) · 변경 = check_refs SAFETY-LOCK 게이트 감지.
 flee_block() {   # 콘텐츠 거절 탈출 두절(운영자 260714) — dead 엔트리에 flee:1 박제 = 사망 인프라(send/재시도/초대/전화 차단·뷰어 입력락) 재활용하되 뷰어는 '벗어남'으로 표기. 기본 60분(env YETA_FLEE_MIN).
   local mins="${YETA_FLEE_MIN:-60}"
   r2get 2>/dev/null || return 0
