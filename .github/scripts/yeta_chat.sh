@@ -399,10 +399,13 @@ if kind == "ok":
             _dd = {p: u for p, u in (S_ROOT.get("dead") or {}).items() if (((u.get("t") if isinstance(u, dict) else u) or 0) + 604800000) > now}   # 7일+ 스테일만 소거(만료 엔트리 = 부활 첫 답 재료라 보존)
             _dd[turn_persona] = {"t": now + 86400000, "d": now, "mood": mood or "", "why": dead_why}
             S_ROOT["dead"] = _dd
+            # ⚠️ 멤버 제거 계약(짝: functions/api/yeta.js op kick) — room 필터 + last_sp/barged 인계를 반드시 동반. 수정 시 kick도 같이(260714 사망 버그 = 이 인계 누락이 원인).
             for _th2 in (S_ROOT.get("threads") or {}).values():   # 단톡 전 방 이탈("방을 이탈") — 생존자와의 대화는 계속 · 1:1(room 1명) = 방 유지(잠금은 게이트가)
                 _rm = [r for r in (_th2.get("room") or []) if r]
                 if turn_persona in _rm and len(_rm) > 1:
                     _th2["room"] = [r for r in _rm if r != turn_persona]
+                    if _th2.get("last_sp") == turn_persona: _th2["last_sp"] = _th2["room"][0]   # 죽은 화자가 마지막 화자면 생존자가 이어받음(kick 대칭) — 안 하면 뷰어 헤더가 죽은 last_sp를 계속 가리켜 "죽은 사람이 방에 남음"(운영자 260714 버그픽)
+                    if (_th2.get("barged") or {}).get("id") == turn_persona: _th2["barged"] = 0   # 난입 데뷔 전 사망 = 내보내기 pill 스테일 회수
             _nm = os.environ.get("CNAME", "") or turn_persona
             turns.insert(ins + k, {"role": "sys", "text": f"{_nm}의 기척이 끊겼다", "ts": now + k})
             s["state"] = "idle"   # 레이스 잔여 pending도 발사 억제(24h 뒤 밀린 메시지 = 부활 답)
@@ -854,23 +857,40 @@ else:
         if best:
             cand, via, meet_pl = best[1], "place", me_pl
 if not cand: sys.exit(1)
+if len(S_ROOT.get("threads") or {}) >= 12: sys.exit(1)   # 방 하드캡(초대 260712 동형) — 가득 차면 난입 보류(원본 1:1 보존)
 tnow = int(time.time() * 1000)
-room.append(cand)
-s["room"] = room
+# ⚠️ 성장 시 분기 계약(짝: functions/api/yeta.js op invite) — 난입 = 원본 1:1 스레드 보존 + 직전 3주고받기 시드 복사 → 새 단톡 스레드(g 접두)로 분기(초대 op 동형 · 운영자 260712 "기존 1명 대화 고유성" · 대화창 분리 260714) — 구: 원본 room 인플레이스 변형(1:1 파괴). 수정 시 invite도 같이.
+host = room[0]
+_uc = 0; _cut = len(turns)
+for _i in range(len(turns) - 1, -1, -1):
+    if (turns[_i] or {}).get("role") == "user":
+        _uc += 1
+        if _uc >= 3: _cut = _i; break
+seed = [{"role": x["role"], "text": x.get("text", ""), "ts": x.get("ts"),
+         **({"persona": x["persona"]} if x.get("persona") else {}),
+         **({"mood": x["mood"]} if x.get("mood") else {})}
+        for x in turns[_cut:] if (x or {}).get("role") in ("user", "assistant")]   # sys·마커 제외 = 대사만 시드(비밀 누수 0 · 초대 동형)
 def _wa(w): c = ord((w or " ")[-1]); return "과" if 0xAC00 <= c <= 0xD7A3 and (c - 0xAC00) % 28 else "와"
 if via == "place":
-    turns.append({"role": "sys", "text": f"{place_name(PL, meet_pl)} — 지나가던 {names[cand]}{_wa(names[cand])} 마주쳤다", "ts": tnow, "kind": "barge"})
+    seed.append({"role": "sys", "text": f"{place_name(PL, meet_pl)} — 지나가던 {names[cand]}{_wa(names[cand])} 마주쳤다", "ts": tnow, "kind": "barge"})
 else:
-    turns.append({"role": "sys", "text": enters.get(cand) or f"{names[cand]} 등장", "ts": tnow, "kind": "barge"})
-s["turns"] = turns
-s["barged"] = {"id": cand, "ts": tnow}
-if via: s["barged"]["via"] = via; s["barged"]["place"] = meet_pl
+    seed.append({"role": "sys", "text": enters.get(cand) or f"{names[cand]} 등장", "ts": tnow, "kind": "barge"})
+if len(seed) > 200: seed = seed[-200:]   # 스레드 캡(초대 동형)
+gid = "g" + format(tnow, "x")            # 단톡 스레드 id = 'g' 접두(페르소나 id·ID_RE 통과 · 초대 gid 규약 동형)
+while gid in (S_ROOT.get("threads") or {}):
+    tnow += 1; gid = "g" + format(tnow, "x")
+gth = {"turns": seed, "state": "idle", "opening": 0, "awaiting_since": 0, "err": "",
+       "room": [host, cand], "invite": None, "barged": {"id": cand, "ts": tnow},
+       "declined": {}, "pin": 0, "updated": tnow, "last_sp": host, "char_ver": "", "nudge": None}   # 난입 = 즉시 합류(room 2명) · 데뷔 첫 마디 = 유저 다음 턴(barged 마커)
+if via: gth["barged"]["via"] = via; gth["barged"]["place"] = meet_pl
+S_ROOT.setdefault("threads", {})[gid] = gth
+if S_ROOT.get("cur") == _os.environ.get("THREAD", ""): S_ROOT["cur"] = gid   # 유저가 이 방을 보는 중일 때만 새 단톡으로 전환(백그라운드 난입 = cur 불변 · 유령 전환 방지) — 원본 1:1은 목록에 그대로 보존
 S_ROOT["barge_day"] = today                        # 전역 상한 스탬프(top-level)
-if d.get("id") == cand: s.pop("declined", None)
-s["updated"] = S_ROOT["updated"] = tnow
+if d.get("id") == cand and s.get("declined"): s.pop("declined", None)   # 원본의 스테일 거절 마커 정리(거절 회수 반영 · updated 미변경 = 목록 순서 유지)
+S_ROOT["updated"] = tnow
 json.dump(S_ROOT, open(sys.argv[1], "w", encoding="utf-8"), ensure_ascii=False)
 PY
-  then r2put >/dev/null 2>&1 && echo "  🚪 난입 반영(room 합류 · 첫 마디 = 다음 턴)" || true; fi
+  then r2put >/dev/null 2>&1 && echo "  🚪 난입 반영(새 단톡 분기 · 원본 1:1 보존 · 첫 마디 = 다음 턴)" || true; fi
   return 0
 }
 

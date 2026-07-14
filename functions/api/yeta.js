@@ -544,6 +544,7 @@ export async function onRequestPost({ request, env }) {
       if (th.invite && Date.now() - (th.invite.ts || 0) < INVITE_TTL) return { abort: { error: '이미 누굴 부르는 중이야' } };
       if (Object.keys(s.threads).length >= 12) return { abort: { error: '방이 가득 찼어 — 오래된 방을 정리해줘' } };   // 하드 캡(draw와 동일)
       // 합석 초대 = 원본 1:1 스레드 보존, 직전 3주고받기(user 3턴까지)를 시드로 복사해 새 단톡 스레드로 분기(운영자 260712 "기존 1명 대화에서 이으면 고유성이 깨짐")
+      // ⚠️ 성장 시 분기 계약(짝: yeta_chat.sh barge_check) — 방이 2명+ 되면 원본 1:1 보존 + 새 g스레드로 분기(인플레이스 변형 금지). 난입도 동형(260714). 수정 시 barge_check도 같이.
       const src = Array.isArray(th.turns) ? th.turns : [];
       let uc = 0, cut = src.length;
       for (let i = src.length - 1; i >= 0; i--) { if (src[i] && src[i].role === 'user') { uc++; if (uc >= 3) { cut = i; break; } } }
@@ -582,6 +583,7 @@ export async function onRequestPost({ request, env }) {
       const room = Array.isArray(th.room) && th.room.length ? th.room : [t];
       if (!room.includes(persona)) return { abort: { error: '지금 방에 없는 사람이야' } };
       if (room.length <= 1) return { abort: { error: '마지막 한 명은 못 내보내' } };
+      // ⚠️ 멤버 제거 계약(짝: yeta_chat.sh 사망 이탈) — room 필터 + last_sp/barged 인계를 반드시 동반. 한쪽만 고치면 헤더가 나간/죽은 인물을 가리킴(260714 사망 버그 재발원). 수정 시 사망 이탈도 같이.
       th.room = room.filter(id => id !== persona);
       if (th.last_sp === persona) th.last_sp = th.room[0];   // 주 화자가 나가면 남은 사람이 이어받음(v3 = last_sp)
       if (th.barged && th.barged.id === persona) th.barged = 0;
