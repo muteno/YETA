@@ -35,11 +35,20 @@ def clean(t):
     if t.endswith("<"): t = t[:-1]        # 꼬리 낱개 '<' 보류(다음 델타에서 '<<' 완성 가능)
     return t.strip()[:4000]
 
+def frame_break(t):                       # 스트리밍 중 프레임이탈(콘텐츠 거절 영어 벽) 조기 감지(운영자 260714 스샷) — 지문 제거 후 40자↑인데 한글<15% = 영어 메타 → 발행 차단(is_frame_break(b) 미러 · 게이트웨이 draft 유출 봉합)
+    x = re.sub(r"\*[^*\n]{1,400}\*", "", t)
+    x = re.sub(r"[`_*]", "", x).strip()
+    letters = [c for c in x if c.isalpha()]
+    if len(x) <= 40 or not letters: return False
+    han = sum(1 for c in letters if "가" <= c <= "힣")
+    return han / len(letters) < 0.15
+
 def publish(force=False):
     global last_pub, pub_len
     if not (KEY and BUCKET and EP): return
     t = clean("".join(buf))
     if not t or (len(t) <= pub_len and not force): return
+    if frame_break(t): return             # 영어 거절 벽 = 뷰어에 안 흘림(gen_out is_frame_break가 폐기·이탈 폴백으로 갈음)
     now = time.time()
     if not force and now - last_pub < MIN_GAP: return
     if not force and not re.search(r"[.!?…~\n]", t[pub_len:]): return   # 새 문장 경계 없으면 보류(어중간한 단어 절단 노출 감소)

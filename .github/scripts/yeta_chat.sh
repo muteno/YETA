@@ -458,6 +458,25 @@ PY
 
 # 무전기(PTT) 답장 음성 — 텍스트 답장 반영 *후* 합성·부착(텍스트 지연 0 · 음성은 수 초 뒤 폴이 픽업 = "무전기 수신" 페이스).
 # TTS SSOT = yeta_tts.py(클론 보이스 el: 우선 = 프리미엄 · ⚠️유료 = ptt 턴에서만 발동) · 전 단계 fail-soft(텍스트 답장은 이미 확정).
+flee_block() {   # 콘텐츠 거절 탈출 두절(운영자 260714) — dead 엔트리에 flee:1 박제 = 사망 인프라(send/재시도/초대/전화 차단·뷰어 입력락) 재활용하되 뷰어는 '벗어남'으로 표기. 기본 60분(env YETA_FLEE_MIN).
+  local mins="${YETA_FLEE_MIN:-60}"
+  r2get 2>/dev/null || return 0
+  MINS="$mins" PERSONA="$PERSONA" python3 - "$SESS" <<'PY' || return 0
+import json, os, sys, time
+sys.path.insert(0, ".github/scripts")
+from yeta_v3 import migrate_v3
+S = migrate_v3(json.load(open(sys.argv[1], encoding="utf-8")))
+p = os.environ["PERSONA"]; now = int(time.time() * 1000)
+try: mins = max(1, int(os.environ.get("MINS", "60")))
+except Exception: mins = 60
+S.setdefault("dead", {})[p] = {"t": now + mins * 60000, "d": now, "flee": 1, "mood": "tense", "why": "위협적인 상황에서 필사적으로 벗어남"}   # 부활 첫 답 = 벗어난 그 감정의 기억(revive 재료 동형)
+S["updated"] = now
+json.dump(S, open(sys.argv[1], "w", encoding="utf-8"), ensure_ascii=False)
+PY
+  r2put >/dev/null 2>&1 || true
+  echo "  🚪 탈출 두절 반영(${mins}분) — ${PERSONA}"
+}
+
 ptt_voice() {   # $1 = claude 원문 출력(NOTE/MOOD 포함) — env: PERSONA
   local spoken vkey
   spoken="$(python3 - "$1" <<'PY'
@@ -591,6 +610,7 @@ PY
 # ── 생성 공용(본답장 + 초대 판정) — $1=prompt · env MODEL/EFF/SAFE/PERSONA · OUT/GEN_S 설정 · rc 0=성공 ──
 gen_out() {
   local prompt="$1" inline_delay=15 attempt rc=1 _eff_dropped=0
+  FRAME_BREAK=0   # 이 생성이 프레임이탈(콘텐츠 거절) 소진으로 실패했는지 — 인캐릭터 이탈 폴백 스위치(260714)
   EFF_ARGS=(); [ -n "$EFF" ] && EFF_ARGS=(--effort "$EFF")   # 빈값 = 플래그 생략(gate_judge SSOT 패턴)
   T0=$SECONDS; GEN_T0MS="$(date +%s%3N)"; OUT=""; TOK_I=0; TOK_O=0; rm -f /tmp/yeta_meter_last.json   # 이 생성의 실측 토큰(METER_LAST) — finish가 답장 턴 tok으로 박제(뷰어 좌상단 미터 · 운영자 260709) · GEN_T0MS = 계기판 lat(픽업 w·첫문장 f) 기준점(260714)
   for attempt in $(seq 1 "$INLINE_TRIES"); do
@@ -613,7 +633,7 @@ gen_out() {
       if is_frame_break "$OUT"; then
         echo "  ⚠️ 캐릭터 프레임 이탈(메타발화·영어 유출) 감지 — 폐기 후 재시도(L0 기계 백스톱)"
         if [ "$attempt" -lt "$INLINE_TRIES" ]; then OUT=""; sleep 3; continue; fi
-        rc=1; OUT=""; break   # 재시도 소진 = 실패(유출 텍스트 폐기)
+        rc=1; OUT=""; FRAME_BREAK=1; break   # 재시도 소진 = 실패(유출 텍스트 폐기) · FRAME_BREAK = 콘텐츠 거절 판정(process_turn 인캐릭터 이탈 폴백 · 운영자 260714 "자리를 뜬다")
       fi
       break
     fi
@@ -1136,6 +1156,13 @@ ${CONTRACT1}${GROUP_RULE}${ME_RULE}
     if is_quota "$OUT$(cat /tmp/yeta.err 2>/dev/null)"; then
       echo "::error::활성 계정 사용량 한도 — 챗 정지(본업 서브계정 보호 · 의도 동작)"
       finish error "사용량 한도야 — 잠시 후 다시 보내줘"; draft_clear; return 1
+    fi
+    if [ "${FRAME_BREAK:-0}" = "1" ]; then   # 콘텐츠 거절 소진(운영자 260714) — 영어 벽·메타거부를 박제하지 않고, 인물이 그 상황에서 필사적으로 벗어나 + 일시 두절(사망 인프라 재활용 · 유해 생성 없이 그 흐름을 결정적으로 끊음). 어이없는 이탈 아님 = 위협일수록 격렬한 탈출.
+      echo "yeta: 프레임이탈 소진 — 인캐릭터 탈출 폴백(벗어남 + 일시 두절)"
+      finish ok "*${CNAME} — 안간힘을 다해 그 손아귀를 뿌리치고 달아난다. 숨 돌릴 틈도 없이, 이미 저만치 멀어졌다. 지금은 어떤 말도 닿지 않는다.*"; draft_clear
+      flee_block   # 일시 두절(기본 60분 · 사망 dead 엔트리에 flee:1 = 뷰어 이탈 표기 + send/재시도/초대/전화 전부 차단)
+      [ "$PTT" = "1" ] && ptt_voice "*거칠게 뿌리치고 달아난다*"
+      return 0
     fi
     echo "::error::yeta 답장 실패"; head -n 5 /tmp/yeta.err 2>/dev/null || true
     finish error "답장 생성 실패 — 다시 보내면 재시도"; draft_clear; return 1
