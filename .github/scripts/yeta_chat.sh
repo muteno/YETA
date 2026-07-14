@@ -379,6 +379,7 @@ if kind == "ok":
             _dd = {p: u for p, u in (S_ROOT.get("dead") or {}).items() if (((u.get("t") if isinstance(u, dict) else u) or 0) + 604800000) > now}   # 7일+ 스테일만 소거(만료 엔트리 = 부활 첫 답 재료라 보존)
             _dd[turn_persona] = {"t": now + 86400000, "d": now, "mood": mood or "", "why": dead_why}
             S_ROOT["dead"] = _dd
+            # ⚠️ 멤버 제거 계약(짝: functions/api/yeta.js op kick) — room 필터 + last_sp/barged 인계를 반드시 동반. 수정 시 kick도 같이(260714 사망 버그 = 이 인계 누락이 원인).
             for _th2 in (S_ROOT.get("threads") or {}).values():   # 단톡 전 방 이탈("방을 이탈") — 생존자와의 대화는 계속 · 1:1(room 1명) = 방 유지(잠금은 게이트가)
                 _rm = [r for r in (_th2.get("room") or []) if r]
                 if turn_persona in _rm and len(_rm) > 1:
@@ -812,7 +813,7 @@ else:
 if not cand: sys.exit(1)
 if len(S_ROOT.get("threads") or {}) >= 12: sys.exit(1)   # 방 하드캡(초대 260712 동형) — 가득 차면 난입 보류(원본 1:1 보존)
 tnow = int(time.time() * 1000)
-# 난입 = 원본 1:1 스레드 보존 + 직전 3주고받기 시드 복사 → 새 단톡 스레드(g 접두)로 분기(초대 op 동형 · 운영자 260712 "기존 1명 대화 고유성" · 대화창 분리 260714) — 구: 원본 room 인플레이스 변형(1:1 파괴)
+# ⚠️ 성장 시 분기 계약(짝: functions/api/yeta.js op invite) — 난입 = 원본 1:1 스레드 보존 + 직전 3주고받기 시드 복사 → 새 단톡 스레드(g 접두)로 분기(초대 op 동형 · 운영자 260712 "기존 1명 대화 고유성" · 대화창 분리 260714) — 구: 원본 room 인플레이스 변형(1:1 파괴). 수정 시 invite도 같이.
 host = room[0]
 _uc = 0; _cut = len(turns)
 for _i in range(len(turns) - 1, -1, -1):
