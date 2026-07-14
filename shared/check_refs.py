@@ -680,6 +680,40 @@ def check_judge_bare():
     return rc
 
 
+# ── 지침 변경 로그 게이트(WARN-only · 운영자 260714 승인) ──
+# 지침 축(00_지침·캐릭터 카드·policy.json 또는 yeta_chat.sh의 출력 계약 문구)이 이번 변경에 포함됐는데
+# docs/지침변경로그.md 한 줄이 같이 안 바뀌었으면 경고. 비차단 = 부담 0(운영자 "부담 되면 안 하는 게 맞다").
+GLOG = 'docs/지침변경로그.md'
+GUIDE_FILES = ('apps/yeta/00_지침_캐릭터챗.md', 'apps/yeta/policy.json')
+GUIDE_DIR = 'apps/yeta/characters/'
+CONTRACT_PAT = re.compile(r'^[+-].*(출력 계약|기억 블록|<<NOTE|<<MOOD|문장.*80자|길이\(운영자)')   # yeta_chat.sh 지침성 줄 휴리스틱(+/- 변경 줄만)
+
+
+def check_guideline_log():
+    try:
+        # 스테이징+워킹 합집합 — 커밋 전(수정 모드 ③)·훅 양쪽에서 같은 판정
+        out = subprocess.run(['git', '-c', 'core.quotepath=off', 'diff', '--name-only', 'HEAD'], cwd=ROOT, capture_output=True, text=True, timeout=15)   # quotepath off = 한글 경로 원문(이스케이프 매칭 빗나감 방지)
+        changed = set(l.strip() for l in out.stdout.splitlines() if l.strip())
+    except Exception:
+        return 0   # git 불능 환경(CI 아카이브 등) = 조용히 통과
+    if not changed:
+        return 0
+    hit = [f for f in changed if f in GUIDE_FILES or (f.startswith(GUIDE_DIR) and f.endswith('.md'))]
+    if '.github/scripts/yeta_chat.sh' in changed:
+        try:
+            d = subprocess.run(['git', 'diff', '-U0', 'HEAD', '--', '.github/scripts/yeta_chat.sh'], cwd=ROOT, capture_output=True, text=True, timeout=15).stdout
+            if any(CONTRACT_PAT.match(l) for l in d.splitlines()):
+                hit.append('.github/scripts/yeta_chat.sh [출력 계약]')
+        except Exception:
+            pass
+    if hit and GLOG not in changed:
+        print('⚠️ 지침 변경 로그 게이트(비차단): 지침 축이 바뀌었는데 %s 미갱신 —' % GLOG)
+        for f in hit:
+            print('  -', f)
+        print('  → 표에 한 줄(날짜·변경·이유·PR·회귀 커밋)만 추가해줘(§docs/지침변경로그.md 머리 규칙)')
+    return 0   # WARN-only
+
+
 def main():
     fails = check_paths() + check_versions() + check_inject_dividers() + check_inject_markers()
     rc = 0
@@ -745,6 +779,10 @@ def main():
             rc = 1
     except Exception as e:
         print('⚠️ check_soremeori 스킵:', e)
+    try:
+        check_guideline_log()   # 지침 축 변경 시 지침변경로그.md 동반 갱신 리마인더(WARN-only · 운영자 260714)
+    except Exception as e:
+        print('⚠️ 지침 변경 로그 게이트 스킵:', e)
     return rc
 
 
