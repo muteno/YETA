@@ -437,7 +437,29 @@ PY
 )"
   [ -n "$spoken" ] || return 0
   rm -f /tmp/yeta_ptt.mp3
-  python3 .github/scripts/yeta_tts.py "$PERSONA" "$spoken" /tmp/yeta_ptt.mp3 || { echo "  PTT TTS 실패/미설정 — 텍스트만"; return 0; }
+  # 헤드 스트리밍 TTS(한수3 260714) — 생성 중 선굽기한 첫 문장 mp3가 있고 spoken 접두와 정확 일치하면 나머지만 굽고 프레임 연결.
+  #   동일 엔진·동일 보이스(yeta_tts.py 같은 경로) = 동일 인코딩 → mp3 이어붙이기 안전(스플라이스 미세 글리치 = 무전기 결).
+  #   불일치(재시도로 딴 답장·미완 헤드)·타임아웃 = 전문 TTS 폴백(종전 경로 그대로) — 전 단계 fail-soft.
+  local _head=""
+  if [ -f /tmp/yeta_ptt_head.txt ]; then
+    _head="$(cat /tmp/yeta_ptt_head.txt 2>/dev/null)"
+    if [ -n "$_head" ] && [ "${spoken:0:${#_head}}" = "$_head" ]; then
+      local _w=0
+      while [ ! -f /tmp/yeta_ptt_head.done ] && [ "$_w" -lt 10 ]; do sleep 1; _w=$((_w + 1)); done   # 선굽기 완주 대기(상한 10s — 보통 생성 중 이미 완료)
+      if [ -s /tmp/yeta_ptt_head.mp3 ]; then
+        local _rest="${spoken:${#_head}}"
+        _rest="$(printf '%s' "$_rest" | sed 's/^[[:space:]]*//')"
+        if [ -z "$_rest" ]; then cp /tmp/yeta_ptt_head.mp3 /tmp/yeta_ptt.mp3; echo "  PTT 헤드 단독(한 문장 답장 · TTS 재합성 0)"
+        elif python3 .github/scripts/yeta_tts.py "$PERSONA" "$_rest" /tmp/yeta_ptt_rest.mp3; then
+          cat /tmp/yeta_ptt_head.mp3 /tmp/yeta_ptt_rest.mp3 > /tmp/yeta_ptt.mp3; echo "  PTT 헤드+나머지 접합(선굽기 적중)"
+        fi
+      fi
+    fi
+    rm -f /tmp/yeta_ptt_head.txt /tmp/yeta_ptt_head.mp3 /tmp/yeta_ptt_head.done /tmp/yeta_ptt_head.part /tmp/yeta_ptt_rest.mp3
+  fi
+  if [ ! -s /tmp/yeta_ptt.mp3 ]; then
+    python3 .github/scripts/yeta_tts.py "$PERSONA" "$spoken" /tmp/yeta_ptt.mp3 || { echo "  PTT TTS 실패/미설정 — 텍스트만"; return 0; }
+  fi
   vkey="voice/reply-${PERSONA}-$(date +%s).mp3"
   aws s3 cp /tmp/yeta_ptt.mp3 "s3://${YETA_R2_BUCKET}/${vkey}" --endpoint-url "$EP" --content-type audio/mpeg --only-show-errors || return 0
   r2get || return 0   # fresh 재-read — 방금 반영한 답장 턴에 voice 키 부착(threads[THREAD] 스코프 · 계속 스캔 = co 분할/승격 턴 뒤에 있어도 발견 · 러너감사⑤A)
@@ -1035,6 +1057,8 @@ ${CONTRACT1}${GROUP_RULE}${ME_RULE}
   # 문장 스트리밍(260714 한수2) — 본답장만 · 1:1만([이름표] 단톡 대본이 분할 전 raw로 노출 방지) · YETA_STREAM=0 = 회귀 노브
   if [ -z "$CO_ID" ] && [ "${YETA_STREAM:-1}" != "0" ] && [ -f ".github/scripts/yeta_stream.py" ]; then
     export METER_STREAM=".github/scripts/yeta_stream.py" YETA_DRAFT_KEY="$DRAFT_KEY" YETA_DRAFT_BUCKET="$YETA_R2_BUCKET" YETA_DRAFT_EP="$EP" YETA_DRAFT_T="$THREAD" YETA_DRAFT_P="$PERSONA"
+    rm -f /tmp/yeta_ptt_head.txt /tmp/yeta_ptt_head.mp3 /tmp/yeta_ptt_head.done /tmp/yeta_ptt_head.part   # 전 턴 잔재 소거(스테일 헤드 = 오접합 씨앗)
+    if [ "$PTT" = "1" ]; then export YETA_PTT_HEAD="/tmp/yeta_ptt_head"; else export YETA_PTT_HEAD=""; fi   # 헤드 TTS 선굽기(한수3) — PTT 턴만(⚠️유료 TTS = 발동 축 종전과 동일 · 문자수 과금 총량 불변·호출 +1)
   fi
   if ! gen_out "$prompt"; then
     export METER_STREAM=""
