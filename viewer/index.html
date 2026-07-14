@@ -251,7 +251,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   .yeta-in { position:absolute; bottom:calc(12px + env(safe-area-inset-bottom)); left:10px; right:10px; z-index:3; display:flex; align-items:center; gap:4px; padding:5px 6px;
     background:var(--glass); border:1px solid var(--glass-line); border-radius:var(--r-pill);
     backdrop-filter:blur(var(--blur-l)) saturate(1); -webkit-backdrop-filter:blur(var(--blur-l)) saturate(1);
-    box-shadow:inset 0 1px 0 var(--glass-line), var(--shadow-card); transition:border-color .2s; }
+    box-shadow:inset 0 1px 0 var(--glass-line), var(--shadow-card); transition:border-color .45s var(--ease); }   /* .45s = 상황 모드 라임↔터콰이즈 색전환이 확 안 튀고 페이드(운영자 260714) */
   .yeta-in:focus-within { border-color:rgba(var(--accent-rgb),.35); }   /* 포커스 = 알약 테두리 라임 은은(개별 입력칸 링 대체) */
   .yeta-in[hidden] { display:none; }   /* 리스트뷰에서 입력행 숨김 — display:flex가 hidden(display:none) 이기던 버그 교정(운영자 260703 스샷) */
   .yeta-in textarea { flex:1; resize:none; background:none; border:none; border-radius:var(--r-pill); color:var(--fg); min-width:0;
@@ -277,10 +277,11 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
     display:grid; place-items:center; cursor:pointer; touch-action:manipulation; }
   .yeta-plus svg { width:22px; height:22px; }
   .yeta-plus:active { transform:scale(var(--press-m,.9)); }
-  .yeta-plus.on { color:var(--cobalt); background:rgba(var(--cobalt-rgb),.16); border-radius:var(--r-pill); box-shadow:inset 0 1px 0 var(--glass-line), 0 0 18px rgba(var(--cobalt-rgb),.16); }   /* 상황 모드('#') 활성 = ydock .on 필 레시피의 코발트 변주(운영자 260714 "블루톤" — 토큰 --cobalt 계승 · 라임=대화/코발트=연출 축 분리) */
-  .yeta-in.sc { border-color:rgba(var(--cobalt-rgb),.45); }   /* 상황 모드 = 입력행 자동 블루톤(운영자 260714) — 알약 테두리 코발트 */
-  .yeta-in.sc:focus-within { border-color:rgba(var(--cobalt-rgb),.6); }
-  .yeta-in.sc textarea { caret-color:var(--cobalt); }
+  .yeta-plus { transition:transform .28s var(--ease), color .4s var(--ease), background-color .4s var(--ease), box-shadow .4s var(--ease); }   /* 상황 모드 색전환 = 동일 모양에서 부드럽게 페이드(운영자 260714 "확 바뀌지 말고") */
+  .yeta-plus.on { color:var(--think); background:rgba(var(--think-rgb),.16); border-radius:var(--r-pill); box-shadow:inset 0 1px 0 var(--glass-line), 0 0 18px rgba(var(--think-rgb),.18); }   /* 상황 모드('#') 활성 = ydock .on 필 레시피의 터콰이즈 변주(운영자 260714 "2강조색 더콰이즈" — 토큰 --think[터콰이즈 정본] 계승 · 라임=대화/터콰이즈=연출 축 분리) */
+  .yeta-in.sc { border-color:rgba(var(--think-rgb),.5); }   /* 상황 모드 = 입력행 자동 터콰이즈 톤(운영자 260714) — 알약 테두리(라임 → 터콰이즈 페이드) */
+  .yeta-in.sc:focus-within { border-color:rgba(var(--think-rgb),.65); }
+  .yeta-in.sc textarea { caret-color:var(--think); }
   /* 페르소나 픽커 — 헤더 이름 탭 → 주민 직접 선택(msgpop 무채 글래스 계승 · saturate(0)=뒤 색 비침 차단 · §🎨 무채 크롬) */
   .yeta-who { flex:1; display:flex; align-items:center; gap:8px; min-width:0; color:inherit; font:inherit; padding:0; text-align:left; }   /* 상대 = 좌우 한 폭 차지(운영자 260705 · flex:1) · 표시 전용(전환 제거) */
   /* 대화상대 초대 = 헤더 프로필 옆 픽토(운영자 260707 항목12 "버튼 말고 픽토그램만 · 누르면 액티브 지속") — 입력행 +에서 이설 */
@@ -3476,12 +3477,14 @@ function yInvToggle(force) {   // 초대 2차 팝업(운영자 260712 재생 —
   pk.hidden = false;
 }
 $('#yetaPlus').addEventListener('click', e => { e.stopPropagation(); $('#yetaFile').click(); });   // 입력행 + = 파일 첨부(항목11 · 초대는 헤더 픽토로 이설)
-let _yScOn = false;   // 상황 설명 모드(운영자 260714 '#') — 켠 채 전송 = 장면 설정 턴(sc · 상대에게 하는 말 아님) · 원샷(전송 성공 시 자동 해제)
-function yScSet(on) { _yScOn = !!on; const b = $('#yetaSc'); if (b) b.classList.toggle('on', _yScOn); const row = $('#yetaIn'); if (row) row.classList.toggle('sc', _yScOn); const ta = $('#yetaText'); if (ta) ta.placeholder = _yScOn ? '지금 장면·상황을 써줘 — 상대에게 하는 말이 아니야' : '메시지'; }   // 모드 ON = 입력행 코발트 톤(운영자 260714 "자동 블루톤 전환")
+let _yScOn = false;   // 상황 설명 모드(운영자 260714 '#') — 상황 구간 = 장면 설정 턴(sc · 상대에게 하는 말 아님)
+let _ySegs = [{ at: 0, sc: 0 }];   // 모드 타임라인(260714) — {at: 그 오프셋부터, sc: 상황 여부}. 전송 시 구간별로 대사/상황 턴 분리(순서 무관 — 상황이 앞이든 뒤든)
+function yScMark(sc) { const ta = $('#yetaText'); _ySegs.push({ at: ta.value.length, sc: sc ? 1 : 0 }); }
+function yScSet(on) { _yScOn = !!on; const b = $('#yetaSc'); if (b) b.classList.toggle('on', _yScOn); const row = $('#yetaIn'); if (row) row.classList.toggle('sc', _yScOn); const ta = $('#yetaText'); if (ta) ta.placeholder = _yScOn ? '지금 장면·상황을 써줘 — "~다."로 끝내면 자동으로 대화로 돌아가' : '메시지'; }   // 모드 ON = 입력행 코발트 톤(운영자 260714 "자동 블루톤 전환")
+function yScGap(ta) { if (ta.value.trim() && !/\n\n\s*$/.test(ta.value)) ta.value = ta.value.replace(/\s*$/, '') + '\n\n'; ta.style.height = 'auto'; ta.style.height = Math.min(120, ta.scrollHeight) + 'px'; }   // 전환 = 빈 줄(2줄바꿈) 규칙 — 진입·종료 공통(운영자 260714 "종료되도 2줄 이후로")
 $('#yetaSc').addEventListener('click', e => {
-  e.stopPropagation(); yScSet(!_yScOn);
-  const ta = $('#yetaText');
-  if (_yScOn && ta.value.trim() && !/\n\n\s*$/.test(ta.value)) { ta.value = ta.value.replace(/\s*$/, '') + '\n\n'; ta.dispatchEvent(new Event('input', { bubbles: true })); }   // 누르면 2줄바꿈(운영자 260714) — 빈 줄 앞 = 대사 · 뒤 = 상황(전송 시 두 턴 분리 · ySend와 짝)
+  e.stopPropagation(); const ta = $('#yetaText');
+  yScSet(!_yScOn); yScGap(ta); yScMark(_yScOn ? 1 : 0);   // 켜기 = 이후 상황 구간 · 수동 끄기 = 이후 대사 구간(자동 종료와 동일 2줄 규칙)
   ta.focus();
 });
 $('#yetaInvBtn').addEventListener('click', e => { e.stopPropagation(); yPdClose(); yInvToggle(); });   // 헤더 초대 + = 초대 팝업(운영자 260712 · .off = pointer-events:none이라 만석·대기 시 무반응 = 자리만 유지)
@@ -3725,7 +3728,9 @@ function yRender() {
   const typing = yPrefOn('typing', true) && !deadNow && !gaveUp && !openingStuck && (awaiting || staged || failNow) && !!YCUR && Date.now() >= _yTypHold;   // 타이핑 표시(설정) 끄면 "입력 중" 숨김 · staged = 답장 페이스 홀드 · failNow = 자동 재시도 중에도 점 유지(실패 무노출) · _yTypHold = 읽는 시간 경과 후에만(운영자 260707)
   if (!awaiting && !staged && _yDraft) _yDraft = null;   // 확정 반영·대기 종료 = 잔여 draft 폐기(다음 턴 유령 버블 차단)
   const dr = _yDraft && awaiting && !deadNow && !gaveUp && Date.now() >= _yTypHold && _yDraft.t === ((YSESS || {}).cur || '') && (_yDraft.ts || 0) >= ((s.awaiting_since || 0) - 5000) && _yDraft.text ? _yDraft : null;   // 문장 스트리밍(한수2) — 현재 방 · 이번 대기분만(스테일 가드) · 사망/이탈 연출 우선 · 읽는시간(_yTypHold) 게이트 = 타이핑과 동일('1'과 답장 동시노출 차단 · 평의회 UX)
-  if (deadNow) h += `<div class="ysit">…사망 — 그 시각부터 24시간, 어떤 연락도 닿지 않는다.</div>`;   // 사망 지문(운영자 260714 "사망으로 표기" · .ysit 계승) — 입력도 함께 잠김 · 24h 후 자연 해제
+  if (deadNow) { const _dv = ((YSESS || {}).dead || {})[YCUR && YCUR.id]; h += _dv && _dv.flee
+      ? `<div class="ysit">…그 자리를 벗어났다. 지금은 연락이 닿지 않는다 — 시간이 지나면 다시.</div>`   // 위협 이탈(운영자 260714) — 콘텐츠 거절 시 인물이 상황에서 벗어남 + 일시 두절(사망과 별개 결)
+      : `<div class="ysit">…사망 — 그 시각부터 24시간, 어떤 연락도 닿지 않는다.</div>`; }   // 사망 지문(운영자 260714 "사망으로 표기" · .ysit 계승) — 입력도 함께 잠김 · 24h 후 자연 해제
   else if (gaveUp) h += `<div class="ysit${_yFailOn ? '' : ' in'}">…답이 없다. 지금은 연락이 닿지 않는 모양이다.</div>`;   // 조용한 이탈 = 장면 지문(.ysit 계승 · 나레이션 결) — 새 메시지 보내면 새 에피소드로 재개
   else if (dr) { const lt = turns[turns.length - 1]; const pid = dr.p || (YCUR && YCUR.id) || ''; const pcont = !!(lt && lt.role === 'assistant' && (lt.persona || '') === pid);
     yBubbles(dr.text).forEach((bt, bi) => { h += yAiMsg({ text: bt, persona: pid }, !_yDraftOn && bi === 0, bi > 0 || pcont); }); }   // 생성 중 부분 답장 — 확정과 같은 버블 분할로 미리 그림(스왑 시 모양 유지 · "2개 먼저" 리듬이 스트리밍에서도) · 등장만 촤르륵
@@ -3811,7 +3816,11 @@ async function ySend() {
 }
 $('#yetaSend').addEventListener('click', ySend);
 $('#yetaText').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); ySend(); } });   // 폰 enterkeyhint=send · Shift+Enter=줄바꿈
-$('#yetaText').addEventListener('input', e => { const t = e.target; t.style.height = 'auto'; t.style.height = Math.min(120, t.scrollHeight) + 'px'; });
+$('#yetaText').addEventListener('input', e => { const t = e.target; t.style.height = 'auto'; t.style.height = Math.min(120, t.scrollHeight) + 'px';
+  if (!t.value) { _ySegs = [{ at: 0, sc: _yScOn ? 1 : 0 }]; return; }   // 입력 전량 삭제 = 타임라인 리셋(오프셋 어긋남 방지)
+  // 상황문 자동 종결(운영자 260714) — 마지막 상황 구간이 문장으로 끝나면(~다. · 문장부호) 자동으로 대화 모드 복귀 + 2줄바꿈. 이어 치는 건 대사.
+  if (_yScOn) { const seg = _ySegs[_ySegs.length - 1] || { at: 0 }; const cur = t.value.slice(seg.at); if (/(다\.|[.!?…])[)"'\]]?\s*$/.test(cur) && cur.trim().length >= 2) { yScSet(false); t.value = t.value.replace(/\s*$/, '') + '\n\n'; yScMark(0); t.style.height = 'auto'; t.style.height = Math.min(120, t.scrollHeight) + 'px'; } }
+});
 $('#yetaText').addEventListener('focus', yWarm);   // 쓰기 시작 = 러너 선부팅(콜드 부팅 30~40s를 타이핑 시간과 겹침 — 유휴 복귀 첫 답장 단축 · 4.5분 디바운스는 yWarm 내장)
 // 🎲 재뽑기(주사위) 버튼 제거(운영자 260705 #8) · yDraw는 보존(향후 재도입 대비)
 // "새 대화"(reset) 버튼 제거(운영자 260705) — op reset 백엔드는 보존(향후 진입점 재배선 대비)
