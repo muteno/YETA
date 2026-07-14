@@ -680,6 +680,26 @@ def check_judge_bare():
     return rc
 
 
+def check_yeta_v3_tests():
+    """세션 로직 회귀 게이트 — yeta_v3.py(migrate_v3·pick_thread·leave_room) 유닛테스트를 커밋마다 실행.
+    러너 방 변형이 heredoc(손검증)이라 #3(사망 last_sp 인계 누락) 같은 버그가 커밋을 뚫던 것을,
+    순수함수 SSOT로 뽑아 여기서 고정(stdlib unittest·신규 의존성 0·~0.01s). 테스트 파일 부재=스킵."""
+    tf = os.path.join(ROOT, '.github', 'scripts', 'tests', 'test_yeta_v3.py')
+    if not os.path.exists(tf):
+        return 0   # 미생성 = 게이트 무력(스킵)
+    import subprocess
+    try:
+        r = subprocess.run([sys.executable, tf], cwd=ROOT, capture_output=True, text=True, timeout=60)
+    except Exception as e:
+        print('⚠️ yeta_v3 테스트 게이트 스킵(실행 불가):', e); return 0
+    if r.returncode == 0:
+        last = (r.stderr.strip().splitlines() or ['OK'])[-1]
+        print('✅ 세션 로직 게이트 — yeta_v3 유닛테스트 통과(%s)' % last)
+        return 0
+    print('❌ 세션 로직 게이트 — yeta_v3 유닛테스트 실패(방 변형/마이그레이션 회귀):\n' + (r.stderr or r.stdout))
+    return 1
+
+
 def main():
     fails = check_paths() + check_versions() + check_inject_dividers() + check_inject_markers()
     rc = 0
@@ -745,6 +765,11 @@ def main():
             rc = 1
     except Exception as e:
         print('⚠️ check_soremeori 스킵:', e)
+    try:
+        if check_yeta_v3_tests() != 0:   # 세션 로직 회귀 게이트 — 방 변형(사망 이탈)·마이그레이션·스레드 큐 유닛테스트(260714 #3 재발방지)
+            rc = 1
+    except Exception as e:
+        print('⚠️ yeta_v3 테스트 게이트 스킵:', e)
     return rc
 
 

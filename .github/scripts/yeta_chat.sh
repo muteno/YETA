@@ -269,7 +269,7 @@ finish() {  # $1=ok|error · $2=텍스트 — env: INS·ANCHOR_TS·PERSONA·MODE
     python3 - "$SESS" "$1" "${INS:-0}" "${CVER:-}" <<'PY'
 import json, os, re, sys, time
 sys.path.insert(0, ".github/scripts")
-from yeta_v3 import migrate_v3                            # v3(260707) — JS 동형 랩(읽기측 · 영속은 이 finish 경로뿐 = 신규 put 지점 아님)
+from yeta_v3 import migrate_v3, leave_room                # v3(260707) — JS 동형 랩(읽기측 · 영속은 이 finish 경로뿐 = 신규 put 지점 아님) · leave_room = 멤버 제거 계약 SSOT(사망 이탈)
 p, kind, ins, cver = sys.argv[1], sys.argv[2], int(sys.argv[3]), sys.argv[4]
 anchor_ts = os.environ.get("ANCHOR_TS", "")
 S_ROOT = migrate_v3(json.load(open(p, encoding="utf-8")))
@@ -405,13 +405,7 @@ if kind == "ok":
             _dd = {p: u for p, u in (S_ROOT.get("dead") or {}).items() if (((u.get("t") if isinstance(u, dict) else u) or 0) + 604800000) > now}   # 7일+ 스테일만 소거(만료 엔트리 = 부활 첫 답 재료라 보존)
             _dd[turn_persona] = {"t": now + 86400000, "d": now, "mood": mood or "", "why": dead_why}
             S_ROOT["dead"] = _dd
-            # ⚠️ 멤버 제거 계약(짝: functions/api/yeta.js op kick) — room 필터 + last_sp/barged 인계를 반드시 동반. 수정 시 kick도 같이(260714 사망 버그 = 이 인계 누락이 원인).
-            for _th2 in (S_ROOT.get("threads") or {}).values():   # 단톡 전 방 이탈("방을 이탈") — 생존자와의 대화는 계속 · 1:1(room 1명) = 방 유지(잠금은 게이트가)
-                _rm = [r for r in (_th2.get("room") or []) if r]
-                if turn_persona in _rm and len(_rm) > 1:
-                    _th2["room"] = [r for r in _rm if r != turn_persona]
-                    if _th2.get("last_sp") == turn_persona: _th2["last_sp"] = _th2["room"][0]   # 죽은 화자가 마지막 화자면 생존자가 이어받음(kick 대칭) — 안 하면 뷰어 헤더가 죽은 last_sp를 계속 가리켜 "죽은 사람이 방에 남음"(운영자 260714 버그픽)
-                    if (_th2.get("barged") or {}).get("id") == turn_persona: _th2["barged"] = 0   # 난입 데뷔 전 사망 = 내보내기 pill 스테일 회수
+            leave_room(S_ROOT, turn_persona)   # 단톡 전 방 이탈("방을 이탈") — 멤버 제거 계약 SSOT(yeta_v3.leave_room · 짝: JS op kick) = room 필터 + last_sp/barged 생존자 인계(1:1은 유지). 유닛테스트 tests/test_yeta_v3.py로 회귀 고정(260714 사망 last_sp 누락 버그).
             _nm = os.environ.get("CNAME", "") or turn_persona
             turns.insert(ins + k, {"role": "sys", "text": f"{_nm}의 기척이 끊겼다", "ts": now + k})
             s["state"] = "idle"   # 레이스 잔여 pending도 발사 억제(24h 뒤 밀린 메시지 = 부활 답)

@@ -58,6 +58,22 @@ def pick_thread(S, now_ms=None):
             best = (a, tid)
     return best[1] if best else None
 
+def leave_room(S, persona):
+    """persona를 2명+ 방 전부에서 제거 + last_sp/barged를 생존자로 인계(1:1 room[1명]은 유지 = 잠금은 게이트가).
+    사망 이탈(yeta_chat.sh)·강퇴(JS op kick) 공통 '멤버 제거 계약'의 러너측 SSOT. 멱등.
+    ⚠️ #3 회귀원: room만 필터하고 last_sp 인계를 빠뜨리면 뷰어 헤더가 죽은/나간 인물을 계속 가리킴(260714)."""
+    if not persona:
+        return S
+    for th in (S.get("threads") or {}).values():
+        rm = [r for r in (th.get("room") or []) if r]
+        if persona in rm and len(rm) > 1:
+            th["room"] = [r for r in rm if r != persona]
+            if th.get("last_sp") == persona:
+                th["last_sp"] = th["room"][0]           # 나간/죽은 화자가 마지막 화자면 생존자가 이어받음
+            if (th.get("barged") or {}).get("id") == persona:
+                th["barged"] = 0                         # 데뷔 전 이탈 = 내보내기 pill 스테일 회수
+    return S
+
 def thread_view(S, tid):
     """기존 단일 세션 로직 호환 읽기 뷰 — 스레드 필드 + 공유 필드 오버레이 + 타 스레드 메타(_others · 턴 텍스트 접근 금지 = 비밀 누수 차단)."""
     th = (S.get("threads") or {}).get(tid) or {}
