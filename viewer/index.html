@@ -3600,6 +3600,18 @@ function yTypingHtml(fresh, p, lbl) {   // 타이핑 = 캐릭터 버블(점 3개
   lbl = lbl || '입력 중';
   return `<div class="ymsg ytyp${fresh ? ' in' : ''}">${yAva(p)}<span class="ycol"><span class="yname">${esc(p.name || '')} · ${lbl}</span><div class="yb ai"><span class="ytdots"><i></i><i></i><i></i></span></div></span></div>`;
 }
+function yBubbles(t) {   // 버블 분할(운영자 260714 "2개 먼저 뱉고 2개 그다음") — 러너 finish _bubbles와 동형 계약(문장 ≤2/버블 · *지문* 문단 = 제 버블 · 최대 3 · 초과 = 꼬리 병합) · 룩비하인드 미사용(구 사파리 파싱 안전)
+  const out = [];
+  for (const para of String(t || '').split(/\n[ \t]*\n/).map(x => x.trim()).filter(Boolean)) {
+    if (/^\*[^*\n]{1,200}\*$/.test(para)) { out.push(para); continue; }
+    const sents = (para.match(/[^.!?…~]+[.!?…~]+\s*|[^.!?…~]+$/g) || [para]).map(x => x.trim()).filter(Boolean);
+    let cur = [];
+    for (const x of sents) { cur.push(x); if (cur.length >= 2) { out.push(cur.join(' ')); cur = []; } }
+    if (cur.length) out.push(cur.join(' '));
+  }
+  const o = out.length ? out : [String(t || '').trim()];
+  return o.length > 3 ? o.slice(0, 2).concat(o.slice(2).join(' ')) : o;
+}
 function yOut(el) {   // 촤르륵 복귀 — 접혀 사라진 뒤 제거(운영자: "뭐 지운다 해도 촤르륵 다시 돌아가야")
   if (!el || !el.isConnected) { if (el) el.remove(); return; }
   el.classList.remove('in'); el.classList.add('out');
@@ -3612,18 +3624,18 @@ function yRender() {
   const deadNow = !!(YCUR && (YSESS || {}).cur === YCUR.id && yDead(YCUR));   // 사망 두절(운영자 260714) — 1:1 방만 잠금(단톡 = 러너가 이탈 처리·생존자와 계속) · 만료 = 자연 해제
   $('#yetaIn').hidden = deadNow;
   const prevN = _yLastN, first = prevN < 0;   // 첫 렌더(재진입 포함) = 전체 무애니(히스토리 우르르 방지)
-  // 답장 페이스(운영자 260706): 새 답장이 즉답으로 꽂히면 어색 → 꼬리 assistant 런만 ~1초 홀드 + 타이핑 모션 선행. 내 턴·sys·첫 렌더 = 즉시.
+  // 답장 페이스(운영자 260706 → 260714 버블 단위 개편): 꼬리 답장 런을 통짜 공개 대신 **버블 하나씩** 이어붙임("2개 먼저 뱉고 2개 그다음" 리듬 — 러너 finish 버블 분할과 짝).
+  //   버블 사이 = staged 유지 → 타이핑 점이 자연히 끼어 메신저 결. 각 홀드 = 그 버블 길이 비례(항목13 공식 온존 · 상한 4.2s).
   if (first || _yPaceN < 0 || _yPaceN > all.length) _yPaceN = all.length;
   else if (all.length > _yPaceN) {
-    if (_yDraftOn) { _yPaceN = all.length; _yDraft = null; }   // 문장 스트리밍으로 이미 본 답장(한수2) = 홀드 스킵 — 실물 타이핑이 연출을 대체(즉시 확정 스왑)
+    if (_yDraftOn) { _yPaceN = all.length; _yDraft = null; }   // 문장 스트리밍으로 이미 본 답장(한수2) = 전량 즉시 스왑(드래프트가 보여준 텍스트가 숨는 축소 착시 방지)
     let cut = all.length; while (cut > 0 && all[cut - 1].role === 'assistant') cut--;   // 꼬리 답장 런 직전까지는 즉시 공개(낙관 내 버블 소실 방지)
     _yPaceN = Math.max(_yPaceN, cut);
     if (all.length > _yPaceN && !_yPaceT) {
-      const tail = all.slice(_yPaceN).filter(t => t.role === 'assistant');   // 답변 길이 비례 타이핑 지연(항목13) — 긴 답장일수록 오래 "입력 중"(BASE 600 + 자당 18ms · 상한 4.2s = QoE)
-      const chars = tail.reduce((a, t) => a + (t.text || '').length, 0);
+      const nxt = all[_yPaceN] || {};                           // 다음 버블 하나만 — 홀드는 그 버블 길이 비례
       const tn = _yTune(); let per = 18; if (tn[3] != null) per *= (0.7 + (+tn[3] || 0) / 10 * 0.6);   // tune[3] 답장 길이 = 페이스 결합
-      const holdMs = Math.min(4200, 600 + chars * per);
-      _yPaceT = setTimeout(() => { _yPaceT = 0; _yPaceN = ((YTH() || {}).turns || []).length; if (yetadlg.open) yRender(); }, holdMs);
+      const holdMs = Math.min(4200, 600 + ((nxt.text || '').length) * per);
+      _yPaceT = setTimeout(() => { _yPaceT = 0; _yPaceN = Math.min(((YTH() || {}).turns || []).length, _yPaceN + 1); if (yetadlg.open) yRender(); }, holdMs);   // +1 버블 공개 → 남으면 다음 렌더가 재예약(체인)
     }
   }
   const staged = all.length > _yPaceN;              // 홀드 중 = 타이핑 유지
@@ -3669,7 +3681,8 @@ function yRender() {
   const dr = _yDraft && awaiting && !deadNow && !gaveUp && _yDraft.t === ((YSESS || {}).cur || '') && (_yDraft.ts || 0) >= ((s.awaiting_since || 0) - 5000) && _yDraft.text ? _yDraft : null;   // 문장 스트리밍(한수2) — 현재 방 · 이번 대기분만(스테일 가드) · 사망/이탈 연출이 우선
   if (deadNow) h += `<div class="ysit">…사망 — 그 시각부터 24시간, 어떤 연락도 닿지 않는다.</div>`;   // 사망 지문(운영자 260714 "사망으로 표기" · .ysit 계승) — 입력도 함께 잠김 · 24h 후 자연 해제
   else if (gaveUp) h += `<div class="ysit${_yFailOn ? '' : ' in'}">…답이 없다. 지금은 연락이 닿지 않는 모양이다.</div>`;   // 조용한 이탈 = 장면 지문(.ysit 계승 · 나레이션 결) — 새 메시지 보내면 새 에피소드로 재개
-  else if (dr) { const lt = turns[turns.length - 1]; h += yAiMsg({ text: dr.text, persona: dr.p || (YCUR && YCUR.id) }, !_yDraftOn, !!(lt && lt.role === 'assistant' && (lt.persona || '') === (dr.p || (YCUR && YCUR.id) || ''))); }   // 생성 중 부분 답장 버블 — 등장만 촤르륵(갱신은 무애니 = 텍스트만 자람) · 시각 표기는 확정 턴에서
+  else if (dr) { const lt = turns[turns.length - 1]; const pid = dr.p || (YCUR && YCUR.id) || ''; const pcont = !!(lt && lt.role === 'assistant' && (lt.persona || '') === pid);
+    yBubbles(dr.text).forEach((bt, bi) => { h += yAiMsg({ text: bt, persona: pid }, !_yDraftOn && bi === 0, bi > 0 || pcont); }); }   // 생성 중 부분 답장 — 확정과 같은 버블 분할로 미리 그림(스왑 시 모양 유지 · "2개 먼저" 리듬이 스트리밍에서도) · 등장만 촤르륵
   else if (typing) h += yTypingHtml(!_yTypOn);
   else if (invP) h += yTypingHtml(!_yTypOn, invP, '올지 생각 중');   // 초대받은 캐릭터의 고민 = 타이핑 변형(시안 A)
   _yFailOn = gaveUp; _yTypOn = !dr && (typing || (!deadNow && !gaveUp && !typing && !!invP)); _yDraftOn = !!dr;
