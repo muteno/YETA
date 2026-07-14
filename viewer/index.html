@@ -1539,7 +1539,7 @@ function miniToast(msg) {   // 범용 미니 토스트(nm-toast 계승·초록·
 /* ── yeta 로직(L8435-8692) + 딥링크(L8717) — SNS/설정 아코디언 8693-8716 제외 ── */
 // ── yeta 말벗 제타 (프로필 메뉴 · 랜덤 페르소나 톡방 · 세션=R2 단일 스레드 — functions/api/yeta.js · 260703 v2) ──
 // 🎲 뽑기/재뽑기 = 맥락(턴·관계노트) 유지·화자만 교체. 다이얼 2개(모델×노력 — 턴별 박제·답장 캡션으로 곱 체감).
-// 프리웜 = 창 열면·입력 포커스 시 러너 선부팅(warm op · 30초 목표). 폴 = 대기시간 적응형(기대 구간 2s/장기화 5s · 좀비 임계 5분).
+// 프리웜 = 창 열면·입력 포커스 시 러너 선부팅(warm op · 30초 목표). 대기 감시 = watch 롱폴(서버 R2 etag 1s 감시 → 변경 즉시 = 픽업 ~0s · 실패 시 4s 타이머 폴 강등 · 좀비 임계 5분).
 // *나레이션* = 이탤릭(제타 결). 페르소나 색/배경 = roster color·bg → --yeta-ac·log 배경(운영자 컨셉 훅).
 const yetadlg = $('#yetadlg');
 let YCHARS = [], YWORLD = null, YCUR = null, YREADY = false, YSESS = null, _yPoll = null;
@@ -3649,15 +3649,26 @@ function yRender() {
   if (atBottom) log.scrollTop = log.scrollHeight;
   if ((awaiting && waitMs <= zlim) || invP) yStartPoll(); else yStopPoll();   // 초대 판정도 폴로 픽업(state 비점유)
 }
-function yStartPoll() {   // 적응형 폴 — 웜 후속 턴(10~30s 답장)을 빨리 픽업(아이데이션⑤ · 대기 중에만 돎)
-  const s = YTH() || {};
-  const w = s.awaiting_since ? Date.now() - s.awaiting_since : 0;
-  const iv = w > 90000 ? 5000 : 2000;   // 답장 기대 구간(~90s) = 2s 즉픽업(체감 지연 −2s) · 장기화 = 5s 감속(요청 낭비 억제 · 전이는 다음 yLoad에서 자동)
-  if (_yPoll && _yPoll.iv === iv) return;
-  yStopPoll();
-  _yPoll = { iv, t: setInterval(() => { if (document.visibilityState !== 'visible') return; if (!yetadlg.open) { yStopPoll(); return; } yLoad(); }, iv) };
+let _yWatchTk = null, _yEtag = '';   // watch 롱폴 토큰 + 서버 etag 기준선(watch 응답만 갱신 — get 무관)
+function yStartPoll() {   // 대기 감시 1선 = watch 롱폴(대화 속도 260714 한수 · 서버가 R2 etag 1s 감시 → 변경 즉시 응답 = 픽업 ~0s) · 실패·구게이트웨이 = 4s 타이머 폴 강등(종전 결) — 대기 중에만 돎
+  if (_yWatchTk || _yPoll) return;   // 이미 감시 중 = 멱등
+  const tk = { on: true }; _yWatchTk = tk;
+  (async () => {
+    while (tk.on && yetadlg.open) {
+      if (document.visibilityState !== 'visible') { await new Promise(r => setTimeout(r, 1000)); continue; }   // 백그라운드 탭 = 요청 0(가시화 시 재개)
+      const r = await yApi('watch', { e: _yEtag }).catch(() => null);
+      if (!tk.on || !yetadlg.open) break;
+      if (!r || !r.ok) {   // 네트워크·미배포 게이트웨이 = 타이머 폴 폴백(감시 공백 차단)
+        if (_yWatchTk === tk) { _yWatchTk = null; _yPoll = { iv: 4000, t: setInterval(() => { if (document.visibilityState !== 'visible') return; if (!yetadlg.open) { yStopPoll(); return; } yLoad(); }, 4000) }; }
+        return;
+      }
+      if (r.etag) _yEtag = r.etag;
+      await yLoad();   // changed = 즉시 확정 렌더 · none(20s 만료) = 좀비 리퍼·배너 갱신 겸 확정 겟 — yLoad→yRender가 대기 종료 판정이면 yStopPoll()이 tk를 끊어 루프 종료
+    }
+    if (_yWatchTk === tk) _yWatchTk = null;
+  })();
 }
-function yStopPoll() { if (_yPoll) clearInterval(_yPoll.t); _yPoll = null; }
+function yStopPoll() { if (_yPoll) clearInterval(_yPoll.t); _yPoll = null; if (_yWatchTk) { _yWatchTk.on = false; _yWatchTk = null; } }
 async function ySend() {
   const ta = $('#yetaText'), text = ta.value.trim();
   if (_yFarOnly) { miniToast('멀리 있어서 문자는 안 닿아 — 전화로 걸어봐'); return; }   // 원거리 불가 상대 = 전화만(운영자 260709)
