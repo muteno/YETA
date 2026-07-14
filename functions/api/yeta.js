@@ -157,15 +157,28 @@ export async function onRequestPost({ request, env }) {
   }
 
   if (op === 'watch') {   // 롱폴 감시(대화 속도 260714 한수) — 서버가 R2 etag를 1s 간격 head로 감시, 변경 즉시 응답 = 뷰어 픽업 지연 ~0s(타이머 폴 간격 한계 제거 · 대기 중 요청 수↓).
-    // SSE(EventSource) 아닌 롱폴인 이유 = 전 op POST 통일(originOk CSRF 대칭) 온존. 본문 판독은 뷰어가 이어 op get(리퍼·비활성 절단 로직 재사용 = 여기 중복 0).
-    // CPU 예산: head = I/O(CPU ~0)·파스 0 → 20s 홀드에도 Workers CPU 한도 안전권 · 홀드 20s 캡 = 무한 점유 아님(만료 = 클라 즉시 재발사).
+    // SSE(EventSource) 아닌 롱폴인 이유 = 전 op POST 통일(originOk CSRF 대칭) 온존. 세션 본문 판독은 뷰어가 이어 op get(리퍼·비활성 절단 로직 재사용 = 여기 중복 0).
+    // + draft 감시(한수2 문장 스트리밍): 러너가 생성 중 문장을 sessions/*.draft.json 에 발행 — 변경 시 draft 본문 동봉(작음 = 겟 왕복 생략) · stripMarkers+'<<' 컷 = 이중 방어.
+    // 예산: head = I/O(CPU ~0) · 키 2개 × 1s × 15s 홀드 = 서브리퀘스트 ~32(<한도 50) — 홀드 15s 캡(만료 = 클라 즉시 재발사).
+    const DKEY = KEY.replace(/\.json$/, '.draft.json');
     const known = String(body.e || '');
-    const deadline = Date.now() + 20000;
+    let dknown = String(body.de || '');
+    const deadline = Date.now() + 15000;
     for (;;) {
-      let et = '';
+      let et = '', det = '';
       try { const h = await env.YETA_R2.head(KEY); et = h ? h.etag : ''; } catch {}
-      if (et && et !== known) return json({ ok: true, etag: et, changed: true });
-      if (Date.now() >= deadline) return json({ ok: true, etag: et || known, none: true });
+      if (et && et !== known) return json({ ok: true, etag: et, detag: dknown, changed: true });
+      try { const dh = await env.YETA_R2.head(DKEY); det = dh ? dh.etag : ''; } catch {}
+      if (det && det !== dknown) {
+        let dj = null;
+        try { const o = await env.YETA_R2.get(DKEY); if (o) { det = o.etag; dj = await o.json(); } } catch {}
+        if (dj && typeof dj.text === 'string') {
+          let txt = stripMarkers(dj.text); const ci = txt.indexOf('<<'); if (ci >= 0) txt = txt.slice(0, ci);   // 러너 필터가 1선, 여기는 2선(기억·무드 유출 원천 차단)
+          if (txt.trim()) return json({ ok: true, etag: et || known, detag: det, draft: { t: String(dj.t || '').slice(0, 24), p: String(dj.p || '').slice(0, 24), ts: Number(dj.ts) || 0, text: txt.slice(0, 4000) } });
+        }
+        dknown = det;   // 파싱 불가·빈 draft = 기준선만 전진(같은 객체 무한 재조회 차단)
+      }
+      if (Date.now() >= deadline) return json({ ok: true, etag: et || known, detag: det || dknown, none: true });
       await new Promise(r => setTimeout(r, 1000));
     }
   }
