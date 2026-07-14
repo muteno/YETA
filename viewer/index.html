@@ -190,14 +190,19 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   .ybg video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; filter:brightness(.32); }   /* 시즌 클립 = muted 상시(운영자 "소리만 빼고") · 밝기 필터 = 이미지 스크림 등가(.45 × 30% 추가 딤 = .32 — 운영자 260709 재검수 "캐릭터 배경 +30% 더 · 대화창 집중") · 시즌 표시농도 = 전경화 .92 상속 */
   @media (prefers-reduced-motion:reduce) { .ybg { transition:none; } }
   .yeta-log { position:relative; flex:1; min-width:0; overflow-y:auto; padding:calc(88px + env(safe-area-inset-top)) var(--sp-2) calc(76px + env(safe-area-inset-bottom)) 6px; display:flex; flex-direction:column; gap:10px;
-    -webkit-mask-image:linear-gradient(to bottom, transparent 0, transparent calc(46px + env(safe-area-inset-top)), #000 calc(96px + env(safe-area-inset-top)));
-    mask-image:linear-gradient(to bottom, transparent 0, transparent calc(46px + env(safe-area-inset-top)), #000 calc(96px + env(safe-area-inset-top))); }   /* 상단 = 네비 뒤로 대화가 새지 않게 완전투명 0→46 → 불투명 96(운영자 20260714 "네비 뒤도 보이는 영역처럼 보임" — 구 밴드 마스크[0-52 불투명·60-76만 숨김] 폐지 · #yetatopblur z1 그라데 블러와 합작) · 상하 패딩 = 플로팅 알약 클리어런스(운영자 260705) · px=기하 예외축 */
-  /* 상단 그라데 블러(운영자 20260714 "네비 뒤로 그라데가 블러로 훅 들어가며 위 대화 안 보여야") — 네비(.yeta-h z3)·미터(z2) 아래(z1)서 스크롤 대화를 위로 갈수록 블러+어둠으로 뭉갬 → "보이는 영역"처럼 새어오름 차단 · 값 튜닝 플그 = docs/reports/20260714_184051_상단그라데블러_스와이프모션_플레이그라운드 · 블러 = --blur-m 계승 · 스크림·마스크 px = 기하 예외축 */
-  #yetatopblur { position:absolute; top:0; left:0; right:0; height:calc(104px + env(safe-area-inset-top)); z-index:1; pointer-events:none;
-    background:linear-gradient(to bottom, rgba(0,0,0,.6), transparent);
-    backdrop-filter:blur(var(--blur-m)); -webkit-backdrop-filter:blur(var(--blur-m));
-    -webkit-mask-image:linear-gradient(to bottom, #000 calc(54px + env(safe-area-inset-top)), transparent calc(104px + env(safe-area-inset-top)));
-    mask-image:linear-gradient(to bottom, #000 calc(54px + env(safe-area-inset-top)), transparent calc(104px + env(safe-area-inset-top))); }
+    -webkit-mask-image:linear-gradient(to bottom, transparent 0, transparent calc(51px + env(safe-area-inset-top)), #000 calc(83px + env(safe-area-inset-top)));
+    mask-image:linear-gradient(to bottom, transparent 0, transparent calc(51px + env(safe-area-inset-top)), #000 calc(83px + env(safe-area-inset-top))); }   /* 상단 = 네비 뒤로 대화가 새지 않게 완전투명 0→51 → 불투명 83(운영자 20260714 플그 확정값 · 구 밴드 마스크[0-52 불투명·60-76만 숨김] 폐지 · #yetatopblur z1 5레이어 그라데 블러와 합작) · 상하 패딩 = 플로팅 알약 클리어런스(운영자 260705) · px=기하 예외축 */
+  /* 상단 그라데 블러(운영자 20260714 확정 — 플그 5레이어 프로그레시브 채택 · docs/reports/20260714_184051_상단그라데블러_스와이프모션_플레이그라운드) — 네비(.yeta-h z3)·미터(z2) 아래(z1)서 스크롤 대화를 위로 갈수록 블러+어둠으로 뭉갬 → "보이는 영역"처럼 새어오름 차단 · 확정값 blur 30→0·각도180·존 24→83·스크림.54 · 블러 max = --blur-m 계승(30≈29 광학동일)·레이어 램프(.8/.6/.4/.2) = 안무축 · 스크림/마스크 px = 기하 예외축 */
+  #yetatopblur { position:absolute; top:0; left:0; right:0; height:calc(83px + env(safe-area-inset-top)); z-index:1; pointer-events:none; }
+  #yetatopblur > div { position:absolute; inset:0;
+    -webkit-mask-image:linear-gradient(to bottom, #000 calc(var(--a) + env(safe-area-inset-top)), transparent calc(var(--b) + env(safe-area-inset-top)));
+    mask-image:linear-gradient(to bottom, #000 calc(var(--a) + env(safe-area-inset-top)), transparent calc(var(--b) + env(safe-area-inset-top))); }
+  #yetatopblur > div:nth-child(1) { --a:18px; --b:36px; backdrop-filter:blur(var(--blur-m)); -webkit-backdrop-filter:blur(var(--blur-m)); }
+  #yetatopblur > div:nth-child(2) { --a:30px; --b:48px; backdrop-filter:blur(calc(var(--blur-m) * .8)); -webkit-backdrop-filter:blur(calc(var(--blur-m) * .8)); }
+  #yetatopblur > div:nth-child(3) { --a:42px; --b:59px; backdrop-filter:blur(calc(var(--blur-m) * .6)); -webkit-backdrop-filter:blur(calc(var(--blur-m) * .6)); }
+  #yetatopblur > div:nth-child(4) { --a:54px; --b:71px; backdrop-filter:blur(calc(var(--blur-m) * .4)); -webkit-backdrop-filter:blur(calc(var(--blur-m) * .4)); }
+  #yetatopblur > div:nth-child(5) { --a:65px; --b:83px; backdrop-filter:blur(calc(var(--blur-m) * .2)); -webkit-backdrop-filter:blur(calc(var(--blur-m) * .2)); }
+  #yetatopblur > div.tf-scrim { -webkit-mask-image:none; mask-image:none; background:linear-gradient(to bottom, rgba(0,0,0,.54) calc(24px + env(safe-area-inset-top)), transparent calc(83px + env(safe-area-inset-top))); }   /* 스크림 = 5레이어 위 착색(블러 안 먹음) · 상단 24 솔리드캡 후 페이드 */
   .ymsg { display:flex; gap:8px; align-items:flex-start; max-width:86%; }   /* 캐릭터 메시지 = 아바타+이름+버블(제타 결) */
   .ymsg .yava { flex:none; width:32px; height:32px; border-radius:50%; display:grid; place-items:center; font-size:var(--fs-sm); font-weight:var(--fw-x);
     background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10); color:var(--yeta-ac); margin-top:2px; }
@@ -1295,7 +1300,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
       <div class="ymeter" id="yetaMeter"></div>   <!-- 미터 = 모델·노력 탭 전환 + 대화 누적 토큰(운영자 260709·260712 인터랙티브) -->
       <div class="yside" id="yside" hidden></div>   <!-- 좌 슬림 캐릭터 레일(운영자 260705 "왔다갔다") — 이름+최근대화 스니펫 · 탭=화자 전환 -->
       <div class="yeta-log" id="yetaLog"></div>
-      <div id="yetatopblur" aria-hidden="true"></div>   <!-- 상단 그라데 블러 스크림(운영자 20260714) — 네비 뒤로 스크롤 대화 숨김 · z1(로그 위·미터/네비 아래) · char/list의 #ytopfade와 대칭 -->
+      <div id="yetatopblur" aria-hidden="true"><div></div><div></div><div></div><div></div><div></div><div class="tf-scrim"></div></div>   <!-- 상단 5레이어 프로그레시브 블러 + 스크림(운영자 20260714 확정) — 네비 뒤로 스크롤 대화 숨김 · z1(로그 위·미터/네비 아래) · char/list의 #ytopfade와 대칭 -->
       <div class="yeta-pick" id="yetaPick" hidden></div>
       <div class="yeta-pick yinv" id="yetaInv" hidden></div>   <!-- 합석 초대 패널(단톡 260707) — + 버튼 진입 · 정본 픽커 계승 -->
       <div class="yeta-pick" id="yetaProfPop" hidden></div>   <!-- 캐릭터 프로필 팝오버(운영자 260709 프사 탭 = 현재 생각·소개) — 정본 픽커 표면 계승 -->
