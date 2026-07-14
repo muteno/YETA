@@ -3567,6 +3567,7 @@ function yAiMsg(t, fresh, cont) {   // 캐릭터 메시지 = 아바타 + 이름 
 let _yLastN = -1, _yTypOn = false, _yFailOn = false, _yTypHold = 0, _yTypT = null;   // 촤르륵 키드 + 타이핑 지연 홀드(읽는 시간 · 운영자 260707)
 let _yKickOn = false;   // 난입 내보내기 pill 등장 래치(_yFailOn 동형 — 재렌더 재애니 방지 · 합석 260707)
 let _yPaceN = -1, _yPaceT = 0;   // 답장 페이스 — 공개 승인된 턴 수(꼬리 답장 런은 길이 비례 타이핑 모션 후 공개 · 운영자 260706 "바로 대답 어색" · 항목13)
+let _yDraft = null, _yDraftOn = false;   // 문장 스트리밍 부분 답장(260714 한수2) — watch가 준 draft + 표시 래치(등장 1회 촤르륵 · 확정 도착 시 페이스 홀드 스킵 판정)
 let _lastUserI = -1, _meUnread = false;   // 인챗 '1' 읽음표시(항목14A) — 마지막 미읽음 내 턴 인덱스 + 미읽음 래치(_yTypHold 경과 = 읽음)
 // ── 자동 재시도(운영자 260714 "재시도로 묻지 말고 자체 재시도 · 4회 이상 안되면 그냥 대화 이탈") — 실패 배너·버튼 폐지: 실패 감지 = retry op 무알림 자동 재발사(지수 백오프) · 그동안 '입력 중'만 유지 · 4회 소진 = 지문 한 줄 조용한 이탈(배너·토스트 0 = 바이브 보존)
 const YAR_MAX = 4;   // 자동 재시도 상한 — 소진 후엔 새 메시지(새 에피소드)로만 재개(쿼터 보호)
@@ -3614,6 +3615,7 @@ function yRender() {
   // 답장 페이스(운영자 260706): 새 답장이 즉답으로 꽂히면 어색 → 꼬리 assistant 런만 ~1초 홀드 + 타이핑 모션 선행. 내 턴·sys·첫 렌더 = 즉시.
   if (first || _yPaceN < 0 || _yPaceN > all.length) _yPaceN = all.length;
   else if (all.length > _yPaceN) {
+    if (_yDraftOn) { _yPaceN = all.length; _yDraft = null; }   // 문장 스트리밍으로 이미 본 답장(한수2) = 홀드 스킵 — 실물 타이핑이 연출을 대체(즉시 확정 스왑)
     let cut = all.length; while (cut > 0 && all[cut - 1].role === 'assistant') cut--;   // 꼬리 답장 런 직전까지는 즉시 공개(낙관 내 버블 소실 방지)
     _yPaceN = Math.max(_yPaceN, cut);
     if (all.length > _yPaceN && !_yPaceT) {
@@ -3663,11 +3665,14 @@ function yRender() {
   if (_yNearC && !kickOn && ((s.room || []).length < 2)) h += `<button type="button" class="yb sys ykick ynear in" data-near="${esc(_yNearC.id)}">${esc(_yNearC.pl)} — ${esc(_yNearC.name)}도 여기 있다 · 불러볼까</button>`;   // 공간 초대(운영자 260709 메타버스 결) — 같은 장소 감지 시에만 · 탭 = 부르기(수락은 걔 마음)
   const invP = s.invite && Date.now() - (s.invite.ts || 0) < 600000 ? yPersona(s.invite.to) : null;   // 초대 판정 대기(단톡 260707)
   const typing = yPrefOn('typing', true) && !deadNow && !gaveUp && !openingStuck && (awaiting || staged || failNow) && !!YCUR && Date.now() >= _yTypHold;   // 타이핑 표시(설정) 끄면 "입력 중" 숨김 · staged = 답장 페이스 홀드 · failNow = 자동 재시도 중에도 점 유지(실패 무노출) · _yTypHold = 읽는 시간 경과 후에만(운영자 260707)
+  if (!awaiting && !staged && _yDraft) _yDraft = null;   // 확정 반영·대기 종료 = 잔여 draft 폐기(다음 턴 유령 버블 차단)
+  const dr = _yDraft && awaiting && !deadNow && !gaveUp && _yDraft.t === ((YSESS || {}).cur || '') && (_yDraft.ts || 0) >= ((s.awaiting_since || 0) - 5000) && _yDraft.text ? _yDraft : null;   // 문장 스트리밍(한수2) — 현재 방 · 이번 대기분만(스테일 가드) · 사망/이탈 연출이 우선
   if (deadNow) h += `<div class="ysit">…사망 — 그 시각부터 24시간, 어떤 연락도 닿지 않는다.</div>`;   // 사망 지문(운영자 260714 "사망으로 표기" · .ysit 계승) — 입력도 함께 잠김 · 24h 후 자연 해제
   else if (gaveUp) h += `<div class="ysit${_yFailOn ? '' : ' in'}">…답이 없다. 지금은 연락이 닿지 않는 모양이다.</div>`;   // 조용한 이탈 = 장면 지문(.ysit 계승 · 나레이션 결) — 새 메시지 보내면 새 에피소드로 재개
+  else if (dr) { const lt = turns[turns.length - 1]; h += yAiMsg({ text: dr.text, persona: dr.p || (YCUR && YCUR.id) }, !_yDraftOn, !!(lt && lt.role === 'assistant' && (lt.persona || '') === (dr.p || (YCUR && YCUR.id) || ''))); }   // 생성 중 부분 답장 버블 — 등장만 촤르륵(갱신은 무애니 = 텍스트만 자람) · 시각 표기는 확정 턴에서
   else if (typing) h += yTypingHtml(!_yTypOn);
   else if (invP) h += yTypingHtml(!_yTypOn, invP, '올지 생각 중');   // 초대받은 캐릭터의 고민 = 타이핑 변형(시안 A)
-  _yFailOn = gaveUp; _yTypOn = typing || (!deadNow && !gaveUp && !typing && !!invP);
+  _yFailOn = gaveUp; _yTypOn = !dr && (typing || (!deadNow && !gaveUp && !typing && !!invP)); _yDraftOn = !!dr;
   yHeadRoom();   // 단톡 헤더 동기화(스택/단일 멱등)
   yStackSync();   // 근처 인물 스택 동기(만석 전환·후보 소진 반영 — 시그니처 가드 = 무변경 no-op · 260712)
   yStage(yLastMood());   // 새 답장의 공기 → 배경 배리언트 크로스페이드(키 가드 = 같으면 no-op)
@@ -3677,21 +3682,23 @@ function yRender() {
   if (atBottom) log.scrollTop = log.scrollHeight;
   if (((awaiting && waitMs <= zlim) || invP) && !deadNow) yStartPoll(); else yStopPoll();   // 초대 판정도 폴로 픽업(state 비점유) · 사망 방 = 폴 정지(운영자 260714 — 두절 연출)
 }
-let _yWatchTk = null, _yEtag = '';   // watch 롱폴 토큰 + 서버 etag 기준선(watch 응답만 갱신 — get 무관)
+let _yWatchTk = null, _yEtag = '', _yDEtag = '';   // watch 롱폴 토큰 + 세션/draft etag 기준선(watch 응답만 갱신 — get 무관)
 function yStartPoll() {   // 대기 감시 1선 = watch 롱폴(대화 속도 260714 한수 · 서버가 R2 etag 1s 감시 → 변경 즉시 응답 = 픽업 ~0s) · 실패·구게이트웨이 = 4s 타이머 폴 강등(종전 결) — 대기 중에만 돎
   if (_yWatchTk || _yPoll) return;   // 이미 감시 중 = 멱등
   const tk = { on: true }; _yWatchTk = tk;
   (async () => {
     while (tk.on && yetadlg.open) {
       if (document.visibilityState !== 'visible') { await new Promise(r => setTimeout(r, 1000)); continue; }   // 백그라운드 탭 = 요청 0(가시화 시 재개)
-      const r = await yApi('watch', { e: _yEtag }).catch(() => null);
+      const r = await yApi('watch', { e: _yEtag, de: _yDEtag }).catch(() => null);
       if (!tk.on || !yetadlg.open) break;
       if (!r || !r.ok) {   // 네트워크·미배포 게이트웨이 = 타이머 폴 폴백(감시 공백 차단)
         if (_yWatchTk === tk) { _yWatchTk = null; _yPoll = { iv: 4000, t: setInterval(() => { if (document.visibilityState !== 'visible') return; if (!yetadlg.open) { yStopPoll(); return; } yLoad(); }, 4000) }; }
         return;
       }
       if (r.etag) _yEtag = r.etag;
-      await yLoad();   // changed = 즉시 확정 렌더 · none(20s 만료) = 좀비 리퍼·배너 갱신 겸 확정 겟 — yLoad→yRender가 대기 종료 판정이면 yStopPoll()이 tk를 끊어 루프 종료
+      if (r.detag) _yDEtag = r.detag;
+      if (r.draft && r.draft.text) { _yDraft = r.draft; if (_yView === 'chat') yRender(); continue; }   // 문장 스트리밍(한수2) — 부분 답장은 겟 왕복 없이 즉시 그림(생성 중에도 말이 자람)
+      await yLoad();   // changed = 즉시 확정 렌더 · none(15s 만료) = 좀비 리퍼·배너 갱신 겸 확정 겟 — yLoad→yRender가 대기 종료 판정이면 yStopPoll()이 tk를 끊어 루프 종료
     }
     if (_yWatchTk === tk) _yWatchTk = null;
   })();

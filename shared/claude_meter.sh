@@ -66,8 +66,22 @@ claude_meter() {
     timeout "$to" claude -p $bare "$@"
     return $?
   fi
-  raw="$(timeout "$to" claude -p $bare --output-format json "$@")"
-  rc=$?
+  # 스트리밍 모드(옵트인 · METER_STREAM=필터 경로 — yeta 챗 전용 260714): stream-json 델타를 필터가 R2 draft로 흘리고
+  #   최종 result 이벤트(JSON 1개 = json 모드와 동형)만 stdout에 남김 → 아래 기존 파서(.result)·계측·실패판정 전부 그대로 호환.
+  #   구 CLI가 stream 플래그를 거부하면 json 모드 1회 폴백(stdin은 버퍼해 재공급 · 호출처 yeta_chat = pipefail로 rc 보존).
+  #   미설정(기본) = 이 분기 자체가 없던 일 — 타 호출처 무영향.
+  if [ -n "${METER_STREAM:-}" ] && [ -f "${METER_STREAM}" ]; then
+    local _pin; _pin="$(cat)"
+    raw="$(printf '%s' "$_pin" | timeout "$to" claude -p $bare --output-format stream-json --include-partial-messages --verbose "$@" | python3 "$METER_STREAM")"
+    rc=$?
+    if ! printf '%s' "$raw" | jq -e '.result | type == "string"' >/dev/null 2>&1 && printf '%s' "$raw" | grep -qiE 'unknown option|unrecognized|stream-json|include-partial'; then
+      raw="$(printf '%s' "$_pin" | timeout "$to" claude -p $bare --output-format json "$@")"
+      rc=$?
+    fi
+  else
+    raw="$(timeout "$to" claude -p $bare --output-format json "$@")"
+    rc=$?
+  fi
   # 정상 JSON(.result 가 문자열) → 계측 + .result 만 흘림(호출부 파싱 무변경).
   if printf '%s' "$raw" | jq -e '.result | type == "string"' >/dev/null 2>&1; then
     _meter_record "$raw" "$rc"

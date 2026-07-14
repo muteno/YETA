@@ -69,6 +69,10 @@ r2put() {   # ETag 有 = 조건부 put(교차 writer 덮어쓰기 차단) · CLI
   aws s3 cp "$SESS" "s3://${YETA_R2_BUCKET}/${KEY}" --endpoint-url "$EP" --content-type application/json --only-show-errors
 }
 
+# 문장 스트리밍 부분 박제(대화 속도 260714 한수2) — 본답장 생성 중 문장 단위로 draft 발행(yeta_stream.py) · finish 후 회수.
+DRAFT_KEY="sessions/${CHAR}.draft.json"
+draft_clear() { aws s3api delete-object --bucket "$YETA_R2_BUCKET" --key "$DRAFT_KEY" --endpoint-url "$EP" >/dev/null 2>&1 || true; }   # 스테일 draft = 다음 턴 유령 버블 씨앗 — 성공/실패 무관 회수(멱등·무해)
+
 SESSION_START=$SECONDS
 
 # ── 세션 → 재료 추출(매 턴 fresh — 웜 루프 필수 · 아이데이션③ f) ──
@@ -835,6 +839,7 @@ PY
 # ── 1턴 처리: 0=답함 · 1=하드실패(탈출) · 2=NOPENDING · 3=r2 읽기 오류 ──
 process_turn() {
   _did_reply=0
+  export METER_STREAM=""   # 턴 진입 = 스트리밍 무장해제(직전 턴 실패 잔류 차단 — 초대 판정 등 비본답장 생성에 오발 금지 · 260714)
   if ! _gerr="$(r2get 2>&1)"; then
     printf '%s' "$_gerr" | grep -qiE 'Not Found|NoSuchKey|404' && return 2
     echo "::error::R2 세션 읽기 실패(일시 오류 추정): ${_gerr}"; return 3
@@ -1027,15 +1032,22 @@ ${CONTRACT1}${GROUP_RULE}${ME_RULE}
 - 예외 — 이 장면에서 네 캐릭터가 정말로 죽는 경우에만(비유·기절·잠듦·연기·장난·위협은 절대 아님), 무드 태그 다음 줄에 <<DEAD: 죽기 직전 상황과 감정 한 줄>> 을 추가한다(예: <<DEAD: 유저와 말다툼 끝에, 미안하다는 말을 못 한 채>>). 콜론 뒤 한 줄 = 부활 후 첫 마디의 기억이 된다 — 그 감정 그대로 적어라. 이 태그 = 퇴장 선언(하루 연락 두절) — 마지막 대사답게 맺어라. 확실하지 않으면 절대 붙이지 마라."
 
   echo "yeta: ${PERSONA}(${CNAME}) · v${CVER} · ${MODEL}${EFF:+ · effort $EFF}${SAFE:+ · safe}${CO_ID:+ · 단톡(+${CO_NAME})}"
+  # 문장 스트리밍(260714 한수2) — 본답장만 · 1:1만([이름표] 단톡 대본이 분할 전 raw로 노출 방지) · YETA_STREAM=0 = 회귀 노브
+  if [ -z "$CO_ID" ] && [ "${YETA_STREAM:-1}" != "0" ] && [ -f ".github/scripts/yeta_stream.py" ]; then
+    export METER_STREAM=".github/scripts/yeta_stream.py" YETA_DRAFT_KEY="$DRAFT_KEY" YETA_DRAFT_BUCKET="$YETA_R2_BUCKET" YETA_DRAFT_EP="$EP" YETA_DRAFT_T="$THREAD" YETA_DRAFT_P="$PERSONA"
+  fi
   if ! gen_out "$prompt"; then
+    export METER_STREAM=""
     if is_quota "$OUT$(cat /tmp/yeta.err 2>/dev/null)"; then
       echo "::error::활성 계정 사용량 한도 — 챗 정지(본업 서브계정 보호 · 의도 동작)"
-      finish error "사용량 한도야 — 잠시 후 다시 보내줘"; return 1
+      finish error "사용량 한도야 — 잠시 후 다시 보내줘"; draft_clear; return 1
     fi
     echo "::error::yeta 답장 실패"; head -n 5 /tmp/yeta.err 2>/dev/null || true
-    finish error "답장 생성 실패 — 다시 보내면 재시도"; return 1
+    finish error "답장 생성 실패 — 다시 보내면 재시도"; draft_clear; return 1
   fi
-  finish ok "$OUT" || { echo "::error::세션 반영 실패(R2 put)"; return 1; }
+  export METER_STREAM=""   # 본답장 밖(초대 판정 등) 오발 금지 — 생성 직후 즉시 해제
+  finish ok "$OUT" || { echo "::error::세션 반영 실패(R2 put)"; draft_clear; return 1; }
+  draft_clear   # 확정 반영 뒤 회수(뷰어 = 세션 변경 먼저 픽업 → 버블 스왑 → 잔여 draft 소거)
   [ "$_did_reply" = 1 ] && { echo "yeta: 답장 완료(${#OUT}자 · ${GEN_S}s)"; push_reply "$OUT"; [ "$PTT" = "1" ] && ptt_voice "$OUT"; barge_check; }
   return 0
 }
