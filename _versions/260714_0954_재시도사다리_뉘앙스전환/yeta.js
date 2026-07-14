@@ -4,7 +4,6 @@
 // ops(POST 단일 — 폴링도 POST = originOk 대칭):
 //   chars {}                       : 페르소나 로스터(apps/yeta/characters/roster.json raw · 5분 캐시)
 //   get   {}                       : 세션 반환(뷰어 폴)
-//   watch {e}                      : 롱폴 감시(대화 속도 260714) — R2 etag 1s head 감시 · 변경 즉시 {changed}(뷰어가 get 재조회 = 픽업 ~0s) · 20s 무변경 = {none}(클라 재발사)
 //   send  {text, model, effort}    : 유저 턴 append(다이얼 턴별 박제 · 화이트리스트) → yeta-chat.yml dispatch
 //   draw  {persona, name}          : 페르소나 뽑기/재뽑기 — sess.persona 갱신(+대화 중이면 sys 턴) · room=[persona] 리셋(단톡 해산)
 //   invite {persona, name}         : 합석 초대(단톡 · 정원 MAX_ROOM) — 원본 1:1 보존, 직전 3주고받기 시드 복사해 새 단톡 스레드(g 접두)로 분기 → cur 전환 + dispatch(수락/거절 = 러너 판정)
@@ -127,7 +126,6 @@ export async function onRequestPost({ request, env }) {
     return { sess: null, abort: { error: '세션 경합 — 잠시 후 다시' } };
   };
   const TH = (s, t) => (s.threads || {})[t];   // 스레드 접근(없으면 undefined — 신설은 draw 단일 경로 · 보안 감사①)
-  const DEAD_ON = (s, id) => { const v = (s.dead || {})[id]; return (((v && v.t) || +v || 0)) > Date.now(); };   // 사망 두절(운영자 260714) — 러너 <<DEAD: 맥락>>가 sess.dead[id]={t:만료ts, d:사망ts, mood, why} 박제(구형 숫자 흡수) · 24h 대화·초대·오프닝 차단 · 만료 = 비교 자연 통과(엔트리 = 부활 첫 답이 소비)
 
   // ── PIN 해시 + R2 오버라이드(운영자 260710 R2 재설계 · pinset 보안 BLOCK 해소) ──
   // 게스트 PIN 셀프변경 = users.json(공개 레포·main) 무커밋 → 비공개 R2 `auth/overrides.json`에 {원래해시: 새해시} 저장.
@@ -154,20 +152,6 @@ export async function onRequestPost({ request, env }) {
     const out = { ...sess, threads: Object.fromEntries(Object.entries(sess.threads || {}).map(([id, th]) =>
       [id, id === cur ? th : { ...th, turns: (th.turns || []).slice(-2), trim: (th.turns || []).length }])) };   // trim = 원 턴수(뷰어 unread ts 판정 보조)
     return json({ ok: true, sess: out });
-  }
-
-  if (op === 'watch') {   // 롱폴 감시(대화 속도 260714 한수) — 서버가 R2 etag를 1s 간격 head로 감시, 변경 즉시 응답 = 뷰어 픽업 지연 ~0s(타이머 폴 간격 한계 제거 · 대기 중 요청 수↓).
-    // SSE(EventSource) 아닌 롱폴인 이유 = 전 op POST 통일(originOk CSRF 대칭) 온존. 본문 판독은 뷰어가 이어 op get(리퍼·비활성 절단 로직 재사용 = 여기 중복 0).
-    // CPU 예산: head = I/O(CPU ~0)·파스 0 → 20s 홀드에도 Workers CPU 한도 안전권 · 홀드 20s 캡 = 무한 점유 아님(만료 = 클라 즉시 재발사).
-    const known = String(body.e || '');
-    const deadline = Date.now() + 20000;
-    for (;;) {
-      let et = '';
-      try { const h = await env.YETA_R2.head(KEY); et = h ? h.etag : ''; } catch {}
-      if (et && et !== known) return json({ ok: true, etag: et, changed: true });
-      if (Date.now() >= deadline) return json({ ok: true, etag: et || known, none: true });
-      await new Promise(r => setTimeout(r, 1000));
-    }
   }
 
   if (op === 'voice') {   // 통화 음성 스트림(걸려오는 전화 v1) — 비공개 세션 버킷 voice/ 프리픽스만 · POST 유지(originOk 대칭)
@@ -258,7 +242,6 @@ export async function onRequestPost({ request, env }) {
     if (!env.GH_TOKEN) return json({ error: '서버 미설정 — GH_TOKEN 필요' }, 500);
     const persona = String(body.persona || '');
     if (persona && !ID_RE.test(persona)) return json({ error: '잘못된 페르소나 id' }, 400);
-    { const sd = await readSess(); if (DEAD_ON(sd, persona || sd.cur || '')) return json({ error: '신호가 가지 않아 — 지금은 연락이 닿지 않는 상대야' }, 409); }   // 사망 = 전화 차단(260714 · 유료 TTS 헛발도 방지)
     let cap = parseInt(env.YETA_CALL_MAX_PER_DAY ?? '3', 10);
     if (!Number.isFinite(cap)) cap = 3;   // 미설정·빈값·오타 = 보수 기본 3(유료 가드가 조용히 풀리는 구멍 차단 · 0 = 명시적 무제한)
     const kst = new Date(Date.now() + 9 * 3600e3).toISOString().slice(2, 10).replace(/-/g, '');
@@ -472,7 +455,6 @@ export async function onRequestPost({ request, env }) {
       }
       s.cur = persona;
       if (th.turns.length || (th.state === 'awaiting' && th.opening)) { need = null; return; }
-      if (DEAD_ON(s, persona)) { need = null; return; }   // 사망 = 오프닝 발사 금지(260714 — 빈 방도 조용히 · 진입 차단은 뷰어 게이트)
       if (env.GH_TOKEN) {   // 동적 오프닝 — nonce = reset/재드로 레이스 방어(러너 finish 일치검사 · 75차 가드 스레드 스코프)
         const nonce = Date.now();
         th.state = 'awaiting'; th.awaiting_since = nonce; th.opening = nonce; th.err = '';
@@ -524,7 +506,6 @@ export async function onRequestPost({ request, env }) {
     let gid = '';
     const { sess, abort } = await casPut(s => {
       const th = TH(s, t); if (!th) return { abort: { error: '없는 대화방이야' } };
-      if (DEAD_ON(s, persona)) return { abort: { error: '지금은 부를 수 없어 — 연락이 닿지 않는 상대야' } };   // 사망 = 초대 차단(260714)
       const room = Array.isArray(th.room) && th.room.length ? th.room : [t];
       if (room.includes(persona)) return { abort: { error: '이미 같이 있어' } };
       if (room.length >= MAX_ROOM) return { abort: { error: '자리가 없어 — 한 명을 보내고 불러줘' } };
@@ -595,7 +576,6 @@ export async function onRequestPost({ request, env }) {
     const rn = Math.max(1, Math.min(9, Math.round(+body.n) || 1));   // 회차(사다리 260714) — 러너가 3회차부터 뉘앙스 전환 블록 주입 · 미동봉(구 캐시 뷰어) = 1(그대로 재발사) · 정수 강제 = 주입 차단
     const { abort } = await casPut(s => {
       const th = TH(s, t); if (!th) return { abort: { error: '없는 대화방이야' } };
-      if (DEAD_ON(s, t)) return { abort: { error: '지금은 연락이 닿지 않아' } };   // 사망 방 = 재발사 금지(260714)
       const turns = th.turns || [];
       const lastA = turns.map(x => x.role).lastIndexOf('assistant');
       if (!turns.slice(lastA + 1).some(x => x.role === 'user')) return { abort: { error: '재시도할 메시지가 없어' } };
@@ -632,7 +612,6 @@ export async function onRequestPost({ request, env }) {
   if (!ID_RE.test(t)) return json({ error: '페르소나가 없어 — 🎲 먼저 뽑아줘' }, 409);
   const { abort } = await casPut(s => {
     const th = TH(s, t); if (!th) return { abort: { error: '없는 대화방이야 — 캐릭터 탭에서 열어줘' } };
-    if (DEAD_ON(s, t)) return { abort: { error: '…지금은 연락이 닿지 않아. 하루쯤 뒤에 다시 걸어봐' } };   // 사망 두절(운영자 260714) — 1:1 방 24h 발신 차단(단톡 g방 = dead 키 아님 = 통과 · 생존자와 계속)
     const turn = { role: 'user', text, ts: Date.now(), model, effort };   // 다이얼 = 턴별 박제
     if (body.ptt) turn.ptt = 1;   // 무전기(PTT) 턴 박제
     th.turns.push(turn);

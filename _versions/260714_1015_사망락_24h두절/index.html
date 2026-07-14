@@ -1537,7 +1537,7 @@ function miniToast(msg) {   // 범용 미니 토스트(nm-toast 계승·초록·
 /* ── yeta 로직(L8435-8692) + 딥링크(L8717) — SNS/설정 아코디언 8693-8716 제외 ── */
 // ── yeta 말벗 제타 (프로필 메뉴 · 랜덤 페르소나 톡방 · 세션=R2 단일 스레드 — functions/api/yeta.js · 260703 v2) ──
 // 🎲 뽑기/재뽑기 = 맥락(턴·관계노트) 유지·화자만 교체. 다이얼 2개(모델×노력 — 턴별 박제·답장 캡션으로 곱 체감).
-// 프리웜 = 창 열면·입력 포커스 시 러너 선부팅(warm op · 30초 목표). 대기 감시 = watch 롱폴(서버 R2 etag 1s 감시 → 변경 즉시 = 픽업 ~0s · 실패 시 4s 타이머 폴 강등 · 좀비 임계 5분).
+// 프리웜 = 창 열면 러너 선부팅(warm op · 30초 목표). 폴 = 다이얼 적응형(깊게 8s/그외 4s · 좀비 임계 10분/5분).
 // *나레이션* = 이탤릭(제타 결). 페르소나 색/배경 = roster color·bg → --yeta-ac·log 배경(운영자 컨셉 훅).
 const yetadlg = $('#yetadlg');
 let YCHARS = [], YWORLD = null, YCUR = null, YREADY = false, YSESS = null, _yPoll = null;
@@ -1632,8 +1632,8 @@ let YMAPD = null, _ymapRaf = 0, _ymapIv = 0, _ymapWalkers = [], _ymapCars = [], 
 const YMAP_SC = 5, YMAP_RM = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 // ── 맵 시각 레이어(운영자 260707 "자연스럽게 배치 · 차는 차도로 · 신호등 정지 · 건물 안이면 이름표") — map_night.png 좌표계(0~100) · 논리 SSOT(places.json)와 별개 축.
 //    건물 draw 위치(논리좌표는 중앙 뭉침이라 이미지와 불일치 → 실측 트레이스), 도로 링(회색길), 신호등, 실내/야외.
-const YMAP_POS = { radio:[50,14], office:[56,33], studio:[61,44], alley:[50,50], tea:[30,52], store:[50,63], dojo:[20,78], market:[35,71], gym:[11,60], park:[46,84], school:[65,75], cathedral:[78,22] };   // cathedral = 부활 성당(운영자 260714 · places.json 동기 — 북동 언덕 공터)
-const YMAP_ZONE = { alley: { x: 50, y: 44, r: 3.2 }, park: { x: 56, y: 90.5, r: 4 }, market: { x: 35, y: 70.5, r: 2 }, cathedral: { x: 78, y: 26, r: 2 } };   // 야외 배회 구역(운영자 260709 "구획 안에서 자연스럽게" — 실측 공터 · r = % 반경 · 광장 = v3 재실측 마름모{밤 N49.5,38 W41,42.5 E58,42.5 S49.5,47 · 낮 2~4 남동 시프트} 낮밤 절충 내접) — 구 고정 스팟 폐지 · cathedral 앞뜰 = 부활 직후 3h 체류(260714)
+const YMAP_POS = { radio:[50,14], office:[56,33], studio:[61,44], alley:[50,50], tea:[30,52], store:[50,63], dojo:[20,78], market:[35,71], gym:[11,60], park:[46,84], school:[65,75] };
+const YMAP_ZONE = { alley: { x: 50, y: 44, r: 3.2 }, park: { x: 56, y: 90.5, r: 4 }, market: { x: 35, y: 70.5, r: 2 } };   // 야외 배회 구역(운영자 260709 "구획 안에서 자연스럽게" — 실측 공터 · r = % 반경 · 광장 = v3 재실측 마름모{밤 N49.5,38 W41,42.5 E58,42.5 S49.5,47 · 낮 2~4 남동 시프트} 낮밤 절충 내접) — 구 고정 스팟 폐지
 const YMAP_INDOOR = new Set(['tea','studio','office','radio','gym','dojo','school','store']);
 // 도로 중심선 v3(운영자 260710 "차가 차도로 안 다니고" — v2 트레이스가 실그림과 재차 어긋남 확정 → 확대 크롭 대시 실측 + 밤·낮 오버레이 QA 3라운드 재트레이스 · 0~100 좌표 · 기울기 ±0.5 순수 직선). 핵심 정정: 구판 nMain 시작(0,2.5) = 좌상 빌딩 위(차가 지붕 주행하던 원인) — 좌상 도로의 실제 방향은 ↗(nwUp 신설)이고 북부 간선은 (23.5,11.8) X교차로에서 분기. 밤/낮 그림이 서로 달라(다리 중심 밤 67,19.5 / 낮 84,25 · 간선 전반 1.5~2.5 시프트) 간선 6종은 톤별 세트(YMAP_ROADS_TONE) — 배경 스왑 시 차선 재생성. 정점 [x,y,f]: 's' = 광장 정지선(정점 속성 · 양방향 각자 교차로 앞 정지) · 'h' = 그 정점에서 시작하는 구간이 건물 뒤 가림(구간 속성 · 역방향 차선은 yLaneOf가 자동 시프트).
 const YMAP_ROADS = {   // 톤 공용 3(밤 실측 기준 · 낮 오차 ±1 이내)
@@ -1772,7 +1772,6 @@ async function ymPlaceAll() {   // 현재 시각 실위치 재판정 → 워커 
   const cl = $('#ymapClock'); if (cl) cl.textContent = `${yTime(Date.now())} · ${{ late: '깊은 밤', dawn: '새벽', morning: '아침', day: '낮', evening: '저녁', night: '밤' }[ymSlot(h)]}`;
   const at = {};
   for (const w of _ymapWalkers) at[w.id] = await ymPlaceOf(w.id, dateStr, h);
-  for (const w of _ymapWalkers) if (yRevPend(w.id) && Date.now() < yDeadT(w.id) + YREV_MS && (YMAPD.places || {}).cathedral) at[w.id] = 'cathedral';   // 부활 직후 = 성당 앞뜰에 나타남(운영자 260714 "부활장소") — 첫 답(엔트리 소비)·3h 경과 = 동선 복귀 · 지도 표시 전용(원거리·근처 판정 불변)
   const byPlace = {};
   for (const [cid, pl] of Object.entries(at)) (byPlace[pl] = byPlace[pl] || []).push(cid);
   for (const w of _ymapWalkers) {
@@ -2941,7 +2940,6 @@ async function yMyPlace() {   // 내 현재 장소 — 수동 설정(yeta_me_pla
 }
 async function yAway(c) {   // 떨어져 있음 판정 — 차단·전화 유도용. 반환 = 상대 현재 장소명('' = 제한 없음: 방 없음/최근 대화/같은 장소/판정 불가)
   const th = ((YSESS || {}).threads || {})[c && c.id]; if (!th) return '';
-  if (yRevPend(c && c.id)) return '';   // 부활 미답 = 원거리 유예(260714 — 성당에서 막 돌아온 첫 재회는 어디서든 닿는다 · 사망 24h 공백이 원거리 락으로 이어지는 겹잠금 차단)
   const turns = th.turns || [], last = turns.length ? (turns[turns.length - 1].ts || 0) : 0;
   if (!last || Date.now() - last < YAWAY_MS) return '';
   if (!YMAPD) { try { await yMeMap(); } catch {} }
@@ -2961,17 +2959,13 @@ function yBond(c) {   // 유효 친밀도 = 내 발화 수 × 감쇠 — 커브(
 }
 function yEstranged(c) {   // 소원해짐(운영자 260709 "일정 친밀도 이하 = 다시 대화가 안 되게 — 만났지만 대화는 어려움") — 대화했던 사이가 감쇠 임계(1.5) 미만으로 식음 · 회복 = 마주침·난입 재회(우연 축)
   if (!c || c.locked || yUnmet(c)) return false;
-  if (yRevPend(c.id)) return false;   // 부활 미답 = 서먹 판정 유예(260714 — 24h 공백이 소원 락을 걸어 부활 재회를 막는 겹잠금 차단 · 첫 답 후 엔트리 소거 = 정상 규칙 복귀)
   const th = ((YSESS || {}).threads || {})[c.id]; if (!th || !(th.turns || []).some(t => t.role === 'user')) return false;
   if (Date.now() - (th.updated || 0) < 86400e3) return false;   // 방치 1일 미만 = 소원 판정 안 함(분신술 260709 — 첫 메시지 1개 방이 bond 1.0<1.5로 보내자마자 잠기던 즉사 버그 차단 · 훅 하락 시작점(1일)과 동일 서사)
   return yBond(c) < 1.5;
 }
-const YREV_MS = 3 * 3600e3;   // 부활 직후 성당 체류 창(지도 표시 · 운영자 260714 "나타나는 곳 = 부활장소") — 첫 답(엔트리 소비)이나 3h 경과 = 동선 복귀
-function yDeadT(id) { const v = ((YSESS || {}).dead || {})[id]; return (v && v.t) || +v || 0; }   // dead 엔트리 만료ts — v2 객체{t,d,mood,why}(260714 부활맥락) · 구형 숫자 흡수
-function yDead(c) {   // 사망 락(운영자 260714 "락보다 한단계 위 · 24시간 모든 대화 불가") — 러너 <<DEAD: 맥락>> 태그가 sess.dead[id]={t,d,mood,why} 박제 · 만료(24h) = 비교만으로 자연 부활(엔트리는 부활 첫 답이 소비)
-  return yDeadT(c && c.id) > Date.now();
+function yDead(c) {   // 사망 두절(운영자 260714 "사망 = 방 이탈·자리 은신·24시간 대화 불가") — 러너 <<DEAD>> 태그가 sess.dead[id]=만료ts 박제 · 잠금·미대면·소원과 동렬 4번째 게이트 · 만료(24h) = 비교만으로 자연 부활(엔트리는 러너가 lazy 소거)
+  return (((YSESS || {}).dead || {})[c && c.id] || 0) > Date.now();
 }
-function yRevPend(id) { const t = yDeadT(id); return !!t && t <= Date.now(); }   // 부활 미답(만료됐지만 첫 답 전 = 엔트리 잔존) — 서먹·원거리 유예 + 성당 표시 재료
 let _yNearC = null, _yNear = [], _yNearGen = 0;   // 공간 초대 후보(pill) + 근처 목록(스택·팝업) · gen = 세대 토큰(평의회A — await 중 방 전환 시 교차 방 오염 차단)
 async function yNearCalc() {   // 현재 방 상대와 같은 장소(동선 판정)의 다른 캐릭터들 — 잠금·미대면·소원·방 멤버 제외 · 로컬 누적 → 원자 커밋(낡은 세대·타 방 결과 = 폐기)
   const gen = ++_yNearGen, _prev = _yNearC && _yNearC.id, th0 = YTH();
@@ -3677,26 +3671,13 @@ function yRender() {
   if (atBottom) log.scrollTop = log.scrollHeight;
   if (((awaiting && waitMs <= zlim) || invP) && !deadNow) yStartPoll(); else yStopPoll();   // 초대 판정도 폴로 픽업(state 비점유) · 사망 방 = 폴 정지(운영자 260714 — 두절 연출)
 }
-let _yWatchTk = null, _yEtag = '';   // watch 롱폴 토큰 + 서버 etag 기준선(watch 응답만 갱신 — get 무관)
-function yStartPoll() {   // 대기 감시 1선 = watch 롱폴(대화 속도 260714 한수 · 서버가 R2 etag 1s 감시 → 변경 즉시 응답 = 픽업 ~0s) · 실패·구게이트웨이 = 4s 타이머 폴 강등(종전 결) — 대기 중에만 돎
-  if (_yWatchTk || _yPoll) return;   // 이미 감시 중 = 멱등
-  const tk = { on: true }; _yWatchTk = tk;
-  (async () => {
-    while (tk.on && yetadlg.open) {
-      if (document.visibilityState !== 'visible') { await new Promise(r => setTimeout(r, 1000)); continue; }   // 백그라운드 탭 = 요청 0(가시화 시 재개)
-      const r = await yApi('watch', { e: _yEtag }).catch(() => null);
-      if (!tk.on || !yetadlg.open) break;
-      if (!r || !r.ok) {   // 네트워크·미배포 게이트웨이 = 타이머 폴 폴백(감시 공백 차단)
-        if (_yWatchTk === tk) { _yWatchTk = null; _yPoll = { iv: 4000, t: setInterval(() => { if (document.visibilityState !== 'visible') return; if (!yetadlg.open) { yStopPoll(); return; } yLoad(); }, 4000) }; }
-        return;
-      }
-      if (r.etag) _yEtag = r.etag;
-      await yLoad();   // changed = 즉시 확정 렌더 · none(20s 만료) = 좀비 리퍼·배너 갱신 겸 확정 겟 — yLoad→yRender가 대기 종료 판정이면 yStopPoll()이 tk를 끊어 루프 종료
-    }
-    if (_yWatchTk === tk) _yWatchTk = null;
-  })();
+function yStartPoll() {   // 적응형 폴 — 웜 후속 턴(10~30s 답장)을 빨리 픽업(아이데이션⑤ · 대기 중에만 돎)
+  const iv = 4000;   // 적응형 폴(effort low 고정)
+  if (_yPoll && _yPoll.iv === iv) return;
+  yStopPoll();
+  _yPoll = { iv, t: setInterval(() => { if (document.visibilityState !== 'visible') return; if (!yetadlg.open) { yStopPoll(); return; } yLoad(); }, iv) };
 }
-function yStopPoll() { if (_yPoll) clearInterval(_yPoll.t); _yPoll = null; if (_yWatchTk) { _yWatchTk.on = false; _yWatchTk = null; } }
+function yStopPoll() { if (_yPoll) clearInterval(_yPoll.t); _yPoll = null; }
 async function ySend() {
   const ta = $('#yetaText'), text = ta.value.trim();
   if (_yFarOnly) { miniToast('멀리 있어서 문자는 안 닿아 — 전화로 걸어봐'); return; }   // 원거리 불가 상대 = 전화만(운영자 260709)
@@ -3726,7 +3707,6 @@ async function ySend() {
 $('#yetaSend').addEventListener('click', ySend);
 $('#yetaText').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); ySend(); } });   // 폰 enterkeyhint=send · Shift+Enter=줄바꿈
 $('#yetaText').addEventListener('input', e => { const t = e.target; t.style.height = 'auto'; t.style.height = Math.min(120, t.scrollHeight) + 'px'; });
-$('#yetaText').addEventListener('focus', yWarm);   // 쓰기 시작 = 러너 선부팅(콜드 부팅 30~40s를 타이핑 시간과 겹침 — 유휴 복귀 첫 답장 단축 · 4.5분 디바운스는 yWarm 내장)
 // 🎲 재뽑기(주사위) 버튼 제거(운영자 260705 #8) · yDraw는 보존(향후 재도입 대비)
 // "새 대화"(reset) 버튼 제거(운영자 260705) — op reset 백엔드는 보존(향후 진입점 재배선 대비)
 let _yDlgClosing = false;

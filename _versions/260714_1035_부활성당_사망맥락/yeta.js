@@ -4,7 +4,6 @@
 // ops(POST 단일 — 폴링도 POST = originOk 대칭):
 //   chars {}                       : 페르소나 로스터(apps/yeta/characters/roster.json raw · 5분 캐시)
 //   get   {}                       : 세션 반환(뷰어 폴)
-//   watch {e}                      : 롱폴 감시(대화 속도 260714) — R2 etag 1s head 감시 · 변경 즉시 {changed}(뷰어가 get 재조회 = 픽업 ~0s) · 20s 무변경 = {none}(클라 재발사)
 //   send  {text, model, effort}    : 유저 턴 append(다이얼 턴별 박제 · 화이트리스트) → yeta-chat.yml dispatch
 //   draw  {persona, name}          : 페르소나 뽑기/재뽑기 — sess.persona 갱신(+대화 중이면 sys 턴) · room=[persona] 리셋(단톡 해산)
 //   invite {persona, name}         : 합석 초대(단톡 · 정원 MAX_ROOM) — 원본 1:1 보존, 직전 3주고받기 시드 복사해 새 단톡 스레드(g 접두)로 분기 → cur 전환 + dispatch(수락/거절 = 러너 판정)
@@ -154,20 +153,6 @@ export async function onRequestPost({ request, env }) {
     const out = { ...sess, threads: Object.fromEntries(Object.entries(sess.threads || {}).map(([id, th]) =>
       [id, id === cur ? th : { ...th, turns: (th.turns || []).slice(-2), trim: (th.turns || []).length }])) };   // trim = 원 턴수(뷰어 unread ts 판정 보조)
     return json({ ok: true, sess: out });
-  }
-
-  if (op === 'watch') {   // 롱폴 감시(대화 속도 260714 한수) — 서버가 R2 etag를 1s 간격 head로 감시, 변경 즉시 응답 = 뷰어 픽업 지연 ~0s(타이머 폴 간격 한계 제거 · 대기 중 요청 수↓).
-    // SSE(EventSource) 아닌 롱폴인 이유 = 전 op POST 통일(originOk CSRF 대칭) 온존. 본문 판독은 뷰어가 이어 op get(리퍼·비활성 절단 로직 재사용 = 여기 중복 0).
-    // CPU 예산: head = I/O(CPU ~0)·파스 0 → 20s 홀드에도 Workers CPU 한도 안전권 · 홀드 20s 캡 = 무한 점유 아님(만료 = 클라 즉시 재발사).
-    const known = String(body.e || '');
-    const deadline = Date.now() + 20000;
-    for (;;) {
-      let et = '';
-      try { const h = await env.YETA_R2.head(KEY); et = h ? h.etag : ''; } catch {}
-      if (et && et !== known) return json({ ok: true, etag: et, changed: true });
-      if (Date.now() >= deadline) return json({ ok: true, etag: et || known, none: true });
-      await new Promise(r => setTimeout(r, 1000));
-    }
   }
 
   if (op === 'voice') {   // 통화 음성 스트림(걸려오는 전화 v1) — 비공개 세션 버킷 voice/ 프리픽스만 · POST 유지(originOk 대칭)

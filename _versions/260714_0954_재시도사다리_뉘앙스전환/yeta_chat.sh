@@ -22,7 +22,7 @@ export CLAUDE_BARE=0              # 방어 명시 — 공유 기본값이 미래
 RECENT_TURNS="${YETA_RECENT_TURNS:-8}"
 INLINE_TRIES=4   # 4계정 폴오버 체인 깊이(서브3 MUTENONA까지 실호출) + 일시 과부하 흡수 — 4계정 확장 3→4(챗 안정성: 앞 3계정 쿼터 시 MUTENONA 실도달)
 WARM_WAIT="${YETA_WARM_WAIT:-300}"       # 웜 유휴 유예(s) — 무메시지면 조용히 종료
-WARM_POLL="${YETA_WARM_POLL:-2}"   # 웜 픽업 지연 평균 2.5s→1s(대화 속도 260713) — R2 GET 300s/2s=150회/창 = Class B 무료 티어에 무시량
+WARM_POLL="${YETA_WARM_POLL:-5}"
 SESSION_MAX="${YETA_SESSION_MAX:-3300}"  # 55분(잡 timeout 60분보다 낮게 = mid-turn 킬 차단 · 아이데이션③)
 PER_TURN_BUDGET="${YETA_TURN_BUDGET:-300}"   # 새 턴 시작 전 필요한 잔여 예산(claude 240 + finish 여유 · env = 테스트 노브)
 
@@ -87,9 +87,7 @@ _kst = datetime.now(timezone(timedelta(hours=9)))
 _kdate, _khour = f"{_kst:%Y-%m-%d}", _kst.hour
 from yeta_v3 import migrate_v3, pick_thread, thread_view   # v3 다중 채팅방(260707 · 어댑터 SSOT — JS migrateV3 동형)
 S_ROOT = migrate_v3(json.load(open(sys.argv[1], encoding="utf-8"))); n = int(sys.argv[2])
-_dead = {k: v for k, v in (S_ROOT.get("dead") or {}).items() if (((v.get("t") if isinstance(v, dict) else v) or 0)) > time.time() * 1000}   # 사망 활성(운영자 260714) — 24h 두절 · v = {t,d,mood,why}(구형 숫자 흡수)
-_S_PICK = dict(S_ROOT); _S_PICK["threads"] = {k: v for k, v in (S_ROOT.get("threads") or {}).items() if k not in _dead}   # 사망 1:1 방 = 잡 큐 제외(레이스 잔여 pending이 다른 방 기아 못 만들게 · 만료 = 자연 복귀 → 밀린 메시지에 부활 답)
-T = pick_thread(_S_PICK)                                 # 통합 age 큐(invite/pending/opening 최고령 스레드 · 기아 방지)
+T = pick_thread(S_ROOT)                                  # 통합 age 큐(invite/pending/opening 최고령 스레드 · 기아 방지)
 if not T:
     print("NOPENDING"); sys.exit(0)
 s = thread_view(S_ROOT, T)                               # 스레드 뷰 = 이하 기존 단일 로직 그대로 재사용(공유 필드 오버레이 · 타 스레드 = 메타만)
@@ -151,7 +149,7 @@ if not pend_idx:
         sys.exit(0)
 
 inv = s.get("invite") or {}
-if inv.get("to") and now_ms - (inv.get("ts") or 0) < 600000 and inv["to"] not in room and len(room) < 2 and inv["to"] not in locked_ids and inv["to"] not in _dead:   # LOCKED·사망 = 초대 판정 자체를 안 태움(마커는 lazy 정리/TTL 자연 소멸 · 분신술 260709 · 260714)
+if inv.get("to") and now_ms - (inv.get("ts") or 0) < 600000 and inv["to"] not in room and len(room) < 2 and inv["to"] not in locked_ids:   # LOCKED = 초대 판정 자체를 안 태움(마커는 lazy 정리 · 분신술 260709)
     persona = inv["to"]                                   # ── 초대 판정 모드 — 재료는 전부 초대받은 캐릭터 기준 ──
     _lm = next((t.get("mood") for t in reversed(turns) if t.get("role") == "assistant" and t.get("mood")), "")
     _m = _re.match(r"\s*\[LV\s*(\d)\]", (s.get("notes") or {}).get(persona) or "")
@@ -223,12 +221,6 @@ if pend_idx[0] > 0 and turns[pend_idx[0] - 1].get("role") == "sys":
     if _prev and _prev != persona: handoff = names.get(_prev, "")
 note_pub = s.get("note_pub") or s.get("note") or ""          # 레거시 단일 note = 공용으로 승계(이중기억 v3 · 아이데이션③)
 note_me = ((s.get("notes") or {}).get(persona)) or ""
-revive = ""                                              # 부활 첫 답(운영자 260714 "그 전 상황을 가정 · 감정을 기억") — 만료된 dead 엔트리 보유 & 부활ts 이후 이 방에 화자 답 없음 = 이번 답이 귀환 첫 마디
-_de = (S_ROOT.get("dead") or {}).get(persona)
-_det = ((_de.get("t") if isinstance(_de, dict) else _de) or 0) if _de is not None else 0
-if _det and _det <= now_ms and not any(t.get("role") == "assistant" and (t.get("ts") or 0) > _det for t in turns):
-    revive = json.dumps({"mood": (_de.get("mood") if isinstance(_de, dict) else "") or "",
-                         "why": ((_de.get("why") if isinstance(_de, dict) else "") or "")[:120]}, ensure_ascii=False)
 print(json.dumps({"mode": "chat", "thread": T, "note_pub": note_pub, "note_me": note_me, "hist": hist, "pending": "\n".join(pending), "ins": ins,
                   "me_call": me_call, "me_about": me_about,   # 유저 프로필(호칭+소개 · 260708)
                   "tune": (s.get("tunes") or {}).get(persona),   # 캐릭터별 성향 게이지(16축 0~10 · op tune) — 없으면 None
@@ -240,7 +232,6 @@ print(json.dumps({"mode": "chat", "thread": T, "note_pub": note_pub, "note_me": 
                   "place_nm": place_name(PL, place_of(PL, persona, _kdate, _khour)),   # 화자의 지금 장소(동선 SSOT — 배경 정합 + 마주침 sys와 앞뒤)
                   "anchor_ts": last_u.get("ts"),   # 마지막 pending 유저 턴 ts = insert 앵커(인덱스 대신 = 400 트림/시프트 면역)
                   "retry_n": int(s.get("retry_n") or 0),   # 자동 재시도 회차(op retry 박제 · 사다리 260714) — 3회차+ = 뉘앙스 전환 블록 주입
-                  "revive": revive,   # 부활 첫 답 재료(260714) — {mood,why} JSON 문자열 · 빈값 = 평상시
                   "persona": persona,
                   "ptt": 1 if last_u.get("ptt") else 0,   # 무전기(PTT) 턴 = 답장 반영 후 음성 합성(ptt_voice)
                   "model": last_u.get("model") or pref.get("model") or "",
@@ -261,7 +252,7 @@ finish() {  # $1=ok|error · $2=텍스트 — env: INS·ANCHOR_TS·PERSONA·MODE
   for _i in 1 2 3; do if r2get; then _g=1; break; fi; [ "$_i" -lt 3 ] && sleep 2; done
   if [ "$_g" = 0 ]; then echo "::error::finish r2get 실패 — 반영 포기(답장 폐기·유저 데이터 보호)"; _did_reply=0; return 1; fi
   REPLY_TEXT="$2" PERSONA="${PERSONA:-}" MODEL="${MODEL:-}" EFF="${EFF:-}" GEN_S="${GEN_S:-0}" ANCHOR_TS="${ANCHOR_TS:-}" OPEN="${OPEN:-}" OPENING_TS="${OPENING_TS:-}" \
-    CO_ID="${CO_ID:-}" CO_NAME="${CO_NAME:-}" THREAD="${THREAD:-}" TOK_I="${TOK_I:-0}" TOK_O="${TOK_O:-0}" CNAME="${CNAME:-}" \
+    CO_ID="${CO_ID:-}" CO_NAME="${CO_NAME:-}" THREAD="${THREAD:-}" TOK_I="${TOK_I:-0}" TOK_O="${TOK_O:-0}" \
     python3 - "$SESS" "$1" "${INS:-0}" "${CVER:-}" <<'PY'
 import json, os, re, sys, time
 sys.path.insert(0, ".github/scripts")
@@ -307,11 +298,6 @@ if kind == "ok":
     if mm and mm.group(1).lower() in ("base", "warm", "tense", "blue"):
         mood = mm.group(1).lower()
     text = re.sub(r'<<\s*/?\s*MOOD(?:\s*:\s*\w+)?\s*>>', '', text, flags=re.I)
-    # 사망 태그(운영자 260714 "사망 = 방 이탈·은신·24h 대화 불가" + "그 감정을 기억하면서 죽게") — MOOD 동형 계보: 추출 후 제거(대사 유출 0) · 콜론 뒤 = 죽기 직전 상황·감정 한 줄(부활 첫 마디의 기억)
-    dm = re.search(r'<<\s*DEAD(?:\s*:\s*([^>]{1,200}))?\s*>>', text, flags=re.I)
-    dead_tag = bool(dm)
-    dead_why = ((dm.group(1) or "").strip()[:120]) if dm else ""
-    text = re.sub(r'<<\s*/?\s*DEAD(?:\s*:[^>]*)?\s*>>', '', text, flags=re.I)
     # 이중 기억 파서(v3 · 아이데이션③): <<NOTE:PUB>>=공용 / <<NOTE:ME>>=페르소나별 사적 · 마커 변형 관대 · 누락 = 기존값 보존
     notes_found = {}
     parts = re.split(r'<<\s*NOTE(?:\s*:\s*(\w+))?\s*>>', text, flags=re.I)
@@ -372,20 +358,6 @@ if kind == "ok":
             s.pop("invite", None)                      # 스테일 초대 lazy 정리(판정 러너 유실 대비)
         s["state"] = "awaiting" if any(t.get("role") == "user" for t in turns[ins + k:]) else "idle"
         s.pop("err", None); s.pop("retry_n", None)   # 답장 성공 = 재시도 사다리 소거(다음 실패는 1회차부터 · 260714)
-        _rvE = (S_ROOT.get("dead") or {}).get(turn_persona)   # 부활 첫 답 = 엔트리 소비(운영자 260714 — 성당 체류 종료·동선 복귀·다음 죽음은 새 맥락)
-        if not dead_tag and _rvE is not None and (((_rvE.get("t") if isinstance(_rvE, dict) else _rvE) or 0) <= now):
-            S_ROOT["dead"].pop(turn_persona, None)
-        if dead_tag and not open_job and turn_persona:   # 사망 반영(운영자 260714) — dead[persona]={t:부활ts(24h), d:사망ts, mood:장면 공기, why:직전 상황 한 줄} · 전 방 이탈 · 두절 지문 sys · 이 방 잡 정지(idle — extract_mat 픽 제외와 짝)
-            _dd = {p: u for p, u in (S_ROOT.get("dead") or {}).items() if (((u.get("t") if isinstance(u, dict) else u) or 0) + 604800000) > now}   # 7일+ 스테일만 소거(만료 엔트리 = 부활 첫 답 재료라 보존)
-            _dd[turn_persona] = {"t": now + 86400000, "d": now, "mood": mood or "", "why": dead_why}
-            S_ROOT["dead"] = _dd
-            for _th2 in (S_ROOT.get("threads") or {}).values():   # 단톡 전 방 이탈("방을 이탈") — 생존자와의 대화는 계속 · 1:1(room 1명) = 방 유지(잠금은 게이트가)
-                _rm = [r for r in (_th2.get("room") or []) if r]
-                if turn_persona in _rm and len(_rm) > 1:
-                    _th2["room"] = [r for r in _rm if r != turn_persona]
-            _nm = os.environ.get("CNAME", "") or turn_persona
-            turns.insert(ins + k, {"role": "sys", "text": f"{_nm}의 기척이 끊겼다", "ts": now + k})
-            s["state"] = "idle"   # 레이스 잔여 pending도 발사 억제(24h 뒤 밀린 메시지 = 부활 답)
         if len(turns) > 200: s["turns"] = turns[-200:]   # 스레드 캡(보안감사⑤ — state 판정 후 트림 = pending 판정 무영향[유저 턴은 꼬리라 보존])
 else:
     if open_job:                                 # 오프닝 실패(쿼터·rc) = 정적 폴백(뷰어 yGreet)·error 배너 금지(죽은 재시도 409 차단 · 기틀검증 회귀B3·UX2)
@@ -749,8 +721,6 @@ try: roster = json.load(open(sys.argv[2], encoding="utf-8"))
 except Exception: sys.exit(1)
 names = {c["id"]: (c.get("name") or c["id"]) for c in roster if isinstance(c, dict) and c.get("id") and not c.get("locked")}   # LOCKED(스페셜) = 난입 후보 제외(분신술 260709 — "특정 조건을 깨야" 축이 우연 난입으로 뚫리던 구멍 · 미대면은 유지 = 난입이 해금 경로)
 enters = {c["id"]: (c.get("enter_line") or "") for c in roster if isinstance(c, dict) and c.get("id") and not c.get("locked")}
-for _k in [k for k, u in (S_ROOT.get("dead") or {}).items() if (((u.get("t") if isinstance(u, dict) else u) or 0)) > time.time() * 1000]:   # 사망 = 난입 후보 제외(운영자 260714 — 죽은 애가 지나가다 합석하는 모순 차단)
-    names.pop(_k, None); enters.pop(_k, None)
 now = datetime.now(timezone(timedelta(hours=9)))
 today = f"{now:%Y-%m-%d}"
 turns = s.get("turns") or []
@@ -849,7 +819,6 @@ process_turn() {
   PLACE_NM="$(matv place_nm)"; BARGE_VIA="$(matv barge_via)"   # 동선 장소 + 마주침 데뷔 결(위치 SSOT places.json · 260707)
   OPEN="$(matv open)"; OPENING_TS="$(matv opening_ts)"   # 오프닝 잡(동적 첫인사 · 운영자 260707) — OPEN=1이면 유저발화 없이 캐릭터가 먼저 · OPENING_TS = nonce(finish 레이스 방어)
   RETRY_N="$(matv retry_n)"   # 자동 재시도 회차(사다리 260714) — 오프닝 JSON엔 키 없음 = 빈값(아래 -ge 가드가 흡수)
-  REVIVE_RAW="$(matv revive)"   # 부활 첫 답 재료(260714) — {mood,why} · 빈값 = 평상시
   case "$RAW_MODEL" in claude-opus-4-8|claude-sonnet-5) MODEL="$RAW_MODEL" ;; *) MODEL="$DEFAULT_MODEL" ;; esac   # 화이트리스트 재강제(방어 심층 · 아이데이션④)
   case "$RAW_EFF" in low|medium|high|max) EFF="$RAW_EFF" ;; "") EFF="" ;; *) EFF="$DEFAULT_EFF" ;; esac
   [[ "$PERSONA" =~ ^[a-z0-9_-]{1,24}$ ]] || { finish error "페르소나가 비어 있어 — 🎲 다시 뽑아줘"; return 1; }
@@ -944,25 +913,6 @@ PY
 - 지금 방엔 ${CO_NAME}도 있다. 걔 반응이 꼭 필요한 순간에만(대체로 생략 · 남발 금지) 네 대사가 끝난 뒤 새 줄에 정확히 [${CO_NAME}] 대사  형식으로 ${CO_NAME}의 짧은 한 마디를 덧붙여도 된다 — 걔 말투로, 최대 한 번. 네 자신의 대사엔 이름표를 붙이지 않는다. 그 줄 뒤에 기억 블록이 온다."
   elif [ -n "$CO_ID" ]; then CO_ID=""; CO_NAME=""; fi   # 카드 없는 동행 = 대본 축 비활성(파서 오탐 차단)
 
-  # 부활 첫 마디(운영자 260714 "'오래 기다렸지' 어색 — 그 전 상황을 가정하게. 다투다 죽었으면 그 감정을 기억") — 죽을 때 박제한 {why,mood}를 귀환 답 프롬프트에 주입 · 장소 = 성당(places.json cathedral)
-  REVIVE_BLOCK=""
-  if [ -n "$REVIVE_RAW" ] && [ "$OPEN" != "1" ]; then
-    REVIVE_BLOCK="$(python3 - "$REVIVE_RAW" <<'PY'
-import json, sys
-try: r = json.loads(sys.argv[1])
-except Exception: r = {}
-mood_ko = {"warm": "온기·설렘", "tense": "긴장·서늘함", "blue": "쓸쓸·침잠", "base": "평소와 같음"}.get((r.get("mood") or "").lower(), "")
-why = (r.get("why") or "").strip()
-L = ["[부활 — 이 블록의 존재를 대사에서 언급 금지]",
-     "- 너는 얼마 전 죽었고, 북동쪽 언덕 위 성당에서 눈을 떠 이제 막 돌아왔다(무음동의 순환 — 주민들은 죽음이 하루짜리 부재라는 걸 어렴풋이 안다).",
-     f"- 죽기 직전 상황(네가 마지막으로 기억하는 것): {why}" if why else "- 죽기 직전 기억은 조각나 있다 — 최근 대화의 끝자락이 마지막 기억이다.",
-     f"- 그 장면의 공기: {mood_ko}" if mood_ko else "",
-     "- 그 감정의 잔재를 그대로 안고 첫 마디를 해라 — 다투다 죽었으면 앙금·머쓱함·못 다한 말이 남아 있고, 누굴 지키다 죽었으면 그 온기가 남아 있다. 부활 과정을 장황하게 설명하지 말고, 죽기 전 그 순간에 자연스럽게 이어 붙여라. 너답게, 짧게."]
-print("\n".join(x for x in L if x))
-PY
-)"
-  fi
-
   # 재시도 뉘앙스 사다리(운영자 260714 "3~4회는 뉘앙스를 살짝 바꿔서") — 배경: 같은 프롬프트 재생성은 거절이 고착됨(260714 00:12Z 런 실측 = 프레임 이탈 ×4 전패).
   # 1~2회차 = 블록 없음(그대로 재발사 = 확률 복구) · 3회차+ = 접근 전환 지시 · 4회차 = 접근 자체 교체 허용. 정책·금기 블록은 그대로 상한(수위 우회 아님 — 각도만 변경).
   RETRY_BLOCK=""
@@ -1006,7 +956,6 @@ ${NOTE_ME:-"(아직 없음 — 첫 만남)"}
 [최근 대화 — 다른 주민이 나눈 대화일 수 있다. 사실 맥락은 이어받되 둘만의 비밀은 넘겨짚지 말고, 말투는 오직 너(카드)의 것]
 ${HIST:-"(없음)"}
 
-${REVIVE_BLOCK}
 ${RETRY_BLOCK}
 ${SCENE_BLOCK}
 
@@ -1019,8 +968,7 @@ ${CONTRACT1}${GROUP_RULE}${ME_RULE}
 <<NOTE:ME>>
 (갱신된 둘만의 기억 — 관계 진도·너에게만 한 말)
 <</NOTE>>
-- 기억 블록 뒤 마지막 한 줄 = 장면의 공기 태그(대사에서 언급 금지): <<MOOD:base>>(평소)/<<MOOD:warm>>(온기·설렘)/<<MOOD:tense>>(긴장·서늘)/<<MOOD:blue>>(쓸쓸·침잠) 중 하나만.
-- 예외 — 이 장면에서 네 캐릭터가 정말로 죽는 경우에만(비유·기절·잠듦·연기·장난·위협은 절대 아님), 무드 태그 다음 줄에 <<DEAD: 죽기 직전 상황과 감정 한 줄>> 을 추가한다(예: <<DEAD: 유저와 말다툼 끝에, 미안하다는 말을 못 한 채>>). 콜론 뒤 한 줄 = 부활 후 첫 마디의 기억이 된다 — 그 감정 그대로 적어라. 이 태그 = 퇴장 선언(하루 연락 두절) — 마지막 대사답게 맺어라. 확실하지 않으면 절대 붙이지 마라."
+- 기억 블록 뒤 마지막 한 줄 = 장면의 공기 태그(대사에서 언급 금지): <<MOOD:base>>(평소)/<<MOOD:warm>>(온기·설렘)/<<MOOD:tense>>(긴장·서늘)/<<MOOD:blue>>(쓸쓸·침잠) 중 하나만."
 
   echo "yeta: ${PERSONA}(${CNAME}) · v${CVER} · ${MODEL}${EFF:+ · effort $EFF}${SAFE:+ · safe}${CO_ID:+ · 단톡(+${CO_NAME})}"
   if ! gen_out "$prompt"; then
