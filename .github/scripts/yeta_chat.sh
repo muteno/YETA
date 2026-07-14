@@ -344,24 +344,40 @@ if kind == "ok":
         else:
             s["state"] = "error"; s["err"] = "빈 대사 — 다시 보내면 재시도"; empty = True
     else:
-        turn = {"role": "assistant", "text": text, "ts": now,
-                "persona": turn_persona,
-                "model": os.environ.get("MODEL", ""),
-                "effort": os.environ.get("EFF", ""),
-                "gen_s": int(os.environ.get("GEN_S", "0") or 0)}   # 다이얼·소요 박제 = 뷰어 체감 캡션(아이데이션④)
+        # 버블 분할(운영자 260714 "2개 먼저 뱉고, 2개 그다음에 붙어도 괜찮아") — 문장 ≤2개/버블 · *지문* 문단 = 제 버블 · 최대 3버블(초과 = 꼬리 병합).
+        # 뷰어 yBubbles와 동형 계약(스트리밍 draft 분할과 모양 일치) — 뷰어 페이스가 버블 단위로 이어붙여 메신저 리듬.
+        def _bubbles(t):
+            out = []
+            for para in [p.strip() for p in re.split(r'\n\s*\n', t) if p.strip()]:
+                if re.fullmatch(r'\*[^*\n]{1,200}\*', para): out.append(para); continue
+                sents = [x.strip() for x in re.split(r'(?<=[.!?…~])\s+', para) if x.strip()]
+                cur = []
+                for x in sents:
+                    cur.append(x)
+                    if len(cur) >= 2: out.append(' '.join(cur)); cur = []
+                if cur: out.append(' '.join(cur))
+            out = out or [t]
+            return out[:2] + [' '.join(out[2:])] if len(out) > 3 else out
+        chunks = _bubbles(text)
         try:
             _ti, _to = int(os.environ.get("TOK_I", "0") or 0), int(os.environ.get("TOK_O", "0") or 0)
         except ValueError:
             _ti = _to = 0
-        if _ti or _to:
-            turn["tok"] = {"i": _ti, "o": _to}   # 이 답장 생성의 실측 토큰(claude_meter METER_LAST) — 뷰어 좌상단 누적 미터(운영자 260709)
-        if mood:
-            turn["mood"] = mood                        # 장면 공기(뷰어 배경 배리언트 크로스페이드 훅)
-        turns.insert(ins, turn)
-        k = 1
+        for ci, ct in enumerate(chunks):
+            turn = {"role": "assistant", "text": ct, "ts": now + ci, "persona": turn_persona}
+            if ci == 0:                                # 다이얼·소요·토큰 = 첫 버블에만 박제(캡션 중복 방지 · 아이데이션④)
+                turn["model"] = os.environ.get("MODEL", "")
+                turn["effort"] = os.environ.get("EFF", "")
+                turn["gen_s"] = int(os.environ.get("GEN_S", "0") or 0)
+                if _ti or _to:
+                    turn["tok"] = {"i": _ti, "o": _to}   # 이 답장 생성의 실측 토큰(claude_meter METER_LAST) — 뷰어 좌상단 누적 미터(운영자 260709)
+            if mood and ci == len(chunks) - 1:
+                turn["mood"] = mood                    # 장면 공기 = 마지막 버블(yLastMood = 최신 턴 스캔과 짝)
+            turns.insert(ins + ci, turn)
+        k = len(chunks)
         if co_text and co_id:
-            turns.insert(ins + 1, {"role": "assistant", "text": co_text, "ts": now + 1, "persona": co_id})
-            k = 2
+            turns.insert(ins + k, {"role": "assistant", "text": co_text, "ts": now + k, "persona": co_id})
+            k += 1
         if open_job:
             s.pop("opening", None); s.pop("awaiting_since", None)   # 오프닝 성공 = nonce 소거(웜루프 재생성 자연 차단 = assistant 턴 1 + 플래그 0)
         if "PUB" in notes_found:
