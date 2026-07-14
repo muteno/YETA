@@ -190,8 +190,19 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   .ybg video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; filter:brightness(.32); }   /* 시즌 클립 = muted 상시(운영자 "소리만 빼고") · 밝기 필터 = 이미지 스크림 등가(.45 × 30% 추가 딤 = .32 — 운영자 260709 재검수 "캐릭터 배경 +30% 더 · 대화창 집중") · 시즌 표시농도 = 전경화 .92 상속 */
   @media (prefers-reduced-motion:reduce) { .ybg { transition:none; } }
   .yeta-log { position:relative; flex:1; min-width:0; overflow-y:auto; padding:calc(88px + env(safe-area-inset-top)) var(--sp-2) calc(76px + env(safe-area-inset-bottom)) 6px; display:flex; flex-direction:column; gap:10px;
-    -webkit-mask-image:linear-gradient(to bottom, #000 0, #000 calc(52px + env(safe-area-inset-top)), transparent calc(60px + env(safe-area-inset-top)), transparent calc(76px + env(safe-area-inset-top)), #000 calc(84px + env(safe-area-inset-top)));
-    mask-image:linear-gradient(to bottom, #000 0, #000 calc(52px + env(safe-area-inset-top)), transparent calc(60px + env(safe-area-inset-top)), transparent calc(76px + env(safe-area-inset-top)), #000 calc(84px + env(safe-area-inset-top))); }   /* 상하 패딩 = 플로팅 알약(헤더·입력) 클리어런스(운영자 260705) · 상단 88 = 미터 스트립 밖 시작 · 밴드 마스크(60~76px+safe) = 미터 고유영역(운영자 260709 "딱 그 영역만" — 지나는 대화는 그 밴드에서만 숨고 헤더 뒤 글래스 비침은 유지) */
+    -webkit-mask-image:linear-gradient(to bottom, transparent 0, transparent calc(51px + env(safe-area-inset-top)), #000 calc(83px + env(safe-area-inset-top)));
+    mask-image:linear-gradient(to bottom, transparent 0, transparent calc(51px + env(safe-area-inset-top)), #000 calc(83px + env(safe-area-inset-top))); }   /* 상단 = 네비 뒤로 대화가 새지 않게 완전투명 0→51 → 불투명 83(운영자 20260714 플그 확정값 · 구 밴드 마스크[0-52 불투명·60-76만 숨김] 폐지 · #yetatopblur z1 5레이어 그라데 블러와 합작) · 상하 패딩 = 플로팅 알약 클리어런스(운영자 260705) · px=기하 예외축 */
+  /* 상단 그라데 블러(운영자 20260714 확정 — 플그 5레이어 프로그레시브 채택 · docs/reports/20260714_184051_상단그라데블러_스와이프모션_플레이그라운드) — 네비(.yeta-h z3)·미터(z2) 아래(z1)서 스크롤 대화를 위로 갈수록 블러+어둠으로 뭉갬 → "보이는 영역"처럼 새어오름 차단 · 확정값 blur 30→0·각도180·존 24→83·스크림.54 · 블러 max = --blur-m 계승(30≈29 광학동일)·레이어 램프(.8/.6/.4/.2) = 안무축 · 스크림/마스크 px = 기하 예외축 */
+  #yetatopblur { position:absolute; top:0; left:0; right:0; height:calc(83px + env(safe-area-inset-top)); z-index:1; pointer-events:none; }
+  #yetatopblur > div { position:absolute; inset:0;
+    -webkit-mask-image:linear-gradient(to bottom, #000 calc(var(--a) + env(safe-area-inset-top)), transparent calc(var(--b) + env(safe-area-inset-top)));
+    mask-image:linear-gradient(to bottom, #000 calc(var(--a) + env(safe-area-inset-top)), transparent calc(var(--b) + env(safe-area-inset-top))); }
+  #yetatopblur > div:nth-child(1) { --a:18px; --b:36px; backdrop-filter:blur(var(--blur-m)); -webkit-backdrop-filter:blur(var(--blur-m)); }
+  #yetatopblur > div:nth-child(2) { --a:30px; --b:48px; backdrop-filter:blur(calc(var(--blur-m) * .8)); -webkit-backdrop-filter:blur(calc(var(--blur-m) * .8)); }
+  #yetatopblur > div:nth-child(3) { --a:42px; --b:59px; backdrop-filter:blur(calc(var(--blur-m) * .6)); -webkit-backdrop-filter:blur(calc(var(--blur-m) * .6)); }
+  #yetatopblur > div:nth-child(4) { --a:54px; --b:71px; backdrop-filter:blur(calc(var(--blur-m) * .4)); -webkit-backdrop-filter:blur(calc(var(--blur-m) * .4)); }
+  #yetatopblur > div:nth-child(5) { --a:65px; --b:83px; backdrop-filter:blur(calc(var(--blur-m) * .2)); -webkit-backdrop-filter:blur(calc(var(--blur-m) * .2)); }
+  #yetatopblur > div.tf-scrim { -webkit-mask-image:none; mask-image:none; background:linear-gradient(to bottom, rgba(0,0,0,.54) calc(24px + env(safe-area-inset-top)), transparent calc(83px + env(safe-area-inset-top))); }   /* 스크림 = 5레이어 위 착색(블러 안 먹음) · 상단 24 솔리드캡 후 페이드 */
   .ymsg { display:flex; gap:8px; align-items:flex-start; max-width:86%; }   /* 캐릭터 메시지 = 아바타+이름+버블(제타 결) */
   .ymsg .yava { flex:none; width:32px; height:32px; border-radius:50%; display:grid; place-items:center; font-size:var(--fs-sm); font-weight:var(--fw-x);
     background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10); color:var(--yeta-ac); margin-top:2px; }
@@ -1165,11 +1176,12 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   .yssn-nm small { font-weight:var(--fw-b); color:var(--fg-2); font-size:var(--fs-sm); }   /* 한자 부기 */
   .yssn-date { margin-left:auto; flex:none; font-family:'LEMONMILK',Pretendard,sans-serif; font-weight:400; font-style:normal; font-size:10px; color:var(--fg); letter-spacing:.04em; font-variant-numeric:tabular-nums; }   /* 날짜 = 흰색(운영자 260707 항목4 — mut 폐지) */
   .yssn-tl { margin-top:9px; text-align:left; font-size:11.5px; color:var(--fg-2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }   /* 설명 = 살짝 옅은 흰(fg-2) · 좌측 정렬 = SEASON 01과 같은 좌측선(운영자 260709 "설명 기준 좌측정렬" — 구 가운데 고정 폐지) · 1줄 초과 = … */
-  .ylr-wrap { position:relative; margin-bottom:10px; border-radius:var(--r-l); overflow:hidden; }   /* 행 래퍼(분할 리스트 획 셀렉터 앵커) · overflow = 스와이프 액션 트레이 감춤(운영자 260712) */
-  .ylr-wrap .ylist-row { margin-bottom:0; position:relative; z-index:1; -webkit-touch-callout:none; user-select:none; transition:padding-right .3s var(--ease); }   /* 스와이프 = 텍스트 선택/콜아웃 차단(.ypick-row 관례 계승 · UX감사①c) */
-  .ylr-wrap.ylr-open .ylist-row { padding-right:calc(var(--sp-2) + 60px); }   /* 열림 = 트레이 폭만큼 콘텐츠 우측 확보 → 최근말·메타가 트레이 밑서 잘리지 않고 … 처리(운영자 260712) */
+  .ylr-wrap { --ylr-w:60px; position:relative; margin-bottom:10px; border-radius:var(--r-l); overflow:hidden; }   /* 행 래퍼(분할 리스트 획 셀렉터 앵커) · --ylr-w = 트레이폭(JS TRAY_W와 동기) · overflow = 스와이프 액션 트레이 감춤(운영자 260712) */
+  .ylr-wrap .ylist-row { margin-bottom:0; position:relative; z-index:1; -webkit-touch-callout:none; user-select:none; touch-action:pan-y; transition:transform .3s var(--ease); will-change:transform; }   /* 스와이프 = 손가락 따라 가로 이동(pan-y=세로 스크롤 양보) · transition:transform = 놓을 때 정위치 이징(운영자 20260714) · 텍스트 선택/콜아웃 차단 */
+  .ylr-wrap.ylr-open .ylist-row { transform:translateX(calc(-1 * var(--ylr-w, 60px))); }   /* 열림 = 행 전체가 좌로 트레이폭만큼 슬라이드(리플로우 폐지 · 운영자 20260714 "좌측이 화면밖으로 빠졌다 놓으면 이징 복귀") */
+  .ylr-wrap.ylr-drag .ylist-row, .ylr-wrap.ylr-drag .ylr-tray { transition:none; }   /* 드래그 중 = 손가락 1:1(transition off) · 놓으면 위 .3s 이징 복귀 */
   /* ── 스와이프 액션 트레이(운영자 260712 "좌로 밀면 우측 2칸 픽토[고정·나가기] · 우클릭 팝업 대체 · 기존 우클릭 삭제") — 2x2 중 우측 열(세로 2칸) · 표면 = .ylmenu 정본 계승(무채 크롬 = 뒤 색 비침 차단 §🎨) · 픽토 색만 구분(고정 라임·나가기 레드) ── */
-  .ylr-tray { position:absolute; top:0; right:0; bottom:0; width:60px; z-index:2; display:flex; flex-direction:column; overflow:hidden;
+  .ylr-tray { position:absolute; top:0; right:0; bottom:0; width:var(--ylr-w,60px); z-index:2; display:flex; flex-direction:column; overflow:hidden;
     background:linear-gradient(165deg,rgba(24,25,28,.94),rgba(16,17,19,.96)); backdrop-filter:blur(26px) saturate(0); -webkit-backdrop-filter:blur(26px) saturate(0);
     border-left:1px solid var(--glass-line);
     transform:translateX(100%); transition:transform .3s var(--ease); }   /* 우측 밖 숨김 → 좌로 밀면 슬라이드인 · wrap overflow가 모서리 클립 · 폭 60 = "우측 조금만"(운영자) */
@@ -1288,6 +1300,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
       <div class="ymeter" id="yetaMeter"></div>   <!-- 미터 = 모델·노력 탭 전환 + 대화 누적 토큰(운영자 260709·260712 인터랙티브) -->
       <div class="yside" id="yside" hidden></div>   <!-- 좌 슬림 캐릭터 레일(운영자 260705 "왔다갔다") — 이름+최근대화 스니펫 · 탭=화자 전환 -->
       <div class="yeta-log" id="yetaLog"></div>
+      <div id="yetatopblur" aria-hidden="true"><div></div><div></div><div></div><div></div><div></div><div class="tf-scrim"></div></div>   <!-- 상단 5레이어 프로그레시브 블러 + 스크림(운영자 20260714 확정) — 네비 뒤로 스크롤 대화 숨김 · z1(로그 위·미터/네비 아래) · char/list의 #ytopfade와 대칭 -->
       <div class="yeta-pick" id="yetaPick" hidden></div>
       <div class="yeta-pick yinv" id="yetaInv" hidden></div>   <!-- 합석 초대 패널(단톡 260707) — + 버튼 진입 · 정본 픽커 계승 -->
       <div class="yeta-pick" id="yetaProfPop" hidden></div>   <!-- 캐릭터 프로필 팝오버(운영자 260709 프사 탭 = 현재 생각·소개) — 정본 픽커 표면 계승 -->
@@ -2181,36 +2194,58 @@ async function yLrAct(b) {   // 트레이 픽토 = 고정/나가기(구 .ylmenu 
     else miniToast('나가기 실패 — 잠시 후 다시');
   }
 }
-(function yLrBind() {   // 좌 스와이프 = 트레이 열기 · 우 스와이프 = 닫기 · 가로 우세(1.2배)+44px 임계 · 세로 스크롤/멀티터치/pointercancel = 무시(justSwipe 래치 = 릴리스 합성 click 소비)
+(function yLrBind() {   // 좌 스와이프 = 라이브 슬라이드(손가락 1:1 · 놓으면 정위치 이징 복귀 · 운영자 20260714) · 우/임계미달 = 닫기 · 세로 = 스크롤 양보 · navStack(뒤로=닫기)·2탭 나가기·justSwipe 래치 계승
   const box = $('#ylistRows');
-  let x0 = 0, y0 = 0, tgt = null, decided = 0, horiz = 0;
-  const reset = () => { tgt = null; decided = 0; horiz = 0; };
+  const TRAY_W = 60, THRESH = 36, RUB = .55;   // 트레이폭(=CSS --ylr-w 동기) · 열림 임계 · 오버슈트 저항(0 자유~1 단단)
+  let x0 = 0, y0 = 0, tgt = null, row = null, tray = null, decided = 0, horiz = 0, startX = 0, pid = 0;
+  const reset = () => { tgt = null; row = null; tray = null; decided = 0; horiz = 0; };
   box.addEventListener('pointerdown', e => {
     if (e.target.closest('.ylr-tray')) { reset(); return; }   // 트레이 픽토 = click 핸들러 처리(드래그 아님)
-    const row = e.target.closest('.ylist-row'); if (!row || !e.isPrimary) { reset(); return; }
-    x0 = e.clientX; y0 = e.clientY; tgt = row.closest('.ylr-wrap'); decided = 0; horiz = 0;
+    const r = e.target.closest('.ylist-row'); if (!r || !e.isPrimary) { reset(); return; }
+    tgt = r.closest('.ylr-wrap'); row = r; tray = tgt.querySelector('.ylr-tray');
+    x0 = e.clientX; y0 = e.clientY; pid = e.pointerId; decided = 0; horiz = 0;
+    startX = (_ylrOpen === tgt) ? -TRAY_W : 0;   // 이미 열림 = -트레이폭에서 이어 끌기
   });
   box.addEventListener('pointermove', e => {
-    if (!tgt || decided) return;
-    const dx = e.clientX - x0, dy = e.clientY - y0;
-    if (Math.abs(dx) > 10 || Math.abs(dy) > 10) { decided = 1; horiz = Math.abs(dx) > Math.abs(dy) * 1.2 ? 1 : 0; }   // 첫 10px = 방향 박제(가로 우세만 스와이프 · 세로 = 스크롤 양보)
-  });
-  box.addEventListener('pointerup', e => {
     if (!tgt) return;
-    const w = tgt, dx = e.clientX - x0, dy = e.clientY - y0, wasH = horiz; reset();
-    if (wasH && Math.abs(dx) > Math.abs(dy) * 1.2 && Math.abs(dx) > 44) {
-      if (dx < 0) yLrOpen(w); else if (_ylrOpen === w) yLrClose();
-      _ylrJustSwipe = 1; setTimeout(() => _ylrJustSwipe = 0, 80);   // 스와이프 릴리스 합성 click 소비(방 오발 진입 차단)
+    const dx = e.clientX - x0, dy = e.clientY - y0;
+    if (!decided) {
+      if (Math.abs(dx) > 10 || Math.abs(dy) > 10) {   // 첫 10px = 방향 박제(가로 우세만 스와이프 · 세로 = 스크롤 양보)
+        decided = 1; horiz = Math.abs(dx) > Math.abs(dy) * 1.2 ? 1 : 0;
+        if (horiz) { tgt.classList.add('ylr-drag'); try { box.setPointerCapture(pid); } catch (x) {} }   // 드래그 개시 = transition off + 포인터 캡처
+      }
     }
+    if (!horiz) return;
+    e.preventDefault();   // 가로 = 네이티브 스크롤/팬 양보 안 함
+    let x = Math.min(0, startX + dx);
+    if (x < -TRAY_W) { const over = -TRAY_W - x; x = -TRAY_W - over * (1 - RUB * .86); }   // 트레이폭 초과 = 고무줄 저항(좌측이 화면밖으로 잠깐 빠짐)
+    row.style.transform = 'translateX(' + x + 'px)';
+    const rev = Math.max(0, Math.min(1, -x / TRAY_W));   // 트레이 노출 비율(0 숨김~1 완전)
+    tray.style.transform = 'translateX(' + (1 - rev) * 100 + '%)';
   });
-  box.addEventListener('pointercancel', reset);
+  const settle = e => {
+    if (!tgt) return;
+    const w = tgt, r = row, tr = tray, wasH = horiz, x = startX + (e.clientX - x0); reset();
+    w.classList.remove('ylr-drag');
+    if (!wasH) { if (r) r.style.transform = ''; if (tr) tr.style.transform = ''; return; }   // 세로/무이동 = 인라인 정리만(탭은 click 핸들러가 처리)
+    void w.offsetWidth;                                  // transition off 상태서 현 위치 커밋 → 아래 인라인 해제가 이징 시작점이 됨
+    r.style.transform = ''; tr.style.transform = '';     // 인라인 해제 → 클래스(.ylr-open) 정위치로 .3s 이징 복귀
+    if (x <= -THRESH) { if (_ylrOpen !== w) yLrOpen(w); }   // 임계 넘김 = 열림(class → 좌 트레이폭)
+    else { if (_ylrOpen === w) yLrClose(); }                // 미달 = 닫힘(class 없음 → 0)
+    _ylrJustSwipe = 1; setTimeout(() => _ylrJustSwipe = 0, 80);   // 릴리스 합성 click 소비(방 오발 진입 차단)
+  };
+  box.addEventListener('pointerup', settle);
+  box.addEventListener('pointercancel', e => {
+    if (tgt) { tgt.classList.remove('ylr-drag'); if (row) row.style.transform = ''; if (tray) tray.style.transform = ''; }
+    reset();
+  });
   $('#ylist') && $('#ylist').addEventListener('scroll', reset, { passive: true });
   box.addEventListener('click', e => {
     const act = e.target.closest('.ylr-act');
     if (act) { e.stopImmediatePropagation(); e.preventDefault(); yLrAct(act); return; }   // 트레이 픽토 = 액션
     if (_ylrJustSwipe) { _ylrJustSwipe = 0; e.stopImmediatePropagation(); e.preventDefault(); return; }   // 스와이프 릴리스 합성 click 소비
     if (_ylrOpen) { e.stopImmediatePropagation(); e.preventDefault(); yLrClose(); return; }   // 열린 트레이 있음 = 아무 데나 탭 = 닫기(방 안 염 · 바깥 탭 닫기 계승)
-    const row = e.target.closest('.ylist-row'); if (row) yOpenThread(row.dataset.t);
+    const r = e.target.closest('.ylist-row'); if (r) yOpenThread(r.dataset.t);
   }, true);
 })();
 async function yOpenThread(t) {   // 행 탭 = 그 방으로(스레드 전환 후 챗)
