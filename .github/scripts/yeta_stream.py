@@ -19,6 +19,8 @@ EP = os.environ.get("YETA_DRAFT_EP", "")
 TH = os.environ.get("YETA_DRAFT_T", "")
 PS = os.environ.get("YETA_DRAFT_P", "")
 HEAD = os.environ.get("YETA_PTT_HEAD", "")
+FIRST = os.environ.get("YETA_STREAM_FIRST", "")   # 첫 발행 시각(epoch ms) 기록 파일 — 계기판 lat.f(첫문장까지) 재료(운영자 260714)
+first_done = False
 MIN_GAP = 1.2
 last_pub = 0.0
 pub_len = 0
@@ -50,6 +52,11 @@ def publish(force=False):
                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=15, check=False)
         os.unlink(f.name)
         last_pub = now; pub_len = len(t)
+        global first_done
+        if FIRST and not first_done:
+            first_done = True
+            try: open(FIRST, "w").write(str(int(now * 1000)))   # 첫 문장 발행 시각 — 계기판 f 축
+            except Exception: pass
     except Exception:
         pass
 
