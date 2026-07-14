@@ -5,7 +5,7 @@
 //   chars {}                       : 페르소나 로스터(apps/yeta/characters/roster.json raw · 5분 캐시)
 //   get   {}                       : 세션 반환(뷰어 폴)
 //   watch {e, de}                  : 롱폴 감시(대화 속도 260714) — R2 etag 1s head 감시 · 변경 즉시 {changed}(뷰어가 get 재조회 = 픽업 ~0s) · 15s 무변경 = {none}(클라 재발사) · draft 변경 = 본문 동봉
-//   send  {text, model, effort}    : 유저 턴 append(다이얼 턴별 박제 · 화이트리스트) → yeta-chat.yml dispatch
+//   send  {text, model, effort, sc?} : 유저 턴 append(다이얼 턴별 박제 · 화이트리스트 · sc=상황 설명 턴[260714 '#' — 대화 아님·장면 설정]) → yeta-chat.yml dispatch
 //   draw  {persona, name}          : 페르소나 뽑기/재뽑기 — sess.persona 갱신(+대화 중이면 sys 턴) · room=[persona] 리셋(단톡 해산)
 //   invite {persona, name}         : 합석 초대(단톡 · 정원 MAX_ROOM) — 원본 1:1 보존, 직전 3주고받기 시드 복사해 새 단톡 스레드(g 접두)로 분기 → cur 전환 + dispatch(수락/거절 = 러너 판정)
 //   kick  {persona, name}          : 합석 내보내기/초대 철회 — room 제거·invite 취소 + 퇴장 sys(dispatch 없음)
@@ -650,6 +650,7 @@ export async function onRequestPost({ request, env }) {
     if (DEAD_ON(s, t)) return { abort: { error: '…지금은 연락이 닿지 않아. 하루쯤 뒤에 다시 걸어봐' } };   // 사망 두절(운영자 260714) — 1:1 방 24h 발신 차단(단톡 g방 = dead 키 아님 = 통과 · 생존자와 계속)
     const turn = { role: 'user', text, ts: Date.now(), model, effort };   // 다이얼 = 턴별 박제
     if (body.ptt) turn.ptt = 1;   // 무전기(PTT) 턴 박제
+    if (body.sc) turn.sc = 1;   // 상황 설명 턴(운영자 260714 '#' 모드) — 상대에게 하는 말이 아니라 장면 설정(러너 격리 주입 · 뷰어 .ysit 렌더) · 불리언만 = 주입 축 없음
     th.turns.push(turn);
     if (th.turns.length > 200) th.turns = th.turns.slice(-200);   // 스레드 캡(보안 감사⑤)
     th.state = 'awaiting'; th.awaiting_since = Date.now(); th.err = ''; delete th.retry_n;   // 새 유저 턴 = 재시도 사다리 리셋(뉘앙스 블록 잔류 차단 · 260714)
