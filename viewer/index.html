@@ -687,6 +687,11 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
     background-image:url('assets/brand/yeta-face.webp');
     transition:transform .28s var(--ease); }   /* 기본 프로필 = 기본 캐릭터 얼굴(포스터 소년 · 운영자 260706 "따로 설정 안 하면 기본 캐릭터") — 이미지 상태축 = has-img 단일 기제(기본 얼굴도 마크업 has-img 경유 · 커스텀 = style.backgroundImage 주입+has-img 유지 · 평의회4) · 모서리 여백 = --sp-2×2(로고 쌍) */
   .ymain.unlocked .yprof { display:grid; }
+  .yworldclock { display:none; position:absolute; top:calc(calc(var(--sp-2) * 2) + env(safe-area-inset-top)); right:calc(calc(var(--sp-2) * 2) + var(--btn) + 8px); z-index:4; height:var(--btn);
+    align-items:center; padding:0 4px; color:var(--fg-2); font-size:var(--fs-sm); font-weight:var(--fw-b); font-variant-numeric:tabular-nums; letter-spacing:.02em; white-space:nowrap;
+    text-shadow:0 1px 3px rgba(0,0,0,.85), 0 0 9px rgba(0,0,0,.55); transition:color .6s var(--ease), opacity .6s var(--ease); pointer-events:none; }   /* 무음동 시각 = 프로필 좌측 · 배경 위 판독 헤일로(토큰 없는 축) */
+  .ymain.unlocked .yworldclock:not([hidden]) { display:flex; }
+  .yworldclock.night { color:var(--think); opacity:.82; }   /* 밤 = 터콰이즈 디밍(낮/밤 결 구분) */
   .yprof:active { transform:scale(var(--press-s)); }
   .yprof svg { width:17px; height:17px; }   /* 픽토 = has-img 아닐 때만 보이는 폴백 */
   .yprof.has-img svg { display:none; }
@@ -1269,6 +1274,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
     </div>
   </div>
   <div class="ywm" id="ywm" role="img" aria-label="YETA"></div>   <!-- 좌상단 상시 로고(운영자 260705 확정 조합 · 겹층 JS 조립 · 언락 후 표시) -->
+  <div class="yworldclock" id="yworldclock" hidden aria-label="무음동 시각">09:00 AM</div>   <!-- 무음동 세계 시각(운영자 260715) — 프로필 바로 좌측 · 실제 시각과 분리 6배 가속 · 밤=디밍 -->
   <button class="yprof has-img" id="yprof" type="button" aria-label="내 프로필"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0112 0v1"/></svg></button>   <!-- 우상단 개인 프로필 = 기본 캐릭터 얼굴(has-img 기본 · 커스텀 이미지 주입 축 후속) -->
   <nav class="ynav" id="ynav">   <!-- 메뉴(운영자 260706 재편): 1=캐릭터 · 2=대화(목록 — 대화 탭이 곧 진입점, 행 눌러 챗) · 3=설정. 옛 '지금' 탭 폐지 = 챗은 메뉴2 대화 목록으로 편입(진입 = 대화 행 탭) · lockdot 폐지(네비 = 언락 후에만 표시) -->
     <button class="on" data-tab="char" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0112 0v1"/></svg><span>캐릭터</span></button>
@@ -3863,8 +3869,16 @@ try { const _q = new URLSearchParams(location.search); if (_q.get('yeta')) { con
   const lockGlitch = () => { accessBtn.classList.remove('hitc'); void accessBtn.offsetWidth; accessBtn.classList.add('hitc'); };   // 입력·오류 순간 지지직 재트리거
   const flash = el => { if (!el) return; el.classList.add('hit'); setTimeout(() => el.classList.remove('hit'), 140); };
   const outLeft = () => { try { const u = +localStorage.getItem('yeta_pin_until') || 0; return Math.max(0, u - Date.now()); } catch { return 0; } };
+  // ── 무음동 세계 시계(운영자 260715) — 실제 시각과 분리, 6배 가속(실제 4h = 무음동 하루 · 자는 새벽도 겪게). 러너 state_block wmin과 동일 공식(epoch분×6 mod 1440) = 저장 없이 동기. ──
+  const YWORLD_RATE = 6;   // 6배(1배=현실, 24배=1시간 하루) — 조정 노브
+  window.yWorldMin = () => Math.floor(Date.now() / 60000 * YWORLD_RATE) % 1440;   // 무음동 분(0~1439)
+  window.yWorldClock = () => { const m = yWorldMin(), h = (m / 60) | 0, mm = m % 60, ap = h < 12 ? 'AM' : 'PM'; let hh = h % 12; if (!hh) hh = 12; return { h, txt: String(hh).padStart(2, '0') + ':' + String(mm).padStart(2, '0') + ' ' + ap, night: h < 6 || h >= 20 }; };
+  let _yWorldT = null;
+  function yWorldTick() { const el = document.getElementById('yworldclock'); if (!el) return; const w = yWorldClock(); el.textContent = w.txt; el.hidden = false; el.classList.toggle('night', w.night); }
+  function yWorldStart() { yWorldTick(); if (!_yWorldT) _yWorldT = setInterval(yWorldTick, 8000); }   // 8s = 무음동 48s(6배)마다 갱신 = 분 단위 충분
   function setUnlocked(animate) {   // 언락 = PIN 창 촤르륵 닫고(pin-mode 해제) 네비 등장 · animate=라이브 언락만 슬라이드업(재방문 복원은 무애니)
     unlocked = true; ymain.classList.remove('pin-mode'); ymain.classList.add('unlocked'); yTab('char'); setTimeout(yStair, 1150); yWarmBg();   // 언락 = 바로 메뉴1 캐릭터 · 계단 쌓기 1.15s 지연(운영자 확정 — 행 촤르륵 먼저) · 배경 프리로드 착수(첫 진입 전 캐시 = 진입 동기)
+    yWorldStart();   // 무음동 세계 시계 가동(운영자 260715)
     if (_yDeepGo) { const f = _yDeepGo; _yDeepGo = null; setTimeout(f, 700); }   // 큐잉된 딥링크 = 언락 전환 후 발사(분신술 260709 cold)
     if (animate) { ymain.classList.add('reveal'); }   // zap은 승인 다이브 중반(500ms)으로 이동(운영자 260706) · 진동 = 자물쇠·키 입력만
   }
