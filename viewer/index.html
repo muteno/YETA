@@ -2014,6 +2014,7 @@ function ySsnHtml() {   // 시즌 표기 정본(대화·캐릭터 탭 공용 —
 // ── 내 상태 행(운영자 260707 항목22·23) — 위치·감정 = 클라 로컬 전용(localStorage yeta_me_place/yeta_me_mood · 게이트웨이 미전송 = 무인증 공개 주입면 0) ──
 const YME_MOODS = { warm: '따뜻함', tense: '긴장', blue: '가라앉음' };   // 무대 무드(러너 <<MOOD>> 배경 축 — 불변 · Y_MOODS와 짝)
 const YME_FEEL = { warm: ['🙂', '따뜻함'], joy: ['😄', '신남'], calm: ['😌', '평온'], tired: ['😪', '나른함'], think: ['🤔', '생각 많음'], hungry: ['🍜', '출출함'], love: ['🥰', '설렘'], tense: ['😰', '긴장'], blue: ['🌧️', '가라앉음'], night: ['🌙', '밤샘 각'] };   // 내 기분 세트(운영자 260709 "다양한 상황 + 이모지") — 로컬 표시 전용(무대 무드와 별개 축 · warm/tense/blue 키는 yLastMood 폴백 호환)
+function yMoodLog() { try { return JSON.parse(localStorage.getItem('yeta_me_moodlog') || '[]'); } catch { return []; } }   // 기분 지문 로그(운영자 260716 수렴 · 평의회 A안) — {ts, md, t:그때 현재 방} · 로컬 표시 전용(서버 미전송 = 무인증 주입면 0 유지) · yeta_ 접두 = 캐시 비우기 커버
 async function yMeMap() {   // YMAPD 보장(지도 탭 미방문 대비 · 맵 로더와 동일 raw URL · 실패 = null 수용)
   if (!YMAPD) { try { YMAPD = await fetch('https://raw.githubusercontent.com/muteno/yeta/main/apps/yeta/places.json').then(r => r.json()); } catch {} }
   return YMAPD;
@@ -2068,7 +2069,11 @@ document.addEventListener('click', e => {
   if (!pop || pop.hidden) return;
   const chip = e.target.closest('#ymePop .yset-chip');
   if (chip) {
-    try { if (chip.dataset.pl !== undefined) localStorage.setItem('yeta_me_place', chip.dataset.pl); if (chip.dataset.md !== undefined) localStorage.setItem('yeta_me_mood', chip.dataset.md); } catch {}
+    try { if (chip.dataset.pl !== undefined) localStorage.setItem('yeta_me_place', chip.dataset.pl);
+      if (chip.dataset.md !== undefined) { const pvMd = localStorage.getItem('yeta_me_mood') || ''; localStorage.setItem('yeta_me_mood', chip.dataset.md);
+        const rm = (YSESS || {}).cur || '';   // 기분 지문(운영자 260716 수렴) — 그때의 현재 방 타임라인에 로컬 지문 1줄 적립(방 없으면 미적립 · 동일 기분 재탭 = 무기록)
+        if (rm && chip.dataset.md && chip.dataset.md !== pvMd && YME_FEEL[chip.dataset.md]) { const lg = yMoodLog(); lg.push({ ts: Date.now(), md: chip.dataset.md, t: rm }); localStorage.setItem('yeta_me_moodlog', JSON.stringify(lg.slice(-30))); } }   // 캡 30 = 로그 비대 방지
+    } catch {}
     yMeRow(); yMePop(false); return;
   }
   if (!pop.contains(e.target)) yMePop(false);   // 바깥 탭 = 닫힘(픽커 정본 패턴)
@@ -3512,7 +3517,7 @@ function yScRebase(v) {   // 편집 1회분 prefix/suffix diff → _ySegs 절대
   _ySegPrev = v;
 }
 function yScMark(sc) { const ta = $('#yetaText'); _ySegs.push({ at: ta.value.length, sc: sc ? 1 : 0 }); }
-function yScSet(on) { _yScOn = !!on; const b = $('#yetaSc'); if (b) b.classList.toggle('on', _yScOn); const row = $('#yetaIn'); if (row) row.classList.toggle('sc', _yScOn); const ta = $('#yetaText'); if (ta) ta.placeholder = _yScOn ? '지금 장면·상황을 써줘 — "~다."로 끝내면 자동으로 대화로 돌아가' : '메시지'; }   // 모드 ON = 입력행 코발트 톤(운영자 260714 "자동 블루톤 전환")
+function yScSet(on) { _yScOn = !!on; const b = $('#yetaSc'); if (b) b.classList.toggle('on', _yScOn); const row = $('#yetaIn'); if (row) row.classList.toggle('sc', _yScOn); const ta = $('#yetaText'); if (ta) ta.placeholder = _yScOn ? '상황 설명' : '메시지'; }   // 문구 = "상황 설명"만(운영자 260716 — 두 줄 설명문이 입력행을 눌러 답답)   // 모드 ON = 입력행 코발트 톤(운영자 260714 "자동 블루톤 전환")
 function yScGap(ta) { if (ta.value.trim() && !/\n\n\s*$/.test(ta.value)) ta.value = ta.value.replace(/\s*$/, '') + '\n\n'; ta.style.height = 'auto'; ta.style.height = Math.min(120, ta.scrollHeight) + 'px'; }   // 전환 = 빈 줄(2줄바꿈) 규칙 — 진입·종료 공통(운영자 260714 "종료되도 2줄 이후로")
 $('#yetaSc').addEventListener('click', e => {
   e.stopPropagation(); const ta = $('#yetaText');
@@ -3727,15 +3732,19 @@ function yRender() {
   const openingStuck = openingPending && (Date.now() - (s.awaiting_since || 0)) > 300000;   // 5분 초과 = 정적 폴백(재시도 배너 대신 yGreet)
   if (YCUR && YCUR.enter_line && !turns.some(t => t.role === 'user')) h += `<div class="ysit">${esc(YCUR.enter_line)}</div>`;   // 대화 시작 장면 지문(운영자 260708) — 내 발화 전(오프닝 단계) = 상황(enter_line)을 인물 대사 위에 먼저("먼저 상황이 보이고, 그다음에 말") · 첫 내 메시지 후 퇴장
   if (!turns.length && YCUR && (!openingPending || openingStuck)) h += yAiMsg({ text: yGreet(YCUR), persona: YCUR.id });   // 첫인사 폴백 — 오프닝 인플라이트면 억제(타이핑만) · 미설정/막힘 시 정적 표시
+  const _mks = yMoodLog().filter(m => m.t === ((YSESS || {}).cur || '') && YME_FEEL[m.md]); let _mj = 0;   // 기분 지문(운영자 260716 수렴 · 평의회 A안) — 이 방에 적립된 마커를 ts 순서로 턴 사이에 위빙(로컬 표시 전용 · .ysit 계승 = 상황 지문과 동일 결)
+  const _mkH = m => { const f = YME_FEEL[m.md]; return `<div class="ysit">${f[0]} 지금 기분 — ${f[1]}</div>`; };
   h += turns.map((t, i) => {
+    let mk = ''; while (_mj < _mks.length && (_mks[_mj].ts || 0) <= (t.ts || 0)) mk += _mkH(_mks[_mj++]);   // 이 턴보다 먼저 찍힌 기분 = 턴 위에
     const fresh = !first && i >= prevN && !_yNoAnim;   // 신규 턴만 촤르륵 · _yNoAnim = 스트리밍 스왑 1회 무애니(이미 보인 텍스트 재생 차단)
     const pv = turns[i - 1];              // 직전 턴 = 같은 화자면 그룹핑(cont)
     if (t.role === 'user') {
-      if (t.sc) return `<div class="ysit${fresh ? ' in' : ''}">${yFmt(t.text)}</div>`;   // 상황 설명 턴(260714 '#') = 장면 지문 결(.ysit 계승) — 말풍선·'1'·시각 없음(연출 라인)
-      const tm = yTime(t.ts); const un = i === _lastUserI && _meUnread && yPrefOn('read', true); return `<div class="ymrow me${fresh ? ' in' : ''}${pv && pv.role === 'user' ? ' cont' : ''}">${un ? '<span class="yb-un">1</span>' : ''}${tm ? `<time class="ytime">${tm}</time>` : ''}<div class="yb me">${yFmt(t.text)}</div></div>`; }   // 내 메시지 = [1][시각][버블] · 1 = 마지막 미읽음 내 턴(항목14A)
-    if (t.role === 'assistant') return yAiMsg(t, fresh, pv && pv.role === 'assistant' && (pv.persona || '') === (t.persona || ''));
-    return `<div class="yb sys${fresh ? ' in' : ''}">${esc(t.text)}</div>`;   // sys = 페르소나 합류 등(그룹 끊음)
+      if (t.sc) return mk + `<div class="ysit${fresh ? ' in' : ''}">${yFmt(t.text)}</div>`;   // 상황 설명 턴(260714 '#') = 장면 지문 결(.ysit 계승) — 말풍선·'1'·시각 없음(연출 라인)
+      const tm = yTime(t.ts); const un = i === _lastUserI && _meUnread && yPrefOn('read', true); return mk + `<div class="ymrow me${fresh ? ' in' : ''}${pv && pv.role === 'user' ? ' cont' : ''}">${un ? '<span class="yb-un">1</span>' : ''}${tm ? `<time class="ytime">${tm}</time>` : ''}<div class="yb me">${yFmt(t.text)}</div></div>`; }   // 내 메시지 = [1][시각][버블] · 1 = 마지막 미읽음 내 턴(항목14A)
+    if (t.role === 'assistant') return mk + yAiMsg(t, fresh, pv && pv.role === 'assistant' && (pv.persona || '') === (t.persona || ''));
+    return mk + `<div class="yb sys${fresh ? ' in' : ''}">${esc(t.text)}</div>`;   // sys = 페르소나 합류 등(그룹 끊음)
   }).join('');
+  for (; _mj < _mks.length; _mj++) h += _mkH(_mks[_mj]);   // 마지막 턴 이후 기분(대개 방금 바꾼 것) = 로그 말미
   if (!first && turns.length > prevN && (turns[turns.length - 1] || {}).role === 'assistant' && yPrefOn('haptic', true)) { try { if (navigator.vibrate) navigator.vibrate(26); } catch (x) {} }   // 소리·진동(설정 — 기본 ON · 분신술 260709: 스위치 디폴트 true(150차)와 소비자 false 불일치로 신규 사용자 진동 무음이던 것 정정)
   _yLastN = turns.length;
   if (turns.length) yMarkRead((YSESS || {}).cur, turns[turns.length - 1].ts || 0);   // 읽음 = 마지막 턴 ts(스레드별 · 트리밍 내성)
