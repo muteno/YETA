@@ -565,7 +565,7 @@ print((t[:70]+'…') if len(t)>70 else (t or '새 메시지'))")"
 # 시각·계절·달·데일리 무드 시드(sha256 = 같은 날 같은 기분·무저장) + 직전 공기(감정 관성) + 동네 로스터(주민 창작 방지) + 단톡 동행·난입 데뷔.
 state_block() {
   python3 - "${PERSONA:-}" "${LAST_MOOD:-}" "${CAST:-}" "${GAP_H:-0}" "${REL_LV:-}" "${RIV:-}" "${HANDOFF:-}" "${TUNE:-}" "${CO_NAME:-}" "${BARGE_DEBUT:-0}" "${PLACE_NM:-}" "${BARGE_VIA:-}" <<'PY'
-import sys, hashlib, json
+import sys, hashlib, json, time
 from datetime import datetime, timezone, timedelta
 persona, last_mood, cast, gap_h, rel_lv, riv, handoff = sys.argv[1:8]
 co_name = sys.argv[9] if len(sys.argv) > 9 else ""
@@ -574,8 +574,10 @@ place_nm = sys.argv[11] if len(sys.argv) > 11 else ""
 barge_via = sys.argv[12] if len(sys.argv) > 12 else ""
 try: tune = json.loads(sys.argv[8]) if sys.argv[8] and sys.argv[8] != "None" else []
 except Exception: tune = []
-now = datetime.now(timezone(timedelta(hours=9)))                       # KST 고정(§표기표준 — 러너 UTC)
-h = now.hour
+now = datetime.now(timezone(timedelta(hours=9)))                       # KST 고정(§표기표준 — 러너 UTC) · 계절·요일·무드 시드 = 실제 달력(가속 안 함)
+# 무음동 세계 시각(운영자 260715) — 실제 시각과 분리, 6배 가속(실제 4h = 무음동 하루). 뷰어 yWorldMin과 동일 공식(epoch분×6 mod 1440) = 저장 없이 뷰어↔러너 동기.
+wmin = int(time.time() / 60 * 6) % 1440
+h = wmin // 60
 slot = "깊은 밤 — 경계가 얇아지는 시간" if h < 3 else "새벽" if h < 7 else "아침" if h < 11 else "낮" if h < 17 else "저녁" if h < 21 else "밤"
 wd = "월화수목금토일"[now.weekday()]
 season = ["겨울","겨울","봄","봄","봄","여름","여름","여름","가을","가을","가을","겨울"][now.month - 1]
