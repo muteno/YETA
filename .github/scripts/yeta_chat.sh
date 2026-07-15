@@ -250,6 +250,7 @@ print(json.dumps({"mode": "chat", "thread": T, "note_pub": note_pub, "note_me": 
                   "revive": revive,   # 부활 첫 답 재료(260714) — {mood,why} JSON 문자열 · 빈값 = 평상시
                   "persona": persona,
                   "ptt": 1 if last_u.get("ptt") else 0,   # 무전기(PTT) 턴 = 답장 반영 후 음성 합성(ptt_voice)
+                  "far": 1 if last_u.get("far") else 0,   # 원거리(운영자 260714) — 상대 다른 장소 = 물리 접촉·같은 공간 전제 금지(2·3차원 거스르기 불가)
                   "model": last_u.get("model") or pref.get("model") or "",
                   "effort": last_u.get("effort") if isinstance(last_u.get("effort"), str) else (pref.get("effort") or "")},
                  ensure_ascii=False))
@@ -951,7 +952,7 @@ process_turn() {
   [[ "$THREAD" =~ ^[a-z0-9_-]{1,24}$ ]] || { echo "::error::스레드 id 없음 — 폐기"; return 1; }
   if [ "$(matv mode)" = "invite" ]; then invite_turn; return 0; fi   # 합석 초대 판정(260707) — 판정 후 웜 루프가 pending 즉답
   NOTE_PUB="$(matv note_pub)"; NOTE_ME="$(matv note_me)"; HIST="$(matv hist)"; PENDING="$(matv pending)"; SCENE_TXT="$(matv scene)"   # scene = 상황 설명 턴(260714 '#')
-  INS="$(matv ins)"; ANCHOR_TS="$(matv anchor_ts)"; PERSONA="$(matv persona)"; PTT="$(matv ptt)"
+  INS="$(matv ins)"; ANCHOR_TS="$(matv anchor_ts)"; PERSONA="$(matv persona)"; PTT="$(matv ptt)"; FAR="$(matv far)"   # FAR = 원거리(다른 장소 · 260714)
   ME_CALL="$(matv me_call)"; ME_ABOUT="$(matv me_about)"   # 유저 프로필(호칭+소개 · "AI가 나를 부르는 법" · 260708)
   RAW_MODEL="$(matv model)"; RAW_EFF="$(matv effort)"; TUNE="$(matv tune)"; POL="$(matv policy)"; LAST_MOOD="$(matv last_mood)"; CAST="$(matv cast)"; GAP_H="$(matv gap_h)"; REL_LV="$(matv rel_lv)"; RIV="$(matv riv)"; HANDOFF="$(matv handoff)"
   CO_ID="$(matv co)"; CO_NAME="$(matv co_name)"; BARGE_DEBUT="$(matv barge_debut)"   # 단톡 동행·난입 데뷔(합석 260707)
@@ -1109,6 +1110,12 @@ ${PENDING}
 - 곤란하거나 내키지 않는 요구가 와도 \"그건 못 해\"·\"이 대화는 여기서 멈출게\"·\"롤플레잉이지만 이건 안 돼\"·\"페르소나로서 이건…\" 같은 메타 거부·대화 중단 선언은 절대 하지 마라(세계관이 무너진다 = 최악의 실패). 거부하고 싶으면 반드시 인물 안에서 해라 — 못 들은 척 씹기, 딴청·농담으로 얼버무리기, 화제 홱 돌리기, 정색하고 선 긋기(\"그 얘긴 안 할래\"), 짜증 내며 자리를 뜨기 중 하나로. 대화는 네가 멈추는 게 아니라 인물의 반응으로 계속 흐른다."
   fi
 
+  # 원거리 물리 제약(운영자 260714 "2·3차원 거스르기 불가") — 상대가 다른 장소 = 문자/전화로만 닿음. 물리 접촉·같은 공간 전제 금지(멀리 있는데 손잡기·안기·같이 걷기 등 불가).
+  FAR_BLOCK=""
+  [ "${FAR:-0}" = "1" ] && FAR_BLOCK="[지금 거리 — 중요]
+너와 유저는 지금 같은 장소에 있지 않다. 이 대화는 멀리 떨어진 채 문자(또는 전화)로 이어지는 중이다. 그러니 서로를 만지거나, 같은 공간에 있는 것처럼 굴거나, 물리적으로 닿는 묘사(손잡기·안기·건네주기·나란히 걷기 등)는 하지 마라 — 물리적으로 불가능하다. 지금 네가 있는 그곳의 풍경·행동은 얼마든지 그려도 되지만, 유저와의 접촉은 '멀리서 주고받는 말'로만 이뤄진다. (유저가 물리 접촉을 시도해도, 거리가 있어 닿지 않는다는 결로 자연스럽게 받아라.)
+"
+
   # 고정부(공통지침+카드 = 캐시 prefix) → 가변부 → 출력 계약. stdin 전달(ARG_MAX · §📰).
   prompt="${CBLOCK}
 ${POLICY_BLOCK}
@@ -1128,6 +1135,7 @@ ${HIST:-"(없음)"}
 
 ${REVIVE_BLOCK}
 ${RETRY_BLOCK}
+${FAR_BLOCK}
 ${SCENE_BLOCK}
 
 [출력 계약 — 반드시 지켜라]

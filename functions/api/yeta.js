@@ -651,6 +651,7 @@ export async function onRequestPost({ request, env }) {
     const turn = { role: 'user', text, ts: Date.now(), model, effort };   // 다이얼 = 턴별 박제
     if (body.ptt) turn.ptt = 1;   // 무전기(PTT) 턴 박제
     if (body.sc) turn.sc = 1;   // 상황 설명 턴(운영자 260714 '#' 모드) — 상대에게 하는 말이 아니라 장면 설정(러너 격리 주입 · 뷰어 .ysit 렌더) · 불리언만 = 주입 축 없음
+    if (body.far) turn.far = 1;   // 원거리 턴(운영자 260714) — 상대 다른 장소 = 러너가 물리 접촉·같은 공간 전제 금지 주입(불리언만)
     th.turns.push(turn);
     if (th.turns.length > 200) th.turns = th.turns.slice(-200);   // 스레드 캡(보안 감사⑤)
     th.state = 'awaiting'; th.awaiting_since = Date.now(); th.err = ''; delete th.retry_n;   // 새 유저 턴 = 재시도 사다리 리셋(뉘앙스 블록 잔류 차단 · 260714)
