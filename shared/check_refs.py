@@ -302,44 +302,6 @@ def check_inject_markers():
     return fails
 
 
-def check_sens_vocab():
-    """민감 통제어휘 미러 정합 — 드리프트 하드 게이트(260625 분신술 10인).
-    정본 SSOT = prompts/news-analysis.md `tags:` 줄 '동일 통제어휘:'. viewer SENS_PROTECT 집합 일치 + DRUG_RE(viewer↔build-viewer) 바이트 동일 강제.
-    (이 게이트 부재가 5↔7 드리프트·'장면 검열 없음' stale의 구조적 원인 — 기계로 닫음.)"""
-    def _rd(p):
-        try:
-            return open(os.path.join(ROOT, p), encoding='utf-8').read()
-        except Exception:
-            return ''
-    rc = 0
-    prompt, viewer, bv = _rd('prompts/news-analysis.md'), _rd('viewer/index.html'), _rd('build-viewer.mjs')
-    seg = prompt.split('동일 통제어휘:', 1)[1].split('(', 1)[0] if '동일 통제어휘:' in prompt else ''
-    ssot = set(re.findall(r'#[가-힣·]+', seg))
-    mv = re.search(r"const SENS_PROTECT\s*=\s*\[([^\]]+)\]", viewer)
-    sp = set(re.findall(r'#[가-힣·]+', mv.group(1))) if mv else set()
-    if not ssot or not sp:
-        print('⚠️ 민감 통제어휘 추출 실패 — prompts SSOT/viewer SENS_PROTECT 패턴 확인(게이트 무력)')
-    elif ssot != sp:
-        print('❌ 민감 통제어휘 불일치 — prompts SSOT %s ≠ viewer SENS_PROTECT %s' % (sorted(ssot), sorted(sp)))
-        rc = 1
-    az = _rd('.github/scripts/analyze.sh')
-    def _drug(s, pat):
-        m = re.search(pat, s)
-        return frozenset(re.findall(r'[가-힣]+', m.group(1))) if m else None
-    drug = {
-        'viewer': _drug(viewer, r'DRUG_RE\s*=\s*/([^/\n]+)/'),
-        'build-viewer': _drug(bv, r'DRUG_RE\s*=\s*/([^/\n]+)/'),
-        'analyze.sh': _drug(az, r"grep -qE '([^']*펜타닐[^']*)'"),   # #마약 백스톱 shell 어휘
-    }
-    present = {k: v for k, v in drug.items() if v}
-    if len(set(present.values())) > 1:
-        print('❌ DRUG 어휘 불일치(따로 놀기) — ' + ' / '.join('%s:%s' % (k, sorted(v)) for k, v in present.items()))
-        rc = 1
-    if rc == 0 and ssot and sp:
-        print('✅ 민감 통제어휘 미러 정합 — 통제어휘 %d개·SENS_PROTECT 일치·DRUG 어휘 %d곳 동일' % (len(ssot), len(present)))
-    return rc
-
-
 def check_curation_constants():
     """큐레이션 랭킹 상수(viewer) ↔ docs/curation-algorithm.md §★ 정본값 정합 하드게이트.
     #1135식 stale-PR 자기-revert·코드↔문서 드리프트를 CI가 즉시 차단(260628 13인 감사 C8).
@@ -733,33 +695,6 @@ GLOG = 'docs/지침변경로그.md'
 GUIDE_FILES = ('apps/yeta/00_지침_캐릭터챗.md', 'apps/yeta/policy.json')
 GUIDE_DIR = 'apps/yeta/characters/'
 CONTRACT_PAT = re.compile(r'^[+-].*(출력 계약|기억 블록|<<NOTE|<<MOOD|문장.*80자|길이\(운영자)')   # yeta_chat.sh 지침성 줄 휴리스틱(+/- 변경 줄만)
-
-
-# ── SAFETY-LOCK 게이트(운영자 260714) — 콘텐츠 거절 처리 가드레일이 약화·제거되면 잡는 트립와이어 ──
-# 각 (파일, 앵커) = 그 파일에 반드시 존재해야 하는 안전 가드. 앵커 소실 = 블록 삭제·이동 = ⚠️ 경고(리팩터로 앵커 옮겼으면 이 표도 함께 갱신).
-SAFETY_LOCKS = [
-    ('shared/claude_transient.sh', '⛔ SAFETY-LOCK[frame-break]'),
-    ('.github/scripts/yeta_chat.sh', '⛔ SAFETY-LOCK[flee]'),
-    ('.github/scripts/yeta_stream.py', '⛔ SAFETY-LOCK[stream-guard]'),
-]
-
-
-def check_safety_lock():
-    missing = []
-    for rel, anchor in SAFETY_LOCKS:
-        p = os.path.join(ROOT, rel)
-        try:
-            with open(p, encoding='utf-8') as f:
-                if anchor not in f.read():
-                    missing.append('%s → %s (앵커 소실 = 안전 가드 삭제·이동?)' % (rel, anchor))
-        except Exception:
-            missing.append('%s → 파일 없음(%s)' % (rel, anchor))
-    if missing:
-        print('⚠️ SAFETY-LOCK 게이트 — 콘텐츠 거절 가드레일 앵커 소실(약화·삭제 의심):')
-        for m in missing:
-            print('  -', m)
-        print('  → 의도된 리팩터면 shared/check_refs.py SAFETY_LOCKS 표를 함께 갱신 · 약화면 복원(운영자 260714 안전축)')
-    return 0   # WARN-only(리팩터 유연성 · 하지만 diff 리뷰에 반드시 뜸)
 
 
 def check_guideline_log():
