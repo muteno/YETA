@@ -3512,7 +3512,7 @@ function yScRebase(v) {   // 편집 1회분 prefix/suffix diff → _ySegs 절대
   _ySegPrev = v;
 }
 function yScMark(sc) { const ta = $('#yetaText'); _ySegs.push({ at: ta.value.length, sc: sc ? 1 : 0 }); }
-function yScSet(on) { _yScOn = !!on; const b = $('#yetaSc'); if (b) b.classList.toggle('on', _yScOn); const row = $('#yetaIn'); if (row) row.classList.toggle('sc', _yScOn); const ta = $('#yetaText'); if (ta) ta.placeholder = _yScOn ? '지금 장면·상황을 써줘 — "~다."로 끝내면 자동으로 대화로 돌아가' : '메시지'; }   // 모드 ON = 입력행 코발트 톤(운영자 260714 "자동 블루톤 전환")
+function yScSet(on) { _yScOn = !!on; const b = $('#yetaSc'); if (b) b.classList.toggle('on', _yScOn); const row = $('#yetaIn'); if (row) row.classList.toggle('sc', _yScOn); const ta = $('#yetaText'); if (ta) ta.placeholder = _yScOn ? '상황 설명' : '메시지'; }   // 문구 = "상황 설명"만(운영자 260716 — 두 줄 설명문이 입력행을 눌러 답답)   // 모드 ON = 입력행 코발트 톤(운영자 260714 "자동 블루톤 전환")
 function yScGap(ta) { if (ta.value.trim() && !/\n\n\s*$/.test(ta.value)) ta.value = ta.value.replace(/\s*$/, '') + '\n\n'; ta.style.height = 'auto'; ta.style.height = Math.min(120, ta.scrollHeight) + 'px'; }   // 전환 = 빈 줄(2줄바꿈) 규칙 — 진입·종료 공통(운영자 260714 "종료되도 2줄 이후로")
 $('#yetaSc').addEventListener('click', e => {
   e.stopPropagation(); const ta = $('#yetaText');
