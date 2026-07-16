@@ -1,0 +1,53 @@
+/* ═══════════════════════════════════════════════════════════════════
+   YETA UI 메뉴킷 · tokens.css — 디자인 토큰(값 사본)
+   원본(값 SSOT) = YETA 레포 viewer/index.html :root (L37-80)
+   추출 시점 = 2026-07-17 04:52 KST · main a4e9b5f
+   ⚠ 이 파일은 '사본'이다 — YETA 레포 안에서 값을 고칠 땐 여기가 아니라
+     viewer/index.html :root(정본)를 고치고 킷을 재추출한다.
+     타 레포에 이식한 뒤에는 이 파일이 그 레포의 값 SSOT 역할을 한다.
+   ═══════════════════════════════════════════════════════════════════ */
+:root {
+  /* 중립 표면·텍스트 — 흰색 + 스포티파이 블랙(운영자 260704 브랜드 통일) */
+  --fg:#FFFFFF; --fg-rgb:255,255,255; --fg-2:#E7ECE7; --mut:#8B8F8A;
+  --bg:#161716;   /* 앱 캔버스 = 스포티파이 블랙 리프트(그린 틴트 근흑) */
+  --line:rgba(255,255,255,.08); --line2:rgba(255,255,255,.06);
+  /* 강조1 — 브랜드 라임(버튼·링·액티브 · 운영자 260704 #CFFF40)
+     ⚠ 타 레포 이식 시 이 2줄만 그 레포 브랜드색으로 바꾸면 메뉴 활성 필·글로우 전체가 따라온다. */
+  --accent:#CFFF40; --accent-rgb:207,255,64;
+  /* 강조2 — 코발트 형광(보조강조·링크/정보·대비) */
+  --cobalt:#3D6BFF; --cobalt-rgb:61,107,255;
+  /* 등급 — 시즌 진한 레드보라(배지·연출 전용 · CTA 아님) */
+  --season:#8E2DBF; --season-rgb:142,45,191;
+  /* 2강조 변주 — 터콰이즈(활성 필 레시피의 색 변주 축 · 예: 상황 모드) */
+  --think:#3EE0C8; --think-rgb:62,224,200;
+  /* 카드 정보줄 간격 기준(비율 5:5:3.5 · 전 레포 공통) */
+  --lgap:6px;
+  /* 글래스모피즘 — 프로스티드 표면·엣지 하이라이트(초투명·강블러 확정 260707) */
+  --glass:rgba(255,255,255,.005); --glass-2:rgba(255,255,255,0); --glass-line:rgba(255,255,255,.08);
+  --glass-0:rgba(255,255,255,.002); --glass-line-0:rgba(255,255,255,.066);
+  /* 그림자·배경 스크림(raw 금지 → 토큰) */
+  --shadow-card:0 24px 60px rgba(0,0,0,.42); --bg-scrim:linear-gradient(transparent 44%,rgba(0,0,0,.5) 76%,rgba(0,0,0,.85));
+  /* 의미색 */
+  --danger:#ff5b4a; --danger-rgb:255,91,74; --arm:#ffd93d;
+  /* 챗 버블(메뉴 밖 축이지만 --accent 파생이라 동봉) */
+  --bubble-me:var(--accent); --bubble-ai:#1e2023; --yeta-bg:var(--bg);
+  /* 반지름 */
+  --r-s:9px; --r-m:11px; --r-l:16px; --r-modal:22px; --r-pill:999px;
+  /* 간격·버튼 */
+  --sp-2:12px; --sp-3:18px; --btn:34px;
+  /* 타이포 */
+  --fs-h2:15px; --fs-h3:14px; --fs-body:15px; --fs-label:13px; --fs-sm:12px; --fs-xs:11px; --fs-meta:8.25px;
+  --fw-x:800; --fw-b:700; --lh-base:1.6;
+  /* 모션 */
+  --ease:cubic-bezier(.2,.7,.3,1);
+  /* 글래스 blur(구조토큰) */
+  --blur-m:29px; --blur-l:11px;   /* 카드 강블러 · 모달/네비 약블러(운영자 260707 플그 확정) */
+  /* z (dialog=top-layer라 float만) */
+  --z-float:60;
+  /* 눌림 scale 사다리 — :active는 반드시 이 토큰으로(raw scale 창작 금지) */
+  --press-m:.9; --press-l:.95; --press-s:.9;
+  /* PIN·핀 액티브 = 브랜드 라임 */
+  --pin-ac:var(--accent); --pin-ac-rgb:var(--accent-rgb);
+}
+/* reduced-motion = 눌림 토큰 전역 무효화(1) — 개별 transform:none 가드 대신 한 블록 */
+@media (prefers-reduced-motion:reduce){ :root{ --press-m:1; --press-l:1; } }
