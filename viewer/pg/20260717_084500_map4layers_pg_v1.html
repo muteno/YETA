@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>지도 4레이어 분해 플레이그라운드 v1 — 무과금 사전 실측 (2026-07-17)</title>
+<link rel="stylesheet" href="../tokens.css">
+<style>
+/* 색 = viewer/index.html :root 실측 계승(구조토큰은 tokens.css 링크) — 플그 전용 캔버스 */
+:root { --bg:#161716; --fg:#FFFFFF; --fg-2:#E7ECE7; --mut:#8B8F8A; --accent:#CFFF40; --accent-rgb:207,255,64;
+  --think:#3EE6C9; --think-rgb:62,230,201; --danger:#FF5A5A; --cobalt:#3E7BFA; --glass-line:rgba(255,255,255,.08); --line:rgba(255,255,255,.08); }
+* { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html,body { margin:0; background:var(--bg); color:var(--fg); font:var(--fs-body, 15px)/1.55 system-ui,'Pretendard',sans-serif; }
+.wrap { max-width:1180px; margin:0 auto; padding:14px; display:flex; gap:14px; align-items:flex-start; flex-wrap:wrap; }
+h1 { font-size:var(--fs-h3, 17px); margin:2px 0 8px; }
+h1 small { color:var(--mut); font-weight:normal; font-size:var(--fs-sm, 12.5px); display:block; }
+/* ── 무대(sticky — [5] 미리보기 화면 고정) ── */
+.stage-col { position:sticky; top:10px; flex:1 1 520px; min-width:340px; z-index:2; }
+.stage { position:relative; border:1px solid var(--glass-line); border-radius:var(--r-l, 16px); overflow:hidden; background:#0a0b0a; box-shadow:var(--shadow-card, 0 24px 60px rgba(0,0,0,.42)); }
+.stage img { display:block; width:100%; height:auto; }
+.stage svg { position:absolute; inset:0; width:100%; height:100%; }
+.hud { position:absolute; left:10px; top:10px; display:flex; gap:6px; flex-wrap:wrap; }
+.chip { font-size:var(--fs-xs, 11px); padding:4px 10px; border-radius:var(--r-pill, 999px); border:1px solid var(--glass-line); background:rgba(0,0,0,.35); backdrop-filter:blur(var(--blur-m, 10px)); }
+.chip.on { color:var(--accent); border-color:rgba(var(--accent-rgb),.38); background:rgba(var(--accent-rgb),.16); }
+.zlabel { position:absolute; right:10px; top:10px; font-size:var(--fs-xs, 11px); color:var(--fg-2); background:rgba(0,0,0,.5); border:1px solid var(--glass-line); border-radius:var(--r-pill, 999px); padding:4px 10px; }
+/* ── 컨트롤(스크롤 축) ── */
+.panel-col { flex:1 1 320px; min-width:300px; display:flex; flex-direction:column; gap:12px; }
+.card { border:1px solid var(--glass-line); border-radius:var(--r-l, 16px); padding:12px 14px; background:rgba(255,255,255,.03); }
+.card h2 { margin:0 0 8px; font-size:var(--fs-label, 13px); color:var(--fg-2); letter-spacing:.02em; }
+.card h2 i { color:var(--mut); font-style:normal; font-weight:normal; }
+.row { display:flex; align-items:center; gap:10px; margin:6px 0; flex-wrap:wrap; }
+button.tg { padding:7px 14px; border-radius:var(--r-pill, 999px); border:1px solid var(--glass-line); background:rgba(255,255,255,.06); color:var(--fg); font-size:var(--fs-sm, 12.5px); cursor:pointer; transition:transform .15s, background .2s, border-color .2s; }
+button.tg:active { transform:scale(var(--press-s, .96)); }
+button.tg.on { background:rgba(var(--accent-rgb),.16); border-color:rgba(var(--accent-rgb),.38); color:var(--accent); box-shadow:inset 0 1px 0 var(--glass-line), 0 0 18px rgba(var(--accent-rgb),.14); }
+button.tg.tq.on { background:rgba(var(--think-rgb),.16); border-color:rgba(var(--think-rgb),.38); color:var(--think); box-shadow:inset 0 1px 0 var(--glass-line), 0 0 18px rgba(var(--think-rgb),.14); }
+input[type=range] { flex:1; accent-color:var(--accent); }
+.inv { display:flex; flex-direction:column; gap:2px; max-height:300px; overflow:auto; }
+.inv label { display:flex; align-items:center; gap:8px; font-size:var(--fs-sm, 12.5px); padding:5px 6px; border-radius:8px; cursor:pointer; }
+.inv label:hover { background:rgba(255,255,255,.06); }
+.inv input { accent-color:var(--accent); }
+.inv .by { margin-left:auto; color:var(--mut); font-size:var(--fs-xs, 11px); font-variant-numeric:tabular-nums; }
+.calc { font-size:var(--fs-sm, 12.5px); color:var(--fg-2); border-top:1px solid var(--line); margin-top:8px; padding-top:8px; }
+.calc b { color:var(--accent); font-size:var(--fs-h3, 17px); font-variant-numeric:tabular-nums; }
+.note { color:var(--mut); font-size:var(--fs-xs, 11px); line-height:1.6; }
+.legend { display:flex; gap:10px; flex-wrap:wrap; font-size:var(--fs-xs, 11px); color:var(--mut); }
+.legend i { font-style:normal; display:inline-flex; align-items:center; gap:4px; }
+.sw { width:10px; height:10px; border-radius:3px; display:inline-block; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="stage-col">
+    <h1>지도 4레이어 분해 — 무과금 시뮬레이터 <small>실제 지도 원판 위에 레이어를 쌓아보고, 굽기 발사 수까지 계산한다 (건물 좌표 = 야간판 육안 실측 추정 ±2)</small></h1>
+    <div class="stage" id="stage">
+      <img id="bg" src="../assets/yeta_map/map_night.png" alt="무음동 지도">
+      <svg id="ov" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <g id="gBehind"></g>
+        <g id="gWalker"></g>
+        <g id="gFront"></g>
+        <g id="gPins"></g>
+      </svg>
+      <div class="hud" id="hud"></div>
+      <div class="zlabel" id="zstate">워커 z 판정 대기</div>
+    </div>
+    <div class="legend" style="margin-top:8px">
+      <i><span class="sw" style="background:rgba(62,230,201,.5)"></span>L2 건물(스프라이트 후보)</i>
+      <i><span class="sw" style="background:#CFFF40"></span>발끝(base) 기준선</i>
+      <i><span class="sw" style="background:#3E7BFA"></span>L3 장소 핀(실좌표)</i>
+      <i><span class="sw" style="background:#fff"></span>테스트 워커</i>
+    </div>
+  </div>
+
+  <div class="panel-col">
+    <div class="card">
+      <h2>① 원판 <i>— 밤/낮(REF_NIGHT 1:1 구도)</i></h2>
+      <div class="row">
+        <button class="tg on" id="tNight">밤 지도</button>
+        <button class="tg" id="tDay">낮 지도</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>② 레이어 스택 <i>— 켜고 끄며 분해 구조 확인</i></h2>
+      <div class="row">
+        <button class="tg on" data-layer="L1">L1 지면판</button>
+        <button class="tg tq on" data-layer="L2">L2 건물</button>
+        <button class="tg on" data-layer="L3">L3 장소</button>
+        <button class="tg on" data-layer="L4">L4 UI</button>
+      </div>
+      <p class="note">L1 = 원판 그대로(도로+바닥 — 분해 후엔 건물 없는 그림으로 재생성) · L2 = 스프라이트로 떠낼 조각들 · L3 = 핀·라벨(이미 별도 DOM) · L4 = 시계 등 UI(이미 별도).</p>
+    </div>
+
+    <div class="card">
+      <h2>③ z 데모 <i>— 분해의 보상: 건물 뒤로 숨기</i></h2>
+      <div class="row"><span style="font-size:var(--fs-xs,11px);color:var(--mut);width:14px">x</span><input type="range" id="wx" min="2" max="98" value="62" step="0.5"></div>
+      <div class="row"><span style="font-size:var(--fs-xs,11px);color:var(--mut);width:14px">y</span><input type="range" id="wy" min="4" max="98" value="70" step="0.5"></div>
+      <p class="note">워커(흰 원)를 움직여봐 — 워커 발끝 y가 건물 발끝 y보다 <b>위(작음)</b>면 그 건물 <b>뒤</b>로 들어가 가려진다. 지금 지도에선 불가능한 일이 레이어를 나누면 CSS 정렬 하나로 공짜.</p>
+    </div>
+
+    <div class="card">
+      <h2>④ 굽기 계산기 <i>— 포함할 건물 고르기</i></h2>
+      <div class="inv" id="inv"></div>
+      <div class="calc" id="calc"></div>
+      <p class="note">발사 수 = 지면판(밤+낮 2회) + 선택 건물 × 2(밤/낮 크로마키). 성당은 이미 스프라이트 파이프(BLDGS)가 있어 0회로 계산. 상가 스트립·시장 천막은 묶음 1장씩으로 셈(개별 분리는 과발사).</p>
+    </div>
+
+    <div class="card">
+      <h2>⑤ 분해 후 작업 흐름 <i>— 왜 두더지잡기가 끝나나</i></h2>
+      <p class="note">
+        도로 수정 → L1만 재생성(건물 무관·좌표 재실측도 L1 기준 마지막 1회)<br>
+        건물 이동/교체 → 그 스프라이트 1장만 재굽기(다른 레이어 무접촉)<br>
+        차·사람 가림 → 발끝 y 정렬로 자동(픽셀 마스크·가림체 폴리곤 유지보수 소멸)<br>
+        장소 추가 → L3 데이터 한 줄(그림 무접촉)
+      </p>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── 실측 데이터 ──────────────────────────────────────────────
+// 장소 앵커 = viewer/index.html YMAP_POS 정본 그대로(0~100)
+const POS = { radio:[50,14], office:[56,33], studio:[61,44], alley:[50,50], tea:[30,52], store:[50,63], dojo:[20,78], market:[35,71], gym:[11,60], park:[46,84], school:[65,75], cathedral:[65,30] };
+const POS_NM = { radio:'방송국', office:'편집국', studio:'스튜디오', alley:'광장', tea:'찻집 무음', store:'편의점', dojo:'도장', market:'시장', gym:'체육관', park:'공원', school:'학교', cathedral:'성당' };
+// 건물 인벤토리(야간판 육안 실측 추정 ±2 · bbox=[x0,y0,x1,y1]% · base=발끝 y · shots=밤낮 굽기 수 · 성당=파이프 보유 0)
+const BLDG = [
+  { id:'radio',  nm:'방송국+철탑',        box:[42,3,56,19],  base:19, shots:2, on:true },
+  { id:'cath',   nm:'성당(파이프 보유)',   box:[61,7,79,31],  base:31, shots:0, on:true },
+  { id:'office', nm:'편집국(적벽돌 3층)',  box:[52,20,64,40], base:40, shots:2, on:true },
+  { id:'stripNW',nm:'상가 스트립 북서(묶음)',box:[8,15,45,45], base:45, shots:2, on:true },
+  { id:'lot',    nm:'공터·공사장 펜스',    box:[73,29,93,46], base:46, shots:2, on:false },
+  { id:'studio', nm:'스튜디오 계단',       box:[63,40,72,47], base:47, shots:2, on:true },
+  { id:'tea',    nm:'찻집 무음(한옥)',     box:[24,46,39,60], base:60, shots:2, on:true },
+  { id:'gym',    nm:'체육관(글러브 간판)', box:[1,57,15,68],  base:68, shots:2, on:true },
+  { id:'store',  nm:'편의점 2M',          box:[40,57,59,68], base:68, shots:2, on:true },
+  { id:'stripE', nm:'상가 스트립 동측(묶음)',box:[65,48,100,72],base:72, shots:2, on:true },
+  { id:'market', nm:'시장 천막(묶음)',     box:[27,66,46,78], base:78, shots:2, on:true },
+  { id:'school', nm:'학교(시계탑)',        box:[52,68,82,86], base:86, shots:2, on:true },
+  { id:'dojo',   nm:'도장(한옥)',          box:[14,74,33,88], base:88, shots:2, on:true },
+  { id:'play',   nm:'공원 놀이기구(소품)', box:[42,84,64,97], base:97, shots:2, on:false },
+];
+// ── 상태 ──
+const L = { L1:true, L2:true, L3:true, L4:true };
+const $ = s => document.querySelector(s);
+const NS = 'http://www.w3.org/2000/svg';
+function el(t, at) { const e = document.createElementNS(NS, t); for (const k in at) e.setAttribute(k, at[k]); return e; }
+
+function draw() {
+  const wx = +$('#wx').value, wy = +$('#wy').value;
+  const gB = $('#gBehind'), gW = $('#gWalker'), gF = $('#gFront'), gP = $('#gPins');
+  gB.innerHTML = gW.innerHTML = gF.innerHTML = gP.innerHTML = '';
+  let hideBy = null;
+  if (L.L2) for (const b of BLDG) {
+    if (!b.on) continue;
+    const [x0, y0, x1, y1] = b.box;
+    const inX = wx >= x0 - 1 && wx <= x1 + 1;
+    const front = inX && wy < b.base && wy > y0;   // 워커 발끝이 건물 발끝보다 위 + 건물 폭 안 = 건물이 앞(워커 가림)
+    if (front) hideBy = b.nm;
+    const g = front ? gF : gB;
+    g.appendChild(el('rect', { x:x0, y:y0, width:x1 - x0, height:y1 - y0, rx:1.2, fill:'rgba(62,230,201,' + (front ? '.42' : '.16') + ')', stroke:'rgba(62,230,201,.65)', 'stroke-width':'.22' }));
+    g.appendChild(el('line', { x1:x0, y1:b.base, x2:x1, y2:b.base, stroke:'#CFFF40', 'stroke-width':'.28', 'stroke-dasharray':'1 .7' }));
+  }
+  // 워커(흰 원 + 발끝 점) — z = 가운데 그룹
+  gW.appendChild(el('circle', { cx:wx, cy:wy - 1.4, r:1.5, fill:'#fff', stroke:'rgba(0,0,0,.5)', 'stroke-width':'.25' }));
+  gW.appendChild(el('circle', { cx:wx, cy:wy, r:.4, fill:'#CFFF40' }));
+  if (L.L3) for (const k in POS) {
+    const [x, y] = POS[k];
+    gP.appendChild(el('circle', { cx:x, cy:y, r:.75, fill:'#3E7BFA', stroke:'#fff', 'stroke-width':'.18' }));
+    const t = el('text', { x:x + 1.2, y:y + .5, 'font-size':'2', fill:'#E7ECE7', stroke:'rgba(0,0,0,.65)', 'stroke-width':'.35', 'paint-order':'stroke' }); t.textContent = POS_NM[k]; gP.appendChild(t);
+  }
+  $('#zstate').textContent = hideBy ? '워커 = ' + hideBy + ' 뒤에 숨음' : '워커 = 최전면(가리는 건물 없음)';
+  $('#bg').style.visibility = L.L1 ? 'visible' : 'hidden';
+  $('#hud').style.display = L.L4 ? 'flex' : 'none';
+  calc();
+}
+function calc() {
+  const sel = BLDG.filter(b => b.on);
+  const shots = 2 + sel.reduce((a, b) => a + b.shots, 0);
+  $('#calc').innerHTML = '선택 ' + sel.length + '동 → 총 굽기 <b>' + shots + '</b>발 <span style="color:var(--mut)">(지면판 2 + 건물 ' + (shots - 2) + ')</span>';
+}
+// 인벤토리
+const inv = $('#inv');
+BLDG.forEach((b, i) => {
+  const lb = document.createElement('label');
+  lb.innerHTML = '<input type="checkbox" ' + (b.on ? 'checked' : '') + '> ' + b.nm + '<span class="by">base y=' + b.base + (b.shots === 0 ? ' · 0발' : '') + '</span>';
+  lb.querySelector('input').addEventListener('change', e => { b.on = e.target.checked; draw(); });
+  inv.appendChild(lb);
+});
+// HUD(L4 목업 — 세계시계 칩)
+$('#hud').innerHTML = '<span class="chip on">PM 09:12 · 밤</span><span class="chip">근처 3명</span>';
+// 토글 배선
+$('#tNight').onclick = () => { $('#bg').src = '../assets/yeta_map/map_night.png'; $('#tNight').classList.add('on'); $('#tDay').classList.remove('on'); };
+$('#tDay').onclick = () => { $('#bg').src = '../assets/yeta_map/map_day.png'; $('#tDay').classList.add('on'); $('#tNight').classList.remove('on'); };
+document.querySelectorAll('[data-layer]').forEach(b => b.onclick = () => { L[b.dataset.layer] = !L[b.dataset.layer]; b.classList.toggle('on'); draw(); });
+$('#wx').oninput = $('#wy').oninput = draw;
+draw();
+</script>
+</body>
+</html>
