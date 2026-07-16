@@ -100,6 +100,20 @@ def build(tone):
             carband |= (np.abs(Pd) <= CARBAND) & (E >= a0) & (E <= a1)
     mask = ndi.binary_closing(mask, np.ones((9, 9)))
     mask = ndi.binary_opening(mask, np.ones((3, 3)))
+    # 합성 건물 레이어(성당 등) 구멍 — 뷰어 #ymBld와 동일 배치(500-space 박스 350,42,80,80 · 바닥 앵커 ⚠️ viewer와 짝):
+    # 스프라이트 불투명 픽셀을 도로 마스크에서 제거 = 차가 건물 뒤로 자연 은폐(u2·다리가 성당과 겹치는 구간 z 정합 · 운영자 260717)
+    bld = os.path.join(ROOT, f'viewer/assets/yeta_map/bld_cathedral_{tone}.png')
+    if os.path.exists(bld):
+        spr = Image.open(bld).convert('RGBA')
+        k = W / 500.0
+        bw = int(80 * k)
+        s = spr.copy(); s.thumbnail((bw, bw))
+        px, py = int(350 * k) + (bw - s.width) // 2, int(42 * k) + (bw - s.height)
+        hole = np.zeros((H, W), bool)
+        hole[py:py + s.height, px:px + s.width] = np.asarray(s)[:, :, 3] > 60
+        cut = int((hole & mask).sum())
+        mask &= ~hole
+        print(f'   성당 레이어 구멍 — 겹친 도로 픽셀 {cut}개 마스크 제거(차 = 성당 뒤 은폐)')
     mp = Image.fromarray((mask * 255).astype('uint8'), 'L').resize((512, 512), Image.LANCZOS)
     mp = mp.filter(ImageFilter.GaussianBlur(0.8))
     out_mask = os.path.join(ROOT, f'viewer/assets/yeta_map/road_mask_{tone}.png')
