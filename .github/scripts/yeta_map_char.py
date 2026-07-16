@@ -38,6 +38,19 @@ BASE = ("tiny cute chibi full-body character sprite for a cozy village map game,
         "Plain solid pure bright green background color #00FF00 filling the entire frame (chroma key). "
         "No text, no letters, no watermark, no shadow on the ground.")
 
+# 지도 합성용 건물 스프라이트(운영자 260717 "성당이 지하성당 같음 — 그림 새로 뽑아 레이어를 새로 따면 될듯") — 산출 = bld_<이름>.png(투명 · 뷰어가 배경 위 레이어로 합성 · 지도 원본 무수정 = 기계산출물 규약)
+BLDG_BASE = ("small charming sacred neighborhood cathedral building for a cozy hand-drawn cartoon city map game, "
+             "top-down bird's-eye view with a slight isometric tilt matching a storybook life-sim map, "
+             "white-cream stone walls, one tall pointed bell tower with a small cross, arched stained-glass windows, "
+             "warm wooden double doors with tiny front steps, soft rounded shapes, cute tiny detailed. "
+             "Single building only, centered, whole building visible with margin. "
+             "Plain solid pure bright green background color #00FF00 filling the entire frame (chroma key). "
+             "No text, no letters, no watermark, no people, no shadow on the ground. ")
+BLDGS = {
+    "cathedral_night": BLDG_BASE + "Night version: deep dark charcoal-navy ambience, stained-glass windows glowing warmly from inside, a small lantern by the door.",
+    "cathedral_day":   BLDG_BASE + "Warm late-afternoon version: bright pastel palette, soft golden light, gentle and peaceful.",
+}
+
 _USAGE = []
 
 
@@ -125,6 +138,21 @@ def main():
             print("  ⚠️ {} 실패 — 계속(fail-soft)".format(cid), flush=True)
             continue
         cut = chroma_cut(png)
+        with open(path, "wb") as f:
+            f.write(cut)
+        made += 1
+        print("  ✅ {} ({:.0f}KB)".format(path, len(cut) / 1024), flush=True)
+    for bid, prompt in BLDGS.items():   # 건물 스프라이트(성당 등) — 캐릭터와 동일 멱등·크로마키 파이프 · 크기만 520(건물 디테일)
+        path = os.path.join(OUT_DIR, "bld_{}.png".format(bid))
+        if os.path.exists(path) and not FORCE:
+            print("skip(존재): {}".format(path), flush=True)
+            continue
+        print("생성: {} …".format(bid), flush=True)
+        png = gemini_image(prompt)
+        if not png:
+            print("  ⚠️ {} 실패 — 계속(fail-soft)".format(bid), flush=True)
+            continue
+        cut = chroma_cut(png, size=520)
         with open(path, "wb") as f:
             f.write(cut)
         made += 1
