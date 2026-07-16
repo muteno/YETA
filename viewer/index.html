@@ -697,7 +697,9 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
     align-items:center; padding:0 4px; color:var(--fg-2); font-size:var(--fs-sm); font-weight:var(--fw-b); font-variant-numeric:tabular-nums; letter-spacing:.02em; white-space:nowrap;
     text-shadow:0 1px 3px rgba(0,0,0,.85), 0 0 9px rgba(0,0,0,.55); transition:color .6s var(--ease), opacity .6s var(--ease); pointer-events:none; }   /* 무음동 시각 = 프로필 좌측 · 배경 위 판독 헤일로(토큰 없는 축) */
   .ymain.unlocked .yworldclock:not([hidden]) { display:flex; }
-  .yworldclock.night { color:var(--think); opacity:.82; }   /* 밤 = 터콰이즈 디밍(낮/밤 결 구분) */
+  .yworldclock { flex-direction:column; justify-content:center; align-items:flex-end; }   /* 2단(세계시각 위 · 현실시간 아래) — 우측 프로필 기준 우정렬(운영자 260717 "현실시간인지 착각") */
+  .yworldclock .ywc-real { font-size:var(--fs-xs); font-weight:normal; color:var(--mut); letter-spacing:0; line-height:1.15; }   /* 현실 시간 병기 = 뮤트(세계시각과 위계 분리) */
+  .yworldclock.night { color:var(--think); opacity:.82; }   /* 밤 = 터콰이즈 디밍(낮/밤 결 구분) — 서브(뮤트)는 자기 색 유지 */
   .yprof:active { transform:scale(var(--press-s)); }
   .yprof svg { width:17px; height:17px; }   /* 픽토 = has-img 아닐 때만 보이는 폴백 */
   .yprof.has-img svg { display:none; }
@@ -1280,7 +1282,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
     </div>
   </div>
   <div class="ywm" id="ywm" role="img" aria-label="YETA"></div>   <!-- 좌상단 상시 로고(운영자 260705 확정 조합 · 겹층 JS 조립 · 언락 후 표시) -->
-  <div class="yworldclock" id="yworldclock" hidden aria-label="무음동 시각">09:00 AM</div>   <!-- 무음동 세계 시각(운영자 260715) — 프로필 바로 좌측 · 실제 시각과 분리 6배 가속 · 밤=디밍 -->
+  <div class="yworldclock" id="yworldclock" hidden aria-label="무음동 시각"><span id="ywcMain">09:00 AM</span><span class="ywc-real" id="ywcReal"></span></div>   <!-- 무음동 세계 시각(운영자 260715) + 현실 시간 뮤트 병기(운영자 260717 "현실시간인지 착각하기 쉬움" — 날짜 없음·시각 2단) -->
   <button class="yprof has-img" id="yprof" type="button" aria-label="내 프로필"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0112 0v1"/></svg></button>   <!-- 우상단 개인 프로필 = 기본 캐릭터 얼굴(has-img 기본 · 커스텀 이미지 주입 축 후속) -->
   <nav class="ynav" id="ynav">   <!-- 메뉴(운영자 260706 재편): 1=캐릭터 · 2=대화(목록 — 대화 탭이 곧 진입점, 행 눌러 챗) · 3=설정. 옛 '지금' 탭 폐지 = 챗은 메뉴2 대화 목록으로 편입(진입 = 대화 행 탭) · lockdot 폐지(네비 = 언락 후에만 표시) -->
     <button class="on" data-tab="char" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0112 0v1"/></svg><span>캐릭터</span></button>
@@ -4020,7 +4022,14 @@ try { const _q = new URLSearchParams(location.search); if (_q.get('yeta')) { con
   window.yWorldDH = () => { const wt = Date.now() / 60000 * YWORLD_RATE; return { d: 'w' + Math.floor(wt / 1440), h: Math.floor(wt % 1440 / 60) }; };   // 무음동 (날짜열, 시각) — 동선·지도 시간축 SSOT(운영자 260716 지도 싱크: 지도·동선·근처·원거리 전부 세계 시각으로 통일 · 러너 yeta_place.world_dh와 동일 공식 = 드리프트 금지)
   window.yWorldClock = () => { const m = yWorldMin(), h = (m / 60) | 0, mm = m % 60, ap = h < 12 ? 'AM' : 'PM'; let hh = h % 12; if (!hh) hh = 12; return { h, txt: String(hh).padStart(2, '0') + ':' + String(mm).padStart(2, '0') + ' ' + ap, night: h < 6 || h >= 20 }; };
   let _yWorldT = null;
-  function yWorldTick() { const el = document.getElementById('yworldclock'); if (!el) return; const w = yWorldClock(); el.textContent = w.txt; el.hidden = false; el.classList.toggle('night', w.night); }
+  function yWorldTick() {   // 세계시각(메인) + 현실 시간 뮤트 병기(운영자 260717 — KST 명시 포맷 = naive Date 표기 금지 규약[12])
+    const el = document.getElementById('yworldclock'); if (!el) return;
+    const w = yWorldClock();
+    const m = document.getElementById('ywcMain'); if (m) m.textContent = w.txt; else el.textContent = w.txt;
+    const r = document.getElementById('ywcReal');
+    if (r) r.textContent = '(현실 시간: ' + new Date().toLocaleTimeString('ko-KR', { timeZone: 'Asia/Seoul', hour12: false, hour: '2-digit', minute: '2-digit' }) + ')';
+    el.hidden = false; el.classList.toggle('night', w.night);
+  }
   function yWorldStart() { yWorldTick(); if (!_yWorldT) _yWorldT = setInterval(yWorldTick, 8000); }   // 8s = 무음동 48s(6배)마다 갱신 = 분 단위 충분
   function setUnlocked(animate) {   // 언락 = PIN 창 촤르륵 닫고(pin-mode 해제) 네비 등장 · animate=라이브 언락만 슬라이드업(재방문 복원은 무애니)
     unlocked = true; ymain.classList.remove('pin-mode'); ymain.classList.add('unlocked'); yTab('char'); setTimeout(yStair, 1150); yWarmBg();   // 언락 = 바로 메뉴1 캐릭터 · 계단 쌓기 1.15s 지연(운영자 확정 — 행 촤르륵 먼저) · 배경 프리로드 착수(첫 진입 전 캐시 = 진입 동기)
