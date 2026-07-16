@@ -551,6 +551,7 @@
     "job": "안드로이드",
     "mode": {
       "nm": "깊은 밤의 도깨비",
+      "avatar": "characters/season/lucy/lucy_face_dokkaebi.webp",
       "t": [
         "late",
         "night"
