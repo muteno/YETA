@@ -85,10 +85,10 @@ import json, sys, time
 import re as _re
 from datetime import datetime, timezone, timedelta
 sys.path.insert(0, ".github/scripts")
-from yeta_place import load_places, place_of, place_name   # 위치 SSOT = apps/yeta/places.json(마주침·지도 공용 · 260707)
+from yeta_place import load_places, place_of, place_name, world_dh   # 위치 SSOT = apps/yeta/places.json(마주침·지도 공용 · 260707)
 PL = load_places()
 _kst = datetime.now(timezone(timedelta(hours=9)))
-_kdate, _khour = f"{_kst:%Y-%m-%d}", _kst.hour
+_kdate, _khour = world_dh()   # 동선 시간축 = 무음동 세계 시각(운영자 260716 지도 싱크 — 뷰어 지도·근처·원거리와 동일 공식 · _kst는 로그 등 현실축 잔여용)
 from yeta_v3 import migrate_v3, pick_thread, thread_view   # v3 다중 채팅방(260707 · 어댑터 SSOT — JS migrateV3 동형)
 S_ROOT = migrate_v3(json.load(open(sys.argv[1], encoding="utf-8"))); n = int(sys.argv[2])
 _dead = {k: v for k, v in (S_ROOT.get("dead") or {}).items() if (((v.get("t") if isinstance(v, dict) else v) or 0)) > time.time() * 1000}   # 사망 활성(운영자 260714) — 24h 두절 · v = {t,d,mood,why}(구형 숫자 흡수)
@@ -833,7 +833,7 @@ barge_check() {
 import hashlib, json, sys, time
 from datetime import datetime, timezone, timedelta
 sys.path.insert(0, ".github/scripts")
-from yeta_place import load_places, place_of, place_name
+from yeta_place import load_places, place_of, place_name, world_dh
 PL = load_places()
 from yeta_v3 import migrate_v3
 import os as _os
@@ -855,7 +855,8 @@ if len(room) != 1: sys.exit(1)                     # 이미 단톡/방 없음
 if s.get("invite") or s.get("barged"): sys.exit(1)
 if S_ROOT.get("barge_day") == today: sys.exit(1)   # 하루 1회 상한 = 전역(top-level — 스레드 곱셈·다방 동시 난입 차단 · 러너감사③A)
 if s.get("state") == "awaiting": sys.exit(1)       # 답장 생성 중 = 안 끼어듦(반영 레이스 축소)
-if 3 <= now.hour < 8: sys.exit(1)                  # 깊은 새벽 = 난입 없음
+_wd, _wh = world_dh()                              # 무음동 세계 시각(운영자 260716 지도 싱크) — 장소·새벽 판정 축 · today(상한·시드)는 현실 일자 유지(하루 1회 = 현실 하루)
+if 3 <= _wh < 8: sys.exit(1)                       # 깊은 새벽(세계 시각) = 난입 없음(주민 수면 — 대화 속 시간과 정합)
 if len(turns) < 8: sys.exit(1)                     # 초반 대화 보호(관계 전 난입 = 소음)
 cand = ""
 d = s.get("declined") or {}
@@ -886,14 +887,14 @@ if cand:
     if int(hashlib.sha256(f"{today}:{cand}:barge".encode()).hexdigest(), 16) % 3: sys.exit(1)   # 관계 축 = 자격 있는 날의 ~1/3만(결정적)
 else:
     # 위치 마주침 축(운영자 260707) — 화자의 지금 장소에 있거나(1/2) 인접(1/3)인 주민이 지나가다 끼어든다. 자체 시드 = 공통 게이트 대체.
-    me_pl = place_of(PL, room[0], today, now.hour)
+    me_pl = place_of(PL, room[0], _wd, _wh)
     pinfo = (PL.get("places") or {}).get(me_pl) or {}
     if me_pl and not pinfo.get("private"):
         nbs = pinfo.get("neighbors") or []
         best = None
         for cid in sorted(names):
             if cid in room: continue
-            c_pl = place_of(PL, cid, today, now.hour)
+            c_pl = place_of(PL, cid, _wd, _wh)
             if not c_pl or ((PL.get("places") or {}).get(c_pl) or {}).get("private"): continue
             gate = 2 if c_pl == me_pl else (3 if c_pl in nbs else 0)
             if not gate: continue
