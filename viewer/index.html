@@ -3649,6 +3649,7 @@ function yAiMsg(t, fresh, cont) {   // 캐릭터 메시지 = 아바타 + 이름 
   return `<div class="ymsg${fresh ? ' in' : ''}${cont ? ' cont' : ''}">${yAva(p)}<span class="ycol"><span class="yname">${esc(p.name || '')}</span><span class="ybrow"><div class="yb ai">${yFmt(t.text)}</div>${tm ? `<time class="ytime">${tm}</time>` : ''}</span></span></div>`;
 }
 let _yLastN = -1, _yTypOn = false, _yFailOn = false, _yTypHold = 0, _yTypT = null;   // 촤르륵 키드 + 타이핑 지연 홀드(읽는 시간 · 운영자 260707)
+let _yCurT = '';   // 마지막 렌더한 방 id — 서버발 cur 이동(단톡 재합류·휘발 소멸 · Q.06) 감지용(yThreadSwitch 미경유 전환도 방 경계로 취급)
 let _yKickOn = false;   // 난입 내보내기 pill 등장 래치(_yFailOn 동형 — 재렌더 재애니 방지 · 합석 260707)
 let _yPaceN = -1, _yPaceT = 0;   // 답장 페이스 — 공개 승인된 턴 수(꼬리 답장 런은 길이 비례 타이핑 모션 후 공개 · 운영자 260706 "바로 대답 어색" · 항목13)
 let _yDraft = null, _yDraftOn = false, _yNoAnim = false;   // 문장 스트리밍 부분 답장(260714 한수2) — watch가 준 draft + 표시 래치 + 스왑 무애니 1회 플래그(re-whoosh 차단 · 평의회 UX)
@@ -3704,6 +3705,20 @@ function yOut(el) {   // 촤르륵 복귀 — 접혀 사라진 뒤 제거(운영
   setTimeout(rm, 400);   // reduced-motion(animation:none = 이벤트 미발화) 백스톱
 }
 function yRender() {
+  const _ct = (YSESS || {}).cur || '';
+  if (_yCurT !== _ct) {   // 방 정체 전환 감지(Q.06 평의회5) — 단톡 재합류·휘발 소멸로 서버가 cur을 옮기면 yThreadSwitch를 안 거쳐 키드가 이전 방 기준으로 남음 → 방 경계 리셋과 동형 처리(정규 전환 뒤 중복 실행은 무해·멱등)
+    const _old = _yCurT; _yCurT = _ct;
+    if (_old && _ct) {
+      _yLastN = -1; _yPaceN = -1; _yTypHold = 0; _meUnread = false;   // 첫 렌더 취급 = 병합된 1:1 히스토리 일괄 촤르륵 폭주 차단(평의회5①)
+      clearTimeout(_yTypT); _yTypT = null; clearTimeout(_yPaceT); _yPaceT = 0;
+      yScSet(false); _ySegs = [{ at: 0, sc: 0 }]; yScSync();   // # 상황 모드 구간 교차 방 누수 차단(방 경계 리셋 계승 · 평의회5⑤)
+      if (!YTH(_old)) { try {   // 옛 방이 소멸(=병합·휘발)이면 읽음 마커 승계 + 고아 키 제거(안읽음 재점화·localStorage 누적 차단 · 평의회5②)
+        const _or = +localStorage.getItem('yeta_read_' + _old) || 0, _nr = +localStorage.getItem('yeta_read_' + _ct) || 0;
+        if (_or > _nr) localStorage.setItem('yeta_read_' + _ct, String(_or));
+        localStorage.removeItem('yeta_read_' + _old);
+      } catch {} }
+    }
+  }
   const log = $('#yetaLog'), s = YTH() || {}, all = s.turns || [];   // v3 = 현재 방 스코프(state/opening/err/room/invite/barged 전부)
   const deadNow = !!(YCUR && (YSESS || {}).cur === YCUR.id && yDead(YCUR));   // 사망 두절(운영자 260714) — 1:1 방만 잠금(단톡 = 러너가 이탈 처리·생존자와 계속) · 만료 = 자연 해제
   $('#yetaIn').hidden = deadNow;

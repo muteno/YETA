@@ -8,7 +8,7 @@
 //   send  {text, model, effort, sc?} : 유저 턴 append(다이얼 턴별 박제 · 화이트리스트 · sc=상황 설명 턴[260714 '#' — 대화 아님·장면 설정]) → yeta-chat.yml dispatch
 //   draw  {persona, name}          : 페르소나 뽑기/재뽑기 — sess.persona 갱신(+대화 중이면 sys 턴) · room=[persona] 리셋(단톡 해산)
 //   invite {persona, name}         : 합석 초대(단톡 · 정원 MAX_ROOM) — 원본 1:1 보존, 직전 3주고받기 시드 복사해 새 단톡 스레드(g 접두)로 분기 → cur 전환 + dispatch(수락/거절 = 러너 판정)
-//   kick  {persona, name}          : 합석 내보내기/초대 철회 — room 제거·invite 취소 + 퇴장 sys(dispatch 없음) · 1명 남은 g방 = 즉시 1:1 재합류(mergeBackG · Q.06)
+//   kick  {persona, name}          : 합석 내보내기/초대 철회 — room 제거·invite 취소 + 퇴장 sys · 1명 남은 g방 = 즉시 1:1 재합류(mergeBackG · Q.06) · 병합이 pending 인계 시에만 dispatch 1회(그 외 dispatch 없음)
 //   focus {t}                      : 스레드 포커스 전환(단톡 등 페르소나 아닌 방 진입 — draw 없이 cur만 이동)
 //   warm  {}                       : 프리웜 — dispatch만(러너 선부팅 → 첫 답장 30초 목표 · 쿼터 소비 0[NOPENDING 웜대기])
 //   retry {t?, n?}                 : 자동 재시도(뷰어 260714 무배너) — 실패(state=error) pending 유저 턴 재발사(새 턴 추가 X) · n = 회차(1~2 그대로 · 3~4 러너가 뉘앙스 전환 · 5회차는 뷰어가 발사 안 함 = 이탈)
@@ -138,11 +138,17 @@ export async function onRequestPost({ request, env }) {
     if (!tgt) {   // 남은 캐릭터의 1:1이 없으면(1:1 리셋됨·비호스트 잔류) g방이 그대로 그 캐릭터의 1:1로 승격 — 신설 아님(멤버 = invite/draw에서 이미 로스터 검증된 id)
       s.threads[host] = { ...g, room: [host], invite: null, barged: 0, last_sp: host };
     } else {   // 합류 = ts 순 병합 · 분기 시드 복사분(직전 3주고받기)은 role|ts|text 키로 중복 제거
+      const cut = Date.now() - EXPIRE_MS;
       const seen = new Set((tgt.turns || []).map(x => `${x.role}|${x.ts}|${x.text}`));
-      const add = (g.turns || []).filter(x => x && !seen.has(`${x.role}|${x.ts}|${x.text}`));
+      const add = (g.turns || []).filter(x => x && (x.ts || 0) > cut && !seen.has(`${x.role}|${x.ts}|${x.text}`));   // 휘발 필터 동반 — 1:1에서 이미 증발한 옛 시드가 kick 즉시 병합으로 부활하던 창 봉합(평의회2①)
       tgt.turns = (tgt.turns || []).concat(add).sort((a, b) => (a.ts || 0) - (b.ts || 0));
       if (tgt.turns.length > 200) tgt.turns = tgt.turns.slice(-200);   // 스레드 캡(보안 감사⑤)
-      if (g.state === 'awaiting' && tgt.state !== 'awaiting') { tgt.state = 'awaiting'; tgt.awaiting_since = Date.now(); }   // g방 인플라이트 답장은 스레드 소멸로 폐기 → 10분 리퍼→뷰어 자동 재시도가 1:1에서 재발사(자가 회복)
+      if (!tgt.opening) {   // 상태 인계 = pending 실측 재계산(평의회4④) — 병합 정렬로 pending 유저 턴이 더 늦은 assistant 뒤가 아니게 묻히면 러너 pick이 못 집어 awaiting 교착 → idle로 정리(유저 새 메시지가 자연 재개) · 오프닝 인플라이트 방은 불변
+        const la = tgt.turns.map(x => x.role).lastIndexOf('assistant');
+        const pend = tgt.turns.slice(la + 1).some(x => x && x.role === 'user');
+        if (pend) { if (tgt.state !== 'awaiting') { tgt.state = 'awaiting'; tgt.awaiting_since = g.awaiting_since || Date.now(); } }   // g 시계 승계 = 리퍼→자동 재시도가 10분 풀대기 없이 조기 재발사(평의회1③)
+        else if (tgt.state === 'awaiting' || g.state === 'awaiting') { tgt.state = 'idle'; tgt.awaiting_since = 0; tgt.err = ''; }
+      }
       tgt.updated = Math.max(tgt.updated || 0, g.updated || 0);
       tgt.pin = tgt.pin || g.pin || 0;
       tgt.last_sp = host;
@@ -152,9 +158,11 @@ export async function onRequestPost({ request, env }) {
     return true;
   };
   const sweepSess = (s) => {   // 휘발+재합류 스위퍼(운영자 260716 Q.06) — get 폴 단일 깔때기: 러너발 이탈(사망·거절·초대 만료)도 다음 폴에서 합류 = 러너/게이트웨이 이중 구현 0(드리프트 차단)
-    const now = Date.now(); let ch = false;
-    for (const th of Object.values(s.threads || {})) {   // ① 휘발 — 무음동 6일(=현실 24h) 지난 턴 롤링 제거(긴 대화도 머리부터 자연 소멸)
-      const t0 = th.turns || [], keep = t0.filter(x => x && (x.ts || 0) > now - EXPIRE_MS);
+    const now = Date.now(), cut = Math.floor((now - EXPIRE_MS) / 60000) * 60000;   // 분 양자화 — 폴 다발이 같은 경계를 보게 = 휘발 put ≤ 분당 1(폴 주기와 탈동조 · 평의회8④)
+    let ch = false;
+    for (const [tid, th] of Object.entries(s.threads || {})) {   // ① 휘발 — 무음동 6일(=현실 24h) 지난 턴 롤링 제거(긴 대화도 머리부터 자연 소멸)
+      if (th.pin || DEAD_ON(s, tid)) continue;   // 핀 = 대화까지 보존(고정의 의미 · 평의회6④) · 사망 두절 중 = 면제(부활 첫 답 "죽기 전 감정" 문맥 증발 차단 · 평의회6②)
+      const t0 = th.turns || [], keep = t0.filter(x => x && (!x.ts || x.ts > cut));   // ts 없는 레거시 턴 = 휘발 제외(즉시 증발 오폭 차단 · 평의회7)
       if (keep.length !== t0.length) { th.turns = keep; ch = true; }
     }
     for (const tid of Object.keys(s.threads || {})) if (mergeBackG(s, tid)) ch = true;   // ② 인원 1명 남은 g방 = 1:1 재합류
@@ -163,7 +171,7 @@ export async function onRequestPost({ request, env }) {
       if (th.invite && now - (th.invite.ts || 0) < INVITE_TTL) continue;
       delete s.threads[tid]; ch = true;
     }
-    if (s.cur && !(s.threads || {})[s.cur]) { s.cur = Object.keys(s.threads)[0] || ''; ch = true; }   // cur 고아 = 첫 방으로(없으면 리스트)
+    if (s.cur && !(s.threads || {})[s.cur]) { s.cur = ''; ch = true; }   // cur 고아 = 리스트 폴백(첫 방 순간이동 오폭 차단 · 평의회5④)
     return ch;
   };
   const DEAD_ON = (s, id) => { const v = (s.dead || {})[id]; return (((v && v.t) || +v || 0)) > Date.now(); };   // 사망 두절(운영자 260714) — 러너 <<DEAD: 맥락>>가 sess.dead[id]={t:만료ts, d:사망ts, mood, why} 박제(구형 숫자 흡수) · 24h 대화·초대·오프닝 차단 · 만료 = 비교 자연 통과(엔트리 = 부활 첫 답이 소비)
@@ -180,14 +188,18 @@ export async function onRequestPost({ request, env }) {
     const stale = Object.values(sess.threads || {}).some(th => th.state === 'awaiting' && th.awaiting_since && Date.now() - th.awaiting_since > 600000);
     const swept = sweepSess(sess);   // 로컬 선판정(읽기 사본에 적용) — 변경 없으면 put 0 유지
     if (stale || swept) {   // 변경 있을 때만 CAS 쓰기(폴 다발 = 무변경 put 금지 · 보안 감사④)
+      if (swept) { try { const cu = await env.YETA_R2.get(KEY); if (cu) await env.YETA_R2.put('sessions/main.sweep.json', await cu.arrayBuffer(), { httpMetadata: { contentType: 'application/json' } }); } catch {} }   // 휘발/병합 직전 1세대 백업(비가역 완화 — reset의 main.prev.json과 별도 키 = 상호 클로버 없음 · 평의회3③)
       const { sess: s2 } = await casPut(s => {
+        let ch = false;
         for (const th of Object.values(s.threads || {})) {
           if (th.state === 'awaiting' && th.awaiting_since && Date.now() - th.awaiting_since > 600000) {
             if (th.opening) { th.opening = 0; th.awaiting_since = 0; th.state = 'idle'; }   // 멈춘 오프닝 = 정적 폴백(뷰어 yGreet · 기틀검증 UX2)
             else { th.state = 'error'; th.err = '응답이 오지 않았어 — 다시 보내면 재시도'; th.awaiting_since = 0; }
+            ch = true;
           }
         }
-        sweepSess(s);   // 신선 read 위에 재적용(CAS 짝)
+        if (sweepSess(s)) ch = true;   // 신선 read 위에 재적용(CAS 짝)
+        if (!ch) return { abort: { noop: 1 } };   // 신선 read에 변경 없음(타 폴러 선처리) = put 생략 — no-op 재-put·etag 처닝·watch 오발화 차단(평의회8②) · abort여도 casPut이 신선 sess를 돌려줘 그대로 서빙
       });
       if (s2) sess = s2;
     }
@@ -636,6 +648,8 @@ export async function onRequestPost({ request, env }) {
       mergeBackG(s, t);   // 이탈로 1명 남은 g방 = 즉시 1:1 재합류(Q.06 — 퇴장 sys까지 합쳐서 대화창 복원)
     });
     if (abort) return json(abort, 409);
+    const mth = TH(sess, sess.cur || '');   // 병합이 pending을 인계했으면(인플라이트 g답장은 finish가 스레드 부재로 폐기) 즉시 재발사 = 10분 리퍼 풀대기 제거(평의회4①) — kick 유일의 dispatch 축(헤더 주석과 짝)
+    if (env.GH_TOKEN && mth && mth.state === 'awaiting' && !mth.opening) { try { await dispatch(env); } catch {} }
     return json({ ok: true, sess });
   }
 
