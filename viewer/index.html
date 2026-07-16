@@ -4040,7 +4040,7 @@ try { const _q = new URLSearchParams(location.search); if (_q.get('yeta')) { con
   window.yWorldMin = () => Math.floor(Date.now() / 60000 * YWORLD_RATE) % 1440;   // 무음동 분(0~1439)
   window.yWorldDH = () => { const wt = Date.now() / 60000 * YWORLD_RATE; return { d: 'w' + Math.floor(wt / 1440), h: Math.floor(wt % 1440 / 60) }; };   // 무음동 (날짜열, 시각) — 동선·지도 시간축 SSOT(운영자 260716 지도 싱크: 지도·동선·근처·원거리 전부 세계 시각으로 통일 · 러너 yeta_place.world_dh와 동일 공식 = 드리프트 금지)
   window.yWorldClock = () => { const m = yWorldMin(), h = (m / 60) | 0, mm = m % 60, ap = h < 12 ? 'AM' : 'PM'; let hh = h % 12; if (!hh) hh = 12; return { h, txt: String(hh).padStart(2, '0') + ':' + String(mm).padStart(2, '0') + ' ' + ap, night: h < 6 || h >= 20 }; };
-  let _yWorldT = null;
+  let _yWorldT = null, _yModeSig = null;
   function yWorldTick() {   // 세계시각(메인) + 현실 시간 뮤트 병기(운영자 260717 — KST 명시 포맷 = naive Date 표기 금지 규약[12])
     const el = document.getElementById('yworldclock'); if (!el) return;
     const w = yWorldClock();
@@ -4048,6 +4048,17 @@ try { const _q = new URLSearchParams(location.search); if (_q.get('yeta')) { con
     const r = document.getElementById('ywcReal');
     if (r) r.textContent = '(현실 시간: ' + new Date().toLocaleTimeString('ko-KR', { timeZone: 'Asia/Seoul', hour12: false, hour: '2-digit', minute: '2-digit' }) + ')';
     el.hidden = false; el.classList.toggle('night', w.night);
+    try {   // 변신 경계 동기(운영자 260717 Q.17 "정각 자동 전환") — 모드 on/off 서명이 바뀐 틱에만 열린 화면의 프사·배지 재도장(8s 틱 = 경계 지연 ≤8s · 평시 no-op)
+      const sig = (YCHARS || []).filter(c => c.mode && c.mode.nm).map(c => c.id + (yModeOn(c) ? '+' : '-')).join('|');
+      if (_yModeSig !== sig) {
+        const first = _yModeSig === null; _yModeSig = sig;
+        if (!first) {   // 첫 틱 = 서명 씨앗만(렌더는 각 진입 경로가 이미 함)
+          yCharRender(); yListRender();   // 내부 sig 가드가 중복 도장 흡수
+          if (YCUR && YCUR.mode && !document.getElementById('yetaAva2')) yAvaSet($('#yetaAva'), YCUR);   // 챗 헤더(단톡 스택 중엔 방 이벤트가 재도장)
+          const pf = document.getElementById('ycprofile'); if (pf && pf.classList.contains('on') && typeof yProfileRender === 'function') yProfileRender();   // 열린 프로필의 히어로 디스크
+        }
+      }
+    } catch (e) {}
   }
   function yWorldStart() { yWorldTick(); if (!_yWorldT) _yWorldT = setInterval(yWorldTick, 8000); }   // 8s = 무음동 48s(6배)마다 갱신 = 분 단위 충분
   function setUnlocked(animate) {   // 언락 = PIN 창 촤르륵 닫고(pin-mode 해제) 네비 등장 · animate=라이브 언락만 슬라이드업(재방문 복원은 무애니)
