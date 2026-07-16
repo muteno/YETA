@@ -759,7 +759,9 @@ def check_map_bg_pair():
                 print(f'❌ 지도 배경 짝 게이트 — map_{tone}.png 없음'); rc = 1; continue
             real = hashlib.sha1(open(path, 'rb').read()).hexdigest()[:8]
             if real != tok:
-                print(f'❌ 지도 배경 짝 게이트 — map_{tone}.png 변경 감지(sha {real} ≠ 토큰 {tok}): 도로 좌표 실효 위험 → python3 shared/yeta_map_trace.py 재실측 + 토큰 갱신'); rc = 1
+                print(f'❌ 지도 배경 짝 게이트 — map_{tone}.png 변경 감지(sha {real} ≠ 토큰 {tok}): 도로 좌표·가림체 실효 위험 → python3 shared/yeta_map_trace.py 재실측(마스크·YMAP_FG 지문 검증 포함) + 토큰 갱신'); rc = 1
+        if 'YMAP_FG' in src and not re.search(r'YMAP_FG_FP: night=[0-9a-f]{8} day=[0-9a-f]{8}', src):
+            print('⚠️ 지도 배경 짝 게이트(비차단) — YMAP_FG는 있는데 YMAP_FG_FP 지문 토큰 없음: yeta_map_trace.py 실행값으로 등재(가림체 스테일 침묵 방지 · Q.11)')
         if rc == 0:
             print('✅ 지도 배경 짝 게이트 — map_night/day.png ↔ 도로 좌표 토큰 일치.')
     except Exception as e:
