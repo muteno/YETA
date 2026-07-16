@@ -847,6 +847,11 @@ def main():
     except Exception as e:
         print('⚠️ SAFETY-LOCK 게이트 스킵:', e)
     try:
+        import build_menu_kit   # 포터블 메뉴킷 신선도(WARN-only · Q.14 260717) — 정본 코어(:root/.ynav/.ydock) 변경 시 재추출 리마인더(이식 사본이라 비차단)
+        build_menu_kit.check()
+    except Exception as e:
+        print('⚠️ 메뉴킷 신선도 게이트 스킵:', e)
+    try:
         if check_world_rate() != 0:   # 무음동 세계율 6배 3점 짝(하드 게이트 — 한쪽만 수정 = 지도·대화 시간축 재분열 · Q.08 평의회)
             rc = 1
     except Exception as e:
