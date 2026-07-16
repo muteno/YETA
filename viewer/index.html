@@ -1813,6 +1813,7 @@ function ymBuild(svg) {   // 정적 레이어 — 배경(낮/밤 = KST 시각 ·
   const py = id => (YMAP_POS[id] ? YMAP_POS[id][1] : (P[id] || {}).y) * YMAP_SC;
   S.push(`<rect width="500" height="500" fill="rgba(14,16,15,.8)"/>`);
   S.push(`<image id="ymapBg" href="assets/yeta_map/map_${ymIsDay(yWorldDH().h) ? 'day' : 'night'}.png" x="0" y="0" width="500" height="500" preserveAspectRatio="xMidYMid slice"/>`);
+  S.push(`<image id="ymBld" href="assets/yeta_map/bld_cathedral_${ymIsDay(yWorldDH().h) ? 'day' : 'night'}.png" x="350" y="42" width="80" height="80" preserveAspectRatio="xMidYMax meet"/>`);   // 성당 합성 레이어(운영자 260717 "지하성당 같음 — 새로 뽑아 레이어" · 지도 원본 무수정) — 바닥 앵커 (78,24.4) · 배경 위·피사체 아래 · 미생성 404 = 자연 무표시
   for (const [id, p] of Object.entries(P)) {
     if (p.offlimits) { S.push(`<g><rect class="ymp-off" x="${px(id) - 34}" y="${py(id) - 24}" width="68" height="48" rx="6"/><text class="ymp-offtxt" x="${px(id)}" y="${py(id) + 3}" text-anchor="middle">출입금지</text></g>`); continue; }
     if (p.private || !YMAP_POS[id]) continue;   // 집(private)·맵 미등재 노드 = 지도 제외
@@ -1848,6 +1849,7 @@ function ymBuild(svg) {   // 정적 레이어 — 배경(낮/밤 = KST 시각 ·
 function ymCarsBuild(svg) {   // 차량 재생성 — ymBuild + 낮/밤 배경 스왑 시(톤별 도로 좌표·마스크 교체) · reduce-motion = 미생성
   _ymapCars = []; _ymapTone = ymIsDay(yWorldDH().h) ? 'day' : 'night';   // 낮/밤 = 무음동 세계 시각(운영자 260716 지도 싱크 — 세계시계·대화와 동기)
   const mi = svg.querySelector('#ymRoadImg'); if (mi) mi.setAttribute('href', `assets/yeta_map/road_mask_${_ymapTone}.png`);   // 도로 마스크도 톤 짝 스왑(배경↔마스크 동일 그림 실측 쌍)
+  const bi = svg.querySelector('#ymBld'); if (bi) bi.setAttribute('href', `assets/yeta_map/bld_cathedral_${_ymapTone}.png`);   // 성당 합성 레이어 톤 짝 스왑
   ymFgBuild(svg);   // 전경 가림체도 톤 짝 재생성(reduce-motion에도 유지 — 가림은 모션이 아니라 공간 규칙)
   const cg = svg.querySelector('#ymCars'); if (!cg) return;
   cg.innerHTML = '';
