@@ -17,6 +17,7 @@ OUT_DIR = "viewer/assets/yeta_map"
 FORCE = os.environ.get("FORCE", "").strip() == "1"
 ONLY = os.environ.get("ONLY", "").strip()          # 'map_day' 등 — 지정 시 그 변형만 생성(다른 톤 보존 · 운영자 260716 낮 재생성)
 REF_NIGHT = os.environ.get("REF_NIGHT", "").strip() == "1"   # 1 = 밤 그림을 참조 이미지로 동봉 — "같은 도시의 낮" 강제(낮밤 도로·건물 1:1 정합 · 운영자 260716 한 수)
+REF_SELF = os.environ.get("REF_SELF", "").strip() == "1"     # 1 = 자기 자신(기존 같은 톤 그림)을 참조로 동봉 — 배치 유지 + LAYOUT 신규 요소(성당 등)만 추가(운영자 260717 "기존 이미지 보고 다시 뽑아")
 
 # 동네 골격(places.json 좌표·look 특색의 언어화 · 골목 50,50 중심 — places.json look 필드와 수동 동기)
 # v2(운영자 260707 "산 아님 — 중소도시·힙한 도시") · v3(운영자 260707 "상가 밀집 전경 · 출입금지 지대 · 학교 · 건물마다 특색 · 도로에 차").
@@ -36,6 +37,8 @@ LAYOUT = (
     "multi-family houses with rooftop terraces and water tanks filling every block. "
     "Northeast near the stream, one fenced-off abandoned construction zone with barricades and yellow-black warning tape, unnaturally dark inside. "
     "A narrow urban stream crosses the corner with a small footbridge. "
+    "On the northeast riverbank clearing right beside the footbridge, a small sacred cathedral: white-cream stone walls, "
+    "one tall pointed bell tower with a tiny cross, arched stained-glass windows, warm wooden double doors facing southwest with a small forecourt. "
     "The neighborhood edges show more city: bigger buildings, distant mid-rise skyline blocks, street trees - NOT forest, NOT mountains. "
     "Clear paved roads with lane markings and crosswalks connect everything through the central plaza; a few tiny parked cars along the curbs."
 )
@@ -110,14 +113,21 @@ def main():
         if os.path.exists(path) and not FORCE:
             print("skip(존재): {}".format(path), flush=True)
             continue
-        ref = None
-        if REF_NIGHT and name != "map_night":   # 밤 정본을 구도 참조로 — 도로·건물 배치 1:1(재실측 자산 낮밤 공유 가능)
+        ref, refmode = None, ""
+        if REF_SELF:   # 자기 참조 — 배치 그대로 + LAYOUT 추가 요소만 반영
+            sp = os.path.join(OUT_DIR, name + ".png")
+            if os.path.exists(sp):
+                ref = open(sp, "rb").read(); refmode = "self"
+        if ref is None and REF_NIGHT and name != "map_night":   # 밤 정본을 구도 참조로 — 도로·건물 배치 1:1(재실측 자산 낮밤 공유 가능)
             np_ = os.path.join(OUT_DIR, "map_night.png")
             if os.path.exists(np_):
-                ref = open(np_, "rb").read()
-        prompt = (("Redraw this exact same city map with the IDENTICAL layout - every building, road, "
-                   "crosswalk, stream and bridge in the exact same position and shape - only change the "
-                   "time of day and lighting. ") if ref else "") + mood + STYLE + " " + LAYOUT
+                ref = open(np_, "rb").read(); refmode = "night"
+        prompt = ((("Redraw this exact same city map with the IDENTICAL layout - every building, road, "
+                    "crosswalk, stream and bridge in the exact same position and shape - keeping the same "
+                    "time of day and lighting - only ADD the newly described elements that are missing. ") if refmode == "self" else
+                   ("Redraw this exact same city map with the IDENTICAL layout - every building, road, "
+                    "crosswalk, stream and bridge in the exact same position and shape - only change the "
+                    "time of day and lighting. ")) if ref else "") + mood + STYLE + " " + LAYOUT
         print("생성: {}{} …".format(name, " (밤 참조)" if ref else ""), flush=True)
         png = gemini_image(prompt, ref_png=ref)
         if not png:
