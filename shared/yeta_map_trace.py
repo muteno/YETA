@@ -115,6 +115,35 @@ def build(tone):
     print(f'   QA 오버레이 → {qa} (초록=차 보임 · 빨강=클립[건물·나무 가림 = 정상] — 도로 위인지 눈으로 QA)')
 
 
+def fg_check(tone):
+    """가림체(YMAP_FG) 픽셀 지문 검증(Q.11 한 수) — 폴리곤 내부 중앙값 RGB(/6 양자화) 해시를 viewer YMAP_FG_FP 토큰과 대조.
+    배경 재생성으로 폴리곤이 구조물에서 벗어나면 내부 픽셀이 바뀌어 지문이 어긋난다 → 재실측 경고 + 새 토큰 제시."""
+    import hashlib as _h
+    import numpy as np
+    from PIL import Image, ImageDraw
+    src = open(os.path.join(ROOT, 'viewer/index.html'), encoding='utf-8').read()
+    blk = re.search(r'const YMAP_FG = \{(.*?)\n\};', src, re.S)
+    tokm = re.search(r'YMAP_FG_FP: night=([0-9a-f]{8}) day=([0-9a-f]{8})', src)
+    if not blk or not tokm:
+        print('   ⚠️ 가림체 지문 게이트 — YMAP_FG 블록/YMAP_FG_FP 토큰 미검출(둘 다 viewer/index.html)'); return
+    tm = re.search(tone + r': \[(.*?)\n  \]', blk.group(1), re.S)
+    polys = [json.loads(p) for p in re.findall(r'pts: (\[\[.*?\]\])', tm.group(1))]
+    im = np.asarray(Image.open(os.path.join(ROOT, f'viewer/assets/yeta_map/map_{tone}.png')).convert('RGB')).astype(np.float32)
+    H, W = im.shape[:2]; u = W / 100.0
+    meds = []
+    for pts in polys:
+        pm = Image.new('L', (W, H), 0)
+        ImageDraw.Draw(pm).polygon([(x * u, y * u) for x, y in pts], fill=255)
+        med = np.median(im[np.asarray(pm) > 0], 0)
+        meds.append([int(v) // 6 for v in med])
+    fp = _h.sha1(json.dumps(meds).encode()).hexdigest()[:8]
+    want = tokm.group(1) if tone == 'night' else tokm.group(2)
+    if fp != want:
+        print(f'   ⚠️ 가림체 지문 불일치({tone}: {fp} ≠ 토큰 {want}) — 배경이 바뀌어 YMAP_FG 폴리곤이 구조물에서 벗어났을 수 있음: 폴리곤 재실측 후 토큰을 {fp}로 갱신')
+    else:
+        print(f'   ✅ 가림체 지문 일치({tone}: {fp}) — YMAP_FG 폴리곤 ↔ 배경 정합')
+
+
 def main():
     try:
         import numpy, scipy, PIL  # noqa: F401
@@ -122,6 +151,7 @@ def main():
         print(f'의존 누락({e.name}): pip install pillow numpy scipy'); return 1
     for tone in ['night', 'day']:
         build(tone)
+        fg_check(tone)
     return 0
 
 
