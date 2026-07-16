@@ -575,8 +575,8 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   .lk-pat.bad .lk-node.on { background:rgba(var(--danger-rgb),.22); box-shadow:inset 0 0 0 1px var(--danger), 0 0 16px rgba(var(--danger-rgb),.55); }
   .lk-pat.bad .lk-line { stroke:var(--danger); filter:drop-shadow(0 0 6px rgba(var(--danger-rgb),.55)); }
   .lk-node:focus:not(:focus-visible){ outline:none; }
-  .lk-reset { display:grid; place-items:center; color:var(--mut); }   /* 다시 입력(운영자 260717 "잘못 입력했을 때 돌아가게") — 8번 점 한 칸 아래·점과 동일 글래스 결 · 아이콘 = REFRESH_SVG(SSOT) */
-  .lk-reset svg { width:11px; height:11px; }
+  .lk-reset { display:grid; place-items:center; color:var(--mut); background:rgba(0,0,0,.35); }   /* 다시 입력(운영자 260717) — 음영 원판(관용 다크필 .35 계승·운영자 260717 "음영 칠하고") · 링은 .lk-node inset 계승 · 아이콘 = REFRESH_SVG(SSOT) */
+  .lk-reset svg { width:50%; height:50%; display:block; }   /* 버튼의 50%(운영자 지시값) · block = 인라인 베이스라인 오프셋 제거 → 그리드 사분할 정중앙 */
   .lk-reset:active { transform:translate(-50%,-50%) scale(var(--press-s)); color:var(--fg-2); }
   @media (prefers-reduced-motion:reduce){ .lk-slots.shake{animation-duration:.01s} .lk-key:active{transform:none} .lk-slot.pop, .lk-key.hit, .lk-slots.ok .lk-slot{animation:none} .lk-node{transition:none} }
   /* 짧은 세로 프레임(가로모드 폰·분할창) = PIN 블록 압축 — '0'·백스페이스가 프레임 밖으로 잘려 언락 불가하던 사전존재 결함 방어(평의회3 H-1 · 임계 Hf<~550px) · lk- 베이스 뒤 선언 = 캐스케이드 승리 보장 */
