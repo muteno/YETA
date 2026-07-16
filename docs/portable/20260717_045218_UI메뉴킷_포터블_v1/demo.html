@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>YETA UI 메뉴킷 — 단독 데모 (v1 · 2026-07-17)</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="menu.css">
+<style>
+/* ═══ 데모 전용 무대(이식 대상 아님 — 실제 이식은 tokens.css + menu.css + 아래 마크업만) ═══
+   무대 배경 = 팔레트 토큰만으로 만든 글래스 확인용 그라디언트(새 색 창작 0) */
+html,body { margin:0; height:100%; }
+body { background:var(--bg); color:var(--fg); font:var(--fs-body)/var(--lh-base) system-ui,'Pretendard',sans-serif; }
+.ymain { position:relative; max-width:420px; height:100dvh; margin:0 auto; overflow:hidden;
+  background:
+    radial-gradient(60% 42% at 22% 18%, rgba(var(--cobalt-rgb),.28), transparent 70%),
+    radial-gradient(52% 38% at 82% 34%, rgba(var(--season-rgb),.22), transparent 70%),
+    radial-gradient(70% 50% at 50% 88%, rgba(var(--accent-rgb),.12), transparent 72%),
+    var(--bg); }
+.demo-panel { position:absolute; inset:0; display:none; place-items:center; padding:var(--sp-3); text-align:center; }
+.demo-panel.on { display:grid; }
+.demo-panel b { font-size:var(--fs-h2); font-weight:var(--fw-x); display:block; }
+.demo-panel p { color:var(--mut); font-size:var(--fs-sm); max-width:30em; }
+.demo-dockrow { position:absolute; left:50%; transform:translateX(-50%); bottom:calc(88px + env(safe-area-inset-bottom));
+  display:flex; align-items:center; gap:6px; padding:5px 8px; border:1px solid var(--glass-line); border-radius:var(--r-pill);
+  background:var(--glass); backdrop-filter:blur(var(--blur-l)); -webkit-backdrop-filter:blur(var(--blur-l)); }
+.demo-dockrow i { color:var(--mut); font-size:var(--fs-xs); font-style:normal; padding-right:4px; }
+</style>
+</head>
+<body>
+<!-- 루트 컨테이너 — 원본 게이트 계승: unlocked = 네비 표시 · reveal = 첫 등장 슬라이드업 안무 -->
+<div class="ymain unlocked reveal" id="ymain">
+
+  <!-- 데모 패널(이식 대상 아님 · 탭 전환 확인용) -->
+  <div class="demo-panel on" data-panel="char"><div><b>캐릭터 탭</b><p>하단 알약 네비를 탭해봐 — 활성 탭은 라임 글래스 필이 늘어나며 라벨이 등장한다(비활성 = 픽토그램-온리).</p></div></div>
+  <div class="demo-panel" data-panel="list"><div><b>대화 탭</b><p>같은 메뉴 구조 = 같은 모양. 활성 필 레시피(채움 16% · 테 38% · 인셋 엣지 + 은은 글로우)는 .on 클래스 하나로 전환된다.</p></div></div>
+  <div class="demo-panel" data-panel="map"><div><b>지도 탭</b><p>알약 전체는 초투명 글래스(--glass 50% + blur) — 뒤 배경이 비쳐야 정상이다.</p></div></div>
+  <div class="demo-panel" data-panel="settings"><div><b>설정 탭</b><p>--accent 토큰 하나만 그 레포 브랜드색으로 바꾸면 활성 필·글로우가 전부 따라온다.</p></div></div>
+
+  <!-- ② 챗 도크(.ydock) 시연 — 원본 마크업 verbatim(viewer/index.html L1315-1318) -->
+  <div class="demo-dockrow"><i>챗 도크 ↓</i>
+    <nav class="ydock" id="ydock" aria-label="메뉴 이동">
+      <button type="button" data-go="char" aria-label="캐릭터"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0112 0v1"/></svg></button>
+      <button type="button" class="on" aria-label="지금 대화 — 현재 화면"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 01-12 7.7L3 21l1.8-6A8.5 8.5 0 1121 11.5z"/><circle cx="8.6" cy="11.5" r=".9" fill="currentColor" stroke="none"/><circle cx="12" cy="11.5" r=".9" fill="currentColor" stroke="none"/><circle cx="15.4" cy="11.5" r=".9" fill="currentColor" stroke="none"/></svg></button>
+    </nav>
+  </div>
+
+  <!-- ① 하단 네비(.ynav) — 원본 마크업 verbatim(viewer/index.html L1285-1290) · 픽토그램 = 단일 path SVG(stroke=currentColor · 이모지/문자 도형 금지) -->
+  <nav class="ynav" id="ynav">
+    <button class="on" data-tab="char" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0112 0v1"/></svg><span>캐릭터</span></button>
+    <button data-tab="list" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 01-12 7.7L3 21l1.8-6A8.5 8.5 0 1121 11.5z"/></svg><span>대화</span></button>
+    <button data-tab="map" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg><span>지도</span></button>
+    <button data-tab="settings" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.11-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.55-1.11 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h.02a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v.02a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1z"/></svg><span>설정</span></button>
+  </nav>
+</div>
+
+<script>
+// 탭 전환 배선 — 원본 yTab(viewer/index.html L1623) 축약 계승: data-tab → 버튼 .on 토글 + 패널 전환
+function yTab(tab) {
+  document.querySelectorAll('#ynav button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
+  document.querySelectorAll('.demo-panel').forEach(p => p.classList.toggle('on', p.dataset.panel === tab));
+}
+document.getElementById('ynav').addEventListener('click', e => {
+  const b = e.target.closest('button[data-tab]'); if (b) yTab(b.dataset.tab);
+});
+</script>
+</body>
+</html>
