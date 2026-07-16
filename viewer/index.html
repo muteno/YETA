@@ -575,6 +575,9 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   .lk-pat.bad .lk-node.on { background:rgba(var(--danger-rgb),.22); box-shadow:inset 0 0 0 1px var(--danger), 0 0 16px rgba(var(--danger-rgb),.55); }
   .lk-pat.bad .lk-line { stroke:var(--danger); filter:drop-shadow(0 0 6px rgba(var(--danger-rgb),.55)); }
   .lk-node:focus:not(:focus-visible){ outline:none; }
+  .lk-reset { display:grid; place-items:center; color:var(--mut); }   /* 다시 입력(운영자 260717 "잘못 입력했을 때 돌아가게") — 8번 점 한 칸 아래·점과 동일 글래스 결 · 아이콘 = REFRESH_SVG(SSOT) */
+  .lk-reset svg { width:11px; height:11px; }
+  .lk-reset:active { transform:translate(-50%,-50%) scale(var(--press-s)); color:var(--fg-2); }
   @media (prefers-reduced-motion:reduce){ .lk-slots.shake{animation-duration:.01s} .lk-key:active{transform:none} .lk-slot.pop, .lk-key.hit, .lk-slots.ok .lk-slot{animation:none} .lk-node{transition:none} }
   /* 짧은 세로 프레임(가로모드 폰·분할창) = PIN 블록 압축 — '0'·백스페이스가 프레임 밖으로 잘려 언락 불가하던 사전존재 결함 방어(평의회3 H-1 · 임계 Hf<~550px) · lk- 베이스 뒤 선언 = 캐스케이드 승리 보장 */
   @media (max-height:560px) { .ym-pin { top:54%; } .lk-key { height:38px; font-size:18px; } .lk-slots { margin:6px 0 0; padding:9px 20px; } .lk-err { margin-top:4px; min-height:12px; } .lk-pad { margin-top:6px; max-width:216px; } .lk-pat { margin-top:8px; width:196px; height:196px; } }
@@ -4010,6 +4013,12 @@ try { const _q = new URLSearchParams(location.search); if (_q.get('yeta')) { con
   padEl.innerHTML = '<svg viewBox="0 0 300 300" aria-hidden="true"><polyline class="lk-line" points=""></polyline><line class="lk-drag" x1="0" y1="0" x2="0" y2="0" style="display:none"></line></svg><div class="lk-nodes"></div>';
   const lineEl = padEl.querySelector('.lk-line'), dragEl = padEl.querySelector('.lk-drag'), nodesWrap = padEl.querySelector('.lk-nodes'), nodeEl = {};
   PNODE.forEach(nd => { const b = document.createElement('button'); b.type = 'button'; b.className = 'lk-node'; b.dataset.n = nd.n; b.tabIndex = -1; b.setAttribute('aria-label', '패턴 점'); b.style.left = (nd.x / 3) + '%'; b.style.top = (nd.y / 3) + '%'; nodesWrap.appendChild(b); nodeEl[nd.n] = b; });
+  {   // 다시 입력 점(운영자 260717 "3번째 찍다 잘못하면 일부러 틀려야 했음") — 8번 점 한 칸 아래(그리드 리듬 y+100) · 탭 = 입력만 초기화(실패 카운트 무증가)
+    const rb = document.createElement('button'); rb.type = 'button'; rb.className = 'lk-node lk-reset'; rb.tabIndex = -1; rb.setAttribute('aria-label', '다시 입력');
+    rb.style.left = '50%'; rb.style.top = (350 / 3) + '%'; rb.innerHTML = REFRESH_SVG; nodesWrap.appendChild(rb);
+    rb.addEventListener('pointerdown', e => e.stopPropagation());   // 패드 드로잉 핸들러로 새지 않게(click 삼킴 없는 전파 차단만)
+    rb.addEventListener('pointerup', e => { e.stopPropagation(); if (unlocked || padEl.classList.contains('ok')) return; yVib(12); clearTimeout(patT); errEl.textContent = ''; patReset(); });
+  }
   const slots = [...slotsEl.children];
   const fill = () => { slots.forEach((s, i) => s.classList.toggle('on', i < val.length));
     if (val.length) accessBtn.dataset.crack = String(val.length); else accessBtn.removeAttribute('data-crack'); };   // 자물쇠 크랙 = 입력 길이 동기(백스페이스 = 복구 · 운영자 260706 해킹 서사)
