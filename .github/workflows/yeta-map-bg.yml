@@ -14,6 +14,14 @@ on:
         description: 'all | bg | char (기본 all)'
         required: false
         default: 'all'
+      only:
+        description: '배경 한 톤만: map_day | map_night (빈값 = 둘 다)'
+        required: false
+        default: ''
+      ref_night:
+        description: '1 = 밤 그림을 참조로 동봉(같은 도시의 낮 강제 — 도로·건물 1:1)'
+        required: false
+        default: ''
 
 concurrency:
   group: yeta-map-bg
@@ -39,6 +47,8 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           FORCE: ${{ inputs.force }}
+          ONLY: ${{ inputs.only }}
+          REF_NIGHT: ${{ inputs.ref_night }}
         run: python3 .github/scripts/yeta_map_bg.py
 
       - name: 미니 캐릭터 스프라이트 생성 (10인 · 그린스크린 → 투명)
