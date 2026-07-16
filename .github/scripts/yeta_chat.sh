@@ -419,6 +419,7 @@ if kind == "ok":
             _dd[turn_persona] = {"t": now + 86400000, "d": now, "mood": mood or "", "why": dead_why}
             S_ROOT["dead"] = _dd
             # ⚠️ 멤버 제거 계약(짝: functions/api/yeta.js op kick) — room 필터 + last_sp/barged 인계를 반드시 동반. 수정 시 kick도 같이(260714 사망 버그 = 이 인계 누락이 원인).
+            # 여기서 1명 남은 g방은 그대로 둬도 됨 — 게이트웨이 get 스위퍼(sweepSess·Q.06)가 다음 폴에서 1:1로 재합류(러너 중복 구현 금지 = 드리프트 차단).
             for _th2 in (S_ROOT.get("threads") or {}).values():   # 단톡 전 방 이탈("방을 이탈") — 생존자와의 대화는 계속 · 1:1(room 1명) = 방 유지(잠금은 게이트가)
                 _rm = [r for r in (_th2.get("room") or []) if r]
                 if turn_persona in _rm and len(_rm) > 1:
@@ -738,7 +739,7 @@ if accept and len(room) < 2 and to not in room:
 else:
     line = re.sub(r"\s+", " ", rest).strip()[:80]
     turns.insert(pos, {"role": "sys", "text": f"{name}{josa(name, '은', '는')} 오지 않았어" + (f" — '{line}'" if line else ""), "ts": now})
-    s["declined"] = {"id": to, "ts": now}                 # 거절 회수 떡밥 — 난입 후보 1순위(48h)
+    s["declined"] = {"id": to, "ts": now}                 # 거절 회수 떡밥 — 난입 후보 1순위(48h) · 거절로 혼자 남은 g방 = 게이트웨이 get 스위퍼(sweepSess·Q.06)가 다음 폴에서 1:1 재합류(러너 처리 불요)
     print("DECLINE")
 s["updated"] = S_ROOT["updated"] = now
 json.dump(S_ROOT, open(sys.argv[1], "w", encoding="utf-8"), ensure_ascii=False)

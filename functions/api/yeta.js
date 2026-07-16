@@ -3,12 +3,12 @@
 //   op 추가: pin {t,on} = 채팅방 고정 토글 · reset {t} = 그 방만 나가기(t 無 = 전체 초기화) · 스레드 op(send/retry/invite/kick)는 {t} 동봉(미지정 = cur).
 // ops(POST 단일 — 폴링도 POST = originOk 대칭):
 //   chars {}                       : 페르소나 로스터(apps/yeta/characters/roster.json raw · 5분 캐시)
-//   get   {}                       : 세션 반환(뷰어 폴)
+//   get   {}                       : 세션 반환(뷰어 폴) — lazy 리퍼 + 휘발·재합류 스위프(Q.06: 무음동 6일=현실 24h 지난 턴 롤링 삭제 · 1명 남은 g방은 1:1로 병합)
 //   watch {e, de}                  : 롱폴 감시(대화 속도 260714) — R2 etag 1s head 감시 · 변경 즉시 {changed}(뷰어가 get 재조회 = 픽업 ~0s) · 15s 무변경 = {none}(클라 재발사) · draft 변경 = 본문 동봉
 //   send  {text, model, effort, sc?} : 유저 턴 append(다이얼 턴별 박제 · 화이트리스트 · sc=상황 설명 턴[260714 '#' — 대화 아님·장면 설정]) → yeta-chat.yml dispatch
 //   draw  {persona, name}          : 페르소나 뽑기/재뽑기 — sess.persona 갱신(+대화 중이면 sys 턴) · room=[persona] 리셋(단톡 해산)
 //   invite {persona, name}         : 합석 초대(단톡 · 정원 MAX_ROOM) — 원본 1:1 보존, 직전 3주고받기 시드 복사해 새 단톡 스레드(g 접두)로 분기 → cur 전환 + dispatch(수락/거절 = 러너 판정)
-//   kick  {persona, name}          : 합석 내보내기/초대 철회 — room 제거·invite 취소 + 퇴장 sys(dispatch 없음)
+//   kick  {persona, name}          : 합석 내보내기/초대 철회 — room 제거·invite 취소 + 퇴장 sys(dispatch 없음) · 1명 남은 g방 = 즉시 1:1 재합류(mergeBackG · Q.06)
 //   focus {t}                      : 스레드 포커스 전환(단톡 등 페르소나 아닌 방 진입 — draw 없이 cur만 이동)
 //   warm  {}                       : 프리웜 — dispatch만(러너 선부팅 → 첫 답장 30초 목표 · 쿼터 소비 0[NOPENDING 웜대기])
 //   retry {t?, n?}                 : 자동 재시도(뷰어 260714 무배너) — 실패(state=error) pending 유저 턴 재발사(새 턴 추가 X) · n = 회차(1~2 그대로 · 3~4 러너가 뉘앙스 전환 · 5회차는 뷰어가 발사 안 함 = 이탈)
@@ -36,6 +36,7 @@ const ID_RE = /^[a-z0-9_-]{1,24}$/;
 const KEY = 'sessions/main.json';
 const MAX_ROOM = 2;                 // 합석 정원(나 제외 캐릭터 수 · 운영자 260707 "한 명 정도는") — 3 확장은 실험 축
 const INVITE_TTL = 600000;          // 초대 pending 10분 — 러너 사망 시 스테일 마커가 다음 초대를 영구 차단하지 않게
+const EXPIRE_MS = 86400000;         // 대화 휘발 TTL(운영자 260716 Q.06) — 무음동 6일 = 현실 24h(세계 시계 6배 가속: 실제 4h=하루 → 6일이 현실 하루와 정확히 맞아떨어져 7일[28h] 대신 채택)
 const josa = (s, a, b) => { const c = String(s || '').charCodeAt(String(s || '').length - 1); return c >= 0xAC00 && c <= 0xD7A3 && (c - 0xAC00) % 28 > 0 ? a : b; };   // 받침 → 을/은, 무받침 → 를/는
 const MODELS = new Set(['claude-opus-4-8', 'claude-sonnet-5']);          // §기틀 정확 ID — 집합 확장은 운영자 확인
 const EFFORTS = new Set(['', 'low', 'medium', 'high', 'max']);           // '' = --effort 생략(CLI 기본)
@@ -127,6 +128,44 @@ export async function onRequestPost({ request, env }) {
     return { sess: null, abort: { error: '세션 경합 — 잠시 후 다시' } };
   };
   const TH = (s, t) => (s.threads || {})[t];   // 스레드 접근(없으면 undefined — 신설은 draw 단일 경로 · 보안 감사①)
+  const mergeBackG = (s, tid) => {   // 단톡 재합류(운영자 260716 Q.06) — g방 인원이 1명으로 줄면(내보내기·거절·사망·초대 만료) 남은 캐릭터의 1:1 방으로 대화를 시간순 합치고 g방 소멸 = 대화창이 다시 하나로
+    const g = (s.threads || {})[tid]; if (!g) return false;
+    const room = (Array.isArray(g.room) ? g.room : []).filter(Boolean);
+    if (room.length !== 1 || room[0] === tid) return false;   // 2명 = 단톡 유지 · room[0]===tid = 1:1 방(페르소나 키) 제외 — 'g' 접두 판별 대신 구조 판별(g로 시작하는 페르소나 id 오폭 차단)
+    if (g.invite && Date.now() - (g.invite.ts || 0) < INVITE_TTL) return false;   // 초대 판정 대기 중 = 아직 분기 유지(수락되면 2명)
+    const host = room[0];
+    const tgt = s.threads[host];
+    if (!tgt) {   // 남은 캐릭터의 1:1이 없으면(1:1 리셋됨·비호스트 잔류) g방이 그대로 그 캐릭터의 1:1로 승격 — 신설 아님(멤버 = invite/draw에서 이미 로스터 검증된 id)
+      s.threads[host] = { ...g, room: [host], invite: null, barged: 0, last_sp: host };
+    } else {   // 합류 = ts 순 병합 · 분기 시드 복사분(직전 3주고받기)은 role|ts|text 키로 중복 제거
+      const seen = new Set((tgt.turns || []).map(x => `${x.role}|${x.ts}|${x.text}`));
+      const add = (g.turns || []).filter(x => x && !seen.has(`${x.role}|${x.ts}|${x.text}`));
+      tgt.turns = (tgt.turns || []).concat(add).sort((a, b) => (a.ts || 0) - (b.ts || 0));
+      if (tgt.turns.length > 200) tgt.turns = tgt.turns.slice(-200);   // 스레드 캡(보안 감사⑤)
+      if (g.state === 'awaiting' && tgt.state !== 'awaiting') { tgt.state = 'awaiting'; tgt.awaiting_since = Date.now(); }   // g방 인플라이트 답장은 스레드 소멸로 폐기 → 10분 리퍼→뷰어 자동 재시도가 1:1에서 재발사(자가 회복)
+      tgt.updated = Math.max(tgt.updated || 0, g.updated || 0);
+      tgt.pin = tgt.pin || g.pin || 0;
+      tgt.last_sp = host;
+    }
+    delete s.threads[tid];
+    if (s.cur === tid) s.cur = host;
+    return true;
+  };
+  const sweepSess = (s) => {   // 휘발+재합류 스위퍼(운영자 260716 Q.06) — get 폴 단일 깔때기: 러너발 이탈(사망·거절·초대 만료)도 다음 폴에서 합류 = 러너/게이트웨이 이중 구현 0(드리프트 차단)
+    const now = Date.now(); let ch = false;
+    for (const th of Object.values(s.threads || {})) {   // ① 휘발 — 무음동 6일(=현실 24h) 지난 턴 롤링 제거(긴 대화도 머리부터 자연 소멸)
+      const t0 = th.turns || [], keep = t0.filter(x => x && (x.ts || 0) > now - EXPIRE_MS);
+      if (keep.length !== t0.length) { th.turns = keep; ch = true; }
+    }
+    for (const tid of Object.keys(s.threads || {})) if (mergeBackG(s, tid)) ch = true;   // ② 인원 1명 남은 g방 = 1:1 재합류
+    for (const [tid, th] of Object.entries(s.threads || {})) {   // ③ 전부 휘발한 방 = 자연 소멸(핀·진행 중 제외) — reset과 달리 notes 보존 = 관계 기억은 남고 대화만 증발
+      if ((th.turns || []).length || th.pin || th.state === 'awaiting' || th.opening) continue;
+      if (th.invite && now - (th.invite.ts || 0) < INVITE_TTL) continue;
+      delete s.threads[tid]; ch = true;
+    }
+    if (s.cur && !(s.threads || {})[s.cur]) { s.cur = Object.keys(s.threads)[0] || ''; ch = true; }   // cur 고아 = 첫 방으로(없으면 리스트)
+    return ch;
+  };
   const DEAD_ON = (s, id) => { const v = (s.dead || {})[id]; return (((v && v.t) || +v || 0)) > Date.now(); };   // 사망 두절(운영자 260714) — 러너 <<DEAD: 맥락>>가 sess.dead[id]={t:만료ts, d:사망ts, mood, why} 박제(구형 숫자 흡수) · 24h 대화·초대·오프닝 차단 · 만료 = 비교 자연 통과(엔트리 = 부활 첫 답이 소비)
 
   // ── PIN 해시 + R2 오버라이드(운영자 260710 R2 재설계 · pinset 보안 BLOCK 해소) ──
@@ -136,10 +175,11 @@ export async function onRequestPost({ request, env }) {
   const pinHash = async (pin) => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`${pin}:yeta`)))].map(b => b.toString(16).padStart(2, '0')).join('');   // auth 잠금 해시 규약(sha256('<PIN>:yeta'))
   const readOv = async () => { try { const o = await env.YETA_R2.get(OVKEY); if (!o) return { ov: {}, etag: null }; let j = {}; try { const p = await o.json(); if (p && typeof p === 'object' && !Array.isArray(p)) j = p; } catch {} return { ov: j, etag: o.etag }; } catch { return { ov: {}, etag: null }; } };
 
-  if (op === 'get') {   // 폴 — lazy 리퍼(전 스레드 순회): awaiting 10분 초과 = 러너 사망 판정 → 스레드별 error 플립/오프닝 idle 강등
+  if (op === 'get') {   // 폴 — lazy 리퍼(전 스레드 순회): awaiting 10분 초과 = 러너 사망 판정 → 스레드별 error 플립/오프닝 idle 강등 + 휘발·재합류 스위프(Q.06)
     let sess = await readSess();
     const stale = Object.values(sess.threads || {}).some(th => th.state === 'awaiting' && th.awaiting_since && Date.now() - th.awaiting_since > 600000);
-    if (stale) {   // 변경 있을 때만 CAS 쓰기(폴 다발 = 무변경 put 금지 · 보안 감사④)
+    const swept = sweepSess(sess);   // 로컬 선판정(읽기 사본에 적용) — 변경 없으면 put 0 유지
+    if (stale || swept) {   // 변경 있을 때만 CAS 쓰기(폴 다발 = 무변경 put 금지 · 보안 감사④)
       const { sess: s2 } = await casPut(s => {
         for (const th of Object.values(s.threads || {})) {
           if (th.state === 'awaiting' && th.awaiting_since && Date.now() - th.awaiting_since > 600000) {
@@ -147,6 +187,7 @@ export async function onRequestPost({ request, env }) {
             else { th.state = 'error'; th.err = '응답이 오지 않았어 — 다시 보내면 재시도'; th.awaiting_since = 0; }
           }
         }
+        sweepSess(s);   // 신선 read 위에 재적용(CAS 짝)
       });
       if (s2) sess = s2;
     }
@@ -578,7 +619,9 @@ export async function onRequestPost({ request, env }) {
       if (th.invite && th.invite.to === persona) {   // 아직 판정 전 = 부르기 취소
         th.invite = null;
         th.turns.push({ role: 'sys', text: `부르기를 관뒀어`, ts: Date.now() });
-        th.updated = Date.now(); return;
+        th.updated = Date.now();
+        mergeBackG(s, t);   // 취소로 혼자 남은 g방 = 즉시 1:1 재합류(Q.06 — 응답 sess부터 대화창 하나)
+        return;
       }
       const room = Array.isArray(th.room) && th.room.length ? th.room : [t];
       if (!room.includes(persona)) return { abort: { error: '지금 방에 없는 사람이야' } };
@@ -590,6 +633,7 @@ export async function onRequestPost({ request, env }) {
       th.turns.push({ role: 'sys', text: `${name}${josa(name, '은', '는')} 다음을 기약하며 물러갔다`, ts: Date.now() });
       if (th.turns.length > 200) th.turns = th.turns.slice(-200);
       th.updated = Date.now();
+      mergeBackG(s, t);   // 이탈로 1명 남은 g방 = 즉시 1:1 재합류(Q.06 — 퇴장 sys까지 합쳐서 대화창 복원)
     });
     if (abort) return json(abort, 409);
     return json({ ok: true, sess });
