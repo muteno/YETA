@@ -1777,7 +1777,11 @@ function ymBuild(svg) {   // 정적 레이어 — 배경(낮/밤 = KST 시각 ·
     tg.appendChild(t); w.tagEl = t;
     g.addEventListener('click', () => { if (w.um) { miniToast('아직 만나지 못한 사람이야'); return; } openYeta(w.id); });   // 쪼만한 주민 탭 = 그 캐릭터와 대화(지도 → 방 직행) · 미대면 = 차단(운영자 260709)
     w.spr = g.querySelector('.wimg'); w.tag = null;
-    w.spr.addEventListener('error', () => { const cc = document.createElementNS(NS, 'circle'); cc.setAttribute('class', 'fb'); cc.setAttribute('cx', 0); cc.setAttribute('cy', -8); cc.setAttribute('r', 8); cc.setAttribute('fill', w.color); const tt = document.createElementNS(NS, 'text'); tt.setAttribute('class', 'fb'); tt.setAttribute('x', 0); tt.setAttribute('y', -5.2); tt.setAttribute('text-anchor', 'middle'); tt.textContent = w.initial; w.spr.replaceWith(cc); cc.after(tt); w.spr = cc; }, { once: true });
+    w.spr.addEventListener('error', () => {   // 스프라이트 404(신규 캐릭터 미생성 등) 폴백 = 사람 실루엣(운영자 260716 "특정 인물이 검정" — 옛 원형 폴백이 미대면 필터와 겹치면 검정 덩어리로 보임 → 형제 스프라이트와 동형인 사람 형상 + 로스터 색 유지 · 헤더 프로필 픽토그램 두상 계승)
+      const fb = document.createElementNS(NS, 'g'); fb.setAttribute('class', 'fbp wimg');
+      fb.innerHTML = `<circle cx="0" cy="-16.5" r="4.4" fill="${w.color}"/><path d="M-5.6 0c0-7.2 2.9-10.4 5.6-10.4S5.6-7.2 5.6 0Z" fill="${w.color}"/><text class="fb" x="0" y="-3.4" text-anchor="middle">${esc(w.initial)}</text>`;
+      w.spr.replaceWith(fb); w.spr = fb;
+    }, { once: true });
     wg.appendChild(g); w.el = g;
   }
   ymCarsBuild(svg);
