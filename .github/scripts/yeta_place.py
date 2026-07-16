@@ -12,6 +12,14 @@ def load_places(path="apps/yeta/places.json"):
         return {"places": {}, "routine": {}}
 
 
+def world_dh(now_ts=None):
+    """무음동 세계 (날짜열 'w<일련일>', 시각 0~23) — 6배 가속(운영자 260716 지도 싱크: 동선·지도·근처·원거리 시간축을 세계 시각으로 통일).
+    공식 짝 3점(드리프트 금지): 뷰어 window.yWorldDH · 러너 state_block wmin(yeta_chat.sh) · 여기."""
+    import time as _t
+    wt = (now_ts if now_ts is not None else _t.time()) / 60 * 6
+    return f"w{int(wt // 1440)}", int(wt % 1440 // 60)
+
+
 def slot_of(hour):
     """state_block 시간대와 동일 경계 — late(0~3)·dawn(3~7)·morning(7~11)·day(11~17)·evening(17~21)·night(21~24)."""
     if hour < 3: return "late"
