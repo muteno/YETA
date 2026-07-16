@@ -13,7 +13,6 @@
 --mut
 --bg
 --line
---line2
 
 # ── 강조 (브랜드 라임 · 코발트 형광) ──
 --accent
@@ -39,7 +38,6 @@
 --glass-0
 --glass-line-0
 --shadow-card
---bg-scrim
 
 # ── 의미색 ──
 --danger
