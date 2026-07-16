@@ -1,99 +1,127 @@
 #!/usr/bin/env python3
-# yeta_map_trace.py — 지도 도로 재실측 도구(운영자 260716 Q.08 · 평의회9 "고쳐도 그대로" 반복 절단)
-# 배경(map_day/night.png)은 생성 이미지라 재생성하면 viewer/index.html YMAP_ROADS_TONE 좌표가 전부 실효한다.
-# 이 스크립트가 재실측의 정본 경로: ① 차선 흰 점선 픽셀 블롭 검출 → ② ±0.5 아이소메트릭(2:1) 기울기 가족의
-# c값 히스토그램(도로 중심선 후보) 출력 → ③ 현행 코드 좌표를 배경 위에 렌더한 오버레이 PNG 산출(육안 QA).
-# 마지막에 YMAP_BG_SHA 토큰(check_refs 짝 게이트)용 sha1[:8]을 출력한다.
-# 사용: python3 shared/yeta_map_trace.py  → /tmp 아래 overlay_{night,day}.png 를 눈으로 보고 좌표를 맞춘 뒤 토큰 갱신.
+# yeta_map_trace.py — 지도 도로 재실측·마스크 재생성 도구 v5 (운영자 260716 "픽셀 단위로 길을 쪼개고 레이어 분리")
+# 배경(map_day/night.png)은 생성 이미지라 재생성하면 도로 좌표·픽셀 마스크가 전부 실효한다. 이 스크립트가 재실측 정본 경로.
+#
+# 산출(= 커밋 대상):
+#   viewer/assets/yeta_map/road_mask_{night,day}.png — 아스팔트 픽셀 백색 마스크(512², #ymCars SVG mask 짝).
+#   $YMT_OUT(기본 /tmp)/ymt_overlay_{tone}.png — 차선 중심선 + 차 가시밴드(초록=보임·빨강=클립) 육안 QA.
+#
+# 방법(v5 확정 · v4 점선 히스토그램 단독 방식은 창불빛 오검출로 폐기):
+#   ① 도로 좌표 SSOT = viewer/index.html YMAP_ROADS_TONE(직선 y=±0.5x+c · 수직 x=c)을 파싱(드리프트 0).
+#   ② 각 도로 회랑(중심선 ±2.5u)에서 중심선 위 국소 기준색(롤링 중앙값 · 가림 스테이션 제외)과 도로 전역 기준색을
+#      AND 게이트로 아스팔트 픽셀 분류 + 노면 흰 표시(점선·횡단보도)는 무조건 포함.
+#   ③ 건물·나무가 회랑을 덮는 픽셀 = 기각 = 마스크 구멍 → 차가 그 뒤로 숨음(z 분리 — 'h' 은폐 플래그 대체).
+#   좌표 자체가 어긋났으면: 회랑 ±2.8u 안 흰 표시 픽셀의 수직 오프셋 중앙값만큼 c를 옮겨 재시도(스냅 리포트 출력).
+# 마지막에 YMAP_BG_SHA 토큰(check_refs 짝 게이트)용 sha1[:8] 출력.
+# 의존: pip install pillow numpy scipy
 import hashlib
 import json
 import os
 import re
 import sys
-from collections import defaultdict
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.environ.get('YMT_OUT', '/tmp')
-
-
-def detect_dashes(im, night):
-    """차선 흰 점선(밝은 소형 블롭) 중심점 목록 — % 좌표. 크로스워크·간판 일부 섞임 = 히스토그램에서 걸러냄."""
-    W, H = im.size
-    px = im.load()
-    lo = 118 if night else 175            # 밤 점선은 어두운 톤 위 회백(실측 260716)
-    vis = [[False] * W for _ in range(H)]
-
-    def bright(x, y):
-        r, g, b = px[x, y][:3]
-        return min(r, g, b) > lo and max(r, g, b) - min(r, g, b) < (40 if night else 45)
-
-    blobs = []
-    for y0 in range(0, H, 2):
-        for x0 in range(0, W, 2):
-            if vis[y0][x0] or not bright(x0, y0):
-                continue
-            stack, pts = [(x0, y0)], []
-            while stack:
-                x, y = stack.pop()
-                if x < 0 or y < 0 or x >= W or y >= H or vis[y][x] or not bright(x, y):
-                    continue
-                vis[y][x] = True
-                pts.append((x, y))
-                stack += [(x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)]
-            if 15 <= len(pts) <= 1500:
-                xs = [p[0] for p in pts]; ys = [p[1] for p in pts]
-                if max(max(xs) - min(xs), max(ys) - min(ys)) <= 60:
-                    blobs.append((sum(xs) / len(xs) / W * 100, sum(ys) / len(ys) / H * 100))
-    return blobs
-
-
-def histogram(blobs):
-    """±0.5 기울기 가족별 c값 분포 — c = y ∓ 0.5x. 피크(n 큰 c) = 도로 중심선 후보."""
-    for fam, sign in [('A ↘ y=0.5x+c', -0.5), ('B ↗ y=-0.5x+c', +0.5)]:
-        h = defaultdict(list)
-        for x, y in blobs:
-            h[round(y + sign * x)].append(x)
-        print(f'-- {fam}')
-        for c in sorted(h):
-            xs = h[c]
-            if len(xs) >= 3:
-                print(f'   c={c:4d} n={len(xs):3d} x=[{min(xs):5.1f}~{max(xs):5.1f}]')
+HW = 2.5          # 회랑 반폭(u · 실측 도로 전폭 ~4.5-5u)
+CARBAND = 1.9     # 차 실렌더 밴드(차선 오프셋 1.2 + 차 반폭 0.62 + 여유)
+TUNE = {'night': dict(tol=32, gtol=52, white_lo=100, anchor_lo=112), 'day': dict(tol=36, gtol=62, white_lo=175, anchor_lo=180)}
+# white_lo = 마스크 포함용(어두운 점선까지 포섭 — 차가 노면표시 위에서 안 끊기게) · anchor_lo = c 스냅 앵커용(밝은 확실 표시만 — 보도 밝은 픽셀 오염 차단)
 
 
 def parse_roads(tone):
+    """viewer/index.html YMAP_ROADS_TONE → {이름: [[x,y,f?],...]} (좌표 SSOT — 여기서 직접 파싱 = 드리프트 0)."""
     src = open(os.path.join(ROOT, 'viewer/index.html'), encoding='utf-8').read()
     body = re.search(r'const YMAP_ROADS_TONE = \{(.*?)\n\};', src, re.S).group(1)
     tm = re.search(tone + r': \{(.*?)\n  \}', body, re.S)
-    return {n: json.loads(p.replace("'", '"')) for n, p in re.findall(r'(\w+): (\[\[.*?\]\])', tm.group(1))}
+    return {n: json.loads(p.replace("'", '"')) for n, p in re.findall(r'(\w+):\s*(\[\[.*?\]\])', tm.group(1))}
+
+
+def segments(pts):
+    """폴리라인 → (kind, c, a0, a1) 구간 목록. kind: d+(y=0.5x+c) · d-(y=-0.5x+c) · v(x=c)."""
+    out = []
+    for a, b in zip(pts, pts[1:]):
+        dx, dy = b[0] - a[0], b[1] - a[1]
+        if abs(dx) < 1e-6:
+            out.append(('v', a[0], min(a[1], b[1]), max(a[1], b[1])))
+        else:
+            m = dy / dx
+            kind = 'd+' if m > 0 else 'd-'
+            out.append((kind, a[1] - m * a[0], min(a[0], b[0]), max(a[0], b[0])))
+    return out
+
+
+def build(tone):
+    import numpy as np
+    from PIL import Image, ImageFilter
+    from scipy import ndimage as ndi
+    cfg = TUNE[tone]
+    path = os.path.join(ROOT, f'viewer/assets/yeta_map/map_{tone}.png')
+    print(f'=== {tone} · sha1[:8] = {hashlib.sha1(open(path, "rb").read()).hexdigest()[:8]} (YMAP_BG_SHA 토큰)')
+    im = np.asarray(Image.open(path).convert('RGB')).astype(np.float32)
+    H, W = im.shape[:2]; u = W / 100.0
+    med = ndi.median_filter(im, size=(5, 5, 1))
+    Y, X = np.mgrid[0:H, 0:W]; Xu, Yu = X / u, Y / u
+    sat = im.max(2) - im.min(2); mn = im.min(2)
+    white = (mn > cfg['white_lo']) & (sat < 55)
+    anchor = (mn > cfg['anchor_lo']) & (sat < 50)
+    mask = np.zeros((H, W), bool); carband = np.zeros((H, W), bool)
+    for name, pts in parse_roads(tone).items():
+        for kind, c, a0, a1 in segments(pts):
+            if kind == 'v':
+                d, nv = np.array([0., 1.]), np.array([1., 0.])
+                p0 = np.array([c, 0.]); E = Yu
+            else:
+                m = 0.5 if kind == 'd+' else -0.5
+                d = np.array([1., m]); d /= np.linalg.norm(d)
+                nv = np.array([-d[1], d[0]]); p0 = np.array([0., c]); E = Xu
+            Pd = (Xu - p0[0]) * nv[0] + (Yu - p0[1]) * nv[1]
+            stripe = (np.abs(Pd) <= HW) & (E >= a0) & (E <= a1)
+            # 흰 표시 앵커 스냅 리포트(|중앙값|>0.8u = 좌표 어긋남 경고 — viewer 좌표를 고치라는 신호)
+            wsel = anchor & (np.abs(Pd) <= 2.8) & (E >= a0) & (E <= a1)
+            if wsel.sum() >= 40:
+                off = float(np.median(Pd[wsel]))
+                if abs(off) > 0.8:
+                    print(f'   ⚠️ {name}: 흰 표시 수직 오프셋 {off:+.2f}u — viewer c를 {off * (1.118 if kind != "v" else 1):+.1f} 이동 권고')
+            ts = np.arange(a0, a1 + 1e-9, 0.5)
+            if kind == 'v':
+                sx, sy = np.full_like(ts, c), ts
+            else:
+                m = 0.5 if kind == 'd+' else -0.5
+                sx, sy = ts, m * ts + c
+            cols = np.array([med[int(np.clip(y * u, 0, H - 1)), int(np.clip(x * u, 0, W - 1))] for x, y in zip(sx, sy)])
+            gref = np.median(cols, 0)
+            good = np.max(np.abs(cols - gref), 1) < cfg['gtol']
+            ref = np.array([np.median(cols[max(0, i - 10):i + 11][good[max(0, i - 10):i + 11]], 0)
+                            if good[max(0, i - 10):i + 11].sum() >= 3 else gref for i in range(len(cols))])
+            si = np.clip(((E - a0) / 0.5).astype(int), 0, len(ts) - 1)
+            cd_l = np.maximum.reduce([np.abs(med[:, :, ch] - ref[:, ch][si]) for ch in range(3)])
+            cd_g = np.maximum.reduce([np.abs(med[:, :, ch] - gref[ch]) for ch in range(3)])
+            mask |= stripe & (((cd_l < cfg['tol']) & (cd_g < cfg['gtol'])) | (white & stripe))
+            carband |= (np.abs(Pd) <= CARBAND) & (E >= a0) & (E <= a1)
+    mask = ndi.binary_closing(mask, np.ones((9, 9)))
+    mask = ndi.binary_opening(mask, np.ones((3, 3)))
+    mp = Image.fromarray((mask * 255).astype('uint8'), 'L').resize((512, 512), Image.LANCZOS)
+    mp = mp.filter(ImageFilter.GaussianBlur(0.8))
+    out_mask = os.path.join(ROOT, f'viewer/assets/yeta_map/road_mask_{tone}.png')
+    mp.save(out_mask, optimize=True)
+    vis = carband & mask
+    print(f'   마스크 {mask.mean() * 100:.1f}% · 차 밴드 가시 {vis.sum() / max(carband.sum(), 1) * 100:.1f}% → {out_mask}')
+    ov = im.copy()
+    ov[vis] = ov[vis] * .45 + np.array([60, 255, 120]) * .55
+    clip = carband & ~mask
+    ov[clip] = ov[clip] * .45 + np.array([255, 60, 60]) * .55
+    qa = os.path.join(OUT, f'ymt_overlay_{tone}.png')
+    Image.fromarray(ov.astype('uint8')).save(qa)
+    print(f'   QA 오버레이 → {qa} (초록=차 보임 · 빨강=클립[건물·나무 가림 = 정상] — 도로 위인지 눈으로 QA)')
 
 
 def main():
     try:
-        from PIL import Image, ImageDraw
-    except ImportError:
-        print('Pillow 필요: pip install pillow'); return 1
+        import numpy, scipy, PIL  # noqa: F401
+    except ImportError as e:
+        print(f'의존 누락({e.name}): pip install pillow numpy scipy'); return 1
     for tone in ['night', 'day']:
-        path = os.path.join(ROOT, f'viewer/assets/yeta_map/map_{tone}.png')
-        im = Image.open(path).convert('RGB')
-        print(f'=== {tone} · sha1[:8] = {hashlib.sha1(open(path, "rb").read()).hexdigest()[:8]} (YMAP_BG_SHA 토큰)')
-        histogram(detect_dashes(im, tone == 'night'))
-        W, H = im.size
-        d = ImageDraw.Draw(im)
-        for i in range(0, 101, 10):
-            x = i / 100 * W
-            d.line([(x, 0), (x, H)], fill=(255, 0, 255), width=1)
-            d.line([(0, x), (W, x)], fill=(255, 0, 255), width=1)
-            for j in range(0, 101, 10):
-                d.text((i / 100 * W + 3, j / 100 * H + 2), f'{i},{j}', fill=(255, 255, 0))
-        for name, pts in parse_roads(tone).items():
-            for a, b in zip(pts, pts[1:]):
-                hid = len(a) > 2 and a[2] == 'h'
-                d.line([(a[0] / 100 * W, a[1] / 100 * H), (b[0] / 100 * W, b[1] / 100 * H)],
-                       fill=(255, 150, 0) if hid else (0, 255, 80), width=4)
-            d.text((pts[0][0] / 100 * W + 4, pts[0][1] / 100 * H), name, fill=(255, 255, 0))
-        out = os.path.join(OUT, f'overlay_{tone}.png')
-        im.save(out)
-        print(f'   오버레이 → {out} (초록=가시 · 주황=은폐 h — 도로 회랑 위인지 눈으로 QA)')
+        build(tone)
     return 0
 
 
