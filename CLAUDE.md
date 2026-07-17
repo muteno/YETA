@@ -30,6 +30,7 @@
 [5] [4]의 작업을 할 때, 사용자의 의도가 모호하고 결정을 할 수 있게 해야겠다 싶을 때는 해당 항목에 대해 갤러리형태로 변수를 조작할 수 있는 플레이그라운드(HTML)를 제공한다.
 - 제안 우선순위: ① 방식 자체를 다양하게(N안) — 하나의 요소를 잘게잘게 쪼개 나열하는 건 금지 ② 마진·간격·중앙 정렬(세로, 높이 정렬) 기준점·좌우 정렬(가로 정렬) 기준점·크기·들여쓰기·폰트 같은 큼지막한 변수 ③ 잔디테일.
 - 미리보기는 화면에 고정(sticky)한다 — 스크롤을 올렸다 내렸다 하며 확인하게 만들지 마라.
+- 플레이그라운드는 파일 다운로드로 주지 말고 **앱 라이브 경로에 머지해 URL로 제공**한다(폰에서 링크 탭 = 끝 · [11]의 라이브 확인 원칙과 동일 축 — 서빙 경로는 레포 고유 = [15]). 시안 확인·분기 결정·변수 실험에 플레이그라운드를 적극·상시 활용한다(운영자 260717 승격).
 - 기틀·팔레트에 이미 등재된 값을 만질 때는 그 사실을 표시하고, 정본에 적힌 안내(등재 절차)를 따른다.
 
 [6] 모든 완료 보고 말미 + 분기·교착·근데 신호 끝 = 💡 **한 수** 1개: 지금 가장 값진 다음 수·개선·아이디어를 제안한다.
@@ -63,7 +64,7 @@
 [14] 작업 중 아이디어나, 개선하면 품질은 유지하면서 더 좋은 방향으로 이끌 수 있는 방향이 있으면 적극적으로 제안한다.
 
 [15] 웹앱 구조 (레포 고유 — 실측. 폴더 = 역할 1줄씩, 실존 경로만)
-- `viewer/` = 웹앱 본체(PWA). `viewer/index.html`=값 SSOT(`:root` 디자인 토큰)+메인 UI · `viewer/call.js`=음성·전화 모듈 · `viewer/nm-svg.js`=아이콘 SSOT · `viewer/tokens.css`=구조토큰 거울(빌드 산출·직접수정 금지) · `viewer/sw.js`·`viewer/manifest.json`=PWA · `viewer/characters/`·`viewer/assets/`·`viewer/fonts/`.
+- `viewer/` = 웹앱 본체(PWA). `viewer/index.html`=값 SSOT(`:root` 디자인 토큰)+메인 UI · `viewer/call.js`=음성·전화 모듈 · `viewer/nm-svg.js`=아이콘 SSOT · `viewer/tokens.css`=구조토큰 거울(빌드 산출·직접수정 금지) · `viewer/sw.js`·`viewer/manifest.json`=PWA · `viewer/pg/`=플레이그라운드 서빙 경로(시안 = 라이브 URL 제공 · [5]) · `viewer/characters/`·`viewer/assets/`·`viewer/fonts/`.
 - `functions/` = 서버리스 백엔드(Cloudflare Functions). `functions/api/yeta.js`=제타 API.
 - `shared/` = 파이썬·셸 도구. `shared/check_refs.py`=커밋 전 전체 게이트 · `shared/build_design_mirror.py`=디자인 거울 빌더 · `shared/account_failover.py`·`shared/claude_meter.sh` 등.
 - `docs/` = 문서 정본. `docs/절대명령1_포터블.md` · `docs/절대명령2_정본인덱스.md`(위치 SSOT) · `docs/CII_컴포넌트계승인덱스.md`(컴포넌트) · `docs/브랜드_팔레트_확립본.html` · `docs/디자인방식론_YETA.md` · `docs/reports/`.

@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>지도 4레이어 플레이그라운드 v2 — 도로·입장 인원·랜덤 배치 (2026-07-17)</title>
+<link rel="stylesheet" href="../tokens.css">
+<style>
+/* 색 = viewer/index.html :root 실측 계승(구조토큰은 tokens.css 링크) — 플그 전용 캔버스 */
+:root { --bg:#161716; --fg:#FFFFFF; --fg-2:#E7ECE7; --mut:#8B8F8A; --accent:#CFFF40; --accent-rgb:207,255,64;
+  --think:#3EE6C9; --think-rgb:62,230,201; --danger:#FF5A5A; --cobalt:#3E7BFA; --glass-line:rgba(255,255,255,.08); --line:rgba(255,255,255,.08); }
+* { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html,body { margin:0; background:var(--bg); color:var(--fg); font:var(--fs-body, 15px)/1.55 system-ui,'Pretendard',sans-serif; }
+.wrap { max-width:1180px; margin:0 auto; padding:14px; display:flex; gap:14px; align-items:flex-start; flex-wrap:wrap; }
+h1 { font-size:var(--fs-h3, 17px); margin:2px 0 8px; }
+h1 small { color:var(--mut); font-weight:normal; font-size:var(--fs-sm, 12.5px); display:block; }
+.stage-col { position:sticky; top:10px; flex:1 1 520px; min-width:340px; z-index:2; }
+.stage { position:relative; border:1px solid var(--glass-line); border-radius:var(--r-l, 16px); overflow:hidden; background:#0a0b0a; box-shadow:var(--shadow-card, 0 24px 60px rgba(0,0,0,.42)); }
+.stage img { display:block; width:100%; height:auto; }
+.stage svg { position:absolute; inset:0; width:100%; height:100%; }
+.hud { position:absolute; left:10px; top:10px; display:flex; gap:6px; flex-wrap:wrap; max-width:55%; }
+.chip { font-size:var(--fs-xs, 11px); padding:4px 10px; border-radius:var(--r-pill, 999px); border:1px solid var(--glass-line); background:rgba(0,0,0,.35); backdrop-filter:blur(var(--blur-m, 10px)); }
+.chip.on { color:var(--accent); border-color:rgba(var(--accent-rgb),.38); background:rgba(var(--accent-rgb),.16); }
+.zlabel { position:absolute; right:10px; top:10px; font-size:var(--fs-xs, 11px); color:var(--fg-2); background:rgba(0,0,0,.5); border:1px solid var(--glass-line); border-radius:var(--r-pill, 999px); padding:4px 10px; }
+.panel-col { flex:1 1 320px; min-width:300px; display:flex; flex-direction:column; gap:12px; }
+.card { border:1px solid var(--glass-line); border-radius:var(--r-l, 16px); padding:12px 14px; background:rgba(255,255,255,.03); }
+.card h2 { margin:0 0 8px; font-size:var(--fs-label, 13px); color:var(--fg-2); letter-spacing:.02em; }
+.card h2 i { color:var(--mut); font-style:normal; font-weight:normal; }
+.row { display:flex; align-items:center; gap:10px; margin:6px 0; flex-wrap:wrap; }
+button.tg { padding:7px 14px; border-radius:var(--r-pill, 999px); border:1px solid var(--glass-line); background:rgba(255,255,255,.06); color:var(--fg); font-size:var(--fs-sm, 12.5px); cursor:pointer; transition:transform .15s, background .2s, border-color .2s; }
+button.tg:active { transform:scale(var(--press-s, .96)); }
+button.tg.on { background:rgba(var(--accent-rgb),.16); border-color:rgba(var(--accent-rgb),.38); color:var(--accent); box-shadow:inset 0 1px 0 var(--glass-line), 0 0 18px rgba(var(--accent-rgb),.14); }
+button.tg.tq.on { background:rgba(var(--think-rgb),.16); border-color:rgba(var(--think-rgb),.38); color:var(--think); box-shadow:inset 0 1px 0 var(--glass-line), 0 0 18px rgba(var(--think-rgb),.14); }
+input[type=range] { flex:1; accent-color:var(--accent); }
+.inv { display:flex; flex-direction:column; gap:2px; max-height:240px; overflow:auto; }
+.inv label { display:flex; align-items:center; gap:8px; font-size:var(--fs-sm, 12.5px); padding:5px 6px; border-radius:8px; cursor:pointer; }
+.inv label:hover { background:rgba(255,255,255,.06); }
+.inv input { accent-color:var(--accent); }
+.inv .by { margin-left:auto; color:var(--mut); font-size:var(--fs-xs, 11px); font-variant-numeric:tabular-nums; }
+.calc { font-size:var(--fs-sm, 12.5px); color:var(--fg-2); border-top:1px solid var(--line); margin-top:8px; padding-top:8px; }
+.calc b { color:var(--accent); font-size:var(--fs-h3, 17px); font-variant-numeric:tabular-nums; }
+.note { color:var(--mut); font-size:var(--fs-xs, 11px); line-height:1.6; }
+.legend { display:flex; gap:10px; flex-wrap:wrap; font-size:var(--fs-xs, 11px); color:var(--mut); }
+.legend i { font-style:normal; display:inline-flex; align-items:center; gap:4px; }
+.sw { width:10px; height:10px; border-radius:3px; display:inline-block; }
+.who { display:flex; flex-wrap:wrap; gap:4px; margin-top:6px; }
+.who .w { display:inline-flex; align-items:center; gap:5px; font-size:var(--fs-xs, 11px); padding:3px 8px; border-radius:var(--r-pill, 999px); border:1px solid var(--glass-line); background:rgba(0,0,0,.35); }
+.who .d { width:8px; height:8px; border-radius:50%; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="stage-col">
+    <h1>지도 4레이어 v2 — 도로 · 입장 인원 · 랜덤 배치 <small>도로 = 본편 v7 정본 좌표 그대로 · 인원 = 본편 규약(실내 = 이름표 스택 · 야외 = 스프라이트) 재현</small></h1>
+    <div class="stage" id="stage">
+      <img id="bg" src="../assets/yeta_map/map_night.png" alt="무음동 지도">
+      <svg id="ov" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <g id="gRoads"></g>
+        <g id="gBehind"></g>
+        <g id="gPeople"></g>
+        <g id="gWalker"></g>
+        <g id="gFront"></g>
+        <g id="gPins"></g>
+        <g id="gTags"></g>
+      </svg>
+      <div class="hud" id="hud"></div>
+      <div class="zlabel" id="zstate">워커 z 판정 대기</div>
+    </div>
+    <div class="legend" style="margin-top:8px">
+      <i><span class="sw" style="background:#fff;height:2px;border-radius:1px"></span>도로(v7 정본)</i>
+      <i><span class="sw" style="background:rgba(62,230,201,.5)"></span>L2 건물</i>
+      <i><span class="sw" style="background:#3E7BFA"></span>장소 핀</i>
+      <i><span class="sw" style="background:#ff8fb3;border-radius:50%"></span>인물(야외)</i>
+      <i><span class="sw" style="background:#CFFF40"></span>테스트 워커</i>
+    </div>
+    <div class="who" id="who"></div>
+  </div>
+
+  <div class="panel-col">
+    <div class="card">
+      <h2>① 원판 + 인물 배치 <i>— 던질 때마다 랜덤</i></h2>
+      <div class="row">
+        <button class="tg on" id="tNight">밤</button>
+        <button class="tg" id="tDay">낮</button>
+        <button class="tg tq on" id="tRoll">🎲 랜덤 재배치</button>
+      </div>
+      <p class="note">주민 12명이 장소 12곳에 무작위 입장. <b>실내</b>(찻집·편의점·학교…) = 본편 규약대로 스프라이트 없이 <b>건물 위 이름표 스택</b> · <b>야외</b>(광장·공원·시장·성당 앞) = 색 원판 스프라이트로 배회 위치.</p>
+    </div>
+
+    <div class="card">
+      <h2>② 레이어 스택 <i>— 켜고 끄며 확인</i></h2>
+      <div class="row">
+        <button class="tg on" data-layer="L1">L1 지면판</button>
+        <button class="tg on" data-layer="RD">도로</button>
+        <button class="tg tq on" data-layer="L2">L2 건물</button>
+      </div>
+      <div class="row">
+        <button class="tg on" data-layer="L3">L3 장소</button>
+        <button class="tg on" data-layer="PPL">인물</button>
+        <button class="tg on" data-layer="L4">L4 UI</button>
+      </div>
+      <p class="note">도로 = 본편 `YMAP_ROADS_TONE` v7 좌표 verbatim(밤/낮 각각 · 광장 정지선 = 라임 점). 분해 후 이 선들은 L1 지면판의 실측 뼈대가 된다.</p>
+    </div>
+
+    <div class="card">
+      <h2>③ z 데모 <i>— 테스트 워커로 건물 뒤 숨기</i></h2>
+      <div class="row"><span style="font-size:var(--fs-xs,11px);color:var(--mut);width:14px">x</span><input type="range" id="wx" min="2" max="98" value="62" step="0.5"></div>
+      <div class="row"><span style="font-size:var(--fs-xs,11px);color:var(--mut);width:14px">y</span><input type="range" id="wy" min="4" max="98" value="70" step="0.5"></div>
+      <p class="note">랜덤 배치된 야외 인물들도 같은 규칙으로 건물 뒤에 숨는다(발끝 y 정렬) — 분해의 보상.</p>
+    </div>
+
+    <div class="card">
+      <h2>④ 굽기 계산기 <i>— 포함할 건물</i></h2>
+      <div class="inv" id="inv"></div>
+      <div class="calc" id="calc"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── 정본 계승 데이터 ──────────────────────────────────────────
+// 장소 앵커·야외 존·실내 집합 = viewer/index.html 정본 그대로
+const POS = { radio:[50,14], office:[56,33], studio:[61,44], alley:[50,50], tea:[30,52], store:[50,63], dojo:[20,78], market:[35,71], gym:[11,60], park:[46,84], school:[65,75], cathedral:[65,30] };
+const POS_NM = { radio:'방송국', office:'편집국', studio:'스튜디오', alley:'광장', tea:'찻집 무음', store:'편의점', dojo:'도장', market:'시장', gym:'체육관', park:'공원', school:'학교', cathedral:'성당' };
+const ZONE = { alley:{ x:48, y:46.5, r:3 }, park:{ x:52, y:88, r:3.5 }, market:{ x:32, y:69, r:2 }, cathedral:{ x:65, y:34, r:1.8 } };
+const INDOOR = new Set(['tea','studio','office','radio','gym','dojo','school','store']);
+// 도로 = YMAP_ROADS_TONE v7 verbatim(viewer/index.html · 260717 재실측)
+const ROADS = {
+  night: { tl:[[20,5],[30,0]], tlL:[[0,22],[36,4]], nw:[[0,24],[37.5,42.75,'s']], pne:[[50,40.5],[88,21.5]], tr:[[67,1.3],[100,17.8]], seL:[[45,46.9],[100,74.4]], tea:[[14,51.9],[86,87.9]], mkt:[[11,75.6],[59.8,100]], bl:[[0,83],[34,100]], br:[[70,99.5],[100,84.5]], u1:[[0,76],[11,70.5]], V1:[[12.3,54],[12.3,100]], V2:[[17.5,0],[17.5,10]] },
+  day:   { tl:[[20,5],[30,0]], tlL:[[0,22],[36,4]], nw:[[0,24],[37.5,42.75,'s']], pne:[[50,38.6],[88,19.6]], tr:[[67,1.3],[100,17.8]], seL:[[45,47],[100,74.5]], tea:[[14,52.3],[86,88.3]], mkt:[[11,75.6],[59.8,100]], bl:[[0,83.3],[34,100.3]], br:[[70,99.5],[100,84.5]], u1:[[0,76],[11,70.5]], V1:[[12.6,54],[12.6,100]], V2:[[17.5,0],[17.5,10]] }
+};
+// 주민 12 = roster.json 정본(id·이름·이니셜·색)
+const CAST = [
+  { id:'mudi', nm:'홍석천', i:'무', c:'#7ee0a3' }, { id:'sera', nm:'세라', i:'세', c:'#ff8fb3' },
+  { id:'haeun', nm:'하서연', i:'하', c:'#ffd36b' }, { id:'baek', nm:'백', i:'백', c:'#9db2bf' },
+  { id:'ryu', nm:'류', i:'류', c:'#6bd6e8' }, { id:'yun', nm:'윤', i:'윤', c:'#b8a7ff' },
+  { id:'desk', nm:'데스크', i:'데', c:'#8fb7ff' }, { id:'kopi', nm:'카피', i:'카', c:'#ffb46b' },
+  { id:'gaeul', nm:'가을', i:'가', c:'#c9a2ff' }, { id:'von', nm:'본', i:'본', c:'#ff9d6b' },
+  { id:'lucy', nm:'루시', i:'루', c:'#C02148' }, { id:'winter', nm:'윈터', i:'윈', c:'#A9C6E8' }
+];
+// 건물 인벤토리(v1 실측 계승)
+const BLDG = [
+  { id:'radio', nm:'방송국+철탑', box:[42,3,56,19], base:19, shots:2, on:true },
+  { id:'cath', nm:'성당(파이프 보유)', box:[61,7,79,31], base:31, shots:0, on:true },
+  { id:'office', nm:'편집국(적벽돌 3층)', box:[52,20,64,40], base:40, shots:2, on:true },
+  { id:'stripNW', nm:'상가 스트립 북서(묶음)', box:[8,15,45,45], base:45, shots:2, on:true },
+  { id:'lot', nm:'공터·공사장 펜스', box:[73,29,93,46], base:46, shots:2, on:false },
+  { id:'studio', nm:'스튜디오 계단', box:[63,40,72,47], base:47, shots:2, on:true },
+  { id:'tea', nm:'찻집 무음(한옥)', box:[24,46,39,60], base:60, shots:2, on:true },
+  { id:'gym', nm:'체육관(글러브 간판)', box:[1,57,15,68], base:68, shots:2, on:true },
+  { id:'store', nm:'편의점 2M', box:[40,57,59,68], base:68, shots:2, on:true },
+  { id:'stripE', nm:'상가 스트립 동측(묶음)', box:[65,48,100,72], base:72, shots:2, on:true },
+  { id:'market', nm:'시장 천막(묶음)', box:[27,66,46,78], base:78, shots:2, on:true },
+  { id:'school', nm:'학교(시계탑)', box:[52,68,82,86], base:86, shots:2, on:true },
+  { id:'dojo', nm:'도장(한옥)', box:[14,74,33,88], base:88, shots:2, on:true },
+  { id:'play', nm:'공원 놀이기구(소품)', box:[42,84,64,97], base:97, shots:2, on:false },
+];
+// ── 상태 ──
+const L = { L1:true, RD:true, L2:true, L3:true, PPL:true, L4:true };
+let TONE = 'night';
+let CASTPOS = [];   // {ch, place, x, y}(야외만 x/y)
+const $ = s => document.querySelector(s);
+const NS = 'http://www.w3.org/2000/svg';
+function el(t, at, txt) { const e = document.createElementNS(NS, t); for (const k in at) e.setAttribute(k, at[k]); if (txt != null) { e.textContent = txt; } return e; }
+
+function roll() {   // 랜덤 배치 — 실내/야외 판정까지
+  const places = Object.keys(POS);
+  CASTPOS = CAST.map(ch => {
+    const place = places[Math.floor(Math.random() * places.length)];
+    let x = null, y = null;
+    if (!INDOOR.has(place)) { const z = ZONE[place] || { x:POS[place][0], y:POS[place][1], r:2 }; const a = Math.random() * 6.28, rr = Math.sqrt(Math.random()) * z.r; x = z.x + Math.cos(a) * rr; y = z.y + Math.sin(a) * rr * .6; }
+    return { ch, place, x, y };
+  });
+  draw();
+}
+
+function draw() {
+  const wx = +$('#wx').value, wy = +$('#wy').value;
+  ['gRoads','gBehind','gPeople','gWalker','gFront','gPins','gTags'].forEach(id => $('#' + id).innerHTML = '');
+  // 도로(v7 verbatim) — 흰 파선 + 정지선 's' 라임 점
+  if (L.RD) { const R = ROADS[TONE]; for (const k in R) {
+    const [[x0, y0], [x1, y1, f]] = R[k];
+    $('#gRoads').appendChild(el('line', { x1:x0, y1:y0, x2:x1, y2:y1, stroke:'rgba(255,255,255,.85)', 'stroke-width':'.45', 'stroke-dasharray':'1.6 1.1', 'stroke-linecap':'round' }));
+    if (f === 's') $('#gRoads').appendChild(el('circle', { cx:x1, cy:y1, r:.7, fill:'#CFFF40' }));
+  } }
+  // 건물 + z 판정(테스트 워커 + 야외 인물 공용)
+  const front = b => p => p.x != null && p.x >= b.box[0] - 1 && p.x <= b.box[2] + 1 && p.y < b.base && p.y > b.box[1];
+  let hideBy = null;
+  const outdoor = L.PPL ? CASTPOS.filter(p => p.x != null) : [];
+  if (L.L2) for (const b of BLDG) {
+    if (!b.on) continue;
+    const [x0, y0, x1, y1] = b.box;
+    const wFront = front(b)({ x:wx, y:wy });
+    if (wFront) hideBy = b.nm;
+    const g = wFront ? $('#gFront') : $('#gBehind');
+    g.appendChild(el('rect', { x:x0, y:y0, width:x1 - x0, height:y1 - y0, rx:1.2, fill:'rgba(62,230,201,' + (wFront ? '.4' : '.14') + ')', stroke:'rgba(62,230,201,.6)', 'stroke-width':'.2' }));
+    g.appendChild(el('line', { x1:x0, y1:b.base, x2:x1, y2:b.base, stroke:'#CFFF40', 'stroke-width':'.24', 'stroke-dasharray':'1 .7' }));
+  }
+  // 야외 인물(원판+이니셜) — 건물 앞뒤 판정 결과에 따라 투명도(뒤 = 흐림·본편 painter's 축약 표현)
+  if (L.PPL) for (const p of outdoor) {
+    const hidden = L.L2 && BLDG.some(b => b.on && front(b)(p));
+    const g = $('#gPeople');
+    g.appendChild(el('circle', { cx:p.x, cy:p.y - 1.1, r:1.25, fill:p.ch.c, opacity:hidden ? .28 : 1, stroke:'rgba(0,0,0,.55)', 'stroke-width':'.2' }));
+    g.appendChild(el('text', { x:p.x, y:p.y - .75, 'font-size':'1.5', 'text-anchor':'middle', fill:'#0e0f0e', opacity:hidden ? .28 : 1, 'font-weight':'700' }, p.ch.i));
+  }
+  // 테스트 워커
+  $('#gWalker').appendChild(el('circle', { cx:wx, cy:wy - 1.4, r:1.5, fill:'#fff', stroke:'rgba(0,0,0,.5)', 'stroke-width':'.25' }));
+  $('#gWalker').appendChild(el('circle', { cx:wx, cy:wy, r:.4, fill:'#CFFF40' }));
+  // 장소 핀 + 인원 배지
+  const byPlace = {};
+  CASTPOS.forEach(p => (byPlace[p.place] = byPlace[p.place] || []).push(p.ch));
+  if (L.L3) for (const k in POS) {
+    const [x, y] = POS[k], n = (byPlace[k] || []).length;
+    $('#gPins').appendChild(el('circle', { cx:x, cy:y, r:.75, fill:'#3E7BFA', stroke:'#fff', 'stroke-width':'.18' }));
+    const t = el('text', { x:x + 1.2, y:y + .5, 'font-size':'2', fill:'#E7ECE7', stroke:'rgba(0,0,0,.65)', 'stroke-width':'.35', 'paint-order':'stroke' }, POS_NM[k] + (n && L.PPL ? ' · ' + n : ''));
+    $('#gPins').appendChild(t);
+  }
+  // 실내 인원 = 건물 위 이름표 세로 스택(본편 규약: 실내 = 스프라이트 숨김·이름표만)
+  if (L.PPL) for (const k in byPlace) {
+    if (!INDOOR.has(k)) continue;
+    const [x, y] = POS[k];
+    byPlace[k].forEach((ch, i) => {
+      const ty = y - 2 - i * 2.4;
+      const wpx = ch.nm.length * 2 + 2.4;
+      $('#gTags').appendChild(el('rect', { x:x - wpx / 2, y:ty - 1.5, width:wpx, height:2.3, rx:1.15, fill:'rgba(0,0,0,.55)', stroke:'rgba(255,255,255,.25)', 'stroke-width':'.12' }));
+      $('#gTags').appendChild(el('circle', { cx:x - wpx / 2 + 1.1, cy:ty - .35, r:.55, fill:ch.c }));
+      $('#gTags').appendChild(el('text', { x:x - wpx / 2 + 2.1, y:ty + .32, 'font-size':'1.7', fill:'#fff' }, ch.nm));
+    });
+  }
+  $('#zstate').textContent = hideBy ? '워커 = ' + hideBy + ' 뒤에 숨음' : '워커 = 최전면';
+  $('#bg').style.visibility = L.L1 ? 'visible' : 'hidden';
+  $('#hud').style.display = L.L4 ? 'flex' : 'none';
+  // HUD(L4) = 세계시계 + 장소 인원 요약(본편 '근처' 결)
+  const busy = Object.entries(byPlace).sort((a, b) => b[1].length - a[1].length).slice(0, 2)
+    .map(([k, v]) => POS_NM[k] + ' ' + v.length + '명').join(' · ');
+  $('#hud').innerHTML = '<span class="chip on">' + (TONE === 'night' ? 'PM 09:12 · 밤' : 'PM 02:30 · 낮') + '</span>' + (L.PPL && busy ? '<span class="chip">' + busy + '</span>' : '');
+  // 하단 명단(장소별 누구누구 — 스테이지 밖 보조 목록)
+  $('#who').innerHTML = L.PPL ? Object.entries(byPlace).map(([k, v]) =>
+    '<span class="w"><span class="d" style="background:#3E7BFA"></span><b>' + POS_NM[k] + '</b>&nbsp;' + v.map(c => c.nm).join('·') + '</span>').join('') : '';
+  calc();
+}
+function calc() {
+  const sel = BLDG.filter(b => b.on);
+  const shots = 2 + sel.reduce((a, b) => a + b.shots, 0);
+  $('#calc').innerHTML = '선택 ' + sel.length + '동 → 총 굽기 <b>' + shots + '</b>발 <span style="color:var(--mut)">(지면판 2 + 건물 ' + (shots - 2) + ')</span>';
+}
+const inv = $('#inv');
+BLDG.forEach(b => {
+  const lb = document.createElement('label');
+  lb.innerHTML = '<input type="checkbox" ' + (b.on ? 'checked' : '') + '> ' + b.nm + '<span class="by">base y=' + b.base + (b.shots === 0 ? ' · 0발' : '') + '</span>';
+  lb.querySelector('input').addEventListener('change', e => { b.on = e.target.checked; draw(); });
+  inv.appendChild(lb);
+});
+$('#tNight').onclick = () => { TONE = 'night'; $('#bg').src = '../assets/yeta_map/map_night.png'; $('#tNight').classList.add('on'); $('#tDay').classList.remove('on'); draw(); };
+$('#tDay').onclick = () => { TONE = 'day'; $('#bg').src = '../assets/yeta_map/map_day.png'; $('#tDay').classList.add('on'); $('#tNight').classList.remove('on'); draw(); };
+$('#tRoll').onclick = roll;
+document.querySelectorAll('[data-layer]').forEach(b => b.onclick = () => { L[b.dataset.layer] = !L[b.dataset.layer]; b.classList.toggle('on'); draw(); });
+$('#wx').oninput = $('#wy').oninput = draw;
+roll();
+</script>
+</body>
+</html>
