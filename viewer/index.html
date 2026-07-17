@@ -3799,6 +3799,18 @@ function yOut(el) {   // 촤르륵 복귀 — 접혀 사라진 뒤 제거(운영
   el.addEventListener('animationend', rm, { once: true });
   setTimeout(rm, 400);   // reduced-motion(animation:none = 이벤트 미발화) 백스톱
 }
+function yReconcile(root, html) {   // 증분 렌더(운영자 260717 근본) — 통짜 innerHTML 교체 폐지: 이미 그린 말풍선은 DOM 노드 그대로 재사용, 바뀐/새 것만 갈아끼움(조합 끊김·스크롤 튐·재애니 플래시의 공통 뿌리 = 매 렌더 전체 파괴+재생성 · 제거)
+  const tmp = document.createElement('div'); tmp.innerHTML = html;
+  const N = [].slice.call(tmp.children), O = [].slice.call(root.children);   // 스냅샷 — 삽입/삭제 중 live 컬렉션 변동 차단
+  const sig = el => (el.classList.contains('in') || el.classList.contains('out'))
+    ? (() => { const c = el.cloneNode(true); c.classList.remove('in', 'out'); return c.outerHTML; })()   // 등장/퇴장 애니 클래스는 '내용'이 아님 → 비교서 제외(같은 말풍선인데 .in 유무만 달라 재사용 놓치는 오판 차단)
+    : el.outerHTML;
+  let a = 0; while (a < O.length && a < N.length && sig(O[a]) === sig(N[a])) a++;   // 공통 앞부분(대개 과거 전체) = 손 안 댐
+  let b = 0; while (b < O.length - a && b < N.length - a && sig(O[O.length - 1 - b]) === sig(N[N.length - 1 - b])) b++;   // 공통 뒷부분
+  for (let i = a; i < O.length - b; i++) root.removeChild(O[i]);   // 가운데 옛것만 제거
+  const ref = O[O.length - b] || null;   // 유지된 첫 뒷부분 노드 = 삽입 기준(없으면 끝에 append)
+  for (let i = a; i < N.length - b; i++) root.insertBefore(N[i], ref);   // 가운데 새것만 삽입 → 나머지 노드 파괴 0(스트리밍 = 마지막 버블 1개만 교체)
+}
 function yRender() {
   const _ct = (YSESS || {}).cur || '';
   if (_yCurT !== _ct) {   // 방 정체 전환 감지(Q.06 평의회5) — 단톡 재합류·휘발 소멸로 서버가 cur을 옮기면 yThreadSwitch를 안 거쳐 키드가 이전 방 기준으로 남음 → 방 경계 리셋과 동형 처리(정규 전환 뒤 중복 실행은 무해·멱등)
@@ -3893,9 +3905,9 @@ function yRender() {
   yStage(yLastMood());   // 새 답장의 공기 → 배경 배리언트 크로스페이드(키 가드 = 같으면 no-op)
   yMeter();   // 누적 토큰 갱신(새 답장 턴 tok 합산 · 운영자 260709)
   const atBottom = log.scrollHeight - log.scrollTop - log.clientHeight < 80;   // 스크롤 강탈 방지(평의회⑨)
-  if (_yComposing) { _yRenderPend = true; }   // 한글 조합 중 = 로그 통짜 교체 유예(옆 서브트리 innerHTML 리페인트가 조합 중 글자를 날리는 모바일 IME 버그 차단 · 운영자 260717) — compositionend가 밀린 렌더 반영. 폴·상태·페이스 부수효과는 위에서 이미 실행돼 답장 표시만 미뤄짐
+  if (_yComposing) { _yRenderPend = true; }   // 한글 조합 중 = 반영 유예(reconcile이 이미 조합 안전이나 이중 안전벨트 · 운영자 260717) — compositionend가 밀린 렌더 반영. 폴·상태·페이스 부수효과는 위에서 이미 실행돼 답장 표시만 미뤄짐
   else {
-    log.innerHTML = h;
+    yReconcile(log, h);   // 통짜 innerHTML 폐지 → 증분(안 바뀐 말풍선 파괴 0 · 스트리밍은 마지막 버블만 교체) = 자연스러운 채팅의 뿌리
     _yNoAnim = false;   // 스왑 무애니 = 1회성(다음 렌더부터 정상 촤르륵)
     if (atBottom) log.scrollTop = log.scrollHeight;
   }
