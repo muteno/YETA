@@ -3747,6 +3747,7 @@ let _yCurT = '';   // 마지막 렌더한 방 id — 서버발 cur 이동(단톡
 let _yKickOn = false;   // 난입 내보내기 pill 등장 래치(_yFailOn 동형 — 재렌더 재애니 방지 · 합석 260707)
 let _yPaceN = -1, _yPaceT = 0;   // 답장 페이스 — 공개 승인된 턴 수(꼬리 답장 런은 길이 비례 타이핑 모션 후 공개 · 운영자 260706 "바로 대답 어색" · 항목13)
 let _yDraft = null, _yDraftOn = false, _yNoAnim = false;   // 문장 스트리밍 부분 답장(260714 한수2) — watch가 준 draft + 표시 래치 + 스왑 무애니 1회 플래그(re-whoosh 차단 · 평의회 UX)
+let _yComposing = false, _yRenderPend = false;   // IME 조합(한글) 진행 여부 + 조합 중 밀린 렌더 플래그(운영자 260717) — 조합 중 로그 통짜 innerHTML 교체가 조합 중이던 글자를 날리는 모바일 IME 버그 차단
 let _lastUserI = -1, _meUnread = false;   // 인챗 '1' 읽음표시(항목14A) — 마지막 미읽음 내 턴 인덱스 + 미읽음 래치(_yTypHold 경과 = 읽음)
 // ── 자동 재시도(운영자 260714 "재시도로 묻지 말고 자체 재시도 · 4회 이상 안되면 그냥 대화 이탈") — 실패 배너·버튼 폐지: 실패 감지 = retry op 무알림 자동 재발사(지수 백오프) · 그동안 '입력 중'만 유지 · 4회 소진 = 지문 한 줄 조용한 이탈(배너·토스트 0 = 바이브 보존)
 const YAR_MAX = 4;   // 자동 재시도 상한 — 소진 후엔 새 메시지(새 에피소드)로만 재개(쿼터 보호)
@@ -3892,9 +3893,12 @@ function yRender() {
   yStage(yLastMood());   // 새 답장의 공기 → 배경 배리언트 크로스페이드(키 가드 = 같으면 no-op)
   yMeter();   // 누적 토큰 갱신(새 답장 턴 tok 합산 · 운영자 260709)
   const atBottom = log.scrollHeight - log.scrollTop - log.clientHeight < 80;   // 스크롤 강탈 방지(평의회⑨)
-  log.innerHTML = h;
-  _yNoAnim = false;   // 스왑 무애니 = 1회성(다음 렌더부터 정상 촤르륵)
-  if (atBottom) log.scrollTop = log.scrollHeight;
+  if (_yComposing) { _yRenderPend = true; }   // 한글 조합 중 = 로그 통짜 교체 유예(옆 서브트리 innerHTML 리페인트가 조합 중 글자를 날리는 모바일 IME 버그 차단 · 운영자 260717) — compositionend가 밀린 렌더 반영. 폴·상태·페이스 부수효과는 위에서 이미 실행돼 답장 표시만 미뤄짐
+  else {
+    log.innerHTML = h;
+    _yNoAnim = false;   // 스왑 무애니 = 1회성(다음 렌더부터 정상 촤르륵)
+    if (atBottom) log.scrollTop = log.scrollHeight;
+  }
   if (((awaiting && waitMs <= zlim) || invP) && !deadNow) yStartPoll(); else yStopPoll();   // 초대 판정도 폴로 픽업(state 비점유) · 사망 방 = 폴 정지(운영자 260714 — 두절 연출)
 }
 let _yWatchTk = null, _yEtag = '', _yDEtag = '';   // watch 롱폴 토큰 + 세션/draft etag 기준선(watch 응답만 갱신 — get 무관)
@@ -3983,6 +3987,8 @@ $('#yetaText').addEventListener('input', e => { const t = e.target; t.style.heig
   if (_yScOn) { const seg = _ySegs[_ySegs.length - 1] || { at: 0 }; const cur = t.value.slice(seg.at); if (/(다\.|[.!?…])[)"'\]]?\s*$/.test(cur) && cur.trim().length >= 2) { yScSet(false); t.value = t.value.replace(/\s*$/, '') + '\n\n'; yScMark(0); yScSync(); t.style.height = 'auto'; t.style.height = Math.min(120, t.scrollHeight) + 'px'; } }
 });
 $('#yetaText').addEventListener('focus', yWarm);   // 쓰기 시작 = 러너 선부팅(콜드 부팅 30~40s를 타이핑 시간과 겹침 — 유휴 복귀 첫 답장 단축 · 4.5분 디바운스는 yWarm 내장)
+$('#yetaText').addEventListener('compositionstart', () => { _yComposing = true; });   // 한글 조합 시작 = 로그 리페인트 유예 개시(입력 유실 차단 · 운영자 260717)
+$('#yetaText').addEventListener('compositionend', () => { _yComposing = false; if (_yRenderPend) { _yRenderPend = false; if (yetadlg.open) yRender(); } });   // 조합 완료 = 밀린 답장 즉시 반영(조합 끝났으니 innerHTML 교체 안전)
 // 🎲 재뽑기(주사위) 버튼 제거(운영자 260705 #8) · yDraw는 보존(향후 재도입 대비)
 // "새 대화"(reset) 버튼 제거(운영자 260705) — op reset 백엔드는 보존(향후 진입점 재배선 대비)
 let _yDlgClosing = false;
@@ -3998,7 +4004,7 @@ yetadlg.addEventListener('cancel', e => { e.preventDefault(); const n = Date.now
 ySwipeBind(yetadlg, () => navBack('ydlg'));   // 대화창 가로 스와이프 = 이전 메뉴(운영자 260709 "대화창일 때는 좌로 = 이전") — 방향 불문 백(챗 안 가로 인터랙션 없음 · 입력칸은 ySwipeBind가 제외)
 let _yCloseTo = null;   // 도킹 네비 목적지(닫힘 핸들러가 소비 · 기본 = 대화 목록)
 $('#ydock').addEventListener('click', e => { const b = e.target.closest('button[data-go]'); if (!b) return; _yCloseTo = b.dataset.go; navBack('ydlg'); });   // 도킹 네비 = 레이어 회수(통합 스택)
-yetadlg.addEventListener('close', () => { document.documentElement.style.overflow = ''; yetadlg.classList.remove('ydlg-in'); yStopPoll(); yPickToggle(false); yInvToggle(false); yProfPop(false); yPdClose(); yStair.resume(); _yFarOnly = false; yFarApply();   // 챗 닫힘 = 계단 재쌓기 재개(단톡 초대·프로필 팝오버·풀다운 토글도 리셋 · 260712)
+yetadlg.addEventListener('close', () => { document.documentElement.style.overflow = ''; yetadlg.classList.remove('ydlg-in'); yStopPoll(); _yComposing = false; _yRenderPend = false; yPickToggle(false); yInvToggle(false); yProfPop(false); yPdClose(); yStair.resume(); _yFarOnly = false; yFarApply();   // 챗 닫힘 = 계단 재쌓기 재개(단톡 초대·프로필 팝오버·풀다운 토글도 리셋 · 260712)
   yBgReset(); _yStageKey = ''; _yStageRoom = ''; _yStageCold = true;   // 무대 소거(운영자 260709) — 멈춘 클립 프레임이 다음 방 진입 배경에 뜨던 잔상 차단 · 재진입 = 그 방 배경 새로 페인트(캐시 = 즉시)
   if (document.getElementById('ymain').classList.contains('unlocked')) yTab(_yCloseTo || 'list');   // 뒤로 = 대화 목록 · 도킹 네비 = 그 메뉴로(운영자 260705 안2)
   _yCloseTo = null; });   // history 회수 = 통합 레이어 스택(navBack/_navPopClose)이 담당 — 챗 개별 reconciliation 폐지(260707)
