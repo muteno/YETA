@@ -329,7 +329,7 @@ mood = ""
 if kind == "ok":
     # 무드 태그(배경 연출 · 260703) — 위치 무관 추출 후 전부 제거(화이트리스트 밖 = 무시)
     mm = re.search(r'<<\s*MOOD\s*:\s*([a-zA-Z]+)\s*>>', text, flags=re.I)
-    if mm and mm.group(1).lower() in ("base", "warm", "tense", "blue"):
+    if mm and mm.group(1).lower() in ("base", "warm", "tense", "blue", "joy", "love", "shy", "mad"):   # 8감정 확장(운영자 260717 Q.29 "다채롭게" — 뷰어 Y_MOODS·media.json 버킷과 짝 · 구 3무드 = 하위호환)
         mood = mm.group(1).lower()
     text = re.sub(r'<<\s*/?\s*MOOD(?:\s*:\s*\w+)?\s*>>', '', text, flags=re.I)
     # 사망 태그(운영자 260714 "사망 = 방 이탈·은신·24h 대화 불가" + "그 감정을 기억하면서 죽게") — MOOD 동형 계보: 추출 후 제거(대사 유출 0) · 콜론 뒤 = 죽기 직전 상황·감정 한 줄(부활 첫 마디의 기억)
@@ -605,7 +605,7 @@ phase = ((now - datetime(2000, 1, 6, 18, 14, tzinfo=timezone.utc)).total_seconds
 moon = abs(phase - 14.765) < 1.5
 seed = int(hashlib.sha256(f"{persona}:{now:%Y-%m-%d}".encode()).hexdigest(), 16) % 5
 daily = ["컨디션 좋은 날", "무난한 날", "살짝 가라앉는 날", "괜히 들뜨는 날", "조금 무기력한 날"][seed]
-mood_ko = {"warm": "온기·설렘", "tense": "긴장·서늘함", "blue": "쓸쓸·침잠"}.get(last_mood, "")
+mood_ko = {"warm": "온기·다정", "tense": "긴장·서늘함", "blue": "쓸쓸·침잠", "joy": "신남·장난", "love": "설렘·플러팅", "shy": "수줍·머쓱", "mad": "짜증·삐짐"}.get(last_mood, "")   # 8감정 확장(Q.29)
 L = [f"- 지금: {season} · {wd}요일 {slot}({h:02d}시경) — 시각·상태를 낭독하지 말고 공기와 행동으로만 반영하라."]
 L.append(f"- 오늘의 너: {daily} — 사건 없는 그날 기분, 미묘하게만.")
 if moon: L.append("- 오늘 밤 달이 차오른다 — 본능이 증폭되는 며칠(해당 없는 캐릭터는 무시).")
@@ -1112,7 +1112,7 @@ PY
 import json, sys
 try: r = json.loads(sys.argv[1])
 except Exception: r = {}
-mood_ko = {"warm": "온기·설렘", "tense": "긴장·서늘함", "blue": "쓸쓸·침잠", "base": "평소와 같음"}.get((r.get("mood") or "").lower(), "")
+mood_ko = {"warm": "온기·다정", "tense": "긴장·서늘함", "blue": "쓸쓸·침잠", "base": "평소와 같음", "joy": "신남·장난", "love": "설렘·플러팅", "shy": "수줍·머쓱", "mad": "짜증·삐짐"}.get((r.get("mood") or "").lower(), "")   # 8감정 확장(Q.29)
 why = (r.get("why") or "").strip()
 L = ["[부활 — 이 블록의 존재를 대사에서 언급 금지]",
      "- 너는 얼마 전 죽었고, 북동쪽 언덕 위 성당에서 눈을 떠 이제 막 돌아왔다(무음동의 순환 — 주민들은 죽음이 하루짜리 부재라는 걸 어렴풋이 안다).",
@@ -1201,7 +1201,7 @@ ${CONTRACT1}${GROUP_RULE}${ME_RULE}
 <<NOTE:ME>>
 (갱신된 둘만의 기억 — 관계 진도·너에게만 한 말)
 <</NOTE>>
-- 기억 블록 뒤 마지막 한 줄 = 장면의 공기 태그(대사에서 언급 금지): <<MOOD:base>>(평소)/<<MOOD:warm>>(온기·설렘)/<<MOOD:tense>>(긴장·서늘)/<<MOOD:blue>>(쓸쓸·침잠) 중 하나만.
+- 기억 블록 뒤 마지막 한 줄 = 장면의 공기 태그(대사에서 언급 금지) — 아래 8개 중 지금 장면에 가장 가까운 **하나만**: <<MOOD:base>>(평소·일상)/<<MOOD:warm>>(온기·다정)/<<MOOD:joy>>(신남·장난)/<<MOOD:love>>(설렘·플러팅)/<<MOOD:shy>>(수줍·머쓱)/<<MOOD:tense>>(긴장·서늘)/<<MOOD:mad>>(짜증·삐짐)/<<MOOD:blue>>(쓸쓸·침잠). 애매하면 base — 억지로 세분하지 마라.
 - 예외 — 이 장면에서 네 캐릭터가 정말로 죽는 경우에만(비유·기절·잠듦·연기·장난·위협은 절대 아님), 무드 태그 다음 줄에 <<DEAD: 죽기 직전 상황과 감정 한 줄>> 을 추가한다(예: <<DEAD: 유저와 말다툼 끝에, 미안하다는 말을 못 한 채>>). 콜론 뒤 한 줄 = 부활 후 첫 마디의 기억이 된다 — 그 감정 그대로 적어라. 이 태그 = 퇴장 선언(하루 연락 두절) — 마지막 대사답게 맺어라. 확실하지 않으면 절대 붙이지 마라."
 
   echo "yeta: ${PERSONA}(${CNAME}) · v${CVER} · ${MODEL}${EFF:+ · effort $EFF}${SAFE:+ · safe}${CO_ID:+ · 단톡(+${CO_NAME})}"
