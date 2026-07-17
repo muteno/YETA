@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>대화 가능/불가 매트릭스 — 연락 수단 설계 확립본 (2026-07-17)</title>
+<link rel="stylesheet" href="../tokens.css">
+<style>
+/* 색 = viewer/index.html :root 실측 계승(구조토큰은 tokens.css 링크) — 설계 확립본 캔버스 */
+:root { --bg:#161716; --fg:#FFFFFF; --fg-2:#E7ECE7; --mut:#8B8F8A; --accent:#CFFF40; --accent-rgb:207,255,64;
+  --think:#3EE0C8; --think-rgb:62,224,200; --danger:#ff5b4a; --danger-rgb:255,91,74;
+  --glass-line:rgba(255,255,255,.08); --line:rgba(255,255,255,.08); }
+* { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html,body { margin:0; background:var(--bg); color:var(--fg); font:15px/1.62 system-ui,'Pretendard',sans-serif; }
+.wrap { max-width:940px; margin:0 auto; padding:16px 14px 70px; }
+h1 { font-size:19px; margin:4px 0; letter-spacing:-.01em; }
+h1 small { display:block; color:var(--mut); font-weight:normal; font-size:12.5px; margin-top:5px; line-height:1.5; }
+h2 { font-size:15px; margin:30px 0 12px; padding-bottom:7px; border-bottom:1px solid var(--glass-line); color:var(--think); letter-spacing:-.01em; }
+p.note { color:var(--fg-2); font-size:13px; margin:6px 2px 14px; }
+/* ── 픽토 바 데모 (우측 정렬 · 전화 중심) ── */
+.demo { margin:0 0 12px; }
+.bar { display:flex; justify-content:flex-end; gap:16px; align-items:center; padding:13px 16px; background:#0e0f0e; border:1px solid var(--glass-line); border-radius:14px; }
+.pk { width:34px; height:34px; display:grid; place-items:center; border-radius:50%; position:relative; color:var(--mut); transition:color .2s; }
+.pk svg { width:21px; height:21px; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
+.pk.on { color:var(--think); }                                  /* 가능 = 터콰이즈 강조 */
+.pk.dim { color:var(--mut); opacity:.38; }                       /* 불가 = 흐림 비활성 */
+.pk.slash::after { content:''; position:absolute; left:4px; right:4px; top:50%; height:2px; background:var(--danger); transform:translateY(-50%) rotate(-32deg); border-radius:2px; box-shadow:0 0 0 1.5px var(--bg); }  /* 빗금 = 배선 없음 */
+.cap { font-size:12.5px; color:var(--fg-2); margin:7px 3px 22px; }
+.cap b { color:var(--think); font-weight:600; }
+.cap .x { color:var(--danger); }
+/* ── 표 ── */
+.tw { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+table { width:100%; border-collapse:collapse; font-size:13px; margin:2px 0 10px; min-width:520px; }
+th,td { text-align:left; padding:9px 10px; border-bottom:1px solid var(--glass-line); vertical-align:top; }
+th { color:var(--think); font-weight:600; font-size:11.5px; letter-spacing:.02em; }
+tr:last-child td { border-bottom:none; }
+.no { color:var(--danger); font-weight:600; }
+.yes { color:var(--think); font-weight:600; }
+.dep { color:var(--accent); }
+.small { color:var(--mut); font-size:11.5px; }
+code { background:rgba(255,255,255,.06); padding:1px 5px; border-radius:5px; font-size:12px; color:var(--fg-2); }
+/* ── 하단 입력란 · 시스템 메아리 예시 ── */
+.inbar { display:flex; align-items:center; gap:8px; background:#0e0f0e; border:1px solid var(--glass-line); border-radius:999px; padding:10px 16px; color:var(--mut); font-size:13.5px; margin:6px 0; }
+.inbar.block { color:var(--danger); border-color:rgba(var(--danger-rgb),.38); background:rgba(var(--danger-rgb),.05); }
+.sysmsg { text-align:center; font-size:12.5px; line-height:1.75; margin:12px 0 4px; padding:12px; background:rgba(255,255,255,.03); border-radius:12px; }
+.sysmsg b { color:var(--fg-2); font-weight:600; display:block; }
+.sysmsg .why { color:var(--think); }
+.leg { display:flex; gap:18px; flex-wrap:wrap; font-size:12px; color:var(--mut); margin:4px 2px 0; }
+.leg span::before { content:'●'; margin-right:5px; }
+.leg .g1::before { color:var(--think); } .leg .g2::before { color:var(--mut); } .leg .g3::before { color:var(--danger); }
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>대화 가능 / 불가 매트릭스
+  <small>연락 수단(대면 · 문자 · 전화) 설계 확립본 · 구현 기준 문서 · 2026-07-17 KST · 운영자 확정 대기</small></h1>
+<p class="note">우측 상단 픽토 = <b style="color:var(--think)">문자 · 초대 · 대화가능 · 전화</b> 4개(전화 중심 우측정렬). 가능하면 <b style="color:var(--think)">터콰이즈</b>, 불가면 <b style="color:var(--mut)">흐림</b>, 배선 없으면 <b style="color:var(--danger)">빗금</b>.</p>
+
+<h2>① 픽토 바 — 상태별 표기</h2>
+
+<div class="demo"><div class="bar" aria-label="정상">
+  <span class="pk on" title="문자"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-4 3v-3H4z"/></svg></span>
+  <span class="pk on" title="초대"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.4-3 2.8-4.6 5.5-4.6M16 8v6M13 11h6"/></svg></span>
+  <span class="pk on" title="대화가능"><svg viewBox="0 0 24 24"><path d="M4 5h16v10H8l-4 3z"/><path d="M8.5 10h.01M12 10h.01M15.5 10h.01"/></svg></span>
+  <span class="pk on" title="전화"><svg viewBox="0 0 24 24"><path d="M6 3c1 5 4 8 9 9l-2 3c-6-1-10-5-11-11z"/></svg></span>
+</div><div class="cap"><b>정상</b> — 같은 장소 · 관계 양호 → 4개 전부 <b>터콰이즈</b>(대면 · 초대 · 문자 · 전화 다 가능)</div></div>
+
+<div class="demo"><div class="bar" aria-label="다른 장소(연락처+바피)">
+  <span class="pk on" title="문자"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-4 3v-3H4z"/></svg></span>
+  <span class="pk dim" title="초대"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.4-3 2.8-4.6 5.5-4.6M16 8v6M13 11h6"/></svg></span>
+  <span class="pk dim" title="대화가능"><svg viewBox="0 0 24 24"><path d="M4 5h16v10H8l-4 3z"/><path d="M8.5 10h.01M12 10h.01M15.5 10h.01"/></svg></span>
+  <span class="pk on" title="전화"><svg viewBox="0 0 24 24"><path d="M6 3c1 5 4 8 9 9l-2 3c-6-1-10-5-11-11z"/></svg></span>
+</div><div class="cap"><b>다른 장소 · 관계 양호 · 연락처+바피 O</b> — 대면·초대 <span class="x">흐림</span>, 문자·전화 <b>터콰이즈</b></div></div>
+
+<div class="demo"><div class="bar" aria-label="다른 장소(바피 미연결)">
+  <span class="pk on" title="문자"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-4 3v-3H4z"/></svg></span>
+  <span class="pk dim" title="초대"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.4-3 2.8-4.6 5.5-4.6M16 8v6M13 11h6"/></svg></span>
+  <span class="pk dim" title="대화가능"><svg viewBox="0 0 24 24"><path d="M4 5h16v10H8l-4 3z"/><path d="M8.5 10h.01M12 10h.01M15.5 10h.01"/></svg></span>
+  <span class="pk slash" title="전화(바피 미연결)"><svg viewBox="0 0 24 24"><path d="M6 3c1 5 4 8 9 9l-2 3c-6-1-10-5-11-11z"/></svg></span>
+</div><div class="cap"><b>다른 장소 · 바피(전화) 미연결</b> — 문자만 <b>터콰이즈</b>, 전화 <span class="x">빗금</span>(연결 안 된 상대)</div></div>
+
+<div class="demo"><div class="bar" aria-label="관계 차단">
+  <span class="pk dim" title="문자"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-4 3v-3H4z"/></svg></span>
+  <span class="pk dim" title="초대"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.4-3 2.8-4.6 5.5-4.6M16 8v6M13 11h6"/></svg></span>
+  <span class="pk dim" title="대화가능"><svg viewBox="0 0 24 24"><path d="M4 5h16v10H8l-4 3z"/><path d="M8.5 10h.01M12 10h.01M15.5 10h.01"/></svg></span>
+  <span class="pk dim" title="전화"><svg viewBox="0 0 24 24"><path d="M6 3c1 5 4 8 9 9l-2 3c-6-1-10-5-11-11z"/></svg></span>
+</div><div class="cap"><b>관계 차단</b>(서먹 · 미대면 · 사망 · 잠금) — <span class="x">4개 전부 흐림</span>(대면·비대면 원천 불가)</div></div>
+
+<div class="leg"><span class="g1">터콰이즈 = 가능</span><span class="g2">흐림 = 불가</span><span class="g3">빗금 = 배선 없음(전화 전용)</span></div>
+
+<h2>② 대화 불가 케이스 — 전체 리스트</h2>
+<div class="tw"><table>
+<tr><th>층위</th><th>상태</th><th>코드 근거</th><th>대면</th><th>문자</th><th>전화</th><th>하단 사유 표시</th></tr>
+<tr><td rowspan="4" class="small">관계<br>(전면)</td><td>아직 못 만남</td><td><code>yUnmet</code></td><td class="no">✕</td><td class="no">✕</td><td class="no">✕</td><td>(아직 만나지 못한 상대)</td></tr>
+<tr><td>잠긴 상대</td><td><code>yLockLabel</code></td><td class="no">✕</td><td class="no">✕</td><td class="no">✕</td><td>(아직 대화할 수 없는 상대)</td></tr>
+<tr><td>사망</td><td><code>yDead</code> 24h</td><td class="no">✕</td><td class="no">✕</td><td class="no">✕</td><td>(사망 — 24시간 후 돌아옴)</td></tr>
+<tr><td>서먹해짐</td><td><code>yEstranged</code> bond&lt;1.5</td><td class="no">✕</td><td class="no">✕</td><td class="no">✕</td><td>(한동안 뜸해서 서먹함)</td></tr>
+<tr><td class="small">거리<br>(대면만)</td><td>서로 다른 장소</td><td><code>yAway</code> 2h+</td><td class="no">✕</td><td class="dep">△ 조건</td><td class="dep">△ 조건</td><td>(서로 다른 장소)</td></tr>
+</table></div>
+<p class="note"><b>△ 조건</b> = 다른 장소여도 관계가 양호하면 비대면 가능 — 아래 ④ 참조.</p>
+
+<h2>③ 하단 입력란 · 마지막 대화 메아리</h2>
+<div class="inbar">메시지<span style="margin-left:auto" class="small">← 정상(활성)</span></div>
+<div class="inbar block">메세지가 불가합니다<span style="margin-left:auto" class="small">← 대면 불가 + 쓸 수단 없음(비활성)</span></div>
+<div class="sysmsg"><b>현재 상대방과 대면 대화가 불가합니다</b><span class="why">(서로 다른 장소)</span></div>
+<p class="note small">마지막 대화 말미에 시스템 메아리로 삽입 · 사유는 위 ② 표의 괄호 문구.</p>
+
+<h2>④ 수단별 가능 조건</h2>
+<div class="tw"><table>
+<tr><th>수단</th><th>가능 조건</th><th>비고</th></tr>
+<tr><td class="yes">대면</td><td>같은 장소 + 관계 양호</td><td>기본 채널(가운데 픽토)</td></tr>
+<tr><td class="yes">문자</td><td>연락처 교환함 + 친밀도 ≥ 문자임계(중)</td><td>미구현 팝업 — 이번엔 픽토 자리만(비활성)</td></tr>
+<tr><td class="yes">전화</td><td>바피 연결(예: 서연) + 친밀도 ≥ 전화임계(높음)</td><td>미연결 = 빗금 · <code>c.phone</code></td></tr>
+<tr><td class="no">공통 하한</td><td>친밀도가 페르소나 이징 이하(서먹)면 <b>비대면 전부 불가</b></td><td>경계심↑ 페르소나 = 더 빨리 닫힘 <code>yFarNeed</code></td></tr>
+</table></div>
+
+<p class="note" style="margin-top:24px">확정분: ①서먹=비대면도 차단 ②문자 팝업은 다음 단계 ③원거리 배지·전파 픽토 제거. — 이 문서대로 구현 진행.</p>
+</div>
+</body>
+</html>
