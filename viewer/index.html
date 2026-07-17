@@ -209,7 +209,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   .yb.ai.ov i.yn { color:inherit; }
   .yb .yatt { display:block; max-width:min(210px, 56vw); max-height:280px; border-radius:var(--r-s); }   /* 첨부 사진(260717 '+') — 버블 안 썸네일(기하 캡 = 토큰 없는 축) · 모서리 = --r-s 계승 */
   .yb .yatt:not([src]) { width:120px; height:120px; background:rgba(0,0,0,.18); }   /* 로딩 자리(blob 도착 전) — 레이아웃 점프 방지 */
-  .yb .yatt + i, .yb .yatt + br { margin-top:4px; }
+  .yb .yatt:not(:only-child) { margin-bottom:4px; }   /* 사진+글 동반 시 아래 간격(인라인 i/br 세로마진은 죽은 규칙이라 블록 쪽에 — 평의회 260717) */
   .yb.ai { background:var(--glass-2); border:1px solid var(--glass-line); border-top-left-radius:var(--r-s);
     backdrop-filter:blur(var(--blur-m)) saturate(1); -webkit-backdrop-filter:blur(var(--blur-m)) saturate(1); box-shadow:inset 0 1px 0 var(--glass-line); }   /* 캐릭터 버블 = 글래스(.ycall-line 계승 · 배경 비침) */
   @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))) { .yb.ai { background:var(--bubble-ai); } }   /* blur 미지원 = 불투명 폴백(--bubble-ai 배선 유지) */
@@ -3929,7 +3929,7 @@ function yRender() {
   const invP = s.invite && Date.now() - (s.invite.ts || 0) < 600000 ? yPersona(s.invite.to) : null;   // 초대 판정 대기(단톡 260707)
   const typing = yPrefOn('typing', true) && !deadNow && !gaveUp && !openingStuck && (awaiting || staged || failNow) && !!YCUR && Date.now() >= _yTypHold;   // 타이핑 표시(설정) 끄면 "입력 중" 숨김 · staged = 답장 페이스 홀드 · failNow = 자동 재시도 중에도 점 유지(실패 무노출) · _yTypHold = 읽는 시간 경과 후에만(운영자 260707)
   if (!awaiting && !staged && _yDraft) { _yDraft = null; _yDrKeep = false; }   // 확정 반영·대기 종료 = 잔여 draft 폐기(다음 턴 유령 버블 차단)
-  const dr = _yDraft && awaiting && !deadNow && !gaveUp && (_yDrKeep || Date.now() >= _yTypHold) && _yDraft.t === ((YSESS || {}).cur || '') && (_yDraft.ts || 0) >= ((s.awaiting_since || 0) - 5000) && _yDraft.text ? _yDraft : null;   // 문장 스트리밍(한수2) — 현재 방 · 이번 대기분만(스테일 가드) · 사망/이탈 연출 우선 · 읽는시간(_yTypHold) 게이트 = 타이핑과 동일 · _yDrKeep = 겹침 중 예외(260717 ⑨ — 내가 보내도 하던 말은 계속 자람)
+  const dr = _yDraft && awaiting && !deadNow && !gaveUp && (_yDrKeep || Date.now() >= _yTypHold) && _yDraft.t === ((YSESS || {}).cur || '') && (_yDrKeep || (_yDraft.ts || 0) >= ((s.awaiting_since || 0) - 5000)) && _yDraft.text ? _yDraft : null;   // 문장 스트리밍(한수2) — 현재 방 · 이번 대기분만(스테일 가드) · 사망/이탈 연출 우선 · 읽는시간(_yTypHold) 게이트 = 타이핑과 동일 · _yDrKeep = 겹침 중 예외 2종(260717 ⑨ — 홀드 게이트 + ts 가드: 내 발송이 awaiting_since를 당겨 유지 버블이 증발하던 것 봉합 · 평의회 MED)
   if (deadNow) { const _dv = ((YSESS || {}).dead || {})[YCUR && YCUR.id]; h += _dv && _dv.flee
       ? `<div class="ysit">…그 자리를 벗어났다. 지금은 연락이 닿지 않는다 — 시간이 지나면 다시.</div>`   // 위협 이탈(운영자 260714) — 콘텐츠 거절 시 인물이 상황에서 벗어남 + 일시 두절(사망과 별개 결)
       : `<div class="ysit">…사망 — 그 시각부터 24시간, 어떤 연락도 닿지 않는다.</div>`; }   // 사망 지문(운영자 260714 "사망으로 표기" · .ysit 계승) — 입력도 함께 잠김 · 24h 후 자연 해제
@@ -3989,7 +3989,10 @@ async function ySend() {
     if (parts.length && parts[parts.length - 1].sc === f) parts[parts.length - 1].x += '\n' + x; else parts.push({ x, sc: f });   // 인접 동종 구간 병합 = 턴 수 최소
   }
   if (!parts.length) parts = [{ x: text, sc: sc ? 1 : 0 }];   // 안전망 — 타임라인 유실 시 종전 단일 턴 폴백
-  if (parts.length > 1 && parts.some(p => !p.sc)) parts = [{ x: parts.map(p => p.sc ? `(${p.x.replace(/\s*\n\s*/g, ' ')})` : p.x).join('\n'), sc: 0 }];   // 대사+상황 혼합 = 한 메시지 합성(운영자 260717) — 상황 구간은 (괄호) 줄로 끼워 순서 그대로 · 발송 1회·버블 1개(yFmt이 괄호 줄을 지문 결로) · 상황만 있으면 종전 sc 턴(.ysit) 유지
+  if (parts.length > 1 && parts.some(p => !p.sc)) {   // 대사+상황 혼합 = 한 메시지 합성(운영자 260717) — 상황 구간은 (괄호) 줄로 끼워 순서 그대로 · 발송 1회·버블 1개(yFmt이 괄호 줄을 지문 결로) · 상황만 있으면 종전 sc 턴(.ysit) 유지
+    const cx = parts.map(p => p.sc ? `(${p.x.replace(/\s*\n\s*/g, ' ').replace(/[()]/g, m => m === '(' ? '〔' : '〕')})` : p.x).join('\n');   // 내부 괄호 = 〔〕 치환(평의회 260717 — 중첩 괄호가 지문 정규식 이탈하던 것)
+    if (cx.length <= 4000) parts = [{ x: cx, sc: 0 }];   // 서버 캡(4000) 초과 = 합성 포기·종전 분리 발송 폴백(무언 절단으로 괄호 깨짐 방지 — 평의회 260717)
+  }
   ta.value = ''; ta.style.height = '';
   _ySegs = [{ at: 0, sc: _yScOn ? 1 : 0 }]; _ySegPrev = '';   // 발송 = 타임라인 리셋(입력 리셋과 동형 — 라이브 모드 반영 · 평의회 260715 비대칭 정정)
   const log = $('#yetaLog');   // 낙관적 표시(확정은 폴이 대체) — 내 버블 즉시 · 타이핑은 "읽는 시간" 뒤(운영자 260707 "보내자마자 1초도 안 돼 입력 중 = 어색")
@@ -4022,6 +4025,8 @@ async function ySend() {
     let rv = ''; const rs = [];
     for (let i = sent; i < parts.length; i++) { if (rv) rv += '\n\n'; rs.push({ at: rv.length, sc: parts[i].sc }); rv += parts[i].x; }   // 복원 = 미전송 파트만 + 타임라인 재구성(전문 복원이면 커밋분이 재전송 시 중복 적재)
     ta.value = rv; _ySegs = rs.length ? rs : [{ at: 0, sc: 0 }]; _ySegPrev = rv; ta.style.height = 'auto'; ta.style.height = Math.min(120, ta.scrollHeight) + 'px';
+    yScSet(!!(rs.length && rs[rs.length - 1].sc));   // # 래치 = 복원 타임라인과 동기(합성 실패 후 모드 표시·구간 불일치 봉합 · 평의회 260717)
+    if (!sent) _yDrKeep = false;   // 전송 전체 실패 = 겹침 draft 래치 롤백(서버에 겹침 턴 없음 → mut 오염 방지 · 평의회 260717)
     log.insertAdjacentHTML('beforeend', `<div class="yb fail in">${esc(r.error || '전송 실패')}</div>`); _yFailOn = true; log.scrollTop = log.scrollHeight;
     if (sent) yStartPoll();   // 앞 파트는 커밋·dispatch 완료 — 그 답장 폴 기동(종전엔 미기동 = 답이 와도 안 보임 · 평의회 260715)
     return;
@@ -4033,7 +4038,9 @@ $('#yetaSend').addEventListener('click', ySend);
 $('#yetaText').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault();
   if (_yScOn) {   // # 모드 Enter = 전송 아님(운영자 260717 "#치고 엔터 = 바로 전송돼버림") — 상황 구간 닫고 줄바꿈 = 이어서 대사 입력(합성 메시지 계속) · 전송 = 대사 모드 Enter 또는 보내기 버튼
     const ta = e.target; if (!ta.value.trim()) return;
-    yScSet(false); ta.value = ta.value.replace(/\s*$/, '') + '\n'; yScMark(0); yScSync();
+    yScSet(false); ta.value = ta.value.replace(/\s*$/, '') + '\n';
+    while (_ySegs.length > 1 && _ySegs[_ySegs.length - 1].at > ta.value.length - 1) _ySegs.pop();   // 빈 상황 구간 = strip이 마크 앞까지 잘라 세그 역순화 → 꼬리 스테일 마크 회수(중복 발송 봉합 · 평의회 260717 MED)
+    yScMark(0); yScSync();
     ta.style.height = 'auto'; ta.style.height = Math.min(120, ta.scrollHeight) + 'px';
     return;
   }
@@ -4112,6 +4119,7 @@ try { const _q = new URLSearchParams(location.search); if (_q.get('yeta')) { con
         if (!first) {   // 첫 틱 = 서명 씨앗만(렌더는 각 진입 경로가 이미 함)
           yCharRender(); yListRender();   // 내부 sig 가드가 중복 도장 흡수
           if (YCUR && YCUR.mode && !document.getElementById('yetaAva2')) yAvaSet($('#yetaAva'), YCUR);   // 챗 헤더(단톡 스택 중엔 방 이벤트가 재도장)
+          if (yetadlg.open && YCUR && YCUR.mode && _yView === 'chat') yStage(yLastMood());   // 배경도 같은 경계에 재스테이지(평의회 260717 bg-mode MED — 프사만 바뀌고 배경 잔류하던 desync 봉합 · ekey 모드 포함 = 중복 호출 키 가드 흡수)
           const pf = document.getElementById('ycprofile'); if (pf && pf.classList.contains('on') && typeof yProfileRender === 'function') yProfileRender();   // 열린 프로필의 히어로 디스크
         }
       }

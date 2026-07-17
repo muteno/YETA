@@ -709,10 +709,14 @@ export async function onRequestPost({ request, env }) {
     let amodel = String(body.model || ''); let aeffort = String(body.effort ?? 'low');
     if (!MODELS.has(amodel)) amodel = 'claude-opus-4-8';
     if (!EFFORTS.has(aeffort)) aeffort = 'low';
-    const at = String(body.t || (await readSess()).cur || '');
+    const preS = await readSess();
+    const at = String(body.t || preS.cur || '');
     if (!ID_RE.test(at)) return json({ error: '먼저 대화방을 열어줘' }, 409);
+    if (!TH(preS, at)) return json({ error: '없는 대화방이야 — 캐릭터 탭에서 열어줘' }, 409);   // ⚠️ R2 put '이전' 방 실존 선검증(평의회 260717 HIGH — 가짜 방 id 반복 = 상한 우회 무한 고아 객체 적재 DoS 차단 · 최종 판정은 아래 casPut이 재확인)
+    if (DEAD_ON(preS, at)) return json({ error: '…지금은 연락이 닿지 않아. 하루쯤 뒤에 다시 걸어봐' }, 409);
+    await env.YETA_R2.put(aqkey, JSON.stringify({ n: aused + 1 }), { httpMetadata: { contentType: 'application/json' } });   // 상한 = 시도 즉시 소비(pinset 결 — put까지 간 시도는 실패해도 카운트 = 저장 축 남용 하드캡)
     const akey = `att/${at}/${Date.now().toString(36)}.jpg`;
-    await env.YETA_R2.put(akey, bin.buffer, { httpMetadata: { contentType: 'image/jpeg' } });   // 이미지 선저장 → 턴 적재(러너가 턴을 집는 순간 실물 보장 · CAS abort 시 고아 객체 = 무해·소량)
+    await env.YETA_R2.put(akey, bin.buffer, { httpMetadata: { contentType: 'image/jpeg' } });   // 이미지 저장 → 턴 적재(러너가 턴을 집는 순간 실물 보장 · CAS abort 시 고아 객체 = 상한 안에서 유계)
     const { abort } = await casPut(s => {
       const th = TH(s, at); if (!th) return { abort: { error: '없는 대화방이야 — 캐릭터 탭에서 열어줘' } };
       if (DEAD_ON(s, at)) return { abort: { error: '…지금은 연락이 닿지 않아. 하루쯤 뒤에 다시 걸어봐' } };
@@ -723,7 +727,6 @@ export async function onRequestPost({ request, env }) {
       s.cur = at; s.pref = { model: amodel, effort: aeffort };
     });
     if (abort) return json(abort, 409);
-    await env.YETA_R2.put(aqkey, JSON.stringify({ n: aused + 1 }), { httpMetadata: { contentType: 'application/json' } });
     const ast = await dispatch(env);
     if (ast === 204) return json({ ok: true, key: akey, remain: acap > 0 ? acap - aused - 1 : -1 });
     await casPut(s => { const th = TH(s, at); if (th) { th.state = 'error'; th.err = `발사 실패(GitHub ${ast}) — 다시 보내면 재시도`; th.awaiting_since = 0; } });

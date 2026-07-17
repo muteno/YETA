@@ -825,6 +825,12 @@ def main():
     except Exception as e:
         print('⚠️ 디자인 거울 check 스킵:', e)
     try:
+        import subprocess as _sp, sys as _sy   # 시즌 미디어 정합(하드 게이트 · 평의회 260717): media.json = 폴더 실측 — 사진 추가/삭제 후 재생성 누락 = 죽은 경로 로테이션(검은 무대) 차단 · 처방 = python3 shared/build_season_media.py
+        if _sp.run([_sy.executable, os.path.join(ROOT, 'shared', 'build_season_media.py'), '--check']).returncode != 0:
+            rc = 1
+    except Exception as e:
+        print('⚠️ 시즌 미디어 check 스킵:', e)
+    try:
         if check_design() != 0:   # accent_raw 차단(rc=1·운영자 ③b STAGE1) · hex/blur/죽은토큰은 내부 WARN
             rc = 1
     except Exception as e:
