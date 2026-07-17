@@ -3802,14 +3802,14 @@ function yOut(el) {   // 촤르륵 복귀 — 접혀 사라진 뒤 제거(운영
 function yReconcile(root, html) {   // 증분 렌더(운영자 260717 근본) — 통짜 innerHTML 교체 폐지: 이미 그린 말풍선은 DOM 노드 그대로 재사용, 바뀐/새 것만 갈아끼움(조합 끊김·스크롤 튐·재애니 플래시의 공통 뿌리 = 매 렌더 전체 파괴+재생성 · 제거)
   const tmp = document.createElement('div'); tmp.innerHTML = html;
   const N = [].slice.call(tmp.children), O = [].slice.call(root.children);   // 스냅샷 — 삽입/삭제 중 live 컬렉션 변동 차단
-  const sig = el => (el.classList.contains('in') || el.classList.contains('out'))
-    ? (() => { const c = el.cloneNode(true); c.classList.remove('in', 'out'); return c.outerHTML; })()   // 등장/퇴장 애니 클래스는 '내용'이 아님 → 비교서 제외(같은 말풍선인데 .in 유무만 달라 재사용 놓치는 오판 차단)
-    : el.outerHTML;
+  const sig = el => el.classList.contains('in')
+    ? (() => { const c = el.cloneNode(true); c.classList.remove('in'); return c.outerHTML; })()   // .in(등장)만 비교서 제외 = 같은 말풍선인데 .in 유무만 달라 재사용 놓치는 오판 차단
+    : el.outerHTML;   // .out(퇴장 중 yOut 노드)은 안 벗김 → h(.out 미발행)와 항상 불일치=즉시 제거(평의회 애니 F6: .out 벗기면 죽어가는 노드가 산 노드로 오인돼 전송실패 시 플리커)
   let a = 0; while (a < O.length && a < N.length && sig(O[a]) === sig(N[a])) a++;   // 공통 앞부분(대개 과거 전체) = 손 안 댐
   let b = 0; while (b < O.length - a && b < N.length - a && sig(O[O.length - 1 - b]) === sig(N[N.length - 1 - b])) b++;   // 공통 뒷부분
   for (let i = a; i < O.length - b; i++) root.removeChild(O[i]);   // 가운데 옛것만 제거
   const ref = O[O.length - b] || null;   // 유지된 첫 뒷부분 노드 = 삽입 기준(없으면 끝에 append)
-  for (let i = a; i < N.length - b; i++) root.insertBefore(N[i], ref);   // 가운데 새것만 삽입 → 나머지 노드 파괴 0(스트리밍 = 마지막 버블 1개만 교체)
+  for (let i = a; i < N.length - b; i++) { const nd = N[i]; root.insertBefore(nd, ref); if (nd.classList.contains('in')) { const clr = () => nd.classList.remove('in'); nd.addEventListener('animationend', clr, { once: true }); setTimeout(clr, 400); } }   // 가운데 새것만 삽입(나머지 파괴 0 · 스트리밍=마지막 버블만 교체) · 등장 애니 1회 후 .in 제거 = 통짜 방식의 자동 자기정리 재현(축적 시 매 틱 sig cloneNode 낭비 · 평의회 perf F3) · reduced-motion 백스톱 400ms
 }
 function yRender() {
   const _ct = (YSESS || {}).cur || '';
@@ -3952,7 +3952,7 @@ async function ySend() {
     if (parts.length && parts[parts.length - 1].sc === f) parts[parts.length - 1].x += '\n' + x; else parts.push({ x, sc: f });   // 인접 동종 구간 병합 = 턴 수 최소
   }
   if (!parts.length) parts = [{ x: text, sc: sc ? 1 : 0 }];   // 안전망 — 타임라인 유실 시 종전 단일 턴 폴백
-  ta.value = ''; ta.style.height = '';
+  ta.value = ''; ta.style.height = ''; _yComposing = false; _yRenderPend = false;   // 입력 비움 = IME 조합 리셋(버튼탭 blur가 compositionend 없이 _yComposing 갇히는 경로 차단 · 평의회 IME F1)
   _ySegs = [{ at: 0, sc: _yScOn ? 1 : 0 }]; _ySegPrev = '';   // 발송 = 타임라인 리셋(입력 리셋과 동형 — 라이브 모드 반영 · 평의회 260715 비대칭 정정)
   const log = $('#yetaLog');   // 낙관적 표시(확정은 폴이 대체) — 내 버블 즉시 · 타이핑은 "읽는 시간" 뒤(운영자 260707 "보내자마자 1초도 안 돼 입력 중 = 어색")
   const li = parts.reduce((k, p, i) => p.sc ? k : i, -1);   // 마지막 대사 파트 = '1' 단독 부착 대상(평의회 260715 — 파트마다 붙이면 '1' 이중 + 엉뚱한 소멸)
@@ -4000,7 +4000,8 @@ $('#yetaText').addEventListener('input', e => { const t = e.target; t.style.heig
 });
 $('#yetaText').addEventListener('focus', yWarm);   // 쓰기 시작 = 러너 선부팅(콜드 부팅 30~40s를 타이핑 시간과 겹침 — 유휴 복귀 첫 답장 단축 · 4.5분 디바운스는 yWarm 내장)
 $('#yetaText').addEventListener('compositionstart', () => { _yComposing = true; });   // 한글 조합 시작 = 로그 리페인트 유예 개시(입력 유실 차단 · 운영자 260717)
-$('#yetaText').addEventListener('compositionend', () => { _yComposing = false; if (_yRenderPend) { _yRenderPend = false; if (yetadlg.open) yRender(); } });   // 조합 완료 = 밀린 답장 즉시 반영(조합 끝났으니 innerHTML 교체 안전)
+$('#yetaText').addEventListener('compositionend', () => { _yComposing = false; if (_yRenderPend) { _yRenderPend = false; if (yetadlg.open) yRender(); } });   // 조합 완료 = 밀린 답장 즉시 반영(조합 끝났으니 교체 안전)
+$('#yetaText').addEventListener('blur', () => { _yComposing = false; if (_yRenderPend) { _yRenderPend = false; if (yetadlg.open) yRender(); } });   // compositionend 누락(안드로이드 IME quirk) 백스톱 — blur 시엔 조합 없으니 항상 안전 · 갇힌 _yComposing로 답장 동결되던 경로 차단(평의회 IME F1)
 // 🎲 재뽑기(주사위) 버튼 제거(운영자 260705 #8) · yDraw는 보존(향후 재도입 대비)
 // "새 대화"(reset) 버튼 제거(운영자 260705) — op reset 백엔드는 보존(향후 진입점 재배선 대비)
 let _yDlgClosing = false;
