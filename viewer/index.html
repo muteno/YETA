@@ -704,8 +704,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
     align-items:center; padding:0 4px; color:var(--fg-2); font-size:var(--fs-sm); font-weight:var(--fw-b); font-variant-numeric:tabular-nums; letter-spacing:.02em; white-space:nowrap;
     text-shadow:0 1px 3px rgba(0,0,0,.85), 0 0 9px rgba(0,0,0,.55); transition:color .6s var(--ease), opacity .6s var(--ease); pointer-events:none; }   /* 무음동 시각 = 프로필 좌측 · 배경 위 판독 헤일로(토큰 없는 축) */
   .ymain.unlocked .yworldclock:not([hidden]) { display:flex; }
-  .yworldclock { flex-direction:column; justify-content:center; align-items:flex-end; }   /* 2단(세계시각 위 · 현실시간 아래) — 우측 프로필 기준 우정렬(운영자 260717 "현실시간인지 착각") */
-  .yworldclock .ywc-real { font-size:var(--fs-xs); font-weight:normal; color:var(--mut); letter-spacing:0; line-height:1.15; }   /* 현실 시간 병기 = 뮤트(세계시각과 위계 분리) */
+  .yworldclock { flex-direction:column; justify-content:center; align-items:flex-end; }   /* 단일 행(현실 KST 풀포맷 · 운영자 260717 Q.26 — 현실병기 2단 폐지) · 우측 프로필 기준 우정렬 유지 */
   .yworldclock.night { color:var(--think); opacity:.82; }   /* 밤 = 터콰이즈 디밍(낮/밤 결 구분) — 서브(뮤트)는 자기 색 유지 */
   .yprof:active { transform:scale(var(--press-s)); }
   .yprof svg { width:17px; height:17px; }   /* 픽토 = has-img 아닐 때만 보이는 폴백 */
@@ -1170,7 +1169,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   /* ═══ 대화 목록 재구성(운영자 260706): 상단 NAV 헤어라인 · 시즌 라인 · 스와이프 나가기 ═══ */
   /* 시즌 subnav(운영자 260707 플그 선택값 + 보정 5) — NAV(로고·프로필) 바로 아래 이어지는 크롬 구역("거기 두 개까지는 내용이 아님") · div 구역화 + 테마 오버레이 아주 살짝 · px 수치 = 플그 승인값 */
   /* 탭 공용 시즌 헤더(운영자 260707) — 로고·네비·배경처럼 상주 · char/list 전환에 안 깜빡(스크롤 밖 고정 · 재렌더 내용 동일 = 무애니) */
-  .yssn-fixed { display:none; position:absolute; top:calc(78px + env(safe-area-inset-top)); left:var(--sp-2); right:var(--sp-2); z-index:3; pointer-events:none; }   /* 64→78 = 타이틀 네비(로고)↔시즌 헤더 간격 확대(운영자 260709 첨부1 "간격 더 벌려") */
+  .yssn-fixed { display:none; position:absolute; top:calc(78px + env(safe-area-inset-top)); left:calc(var(--sp-2) * 2); right:var(--sp-2); z-index:3; pointer-events:none; }   /* 64→78 = 타이틀 네비(로고)↔시즌 헤더 간격 확대(운영자 260709 첨부1) · left = 로고(#ywm)와 동일식 24px(운영자 260717 Q.26 "YETA 로고 시작 세로선에 열정렬" — 로고 y 레터 잉크 여백 0px 실측 = 좌단 24px 정확) */
   /* 타이틀 네비 그라데이션(운영자 260709 "네비라인쪽 그라데이션 — 아래로 투명하게") — 로고·시즌 라인 가독 스크림 · 배경 위(z:1)·콘텐츠(z:2) 아래 · 값 튜닝 = docs/reports/260709_네비라인_그라데이션_플레이그라운드.html */
   #ytopfade { display:none; position:absolute; top:0; left:0; right:0; height:calc(216px + env(safe-area-inset-top)); z-index:1; pointer-events:none;
     background:linear-gradient(to bottom, rgba(0,0,0,.66), rgba(0,0,0,.30) 52%, transparent); }
@@ -1179,7 +1178,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   .ymain.unlocked.tab-char .yssn-fixed, .ymain.unlocked.tab-list .yssn-fixed { display:block; }   /* char/list만 · map(자체 헤더)·settings 제외 */
   /* char/list 패널 상단 = 공용 시즌 헤더 높이만큼 밀어 콘텐츠 시작(--ssn-h = JS 실측·폴백 86px) — 헤더는 고정, 콘텐츠만 스크롤·전환 */
   .ymain.tab-char .ychar, .ymain.tab-list .ylist { padding-top:calc(78px + env(safe-area-inset-top) + var(--ssn-h, 86px)); }   /* 64→78 = 헤더 하강분 동기(운영자 260709 간격 확대) */
-  .yssn { display:block; padding:0 2px; margin-bottom:var(--sp-3); animation:ypickIn .42s cubic-bezier(.22,.61,.36,1) both; }   /* 시즌 = 박스 폐지(운영자 260709 "대화창처럼 둥그렇게 넣지 마 — 아예 네비 라인") · 글래스 배경·테두리·라운드 제거 = 타이틀 네비 연장선 · 가독 = #ytopfade 그라데이션 담당 */
+  .yssn { display:block; padding:0 2px 0 0; margin-bottom:var(--sp-3); animation:ypickIn .42s cubic-bezier(.22,.61,.36,1) both; }   /* 시즌 = 박스 폐지(운영자 260709 "둥그렇게 넣지 마") · 가독 = #ytopfade 담당 · 좌패딩 0 = SEASON 배지·태그라인 좌단이 로고 세로 기준선(24px)에 픽셀 정렬(운영자 260717 Q.26) */
   .yssn:empty { display:none; }   /* YWORLD 미로드 = 빈 박스 숨김(로드 전 플래시 포함 · 운영자 260707) */
   .yssn-hd { display:flex; align-items:center; gap:14px; }   /* 배지↔제목 간격 충분(운영자 ②) */
   .yssn-tag, .yssn-nm, .yssn-date { line-height:1; }   /* 수직 중앙 통일(운영자 260709 "중앙 높이 정렬 + 날짜 높이 이어줘") — 폰트별(레몬밀크 이탤릭·한글·숫자) 라인박스 편차 제거 = flex center 광학 일치 */
@@ -1289,7 +1288,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
     </div>
   </div>
   <div class="ywm" id="ywm" role="img" aria-label="YETA"></div>   <!-- 좌상단 상시 로고(운영자 260705 확정 조합 · 겹층 JS 조립 · 언락 후 표시) -->
-  <div class="yworldclock" id="yworldclock" hidden aria-label="무음동 시각"><span id="ywcMain">09:00 AM</span><span class="ywc-real" id="ywcReal"></span></div>   <!-- 무음동 세계 시각(운영자 260715) + 현실 시간 뮤트 병기(운영자 260717 "현실시간인지 착각하기 쉬움" — 날짜 없음·시각 2단) -->
+  <div class="yworldclock" id="yworldclock" hidden aria-label="현재 시각(KST)"><span id="ywcMain">2026. 1. 1. 00:00 AM KST</span></div>   <!-- 상단 시계 = 현실 KST 단일 풀포맷(운영자 260717 Q.26 "2026. 7. 17. 00:00 AM/PM KST" — 구 세계시각+현실병기 2단 폐지 · 세계시각 표시는 지도 탭 ymapClock 존치) -->
   <button class="yprof has-img" id="yprof" type="button" aria-label="내 프로필"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0112 0v1"/></svg></button>   <!-- 우상단 개인 프로필 = 기본 캐릭터 얼굴(has-img 기본 · 커스텀 이미지 주입 축 후속) -->
   <nav class="ynav" id="ynav">   <!-- 메뉴(운영자 260706 재편): 1=캐릭터 · 2=대화(목록 — 대화 탭이 곧 진입점, 행 눌러 챗) · 3=설정. 옛 '지금' 탭 폐지 = 챗은 메뉴2 대화 목록으로 편입(진입 = 대화 행 탭) · lockdot 폐지(네비 = 언락 후에만 표시) -->
     <button class="on" data-tab="char" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0112 0v1"/></svg><span>캐릭터</span></button>
@@ -4105,13 +4104,13 @@ try { const _q = new URLSearchParams(location.search); if (_q.get('yeta')) { con
   window.yWorldDH = () => { const wt = Date.now() / 60000 * YWORLD_RATE; return { d: 'w' + Math.floor(wt / 1440), h: Math.floor(wt % 1440 / 60) }; };   // 무음동 (날짜열, 시각) — 동선·지도 시간축 SSOT(운영자 260716 지도 싱크: 지도·동선·근처·원거리 전부 세계 시각으로 통일 · 러너 yeta_place.world_dh와 동일 공식 = 드리프트 금지)
   window.yWorldClock = () => { const m = yWorldMin(), h = (m / 60) | 0, mm = m % 60, ap = h < 12 ? 'AM' : 'PM'; let hh = h % 12; if (!hh) hh = 12; return { h, txt: String(hh).padStart(2, '0') + ':' + String(mm).padStart(2, '0') + ' ' + ap, night: h < 6 || h >= 20 }; };
   let _yWorldT = null, _yModeSig = null;
-  function yWorldTick() {   // 세계시각(메인) + 현실 시간 뮤트 병기(운영자 260717 — KST 명시 포맷 = naive Date 표기 금지 규약[12])
+  function yWorldTick() {   // 상단 시계 = 현실 KST 단일 풀포맷(운영자 260717 Q.26 "2026. 7. 17. 00:00 AM/PM KST · 아래 실제 시간 삭제" — 구 세계시각+현실병기 2단 폐지) · KST 고정 = naive Date 표기 금지 규약[12] · 세계시각(yWorldClock)은 지도·모드 게이트 소비 존치
     const el = document.getElementById('yworldclock'); if (!el) return;
-    const w = yWorldClock();
-    const m = document.getElementById('ywcMain'); if (m) m.textContent = w.txt; else el.textContent = w.txt;
-    const r = document.getElementById('ywcReal');
-    if (r) r.textContent = '(현실 시간: ' + new Date().toLocaleTimeString('ko-KR', { timeZone: 'Asia/Seoul', hour12: false, hour: '2-digit', minute: '2-digit' }) + ')';
-    el.hidden = false; el.classList.toggle('night', w.night);
+    const k = new Date(Date.now() + 9 * 3600e3);
+    const kh = k.getUTCHours(), ap = kh < 12 ? 'AM' : 'PM'; let hh = kh % 12; if (!hh) hh = 12;
+    const txt = `${k.getUTCFullYear()}. ${k.getUTCMonth() + 1}. ${k.getUTCDate()}. ${String(hh).padStart(2, '0')}:${String(k.getUTCMinutes()).padStart(2, '0')} ${ap} KST`;
+    const m = document.getElementById('ywcMain'); if (m) m.textContent = txt; else el.textContent = txt;
+    el.hidden = false; el.classList.toggle('night', kh < 6 || kh >= 20);   // 밤 터콰이즈 = 표시 시각(현실 KST)과 동기
     try {   // 변신 경계 동기(운영자 260717 Q.17 "정각 자동 전환") — 모드 on/off 서명이 바뀐 틱에만 열린 화면의 프사·배지 재도장(8s 틱 = 경계 지연 ≤8s · 평시 no-op)
       const sig = (YCHARS || []).filter(c => c.mode && c.mode.nm).map(c => c.id + (yModeOn(c) ? '+' : '-')).join('|');
       if (_yModeSig !== sig) {
