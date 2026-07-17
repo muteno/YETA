@@ -71,8 +71,8 @@ a:hover { text-decoration:underline; }
 <h2 id="q2"><span class="no">②</span> 이미지 폴더 실제 경로 URL <span class="st ans">답변</span></h2>
 <div class="card tblx"><table>
 <tr><th>용도</th><th>GitHub 경로(정본)</th><th>실측</th></tr>
-<tr><td>루시 · 안드로이드 배경</td><td><a href="https://github.com/muteno/yeta/tree/main/viewer/characters/season/lucy/android">viewer/characters/season/lucy/android/</a></td><td>47장 · 혼입 0</td></tr>
-<tr><td>루시 · 도깨비 배경</td><td><a href="https://github.com/muteno/yeta/tree/main/viewer/characters/season/lucy/dokkaebi">viewer/characters/season/lucy/dokkaebi/</a></td><td>29장 · 혼입 0</td></tr>
+<tr><td>루시 · 안드로이드 배경</td><td><a href="https://github.com/muteno/yeta/tree/main/viewer/characters/season/lucy/android">viewer/characters/season/lucy/android/</a></td><td>42장 · 혼입 0 (#323 5장 이동 반영)</td></tr>
+<tr><td>루시 · 도깨비 배경</td><td><a href="https://github.com/muteno/yeta/tree/main/viewer/characters/season/lucy/dokkaebi">viewer/characters/season/lucy/dokkaebi/</a></td><td>34장 · 혼입 0 (#323 5장 이동 반영)</td></tr>
 <tr><td>루시 · 루트(프사·클립·manifest)</td><td><a href="https://github.com/muteno/yeta/tree/main/viewer/characters/season/lucy">viewer/characters/season/lucy/</a></td><td>클립 2 · 얼굴 2 · media.json</td></tr>
 <tr><td>윈터(IDOL) 이미지</td><td><a href="https://github.com/muteno/yeta/tree/main/viewer/characters/idol/winter">viewer/characters/idol/winter/</a></td><td>영문 감정명 다수 — 현 시스템 미사용(bg·프사 2장만 배선)</td></tr>
 <tr><td>장소·무드 씬(비시즌 공용)</td><td><a href="https://github.com/muteno/yeta/tree/main/viewer/assets/yeta_bg">viewer/assets/yeta_bg/</a></td><td>var_*.webp 42장</td></tr>
@@ -145,6 +145,22 @@ a:hover { text-decoration:underline; }
 <tr><td>원장 정비</td><td class="ok">완료</td><td>방치 충돌 마커 해소(16-B)</td><td>과거 Q.14 중복 발번 잔존</td><td>원장 번호 게이트(check_refs 1줄)</td></tr>
 </table>
 <p class="mut">검증: bash -n · node --check(게이트웨이+뷰어 인라인 JS 전 블록) · build_season_media --check · check_refs 전체 게이트 rc=0 · 헤드리스 렌더 간격 실측. 롤백 = 축별 커밋 단위 revert.</p></div>
+
+<h2 id="council"><span class="no">⚖</span> 평의회 9인 검증(머지 후 · CLAUDE.md [9]) — 결함 16건 → 15건 즉시 픽스</h2>
+<div class="card tblx"><table>
+<tr><th>급</th><th>결함(관점)</th><th>픽스</th></tr>
+<tr><td class="warn">HIGH</td><td>attach가 방 검증 전에 R2 저장 → 가짜 방 id 반복 = 상한 우회 무한 고아 적재 DoS(attach-sec)</td><td>방 실존·사망 <b>선검증</b> → 상한 <b>시도 즉시 소비</b>(pinset 결) → 저장 순서로 재편</td></tr>
+<tr><td class="warn">HIGH</td><td>사진 턴 Read 개방에 경로 제한 없음 → 주입으로 세션 파일·환경변수(시크릿) 낭독 가능(read-vision)</td><td>Read를 <b>첨부 파일 경로만 허용</b>(allowedTools 경로 샌드박스 · 그 외 자동 거부) + 프롬프트 계약 보강</td></tr>
+<tr><td>MED</td><td>모드 경계(21/03시)에 프사만 바뀌고 열린 챗 배경은 잔류(bg-mode)</td><td>세계시계 틱의 모드 전환 분기에서 배경 재스테이지 호출</td></tr>
+<tr><td>MED</td><td>겹침 60% 분모가 '판정 시점'이라 지연·재시도에 keep→discard 뒤집힘(overlap-60)</td><td>분모 = 생성 종료 시각 고정 · 종료 후 도착분 = 겹침 제외</td></tr>
+<tr><td>MED</td><td># 빈 구간 Enter = 세그 역순화 → 텍스트 중복 발송(hash-compose)</td><td>strip 후 꼬리 스테일 마크 회수(클램프)</td></tr>
+<tr><td>MED</td><td>겹침 유지 버블이 전송 5초+ 후 폴에서 증발(draft-keep ts 가드 충돌)</td><td>_yDrKeep 시 ts 가드 면제</td></tr>
+<tr><td>MED</td><td>media.json 드리프트 게이트 미배선 — 사진 삭제 후 커밋 = 검은 무대(media-gen)</td><td>check_refs에 --check 하드 게이트 배선(음성 테스트 rc=1 확인)</td></tr>
+<tr><td>MED</td><td>본 보고 §② 장수 수치가 #323(5장 이동) 이전 스테일(docs-ledger)</td><td>42/34장 정정(이 판)</td></tr>
+<tr><td>LOW×7</td><td>중첩 괄호 지문 이탈 · flee 폴백 오폐기 · 합성 4000자 초과 절단 · 실패 복원 # 래치 불일치 · 실패 시 mut 래치 잔존 · 죽은 CSS 규칙 · 원장 교차참조</td><td>〔〕 치환 · OV_SKIP 면제 · 초과 시 분리 발송 폴백 · 래치 동기 2종 · 규칙 정리 · 16-B 주석 정정 — 전건 반영</td></tr>
+<tr><td>보류 1건</td><td>&lt;60% 폐기 직후 재생성 draft가 잠깐 mut 톤(코스메틱 · 확정 렌더는 정상)</td><td>세대 식별자 배관 필요 — 실사용 체감 시 후속</td></tr>
+</table>
+<p class="mut">디자인 계약(design-contract) 관점 = 위반 0(raw 값 전부 예외 축 정당 · 토큰/CII 계승 정확) · 원장 충돌 해소 = 바이트 단위 무손실 확증.</p></div>
 
 </div>
 </body>
