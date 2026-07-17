@@ -12,6 +12,8 @@
 //   focus {t}                      : 스레드 포커스 전환(단톡 등 페르소나 아닌 방 진입 — draw 없이 cur만 이동)
 //   warm  {}                       : 프리웜 — dispatch만(러너 선부팅 → 첫 답장 30초 목표 · 쿼터 소비 0[NOPENDING 웜대기])
 //   retry {t?, n?}                 : 자동 재시도(뷰어 260714 무배너) — 실패(state=error) pending 유저 턴 재발사(새 턴 추가 X) · n = 회차(1~2 그대로 · 3~4 러너가 뉘앙스 전환 · 5회차는 뷰어가 발사 안 함 = 이탈)
+//   attach {t?, img, model, effort}: 사진 첨부(운영자 260717 '+') — base64 JPEG(≤~1.4MB · 매직바이트 검증) → R2 att/<t>/<ts>.jpg 저장 + img 유저 턴 적재 + dispatch(러너 Read 비전) · 일 상한 기본 30(YETA_ATT_MAX_PER_DAY)
+//   att   {key}                    : 첨부 사진 서빙 — 비공개 버킷 att/ 만(voice 동형 · 동일출처 게이트)
 //   ring  {persona?}               : 걸려오는 전화 요청 → yeta-call.yml dispatch(⚠️ TTS 유료 → 일 상한 기본 3 · YETA_CALL_MAX_PER_DAY)
 //   voice {key}                    : 통화 음성 스트림 — 비공개 버킷 voice/ 만(대사=대화 내용 → 공개 버킷 금지 · 동일출처 게이트)
 //   stt   {audio}                  : 무전기 STT 폴백(base64 webm/ogg → 텍스트) — iOS 설치형 PWA 는 Web Speech 불가(실측 260704)
@@ -679,6 +681,56 @@ export async function onRequestPost({ request, env }) {
     if (rst === 204) return json({ ok: true });
     await casPut(s => { const th = TH(s, t); if (th) { th.state = 'error'; th.err = `재발사 실패(GitHub ${rst})`; th.awaiting_since = 0; } });
     return json({ error: `GitHub dispatch ${rst}` }, 502);
+  }
+
+  if (op === 'att') {   // 첨부 사진 서빙(운영자 260717 '+') — 비공개 버킷 att/ 프리픽스만(op voice 동형 · originOk 게이트 · POST 유지)
+    const key = String(body.key || '');
+    if (!/^att\/[a-z0-9_-]{1,24}\/[a-z0-9]{1,16}\.jpg$/.test(key)) return json({ error: '잘못된 키' }, 400);
+    const o = await env.YETA_R2.get(key);
+    if (!o) return json({ error: '사진 없음' }, 404);
+    return new Response(o.body, { headers: { 'content-type': 'image/jpeg', 'cache-control': 'private, max-age=86400' } });
+  }
+
+  if (op === 'attach') {   // 사진 첨부(운영자 260717 '+') — R2 att/ 저장 + 유저 턴 적재(img 키) + dispatch(러너가 Read로 실물을 보고 반응) · ⚠️ 무인증 공개 → 크기·매직바이트·일 상한 가드
+    if (!env.GH_TOKEN) return json({ error: '서버 미설정 — GH_TOKEN 필요' }, 500);
+    const b64 = String(body.img || '');
+    if (!b64 || b64.length > 2000000) return json({ error: '사진이 없거나 너무 커 — 다시 골라줘(최대 ~1.4MB)' }, 400);
+    let bin;
+    try { bin = Uint8Array.from(atob(b64), c => c.charCodeAt(0)); } catch { return json({ error: '잘못된 이미지 데이터' }, 400); }
+    if (bin.length < 64 || bin[0] !== 0xFF || bin[1] !== 0xD8) return json({ error: 'JPEG만 받을 수 있어' }, 400);   // 클라 파이프 = canvas JPEG 고정 — 매직바이트 검증(마임 위장·임의 파일 저장 차단)
+    let acap = parseInt(env.YETA_ATT_MAX_PER_DAY ?? '30', 10);
+    if (!Number.isFinite(acap)) acap = 30;   // 미설정·오타 = 보수 기본 30(R2 저장 + 비전 토큰 가드 · ring 동형)
+    const akst = new Date(Date.now() + 9 * 3600e3).toISOString().slice(2, 10).replace(/-/g, '');
+    const aqkey = `quota/att-${akst}.json`;
+    let aused = 0;
+    const aqo = await env.YETA_R2.get(aqkey);
+    if (aqo) { try { aused = (await aqo.json()).n || 0; } catch { aused = 0; } }
+    if (acap > 0 && aused >= acap) return json({ error: `오늘 사진 상한(${acap}장) 도달 — 내일 다시`, remain: 0 }, 429);
+    let amodel = String(body.model || ''); let aeffort = String(body.effort ?? 'low');
+    if (!MODELS.has(amodel)) amodel = 'claude-opus-4-8';
+    if (!EFFORTS.has(aeffort)) aeffort = 'low';
+    const preS = await readSess();
+    const at = String(body.t || preS.cur || '');
+    if (!ID_RE.test(at)) return json({ error: '먼저 대화방을 열어줘' }, 409);
+    if (!TH(preS, at)) return json({ error: '없는 대화방이야 — 캐릭터 탭에서 열어줘' }, 409);   // ⚠️ R2 put '이전' 방 실존 선검증(평의회 260717 HIGH — 가짜 방 id 반복 = 상한 우회 무한 고아 객체 적재 DoS 차단 · 최종 판정은 아래 casPut이 재확인)
+    if (DEAD_ON(preS, at)) return json({ error: '…지금은 연락이 닿지 않아. 하루쯤 뒤에 다시 걸어봐' }, 409);
+    await env.YETA_R2.put(aqkey, JSON.stringify({ n: aused + 1 }), { httpMetadata: { contentType: 'application/json' } });   // 상한 = 시도 즉시 소비(pinset 결 — put까지 간 시도는 실패해도 카운트 = 저장 축 남용 하드캡)
+    const akey = `att/${at}/${Date.now().toString(36)}.jpg`;
+    await env.YETA_R2.put(akey, bin.buffer, { httpMetadata: { contentType: 'image/jpeg' } });   // 이미지 저장 → 턴 적재(러너가 턴을 집는 순간 실물 보장 · CAS abort 시 고아 객체 = 상한 안에서 유계)
+    const { abort } = await casPut(s => {
+      const th = TH(s, at); if (!th) return { abort: { error: '없는 대화방이야 — 캐릭터 탭에서 열어줘' } };
+      if (DEAD_ON(s, at)) return { abort: { error: '…지금은 연락이 닿지 않아. 하루쯤 뒤에 다시 걸어봐' } };
+      th.turns.push({ role: 'user', text: '', img: akey, ts: Date.now(), model: amodel, effort: aeffort });
+      if (th.turns.length > 200) th.turns = th.turns.slice(-200);
+      th.state = 'awaiting'; th.awaiting_since = Date.now(); th.err = ''; delete th.retry_n;
+      th.updated = Date.now();
+      s.cur = at; s.pref = { model: amodel, effort: aeffort };
+    });
+    if (abort) return json(abort, 409);
+    const ast = await dispatch(env);
+    if (ast === 204) return json({ ok: true, key: akey, remain: acap > 0 ? acap - aused - 1 : -1 });
+    await casPut(s => { const th = TH(s, at); if (th) { th.state = 'error'; th.err = `발사 실패(GitHub ${ast}) — 다시 보내면 재시도`; th.awaiting_since = 0; } });
+    return json({ error: `GitHub dispatch ${ast}` }, 502);
   }
 
   if (op !== 'send') return json({ error: '알 수 없는 op' }, 400);

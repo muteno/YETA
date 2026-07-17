@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Q.25 종합 보고 — 모드↔배경 싱크 · 감정 배경 · '#' 합성 메시지 · 사진 첨부 · 겹침 60% (2026-07-17)</title>
+<link rel="stylesheet" href="../tokens.css">
+<style>
+/* 색 = viewer/index.html :root 실측 계승(구조토큰은 tokens.css 링크) — 보고 전용 캔버스(플그 v2 골격 계승) */
+:root { --bg:#161716; --fg:#FFFFFF; --fg-2:#E7ECE7; --mut:#8B8F8A; --accent:#CFFF40; --accent-rgb:207,255,64;
+  --think:#3EE6C9; --think-rgb:62,230,201; --danger:#FF5A5A; --danger-rgb:255,90,90; --cobalt:#3E7BFA; --season:#8E2DBF; --glass-line:rgba(255,255,255,.08); }
+* { box-sizing:border-box; }
+html,body { margin:0; background:var(--bg); color:var(--fg); font:var(--fs-body, 15px)/1.6 system-ui,'Pretendard',sans-serif; }
+.wrap { max-width:1080px; margin:0 auto; padding:16px 14px 60px; }
+h1 { font-size:var(--fs-h2, 19px); margin:6px 0 2px; }
+h1 small { color:var(--mut); font-weight:normal; font-size:var(--fs-sm, 12.5px); display:block; margin-top:4px; }
+h2 { font-size:var(--fs-h3, 17px); margin:34px 0 10px; padding-top:18px; border-top:1px solid var(--glass-line); }
+h2 .no { color:var(--accent); font-variant-numeric:tabular-nums; margin-right:6px; }
+h2 .st { float:right; font-size:var(--fs-xs, 11px); padding:3px 10px; border-radius:var(--r-pill, 999px); font-weight:normal; }
+.st.done { color:var(--accent); background:rgba(var(--accent-rgb),.14); border:1px solid rgba(var(--accent-rgb),.35); }
+.st.ans { color:var(--think); background:rgba(var(--think-rgb),.12); border:1px solid rgba(var(--think-rgb),.35); }
+.card { border:1px solid var(--glass-line); border-radius:var(--r-l, 16px); padding:12px 14px; background:rgba(255,255,255,.03); margin:10px 0; }
+table { width:100%; border-collapse:collapse; font-size:var(--fs-sm, 12.5px); margin:8px 0; }
+th, td { text-align:left; padding:7px 9px; border-bottom:1px solid var(--glass-line); vertical-align:top; }
+th { color:var(--mut); font-weight:600; white-space:nowrap; font-size:var(--fs-xs, 11px); }
+td b { color:var(--accent); font-weight:600; }
+td .warn { color:var(--danger); }
+td .ok { color:var(--accent); }
+.map { display:flex; flex-wrap:wrap; gap:6px; align-items:center; font-size:var(--fs-sm, 12.5px); margin:8px 0; }
+.map span { padding:5px 11px; border-radius:var(--r-pill, 999px); border:1px solid var(--glass-line); background:rgba(255,255,255,.05); white-space:nowrap; }
+.map i { color:var(--mut); font-style:normal; }
+.map .hot { border-color:rgba(var(--accent-rgb),.4); background:rgba(var(--accent-rgb),.1); }
+code, .k { font-family:ui-monospace,monospace; font-size:.92em; color:var(--think); background:rgba(var(--think-rgb),.08); padding:1px 5px; border-radius:6px; }
+a { color:var(--accent); text-decoration:none; word-break:break-all; }
+a:hover { text-decoration:underline; }
+.mut { color:var(--mut); }
+.toc { display:flex; flex-wrap:wrap; gap:6px; margin:12px 0 4px; }
+.toc a { font-size:var(--fs-xs, 11px); padding:4px 10px; border-radius:var(--r-pill, 999px); border:1px solid var(--glass-line); background:rgba(255,255,255,.04); color:var(--fg-2); }
+.demo { font-style:italic; color:var(--mut); }
+@media (max-width:640px){ .tblx { overflow-x:auto; } table { min-width:560px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Q.25 종합 보고 — 10건 묶음<small>2026-07-17 12:05 KST · 대상 = 루시 모드↔배경 싱크 · 감정 배경 시스템 · 이미지 경로 · 네비 간격 · '#' 상황 제어·합성 메시지 · 사진 첨부 · 스트리밍 겹침 60% · 정본 = docs/요구사항_큐.md Q.25 · docs/작업이력.md 217차</small></h1>
+<div class="toc">
+<a href="#q8a">⑧₁ 배경 싱크</a><a href="#q1">① 감정 시스템</a><a href="#q2">② 경로 URL</a><a href="#q3">③ 소견</a><a href="#q4">④ 네비 간격</a><a href="#q5">⑤ # 상황 제어</a><a href="#q6">⑥ 합성 메시지</a><a href="#q7">⑦ 사진 첨부</a><a href="#q910">⑨⑩ 겹침 60%</a><a href="#risk">종합 리스크·보완</a>
+</div>
+
+<h2 id="q8a"><span class="no">⑧₁</span> 루시 안드로이드 모드인데 도깨비 배경 — 싱크 <span class="st done">해결</span></h2>
+<div class="map"><span>증상 재현(스샷 08:01)</span><i>→</i><span>manifest 실측(버킷 구성 집계)</span><i>→</i><span class="hot">원인 = 무드만 보고 모드 무시</span><i>→</i><span>yStage 모드 게이트</span><i>→</i><span>스테이지 키에 모드 포함</span><i>→</i><span>구문·게이트 검증</span></div>
+<div class="card tblx"><table>
+<tr><th>항목</th><th>내용</th></tr>
+<tr><td>요구사항</td><td>화면의 모드(낮 안드로이드 / 밤 도깨비 21~03시)와 대화창 배경 이미지가 항상 일치할 것.</td></tr>
+<tr><td>원인(실측)</td><td>배경 풀 정본 <code>media.json</code>이 <b>무드 버킷</b>(warm·tense=도깨비 사진 / base·blue=안드로 사진)으로만 나뉘어 있고, 고르는 쪽(<code>yStage</code>)이 답장의 무드만 봄 — 아침에 루시가 <code>&lt;&lt;MOOD:warm&gt;&gt;</code> 답장을 하면 warm 버킷(전부 도깨비 사진)이 떠버림. 프사·배지는 이미 모드 함수(<code>yModeOn</code>)를 쓰는데 배경만 그 시계를 안 봤음.</td></tr>
+<tr><td>조치(전→후)</td><td>전: 무드 버킷 그대로 로테이션 → 후: <b>모드 필터를 무드보다 우선</b> 적용 — 모드 활성 = <code>dokkaebi/</code> 폴더 사진만, 평시 = 그 폴더 제외. 무드 버킷이 반대 모드 사진뿐이면 전 버킷 합집합에서 같은 필터로 재선별(빈 무대 방지). 스테이지 키에 모드를 넣어 21시/03시 경계를 넘는 순간 자동으로 배경이 갈아입음.</td></tr>
+<tr><td>장·단점</td><td><span class="ok">장</span> 프사·배지·배경이 한 시계(yModeOn SSOT) = 다시는 안 어긋남 · 다른 캐릭터(모드 없음) 경로 불변. <span class="warn">단</span> 낮에는 무드별 배경 구분이 사실상 사라짐(안드로 사진이 base·blue 동일 풀) — 감정 구분을 살리려면 안드로 사진도 감정 폴더로 나누면 됨(① 참조).</td></tr>
+<tr><td>리스크·완화</td><td>모드 경계에서 배경이 순간 전환 = 의도된 연출(크로스페이드 0.6s 기존 계승). 구형 캐시 manifest(mode_dir 없음) = 필터 자동 무효 → 종전 동작(안전 폴백).</td></tr>
+</table></div>
+
+<h2 id="q1"><span class="no">①</span> 감정 따라 배경 반영 — 시스템화 돼 있나? <span class="st done">이미 있음 + 보강</span></h2>
+<div class="map"><span>파이프라인 실측</span><i>→</i><span class="hot">이미 시스템화 확인</span><i>→</i><span>파일명 감정 = 불필요 확정</span><i>→</i><span>manifest 기계 생성기 신설</span></div>
+<div class="card tblx"><table>
+<tr><th>항목</th><th>내용</th></tr>
+<tr><td>결론</td><td><b>이미 시스템으로 돌아가고 있음.</b> 캐릭터가 답장할 때마다 대사 뒤에 숨은 감정 태그(<code>&lt;&lt;MOOD:warm|tense|blue&gt;&gt;</code>)를 붙이고(러너 프롬프트 계약), 뷰어가 그 무드의 사진 버킷에서 답장 수 기반으로 로테이션. 즉 <b>감정 분류는 AI가 매 턴 스스로 함</b>.</td></tr>
+<tr><td>파일명 감정 표기</td><td><b>안 써도 됨(확정)</b>. 시스템은 파일명을 전혀 안 읽고 manifest의 버킷(어느 폴더에 있나)만 봄. 윈터 폴더의 <code>glaring_03.png</code>류 영문 감정명은 현 시스템 미사용 — 앞으로 수집분은 <b>아무 이름(숫자)으로 폴더에 붓기만 하면 됨</b>.</td></tr>
+<tr><td>보강(신규)</td><td><code>shared/build_season_media.py</code> — 폴더를 실측해 media.json을 기계 생성(<code>--check</code> = 드리프트 검사). 지금 매핑: 안드로 폴더=base·blue / 도깨비 폴더=warm·tense + <code>mode_dir</code> 필드. 사진 추가 = ①폴더에 복사 ②스크립트 1회 실행 ③커밋. 끝.</td></tr>
+<tr><td>장·단점</td><td><span class="ok">장</span> 수집(운영자) / 분류(AI 무드 태그) / 배선(스크립트) 완전 분업 — 영문 작명 노동 0. <span class="warn">단</span> 감정 입도가 현재 3무드+기본(카톡 이모지처럼 잘게 아님) — 더 잘게 가려면 폴더만 늘리면 되는 구조는 마련됨.</td></tr>
+</table></div>
+
+<h2 id="q2"><span class="no">②</span> 이미지 폴더 실제 경로 URL <span class="st ans">답변</span></h2>
+<div class="card tblx"><table>
+<tr><th>용도</th><th>GitHub 경로(정본)</th><th>실측</th></tr>
+<tr><td>루시 · 안드로이드 배경</td><td><a href="https://github.com/muteno/yeta/tree/main/viewer/characters/season/lucy/android">viewer/characters/season/lucy/android/</a></td><td>42장 · 혼입 0 (#323 5장 이동 반영)</td></tr>
+<tr><td>루시 · 도깨비 배경</td><td><a href="https://github.com/muteno/yeta/tree/main/viewer/characters/season/lucy/dokkaebi">viewer/characters/season/lucy/dokkaebi/</a></td><td>34장 · 혼입 0 (#323 5장 이동 반영)</td></tr>
+<tr><td>루시 · 루트(프사·클립·manifest)</td><td><a href="https://github.com/muteno/yeta/tree/main/viewer/characters/season/lucy">viewer/characters/season/lucy/</a></td><td>클립 2 · 얼굴 2 · media.json</td></tr>
+<tr><td>윈터(IDOL) 이미지</td><td><a href="https://github.com/muteno/yeta/tree/main/viewer/characters/idol/winter">viewer/characters/idol/winter/</a></td><td>영문 감정명 다수 — 현 시스템 미사용(bg·프사 2장만 배선)</td></tr>
+<tr><td>장소·무드 씬(비시즌 공용)</td><td><a href="https://github.com/muteno/yeta/tree/main/viewer/assets/yeta_bg">viewer/assets/yeta_bg/</a></td><td>var_*.webp 42장</td></tr>
+</table><p class="mut">"섞여 있을 수도" → 실측 결과 <b>안 섞여 있음</b> — android/·dokkaebi/ 하위폴더 분리가 정확히 유지되고 있었음. 문제는 폴더가 아니라 고르는 로직(⑧₁)이었음.</p></div>
+
+<h2 id="q3"><span class="no">③</span> 맥락·감정 따라 배경 변화(몰입) — 소견 <span class="st ans">답변+반영</span></h2>
+<div class="card"><p>방향 자체에 <b>전적으로 동의 — 그리고 그 뼈대가 이미 앱에 있음.</b> 현재 우선순위: <b>난입 연출 &gt; 오프닝 시그니처(첫/오랜만 처음 몇 마디) &gt; 장소 씬(시간대·계절·날씨 종속) &gt; 무드 씬 &gt; 기본</b>. 즉 "처음엔 시그니처 → 평소엔 장소 → 감정이 튀면 무드"가 정확히 구현된 상태고, 이번에 모드축(⑧₁)이 보강되면서 시즌 캐릭터는 [모드 → 무드 → 로테이션] 3단이 됨.</p>
+<p>다음 단계로 값진 순서(제안): ⑴ 안드로 사진도 감정 폴더 분화(warm_android/ 등 — 생성기에 한 줄) ⑵ 페르소나 확립 후 시그니처 배경을 "관계 레벨"로 교체(LV 게이트 재활용) ⑶ 대화 속 장소 언급을 러너가 <code>&lt;&lt;PLACE&gt;&gt;</code>류 태그로 흘려 장소 씬과 직결. 전부 기존 축 위에 얹는 것이라 새 기틀이 필요 없음.</p></div>
+
+<h2 id="q4"><span class="no">④</span> 상단 네비 소환↔원거리 간격 통일 <span class="st done">해결</span></h2>
+<div class="map"><span>스샷 픽셀 실측</span><i>→</i><span class="hot">원인 = 스테일 마진 6px 상시 적용</span><i>→</i><span>마진 2종 제거</span><i>→</i><span>헤드리스 렌더 실측 검증</span></div>
+<div class="card tblx"><table>
+<tr><th>항목</th><th>내용</th></tr>
+<tr><td>원인(실측)</td><td>원거리 배지(평소 숨김)용 규칙 <code>.yh-remote + .yh-r { margin-left:6px }</code>가 배지가 <b>숨어 있어도 항상 적용</b>(CSS 형제 선택자는 display:none을 안 가림) → 소환↔원거리 14px vs 원거리↔전화 6px. 죽은 <code>margin-left:auto</code> 2곳도 동반 정리.</td></tr>
+<tr><td>조치(전→후)</td><td>전: 박스 간격 14 vs 6 (글리프 광학 ≈29.7 vs 24.2px) → 후: 스테일 마진 제거 = <b>글리프 광학 간격 23.7 vs 24.2px(0.5px 이내)</b> — 헤드리스 크로미엄 픽스처로 bounding box 실측 검증. 원거리 픽토가 전화 쪽 간격과 같은 리듬으로 정렬됨.</td></tr>
+<tr><td>리스크</td><td>원거리 배지(문자 '원거리' 필)가 뜨는 화면에서도 간격 = 헤더 공용 gap 8px 단일 — 배지 유무에 따라 전화 위치가 6px 튀던 부수 현상도 함께 소멸.</td></tr>
+</table></div>
+
+<h2 id="q5"><span class="no">⑤</span> '#' 상황 서술로 상황 흐름 제어 가능한가 <span class="st done">가능 — 계약 명문화</span></h2>
+<div class="card tblx"><table>
+<tr><th>항목</th><th>내용</th></tr>
+<tr><td>현재 구조</td><td><b>이미 가능</b> — # 상황 턴은 러너에서 "— 상황(유저 연출): … —"로 대사와 격리 주입되고, 프롬프트가 "무대 지시 = 장면의 사실로 수용"을 요구함. <span class="demo">(데스크가 세웅쪽으로 이동한다)</span> 같은 3자 행동 연출도 이 축.</td></tr>
+<tr><td>보강(이번)</td><td>출력 계약에 <b>인라인 연출 조항 추가</b>: 메시지 안 (괄호 한 줄)·*별표* 줄 = "방금 무대에서 실제로 일어난 일(인물 이동·행동·상황 변화)"로 수용 + <b>다른 주민의 행동도 사실로 수용</b> 명시. 단 캐릭터·말투·규칙을 바꾸라는 연출만 무시(세계관 보호 — 기존 보안 결 유지).</td></tr>
+<tr><td>한계(정직)</td><td>연출이 캐릭터 카드의 금기(예: 루시에게 억지로 음식 먹이기)와 충돌하면 인물이 <b>세계 안에서 저항</b>하는 쪽으로 반응함 — 이건 버그가 아니라 카드 계약. 완전 신 권한(God-mode)을 원하면 별도 신호 축 설계 필요(후속 제안 가능).</td></tr>
+</table></div>
+
+<h2 id="q6"><span class="no">⑥</span> #입력 = 별도 전송 말고 (괄호)로 한 메시지 합성 <span class="st done">해결</span></h2>
+<div class="map"><span>현행 = 구간별 분리 발송</span><i>→</i><span class="hot">혼합 시 한 메시지로 합성</span><i>→</i><span># Enter = 전송 아님·구간 닫기</span><i>→</i><span>(괄호) 줄 = 지문 결 렌더</span></div>
+<div class="card tblx"><table>
+<tr><th>항목</th><th>내용</th></tr>
+<tr><td>동작(후)</td><td>"안녕?" 입력 → # → "루시가 그런 나를 바라보며 인상을 쓴다" → <b>Enter = 전송이 아니라 괄호 구간 닫기</b> → 이어서 다음 말 입력 → 전송 버튼(또는 대사 상태 Enter) = <b>한 메시지</b>:<br><span class="demo">안녕?<br>(루시가 그런 나를 바라보며 인상을 쓴다)<br>그 다음에 내가 적는 메세지</span><br>괄호 줄은 버블 안에서 이탤릭·톤다운(.yn 지문 결 = 기존 *지문*과 동일 문법) 렌더. #을 다시 눌러도 동일(토글 유지).</td></tr>
+<tr><td>경계 유지</td><td>상황<b>만</b> 보낸 턴 = 종전 그대로 회색 지문 라인(sc 턴 · 버블 없음) — 화면 중앙 연출 문법 보존. 러너 전달도 이원화: 단독 = "— 상황(유저 연출) —" 블록 · 혼합 = 메시지 속 (괄호) 줄(⑤ 계약이 수용).</td></tr>
+<tr><td>전후 비교</td><td>전: #구간이 항상 별도 턴으로 찢어져 나감 + #상태 Enter = 즉시 전송(오발 잦음) → 후: 의도대로 묶어서 한 방에, 전송 시점은 온전히 사용자 손에.</td></tr>
+<tr><td>리스크·완화</td><td>기존 습관(# 쓰고 Enter로 바로 전송)이 한 단계 늘어남(Enter 한 번 더) — 대신 오발송 소멸. 모바일 키보드 '보내기' 키도 동일 규칙.</td></tr>
+</table></div>
+
+<h2 id="q7"><span class="no">⑦</span> + 사진 첨부 → 다음 대화에서 해석 <span class="st done">구현(신규 요소 ⚠)</span></h2>
+<div class="map"><span>+ 탭 = 사진 선택</span><i>→</i><span>브라우저에서 1280px JPEG 압축</span><i>→</i><span>서버 업로드(op attach)</span><i>→</i><span>방에 사진 버블 적재</span><i>→</i><span class="hot">러너가 사진을 '실제로 보고' 답장</span></div>
+<div class="card tblx"><table>
+<tr><th>항목</th><th>내용</th></tr>
+<tr><td>⚠ 배치(신규 요소 1줄)</td><td>사진은 <b>내 말풍선 안 썸네일</b>(모서리 = 기존 --r-s 토큰)로 뜨고, 즉시 캐릭터가 읽고 반응 — "이 위치·모양으로 해석했다, 의도 맞나?" (단일 커밋 분리 = 한 줄 롤백 가능)</td></tr>
+<tr><td>파이프라인</td><td>클라 canvas 압축(장변 1280 · JPEG 82%) → <code>op attach</code>(JPEG 매직바이트 검증 · ~1.4MB 캡 · 일 상한 30장) → 비공개 R2 <code>att/방/시각.jpg</code> + img 턴 + 러너 기동 → 러너가 파일 내려받아 <b>그 턴만 Read 도구 개방</b>(그 외 전 경로 = 종전 도구 0 유지)으로 실물 확인 후 인캐릭터 반응. 표시 = <code>op att</code>(voice와 같은 비공개 서빙 결).</td></tr>
+<tr><td>장·단점</td><td><span class="ok">장</span> "다음 대화에서 해석" 요구를 넘어 <b>즉시 반응</b>(사진 = 하나의 메시지) · 대화 히스토리에도 "(사진을 보냈다)"로 남아 뒷턴 문맥 유지. <span class="warn">단</span> 사진 턴은 도구 왕복이 붙어 답장이 수 초 느려질 수 있음 · PDF/문서는 이번 범위 밖(진입점은 유지).</td></tr>
+<tr><td>리스크·완화</td><td>무인증 공개 게이트웨이 = 업로드 악용 축 → 매직바이트·크기 캡·일 상한·키 프리픽스 강제(att/ 밖 인출 불가) 4중 가드. 대화 휘발(24h) 후 R2 고아 이미지 잔존 = 저장 비용 극소이나 <b>우려사항으로 등재</b>(보완: R2 수명주기 규칙 1줄 — 후속).</td></tr>
+</table></div>
+
+<h2 id="q910"><span class="no">⑨⑩</span> 쓰던 답장 새로고침 → 60% 기준 낑김/재생성 <span class="st done">해결</span></h2>
+<div class="map"><span>원인 실측(둘 다 있었음)</span><i>→</i><span class="hot">60% 판정 = 생성 경과시간 비율</span><i>→</i><span>≥60% 유지+mut 낑김</span><i>→</i><span>&lt;60% 폐기·새 맥락 재생성</span><i>→</i><span>화면: 보낸 뒤에도 draft 유지(mut)</span></div>
+<div class="card tblx"><table>
+<tr><th>항목</th><th>내용</th></tr>
+<tr><td>원인(실측 2겹)</td><td>㉮ 화면: 내가 보내는 순간 '읽는 시간' 게이트가 리셋돼 <b>자라던 부분 답장이 즉시 사라짐</b>(= "새로고침"으로 보이던 것) ㉯ 데이터: 생성 완료본은 원래 내 새 메시지 <b>앞에 끼워지는데</b>, 화면이 숨겼다가 나중에 통째로 나타나니 "말을 다시 시작했다"처럼 보였음.</td></tr>
+<tr><td>60% 판정(⑩ 확정)</td><td>운영자 직관 그대로 <b>시간 비율</b>로 구현: (내 메시지 도착시각 − 생성 시작) ÷ (생성 완료 − 시작) ≥ 60% → <b>유지</b>: 답장에 ov 표식 → 대화에 mut 컬러로 낑김(행위·서술이 원래 mut인 것과 동일 톤 = 운영자 지정). &lt; 60% → <b>무기록 폐기</b> → 러너 웜 루프가 내 새 메시지까지 묶어 처음부터 다시 답함(맥락 정합).</td></tr>
+<tr><td>화면(⑨)</td><td>보내는 순간 draft를 숨기지 않고 <b>mut 톤으로 계속 자라게</b> 유지 — "하던 말은 이어서". 완료되면 같은 자리(내 메시지 위)에 확정 스왑.</td></tr>
+<tr><td>전후 비교</td><td>전: 겹치면 draft 증발 → 한참 뒤 두 답이 순서 애매하게 등장 → 후: ≥60%는 눈앞에서 끝까지 말하고 mut로 남음 + 새 메시지 답이 이어짐 / &lt;60%는 깔끔히 접고 통합 답 1개.</td></tr>
+<tr><td>리스크·완화</td><td>㉮ 폐기 = 그 생성 토큰 소실(의도된 트레이드오프 — 맥락 우선) ㉯ 연타로 매번 60% 미만이면 계속 재생성 = 자연 수렴(새 메시지가 있어야만 폐기됨) ㉰ &lt;60% 폐기 직후 잠깐 mut draft가 남았다가 새 생성 draft로 교체되는 순간 톤 표기가 한 박자 늦을 수 있음(코스메틱 · 확정 렌더는 정확).</td></tr>
+</table></div>
+
+<h2 id="risk"><span class="no">§</span> 종합 — 조치·우려·해결보완 총괄표</h2>
+<div class="card tblx"><table>
+<tr><th>#</th><th>상태</th><th>핵심 조치</th><th>남은 우려</th><th>보완 계획(후속 제안)</th></tr>
+<tr><td>⑧₁ 배경 싱크</td><td class="ok">완료</td><td>yStage 모드 게이트(모드&gt;무드)</td><td>모드 경계 순간 전환</td><td>필요 시 경계 5분 페이드 예열</td></tr>
+<tr><td>① 감정 시스템</td><td class="ok">이미 있음+보강</td><td>manifest 기계 생성기</td><td>무드 입도 3종</td><td>감정 폴더 증설(생성기 1줄)</td></tr>
+<tr><td>② 경로</td><td class="ok">답변</td><td>URL 표 + 혼입 0 실측</td><td>—</td><td>—</td></tr>
+<tr><td>③ 소견</td><td class="ok">답변</td><td>기존 3축 + 모드축 보강</td><td>—</td><td>LV 시그니처·PLACE 태그</td></tr>
+<tr><td>④ 네비 간격</td><td class="ok">완료</td><td>스테일 마진 제거(광학 0.5px)</td><td>—</td><td>—</td></tr>
+<tr><td>⑤ 상황 제어</td><td class="ok">가능+명문화</td><td>연출 수용 계약 추가</td><td>카드 금기와 충돌 시 저항</td><td>God-mode 신호 축(원하면)</td></tr>
+<tr><td>⑥ 합성 메시지</td><td class="ok">완료</td><td>(괄호) 합성 · Enter 재정의</td><td>습관 전환(Enter 1회 증가)</td><td>—</td></tr>
+<tr><td>⑦ 사진 첨부</td><td class="ok">완료 ⚠신규</td><td>attach/att + Read 비전</td><td>R2 고아 이미지 · 답장 수 초 지연</td><td>R2 수명주기 규칙 · 문서 첨부 확장</td></tr>
+<tr><td>⑨⑩ 겹침 60%</td><td class="ok">완료</td><td>finish 60% 판정 + ov mut</td><td>폐기 시 토큰 소실(의도) · 폐기 직후 draft 톤 한 박자</td><td>실사용 후 60% 노브 튜닝(env화 가능)</td></tr>
+<tr><td>원장 정비</td><td class="ok">완료</td><td>방치 충돌 마커 해소(16-B)</td><td>과거 Q.14 중복 발번 잔존</td><td>원장 번호 게이트(check_refs 1줄)</td></tr>
+</table>
+<p class="mut">검증: bash -n · node --check(게이트웨이+뷰어 인라인 JS 전 블록) · build_season_media --check · check_refs 전체 게이트 rc=0 · 헤드리스 렌더 간격 실측. 롤백 = 축별 커밋 단위 revert.</p></div>
+
+<h2 id="council"><span class="no">⚖</span> 평의회 9인 검증(머지 후 · CLAUDE.md [9]) — 결함 16건 → 15건 즉시 픽스</h2>
+<div class="card tblx"><table>
+<tr><th>급</th><th>결함(관점)</th><th>픽스</th></tr>
+<tr><td class="warn">HIGH</td><td>attach가 방 검증 전에 R2 저장 → 가짜 방 id 반복 = 상한 우회 무한 고아 적재 DoS(attach-sec)</td><td>방 실존·사망 <b>선검증</b> → 상한 <b>시도 즉시 소비</b>(pinset 결) → 저장 순서로 재편</td></tr>
+<tr><td class="warn">HIGH</td><td>사진 턴 Read 개방에 경로 제한 없음 → 주입으로 세션 파일·환경변수(시크릿) 낭독 가능(read-vision)</td><td>Read를 <b>첨부 파일 경로만 허용</b>(allowedTools 경로 샌드박스 · 그 외 자동 거부) + 프롬프트 계약 보강</td></tr>
+<tr><td>MED</td><td>모드 경계(21/03시)에 프사만 바뀌고 열린 챗 배경은 잔류(bg-mode)</td><td>세계시계 틱의 모드 전환 분기에서 배경 재스테이지 호출</td></tr>
+<tr><td>MED</td><td>겹침 60% 분모가 '판정 시점'이라 지연·재시도에 keep→discard 뒤집힘(overlap-60)</td><td>분모 = 생성 종료 시각 고정 · 종료 후 도착분 = 겹침 제외</td></tr>
+<tr><td>MED</td><td># 빈 구간 Enter = 세그 역순화 → 텍스트 중복 발송(hash-compose)</td><td>strip 후 꼬리 스테일 마크 회수(클램프)</td></tr>
+<tr><td>MED</td><td>겹침 유지 버블이 전송 5초+ 후 폴에서 증발(draft-keep ts 가드 충돌)</td><td>_yDrKeep 시 ts 가드 면제</td></tr>
+<tr><td>MED</td><td>media.json 드리프트 게이트 미배선 — 사진 삭제 후 커밋 = 검은 무대(media-gen)</td><td>check_refs에 --check 하드 게이트 배선(음성 테스트 rc=1 확인)</td></tr>
+<tr><td>MED</td><td>본 보고 §② 장수 수치가 #323(5장 이동) 이전 스테일(docs-ledger)</td><td>42/34장 정정(이 판)</td></tr>
+<tr><td>LOW×7</td><td>중첩 괄호 지문 이탈 · flee 폴백 오폐기 · 합성 4000자 초과 절단 · 실패 복원 # 래치 불일치 · 실패 시 mut 래치 잔존 · 죽은 CSS 규칙 · 원장 교차참조</td><td>〔〕 치환 · OV_SKIP 면제 · 초과 시 분리 발송 폴백 · 래치 동기 2종 · 규칙 정리 · 16-B 주석 정정 — 전건 반영</td></tr>
+<tr><td>보류 1건</td><td>&lt;60% 폐기 직후 재생성 draft가 잠깐 mut 톤(코스메틱 · 확정 렌더는 정상)</td><td>세대 식별자 배관 필요 — 실사용 체감 시 후속</td></tr>
+</table>
+<p class="mut">디자인 계약(design-contract) 관점 = 위반 0(raw 값 전부 예외 축 정당 · 토큰/CII 계승 정확) · 원장 충돌 해소 = 바이트 단위 무손실 확증.</p></div>
+
+</div>
+</body>
+</html>
