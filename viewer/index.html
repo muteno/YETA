@@ -1867,7 +1867,7 @@ async function ymPlaceAll() {   // 현재 시각 실위치 재판정 → 워커 
   const { d: dateStr, h } = yWorldDH();   // 지도 시간축 = 무음동 세계 시각(운영자 260716 "지도 싱크가 아예 안 맞아" — 종전 현실 KST라 세계시계·대화 속 시간과 어긋났음 · 6배 가속 = 동선이 실시간으로 살아 움직임)
   const bg = document.getElementById('ymapBg');   // 낮/밤 배경 실시간 교체(1분 재판정이 시간대 경계 자동 반영) + 차선 재생성(톤별 좌표 · v4)
   if (bg) { const _bgw = `assets/yeta_map/map_${ymIsDay(h) ? 'day' : 'night'}.png`; if (bg.getAttribute('href') !== _bgw) { bg.setAttribute('href', _bgw); const sv = $('#ymapSvg'); if (sv) ymCarsBuild(sv); } }
-  const cl = $('#ymapClock'); if (cl) cl.textContent = `${yWorldClock().txt} · ${{ late: '깊은 밤', dawn: '새벽', morning: '아침', day: '낮', evening: '저녁', night: '밤' }[ymSlot(h)]}`;   // 시계 표기도 세계 시각(헤더 세계시계와 동일 숫자)
+  const cl = $('#ymapClock'); if (cl) cl.textContent = `무음동 ${yWorldClock().txt} · ${{ late: '깊은 밤', dawn: '새벽', morning: '아침', day: '낮', evening: '저녁', night: '밤' }[ymSlot(h)]}`;   // 지도 시계 = 무음동 세계 시각(6배 가속) — '무음동' 라벨 = 메인 현실 KST 시계(Q.26)와 이축임을 명시(운영자 260717 Q.28 "시간이 두 개?" 혼동 차단)
   const at = {};
   for (const w of _ymapWalkers) at[w.id] = await ymPlaceOf(w.id, dateStr, h);
   for (const w of _ymapWalkers) if (yRevPend(w.id) && Date.now() < yDeadT(w.id) + YREV_MS && (YMAPD.places || {}).cathedral) at[w.id] = 'cathedral';   // 부활 직후 = 성당 앞뜰에 나타남(운영자 260714 "부활장소") — 첫 답(엔트리 소비)·3h 경과 = 동선 복귀 · 지도 표시 전용(원거리·근처 판정 불변)
