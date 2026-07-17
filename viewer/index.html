@@ -166,14 +166,14 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   .yh-inv svg { width:19px; height:19px; }
   .yh-inv:active { transform:scale(var(--press-m,.9)); }
   .yh-inv.off { opacity:.3; pointer-events:none; }   /* 만석·대기 = 비활성 픽토(자리 유지·들쭉날쭉 방지) */
+  .yh-inv.able { color:var(--think); }   /* 가능 = 터콰이즈 강조(대면·문자·전화 닿는 상태 · 운영자 260717) */
+  .yh-inv.dim { opacity:.34; pointer-events:none; }   /* 불가 = 흐림 비활성(대화 안 되는 상태) */
+  .yh-inv.slash { position:relative; }
+  .yh-inv.slash::after { content:''; position:absolute; left:6px; right:6px; top:50%; height:2px; background:var(--danger); transform:translateY(-50%) rotate(-32deg); border-radius:2px; box-shadow:0 0 0 1.5px var(--bg); }   /* 빗금 = 배선 없음(전화 미연결 상대 · 운영자 260717) */
   .yeta-h b { font-size:var(--fs-h2); font-weight:var(--fw-x); white-space:nowrap; flex:none; }   /* 이름 세로 줄바꿈 방지(좁은 헤더) — 태그가 ellipsis로 양보 */
   .yeta-h .yh-tag { font-size:var(--fs-xs); color:var(--fg); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }   /* 상대 설명 = 흰색 불투명(운영자 260709 첨부2 "투명하지 않게" — mut 폐지) */
   .yeta-h .yh-r { margin-left:auto; display:flex; align-items:center; gap:6px; }   /* 우측 묶음 = 래퍼에 margin-left:auto(CII) */
-  .yh-remote { flex:none; display:inline-flex; align-items:center; gap:3px; padding:2px 7px; border-radius:var(--r-pill); font-size:var(--fs-xs); font-weight:var(--fw-b); white-space:nowrap;
-    color:var(--think); background:rgba(var(--think-rgb),.14); box-shadow:inset 0 0 0 1px rgba(var(--think-rgb),.34); transition:opacity .4s var(--ease); }   /* 원거리 배지 = 터콰이즈(--think · 2강조색) 필 — 라임=대화/터콰이즈=연출·거리 축 정합(260714) · margin-left:auto 제거(운영자 260717 헤더 간격 통일 — .yeta-who flex:1이라 죽은 auto·간격은 헤더 gap 8 단일) */
-  .yh-remote svg { width:14px; height:14px; }
-  .yh-remote[hidden] { display:none; }
-  .yh-remote.dim { opacity:.4; }   /* 디밍 = 멀리 있음 강조(액티브 vs 디밍 · 운영자 260714) */
+  /* .yh-remote(원거리 배지) 제거 — 원거리 개념 폐지·[문자][초대][대화가능][전화] 픽토로 대체(운영자 260717) */
   /* .yh-reset("새 대화") 제거(운영자 260705) — 2탭 armed 색 패턴은 call.js #yetaCallBtn.armed가 승계 */
   .yeta-stage { position:relative; flex:1; display:flex; flex-direction:row; overflow:hidden; }   /* 무대 = 2겹 배경 크로스페이드 + 좌 슬림 목록|우 로그 2열(운영자 260705 레퍼런스 "왔다갔다") */
   /* 좌 슬림 캐릭터 레일 — 이름 + 최근대화 ~5음절…(운영자 260705 "모바일 기준이니 짧게") · 현 상대 = 라임 표시 · 탭 = 화자 전환(draw·맥락 유지) */
@@ -1305,9 +1305,10 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
     <div class="yeta-h">   <!-- 플로팅 알약 헤더(운영자 260705) = [←뒤로][상대 전폭][수화기(call.js 주입)] · X 폐지 -->
       <button class="yeta-back" id="yetaBack" type="button" aria-label="뒤로 — 대화 목록으로"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
       <div class="yeta-who" id="yetaWho" role="button" tabindex="0" aria-label="인물 프로필 열기 — 아래로 당기거나 탭"><span class="yh-ava" id="yetaAva" aria-hidden="true">y</span><b id="yetaTitle">yeta</b><span class="yh-tag" id="yetaTag"></span><svg class="yw-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></div>   <!-- 지금 대화하는 상대 = 좌우 한 폭(운영자 260705) · 260712 풀다운 그래버(드래그/탭 = 인물 카드) -->
+      <button class="yh-inv yh-msg dim" id="yetaMsgBtn" type="button" aria-label="문자 — 준비 중"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v12H4z"/><path d="M4 6l8 6 8-6"/></svg></button>   <!-- 문자(초대 좌측 · 미구현 자리표 · 연락처+친밀도 = 터콰이즈 활성 · 운영자 260717) — 팝업은 다음 단계 -->
       <button class="yh-inv" id="yetaInvBtn" type="button" aria-label="초대 — 근처 인물 부르기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8.5" cy="7" r="4"/><path d="M1 21v-1a6 6 0 0 1 12 0v1M19 8v6M22 11h-6"/></svg></button>   <!-- 초대 픽토 재생·우측 고정(운영자 260712 재배치) — 미만석=활성(후보 없어도 빈 초대 UI) / 만석·대기=비활성 .off(자리 유지·들쭉날쭉 방지) · 아이콘 = 프로필 카드 초대 CII 계승 · 스택은 좌측 이동(yStackSync) -->
-      <span class="yh-remote" id="yetaRemote" hidden aria-label="원거리 소통 — 상대가 다른 장소에 있어 물리적 접촉 불가"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11a9 9 0 0 1 9 9M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1.4" fill="currentColor" stroke="none"/></svg><span>원거리</span></span>   <!-- 원거리 소통 배지(운영자 260714) — 상대 다른 장소 = 문자/전화만·물리 접촉 불가 표시(터콰이즈 --think · 액티브=닿음/디밍=멂) -->
-      <span class="yh-r"></span>   <!-- 수화기 = call.js가 이 래퍼 첫 자리에 주입(옵셔널 축) -->
+      <button class="yh-inv yh-talk able" id="yetaTalkBtn" type="button" aria-label="대면 대화 가능 여부"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5 8.5 8.5 0 0 1-4-1L4 20l1-4.5a8.5 8.5 0 0 1-1-4A8.5 8.5 0 0 1 12.5 3 8.5 8.5 0 0 1 21 11.5z"/><path d="M8.5 11h.01M12 11h.01M15.5 11h.01"/></svg></button>   <!-- 대면 대화 가능 상태(가운데 · 같은 장소+관계 양호 = 터콰이즈 활성 / 불가 = 흐림 · 운영자 260717) -->
+      <span class="yh-r"></span>   <!-- 수화기 = call.js가 이 래퍼 끝 자리에 주입(옵셔널 축) -->
     </div>
     <div class="yeta-stage">
       <div class="ybg" id="ybgA"></div><div class="ybg" id="ybgB"></div>
