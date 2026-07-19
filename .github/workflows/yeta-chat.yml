@@ -81,6 +81,9 @@ jobs:
           # 무전기(PTT) 답장 음성 — ⚠️유료 TTS·ptt 턴에서만 발동(yeta_tts.py — 클론 el: 우선·OpenAI 폴백 · 없으면 텍스트만)
           ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY_nomute || secrets.OPENAI_API_KEY }}
+          # KIMI-K3(문샷 종량제 · 운영자 260719 "KIMI_CODE_MUTE 키로 대화 연결") — 다이얼 kimi-k3 턴만 gen_out이
+          #   Anthropic 호환 게이트로 국소 리라우트(서브셸 주입 = 구독 OAuth·폴오버 체인 무오염 · 아래 unset ANTHROPIC_* 과 무충돌)
+          KIMI_API_KEY: ${{ secrets.KIMI_CODE_MUTE }}
           # YETA_SAFE 기본 ON(스크립트) = 런타임 CLAUDE.md 미주입(개발 세션 전용 · 운영자 260704) · 회귀 = YETA_SAFE: '0'
         run: |
           [ -n "${CLAUDE_CODE_OAUTH_TOKEN}" ] || { echo "::error::OAuth 토큰 없음"; exit 1; }

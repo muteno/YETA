@@ -327,6 +327,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   .ym-seg:active { transform:scale(var(--press-s,.9)); }
   .ym-model { color:var(--accent); }   /* Opus = 라임(게이지 칩 계보) */
   .ym-model.s { color:var(--cobalt); }   /* Sonnet = 코발트 */
+  .ym-model.k { color:var(--think); }   /* KIMI = 터콰이즈(--think 계승 · 260719) */
   .ym-sep { opacity:.5; }
   /* 캐릭터 프로필 팝오버(운영자 260709 "프사 클릭 = 현재 생각·소개") — 표면 = .yeta-pick 정본 계승 · 내부 = 디테일 카드 결 축소판 */
   #yetaProfPop { display:flex; flex-direction:column; align-items:center; text-align:center; gap:7px; padding:var(--sp-3) var(--sp-2); }
@@ -1015,6 +1016,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   .ychip { padding:2px 9px; border-radius:var(--r-pill); font-size:var(--fs-xs); font-weight:var(--fw-b); white-space:nowrap; letter-spacing:.02em; }   /* [모델][노력] 칩(운영자 260710 "MODEL | 빠름 중간 깊게") · .yme-tag 플레이트 결 계승 */
   .ychip-m { border:1px solid rgba(var(--accent-rgb),.45); background:rgba(var(--accent-rgb),.14); color:var(--accent); }   /* 모델 칩 = Opus 라임 */
   .ychip-m.s { border-color:rgba(var(--cobalt-rgb),.55); background:rgba(var(--cobalt-rgb),.18); color:var(--cobalt); }   /* Sonnet = 코발트 */
+  .ychip-m.k { border-color:rgba(var(--think-rgb),.55); background:rgba(var(--think-rgb),.18); color:var(--think); }   /* KIMI = 터콰이즈(--think 계승 · 260719) */
   .ychip-e { border:1px solid var(--glass-line); background:rgba(var(--fg-rgb),.05); color:var(--fg-2); }   /* 노력 칩 = 무채 */
   .ydepth-gauge { overflow:hidden; max-height:0; opacity:0; margin-top:0; transition:max-height .34s var(--ease), opacity .34s var(--ease), margin .34s var(--ease); }   /* 카드 안 촤르륵 */
   .yset-item.ydepth.open .ydepth-gauge { max-height:100px; opacity:1; margin-top:13px; }
@@ -1022,26 +1024,31 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   .yset-item.ydepth.open .ydepth-head .si-v svg { transform:rotate(90deg); }
   .ydepth-track { position:relative; height:20px; display:flex; align-items:center; }   /* 썸 지름 높이 = 트랙 세로중앙 정렬 보장 */
   .ydepth-line { position:relative; width:100%; height:7px; border-radius:var(--r-pill); border:1px solid var(--glass-line);
-    background:linear-gradient(90deg, rgba(var(--cobalt-rgb),.32) 0%, rgba(var(--cobalt-rgb),1) 44%, transparent 46%, transparent 54%, rgba(var(--accent-rgb),.32) 56%, rgba(var(--accent-rgb),1) 100%); }   /* 좌 Sonnet 코발트 램프 + 경계 + 우 Opus 라임 램프(노력도↑ 세짐) */
-  .ydepth-line::after { content:""; position:absolute; top:-4px; bottom:-4px; left:50%; border-left:1.5px dashed rgba(var(--fg-rgb),.55); }   /* 모델 경계 점선(살짝) */
+    background:linear-gradient(90deg, rgba(var(--cobalt-rgb),.32) 0%, rgba(var(--cobalt-rgb),1) 28.6%, transparent 30.6%, transparent 36%, rgba(var(--accent-rgb),.32) 38%, rgba(var(--accent-rgb),1) 61.9%, transparent 63.9%, transparent 69.4%, rgba(var(--think-rgb),.32) 71.4%, rgba(var(--think-rgb),1) 100%); }   /* 좌 Sonnet 코발트 + 중앙 Opus 라임 + 우 KIMI 터콰이즈 램프(각 구간 노력도↑ 세짐 · 3열 260719 — 경계 비례는 종전 ±기하 유지) */
+  .ydepth-line::before, .ydepth-line::after { content:""; position:absolute; top:-4px; bottom:-4px; border-left:1.5px dashed rgba(var(--fg-rgb),.55); }   /* 모델 경계 점선(살짝) ×2 */
+  .ydepth-line::before { left:33.333%; } .ydepth-line::after { left:66.667%; }
   .ydepth-range { -webkit-appearance:none; appearance:none; position:absolute; inset:0; width:100%; height:100%; margin:0; background:transparent; outline:none; cursor:pointer; }   /* 투명 오버레이 = 드래그·스냅·키보드 · .yset-range 썸 계승 */
   .ydepth-range::-webkit-slider-thumb { -webkit-appearance:none; appearance:none; width:20px; height:20px; border-radius:50%; background:var(--accent); border:2px solid var(--bg); box-shadow:0 0 10px rgba(var(--accent-rgb),.4); transition:transform .18s var(--ease), background .18s var(--ease); }
   .ydepth-range:active::-webkit-slider-thumb { transform:scale(var(--press-l,.95)); }
   .ydepth-range::-moz-range-thumb { width:20px; height:20px; border-radius:50%; background:var(--accent); border:2px solid var(--bg); box-shadow:0 0 10px rgba(var(--accent-rgb),.4); }
   .ydepth-wrap[data-model="s"] .ydepth-range::-webkit-slider-thumb { background:var(--cobalt); box-shadow:0 0 10px rgba(var(--cobalt-rgb),.5); }   /* Sonnet 구간 = 코발트 썸 */
   .ydepth-wrap[data-model="s"] .ydepth-range::-moz-range-thumb { background:var(--cobalt); }
+  .ydepth-wrap[data-model="k"] .ydepth-range::-webkit-slider-thumb { background:var(--think); box-shadow:0 0 10px rgba(var(--think-rgb),.5); }   /* KIMI 구간 = 터콰이즈 썸(260719) */
+  .ydepth-wrap[data-model="k"] .ydepth-range::-moz-range-thumb { background:var(--think); }
   .ydepth-legend { display:flex; margin-top:10px; }
   .ydepth-half { flex:1 1 0; display:flex; flex-direction:column; gap:3px; }
-  .ydepth-half.hs { padding-right:12px; } .ydepth-half.ho { padding-left:12px; }
+  .ydepth-half.hs { padding-right:8px; } .ydepth-half.ho { padding:0 8px; } .ydepth-half.hk { padding-left:8px; }   /* 3열(260719) — 종전 12px 숨통을 열 수 3분할에 맞춰 8px 균등 */
   .ydepth-effs { display:flex; justify-content:space-between; }
   .ydepth-effs i { font-size:var(--fs-meta); color:var(--mut); font-style:normal; font-weight:var(--fw-b); transition:color .18s var(--ease); }
   .ydepth-effs i.on { color:var(--fg); }
   /* 대화 깊이 안내(운영자 260712 "경고 감 X · 토글 아래 중앙정렬 · 작은 블러 글래스") — Sonnet 구간(data-model=s)일 때만 촤르륵 노출 · 경고 톤(danger) 아님 = 뉴트럴 정보 */
   .ydepth-note { max-height:0; opacity:0; overflow:hidden; margin-top:0; text-align:center; transition:max-height .3s var(--ease), opacity .3s var(--ease), margin .3s var(--ease); }
-  .ydepth-wrap[data-model="s"] .ydepth-note { max-height:44px; opacity:1; margin-top:11px; }
+  .ydepth-wrap[data-model="s"] .ydepth-note, .ydepth-wrap[data-model="k"] .ydepth-note { max-height:44px; opacity:1; margin-top:11px; }
+  .ydepth-note .nns, .ydepth-note .nnk { display:none; }   /* 모델별 안내 1장만(s=소넷 품질 · k=키미 과금 · 260719) */
+  .ydepth-wrap[data-model="s"] .ydepth-note .nns, .ydepth-wrap[data-model="k"] .ydepth-note .nnk { display:inline-block; }
   .ydepth-note span { display:inline-block; padding:6px 12px; border-radius:var(--r-pill); background:var(--glass); backdrop-filter:blur(var(--blur-m)); -webkit-backdrop-filter:blur(var(--blur-m)); border:1px solid var(--glass-line); color:var(--fg-2); font-size:var(--fs-xs); font-weight:var(--fw-b); line-height:1.4; }
   .ydepth-mn { font-size:var(--fs-meta); font-weight:var(--fw-x); letter-spacing:.08em; text-align:center; opacity:.5; transition:opacity .18s var(--ease); }
-  .ydepth-half.hs .ydepth-mn { color:var(--cobalt); } .ydepth-half.ho .ydepth-mn { color:var(--accent); }
+  .ydepth-half.hs .ydepth-mn { color:var(--cobalt); } .ydepth-half.ho .ydepth-mn { color:var(--accent); } .ydepth-half.hk .ydepth-mn { color:var(--think); }
   .ydepth-half.act .ydepth-mn { opacity:1; }
   /* 편집 시트(이름·상태 메시지) = 온브랜드 글래스 모달(dialog 정본 계승) */
   #yedit { border:none; padding:0; background:none; color:var(--fg); max-width:min(92vw,360px); overflow:visible; }
@@ -1572,9 +1579,9 @@ function miniToast(msg) {   // 범용 미니 토스트(nm-toast 계승·초록·
 const yetadlg = $('#yetadlg');
 let YCHARS = [], YWORLD = null, YCUR = null, YREADY = false, YSESS = null, _yPoll = null;
 const YDIAL = { model: 'claude-opus-4-8', effort: 'low' };   // 다이얼 = 설정 탭에서 변경 가능(운영자 260709 "소넷 전환 등 다 가능하게" — 260703 고정 해제) · 기본 = opus×low(30초 컷) · 서버 화이트리스트(MODELS/EFFORTS)와 짝
-const YDIAL_MODELS = { opus: ['claude-opus-4-8', 'Opus 4.8'], sonnet: ['claude-sonnet-5', 'Sonnet 5'] };   // 키 = localStorage 값 · [정확 모델 ID(§기틀), 표시명]
+const YDIAL_MODELS = { opus: ['claude-opus-4-8', 'Opus 4.8'], sonnet: ['claude-sonnet-5', 'Sonnet 5'], kimi: ['kimi-k3', 'Kimi K3'] };   // 키 = localStorage 값 · [정확 모델 ID(§기틀), 표시명] · kimi = 문샷 종량제(운영자 260719)
 const YDIAL_EFFS = [['low', '빠름'], ['', '깊게'], ['max', '최대']];   // '' = --effort 생략(CLI 기본 = 깊게·느림) · 게이트웨이 EFFORTS 화이트리스트 부분집합
-const YDIAL_DEPTH = [['sonnet', 'low'], ['sonnet', ''], ['sonnet', 'max'], ['opus', 'low'], ['opus', ''], ['opus', 'max']];   // 「대화 깊이」 통합 게이지 6단(운영자 260710 — 대화모델 행+생각깊이 행 통합) · [localStorage model 키, effort] · 0-2 Sonnet·3-5 Opus · 서버 model/effort 독립 화이트리스트(2×3=6 전부 유효)
+const YDIAL_DEPTH = [['sonnet', 'low'], ['sonnet', ''], ['sonnet', 'max'], ['opus', 'low'], ['opus', ''], ['opus', 'max'], ['kimi', 'low'], ['kimi', ''], ['kimi', 'max']];   // 「대화 깊이」 통합 게이지 9단(운영자 260710 통합 → 260719 KIMI-K3 증설 · 순서 SONNET→OPUS→KIMI) · [localStorage model 키, effort] · 0-2 Sonnet·3-5 Opus·6-8 Kimi · 서버 model/effort 독립 화이트리스트(3×3=9 전부 유효)
 const YDEPTH_EFF = ['빠름', '중간', '깊게'];   // 6단 게이지 노력 표시(low/''/max 순 · 운영자 260710 라벨 — 최대→깊게·중간 신설)
 function yDialLoad() {
   let m = 'opus', e = 'low', vf = false;
@@ -2568,30 +2575,32 @@ const YICO = {
   gear: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.11-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.55-1.11 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h.02a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v.02a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1z"/></svg>'
 };
 const ySetVal = k => {   // 설정 값 라벨 + 기본값 이탈 판정 — 초기 렌더·탭 갱신 공용 SSOT(운영자 260709 "고른 값 = 강조 · 기본값 아니면 2강조(터콰이즈)")
-  if (k === 'model') return [YDIAL.model === 'claude-sonnet-5' ? 'Sonnet 5' : 'Opus 4.8', YDIAL.model !== 'claude-opus-4-8'];
+  if (k === 'model') return [(Object.values(YDIAL_MODELS).find(x => x[0] === YDIAL.model) || YDIAL_MODELS.opus)[1], YDIAL.model !== 'claude-opus-4-8'];   // 표시명 = YDIAL_MODELS SSOT(3모델 260719)
   if (k === 'effort') return YDIAL.vfast ? ['매우 빠름', true] : [(YDIAL_EFFS.find(x => x[0] === YDIAL.effort) || YDIAL_EFFS[0])[1], YDIAL.effort !== 'low'];   // 매우 빠름(운영자 260709) = sonnet 자동 결합 · 항상 2강조(비기본)
   if (k === 'latin') return [yFontGet('latin') === 'lemonmilk' ? 'LEMON MILK' : 'Pretendard', yFontGet('latin') !== 'lemonmilk'];   // 기본 = LEMONMILK(운영자 260708) — 옛 "기본(Pretendard)" 라벨은 기본값 전환 전 잔재라 정정
   if (k === 'hangul') return [yFontGet('hangul') === 'paperlogy' ? 'Paperlogy' : 'Pretendard', yFontGet('hangul') !== 'paperlogy'];
   return [(YFS_OPTS.find(o => o[0] === yFsGet()) || YFS_OPTS[0])[1], yFsGet() !== '1'];   // 'fs' 글자 크기(기본 = 보통)
 };
 const ySetVt = k => { const [t, d] = ySetVal(k); return `<span class="si-vt${d ? ' mod' : ''}">${t}</span>`; };
-// 「대화 깊이」 통합 게이지(운영자 260710) — 대화모델 행+생각깊이 행 통합 · 6단 선형(0-2 Sonnet·3-5 Opus × 빠름/중간/깊게)
-function yDepthIdx() { const b = YDIAL.model === 'claude-sonnet-5' ? 0 : 3, e = YDIAL.effort === 'low' ? 0 : YDIAL.effort === '' ? 1 : 2; return b + e; }   // 현 model×effort → 0-5
-function yDepthChips() { const i = yDepthIdx(), s = i < 3; return `<span class="ychip ychip-m${s ? ' s' : ''}">${s ? 'SONNET' : 'OPUS'}</span><span class="ychip ychip-e">${YDEPTH_EFF[i % 3]}</span>`; }   // 헤더 [모델][노력] 칩
+// 「대화 깊이」 통합 게이지(운영자 260710) — 대화모델 행+생각깊이 행 통합 · 9단 선형(0-2 Sonnet·3-5 Opus·6-8 Kimi × 빠름/중간/깊게 · 260719 3열)
+function yDepthIdx() { const b = YDIAL.model === 'claude-sonnet-5' ? 0 : YDIAL.model === 'kimi-k3' ? 6 : 3, e = YDIAL.effort === 'low' ? 0 : YDIAL.effort === '' ? 1 : 2; return b + e; }   // 현 model×effort → 0-8
+const yDepthSec = i => i < 3 ? 's' : i < 6 ? 'o' : 'k';   // 게이지 인덱스 → 모델 구간 키(s=Sonnet·o=Opus·k=Kimi · 3모델 260719)
+function yDepthChips() { const i = yDepthIdx(), c = yDepthSec(i); return `<span class="ychip ychip-m${c === 's' ? ' s' : c === 'k' ? ' k' : ''}">${c === 's' ? 'SONNET' : c === 'k' ? 'KIMI-K3' : 'OPUS'}</span><span class="ychip ychip-e">${YDEPTH_EFF[i % 3]}</span>`; }   // 헤더 [모델][노력] 칩
 function yDepthRow() {
-  const i = yDepthIdx(), s = i < 3, si = i % 3;
-  const effs = isS => YDEPTH_EFF.map((l, ei) => `<i class="${isS === s && ei === si ? 'on' : ''}">${l}</i>`).join('');
+  const i = yDepthIdx(), sec = yDepthSec(i), si = i % 3;
+  const effs = c => YDEPTH_EFF.map((l, ei) => `<i class="${c === sec && ei === si ? 'on' : ''}">${l}</i>`).join('');
   return `<div class="yset-item ydepth" id="ydepthRow">`
     + `<button type="button" class="ydepth-head" aria-expanded="false"><span class="si-ic">${YICO.chat}</span>`
     + `<span class="si-lbl"><span class="si-t">대화 깊이</span><span class="si-d">모델 × 노력 · 라인으로 조정</span></span>`
     + `<span class="si-v ydepth-v" id="ydepthChips">${yDepthChips()}${YICO.chev}</span></button>`
-    + `<div class="ydepth-gauge"><div class="ydepth-wrap" id="ydepthWrap" data-model="${s ? 's' : 'o'}">`
+    + `<div class="ydepth-gauge"><div class="ydepth-wrap" id="ydepthWrap" data-model="${sec}">`
     + `<div class="ydepth-track"><div class="ydepth-line"></div>`
-    + `<input type="range" class="ydepth-range" id="ydepthRange" min="0" max="5" step="1" value="${i}" aria-label="대화 깊이"></div>`
+    + `<input type="range" class="ydepth-range" id="ydepthRange" min="0" max="8" step="1" value="${i}" aria-label="대화 깊이"></div>`
     + `<div class="ydepth-legend">`
-    + `<div class="ydepth-half hs${s ? ' act' : ''}"><div class="ydepth-effs">${effs(true)}</div><div class="ydepth-mn">SONNET</div></div>`
-    + `<div class="ydepth-half ho${s ? '' : ' act'}"><div class="ydepth-effs">${effs(false)}</div><div class="ydepth-mn">OPUS</div></div>`
-    + `</div><div class="ydepth-note"><span>소넷 모델은 빠르지만 품질은 낮을 수 있어</span></div></div></div></div>`;
+    + `<div class="ydepth-half hs${sec === 's' ? ' act' : ''}"><div class="ydepth-effs">${effs('s')}</div><div class="ydepth-mn">SONNET</div></div>`
+    + `<div class="ydepth-half ho${sec === 'o' ? ' act' : ''}"><div class="ydepth-effs">${effs('o')}</div><div class="ydepth-mn">OPUS</div></div>`
+    + `<div class="ydepth-half hk${sec === 'k' ? ' act' : ''}"><div class="ydepth-effs">${effs('k')}</div><div class="ydepth-mn">KIMI-K3</div></div>`
+    + `</div><div class="ydepth-note"><span class="nns">소넷 모델은 빠르지만 품질은 낮을 수 있어</span><span class="nnk">KIMI-K3는 문샷 종량제 키로 과금돼</span></div></div></div></div>`;
 }
 function yShowSettings(noNav) {
   if (!noNav) navHome();   // 네비·스와이프 직진입 = 홈 레벨서 새로 열기 — 설정 위 약관 등 잔존 스택·중복 적재([설정,약관,설정]) 차단 · navSwap 경유(프로필→설정)는 이미 교체 등재라 스킵
@@ -2822,15 +2831,15 @@ $('#ycsettingsCard').addEventListener('click', e => {
 });
 $('#ycsettingsCard').addEventListener('input', e => {   // 「대화 깊이」 통합 게이지 드래그 = model×effort 저장 + 헤더 칩·썸·범례 실시간 갱신(운영자 260710)
   const r = e.target.closest('.ydepth-range'); if (!r) return;
-  const i = Math.max(0, Math.min(5, parseInt(r.value, 10) || 0)), s = i < 3, si = i % 3;
+  const i = Math.max(0, Math.min(8, parseInt(r.value, 10) || 0)), sec = yDepthSec(i), si = i % 3;
   const d = YDIAL_DEPTH[i];
   try { localStorage.setItem('yeta_dial_model', d[0]); localStorage.setItem('yeta_dial_effort', d[1]); localStorage.removeItem('yeta_dial_vfast'); } catch (x) {}
   yDialLoad(); yMeter();
-  const wrap = document.getElementById('ydepthWrap'); if (wrap) wrap.dataset.model = s ? 's' : 'o';
+  const wrap = document.getElementById('ydepthWrap'); if (wrap) wrap.dataset.model = sec;
   const chips = document.getElementById('ydepthChips'); if (chips) chips.innerHTML = yDepthChips() + YICO.chev;
   document.querySelectorAll('#ydepthRow .ydepth-half').forEach((h, hi) => {
-    const isS = hi === 0; h.classList.toggle('act', isS === s);
-    h.querySelectorAll('.ydepth-effs i').forEach((t, ti) => t.classList.toggle('on', isS === s && ti === si));
+    const c = ['s', 'o', 'k'][hi]; h.classList.toggle('act', c === sec);   // 구간 3열(260719) — 마크업 순서 hs·ho·hk와 짝
+    h.querySelectorAll('.ydepth-effs i').forEach((t, ti) => t.classList.toggle('on', c === sec && ti === si));
   });
   // Sonnet 안내 = 하단 경고 토스트 폐지 → 게이지 안 .ydepth-note(글래스·중앙·data-model=s CSS 자동표시)로 대체(운영자 260712)
 });
@@ -3447,7 +3456,7 @@ function yMeter() {   // 좌상단 기록용 미터(운영자 260709 첨부3 →
   const turns = (YTH() || {}).turns || [];
   let tot = 0;
   for (const t of turns) if (t && t.tok) tot += Math.max(0, +t.tok.i || 0) + Math.max(0, +t.tok.o || 0);   // 음수·형이상 가드(평의회10)
-  const isS = YDIAL.model === 'claude-sonnet-5', mName = isS ? 'Sonnet 5' : 'Opus 4.8';
+  const isS = YDIAL.model === 'claude-sonnet-5', isK = YDIAL.model === 'kimi-k3', mName = isS ? 'Sonnet 5' : isK ? 'Kimi K3' : 'Opus 4.8';
   const eLabel = (YDIAL_EFFS.find(x => x[0] === YDIAL.effort) || YDIAL_EFFS[0])[1];   // low=빠름/''=깊게/max=최대
   let stat = `${yMeterFmt(tot)} tok`;   // 뷰0 = 누적 토큰(현행 온존)
   if (_ymView) {
@@ -3456,7 +3465,7 @@ function yMeter() {   // 좌상단 기록용 미터(운영자 260709 첨부3 →
     else if (_ymView === 1) { const px = [s2.wn ? `픽업 ${s2.w.toFixed(1)}s` : '', s2.gn ? `생성 ${s2.g.toFixed(0)}s` : '', s2.fn ? `첫문장 ${s2.f.toFixed(1)}s` : ''].filter(Boolean).join(' · '); stat = px ? '⏱ ' + px : '⏱ 기록 없음'; }   // 속도 = 최근 10답장 평균(러너 lat/gen_s 박제분만)
     else stat = `📏 ${s2.chars}자 · 지문 ${s2.jmPct}% · ${s2.sents.toFixed(1)}문장 · ${s2.bub.toFixed(1)}버블`;   // 길이 = 지문(상황설명) 비중 포함
   }
-  el.innerHTML = `<button type="button" class="ym-seg ym-model${isS ? ' s' : ''}" aria-label="모델 전환 — 지금 ${mName}, 탭 = Opus↔Sonnet">${mName}</button>`
+  el.innerHTML = `<button type="button" class="ym-seg ym-model${isS ? ' s' : isK ? ' k' : ''}" aria-label="모델 전환 — 지금 ${mName}, 탭 = Sonnet→Opus→Kimi 순환">${mName}</button>`
     + `<span class="ym-sep">·</span><button type="button" class="ym-seg ym-eff" aria-label="노력도 전환 — 지금 ${eLabel}, 탭 = 순환">${esc(eLabel)}</button>`
     + `<button type="button" class="ym-seg ym-stat" aria-label="계기판 전환 — 토큰/속도/길이 순환">  |  ${stat}</button>`;   // 모델=토글 · 노력=순환 · 계기판=토큰→속도→길이 순환(운영자 260714)
 }
@@ -3634,10 +3643,10 @@ $('#yetaSc').addEventListener('click', e => {
   ta.focus();
 });
 $('#yetaInvBtn').addEventListener('click', e => { e.stopPropagation(); yPdClose(); yInvToggle(); });   // 헤더 초대 + = 초대 팝업(운영자 260712 · .off = pointer-events:none이라 만석·대기 시 무반응 = 자리만 유지)
-$('#yetaMeter').addEventListener('click', e => {   // 미터 탭 = 모델 토글(Opus↔Sonnet) / 노력 순환(빠름→깊게→최대→빠름) — 운영자 260712 · 6단 슬라이더와 별개 직접 전환
+$('#yetaMeter').addEventListener('click', e => {   // 미터 탭 = 모델 순환(Sonnet→Opus→Kimi · 260719) / 노력 순환(빠름→깊게→최대→빠름) — 운영자 260712 · 9단 슬라이더와 별개 직접 전환
   const seg = e.target.closest('.ym-seg'); if (!seg) return; e.stopPropagation();
   if (seg.classList.contains('ym-stat')) { _ymView = (_ymView + 1) % 3; yMeter(); return; }   // 계기판 순환(토큰→속도→길이) — 다이얼 무변경(운영자 260714)
-  if (seg.classList.contains('ym-model')) { try { localStorage.setItem('yeta_dial_model', YDIAL.model === 'claude-sonnet-5' ? 'opus' : 'sonnet'); } catch (x) {} }
+  if (seg.classList.contains('ym-model')) { const mo = ['sonnet', 'opus', 'kimi'], cur = YDIAL.model === 'claude-sonnet-5' ? 'sonnet' : YDIAL.model === 'kimi-k3' ? 'kimi' : 'opus'; try { localStorage.setItem('yeta_dial_model', mo[(mo.indexOf(cur) + 1) % 3]); } catch (x) {} }   // 3모델 순환(운영자 260719 순서 SONNET→OPUS→KIMI)
   else { const order = ['low', '', 'max']; try { localStorage.setItem('yeta_dial_effort', order[(order.indexOf(YDIAL.effort) + 1) % 3]); } catch (x) {} }   // 노력만 순환(모델과 독립) · 최대→다시 빠름
   try { localStorage.removeItem('yeta_dial_vfast'); } catch (x) {}
   yDialLoad(); yMeter();
