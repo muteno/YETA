@@ -16,6 +16,9 @@ CHAR="${YETA_CHAR:?세션 id 필요(env YETA_CHAR — 단일 스레드 = main)}"
 
 DEFAULT_MODEL="claude-opus-4-8"   # D1 = 세션급(운영자 확정)
 DEFAULT_EFF="low"                 # 30초 컷 — effort 미지정은 CLI 기본(high)로 돌아 느림 → 기본 low(아이데이션①)
+# KIMI-K3(운영자 260719 종량제) = 문샷 Anthropic 호환 게이트 경유 — 다이얼 kimi-k3 턴만 gen_out이 BASE_URL·키를 서브셸 국소 주입(구독 OAuth·폴오버 체인 무오염).
+#   env: KIMI_API_KEY(= 레포 시크릿 KIMI_CODE_MUTE · yeta-chat.yml) · KIMI_BASE_URL(선택 노브 · 기본 https://api.moonshot.ai/anthropic).
+KIMI_MODEL="kimi-k3"
 SAFE=""
 case "${YETA_SAFE:-1}" in 1|true|on) SAFE="--safe-mode" ;; esac   # 기본 ON — 런타임은 CLAUDE.md 미주입(개발 세션 전용 · 턴당 ~37k 토큰 절약 · 운영자 260704 · 회귀=YETA_SAFE=0) · ⚠️ --bare 절대 금지(OAuth 즉사)
 export CLAUDE_BARE=0              # 방어 명시 — 공유 기본값이 미래에 ON 회귀해도 챗은 불가(평의회①)
@@ -644,10 +647,12 @@ gen_out() {
   EFF_ARGS=(); [ -n "$EFF" ] && EFF_ARGS=(--effort "$EFF")   # 빈값 = 플래그 생략(gate_judge SSOT 패턴)
   T0=$SECONDS; GEN_T0MS="$(date +%s%3N)"; OUT=""; TOK_I=0; TOK_O=0; rm -f /tmp/yeta_meter_last.json   # 이 생성의 실측 토큰(METER_LAST) — finish가 답장 턴 tok으로 박제(뷰어 좌상단 미터 · 운영자 260709) · GEN_T0MS = 계기판 lat(픽업 w·첫문장 f) 기준점(260714)
   for attempt in $(seq 1 "$INLINE_TRIES"); do
-    OUT="$(printf '%s' "$prompt" | METER_SRC=yeta METER_REF="$PERSONA" METER_MODEL="$MODEL" METER_EFFORT="$EFF" METER_LAST=/tmp/yeta_meter_last.json claude_meter 240 \
+    # kimi 턴 = 문샷 Anthropic 호환 게이트 리라우트(운영자 260719) — 파이프 그룹 = 서브셸이라 주입·unset이 이 호출에만 국소(다음 턴 Claude·폴오버 체인 무오염) · AUTH_TOKEN+API_KEY 겸장 = CLI 판독 축 이중 커버
+    OUT="$(printf '%s' "$prompt" | { if [ "$MODEL" = "$KIMI_MODEL" ]; then export ANTHROPIC_BASE_URL="${KIMI_BASE_URL:-https://api.moonshot.ai/anthropic}" ANTHROPIC_AUTH_TOKEN="${KIMI_API_KEY:-}" ANTHROPIC_API_KEY="${KIMI_API_KEY:-}"; unset CLAUDE_CODE_OAUTH_TOKEN; fi
+          METER_SRC=yeta METER_REF="$PERSONA" METER_MODEL="$MODEL" METER_EFFORT="$EFF" METER_LAST=/tmp/yeta_meter_last.json claude_meter 240 \
           --model "$MODEL" $SAFE "${SYS_ARGS[@]}" "${EFF_ARGS[@]}" \
           --disallowedTools "$_dis" "${_allow[@]}" \
-          --max-turns "$_mt" \
+          --max-turns "$_mt"; } \
           2> /tmp/yeta.err)"
     rc=$?
     if [ $rc -eq 0 ] && [ -n "${OUT// }" ]; then
@@ -655,7 +660,7 @@ gen_out() {
       #    성공 판정 전에 is_quota 검사 → 계정 전환 후 재시도 · 체인 소진 = 실패 처리(원문이 캐릭터 대사로 유출 금지)
       if is_quota "$OUT"; then
         echo "  ⚠️ 쿼터 한도 텍스트(rc=0) — 계정 전환 시도"
-        if claude_failover "$OUT"; then OUT=""; continue; fi
+        if [ "$MODEL" != "$KIMI_MODEL" ] && claude_failover "$OUT"; then OUT=""; continue; fi   # kimi = 종량제 잔액 축 — 구독 계정 스왑 무의미(스왑 신호 오염 금지 · 260719)
         rc=1; break   # OUT 보존 = 호출부 is_quota 재판정("사용량 한도야" 안내 경로)
       fi
       # ⚠️ 캐릭터 프레임 이탈(메타발화·Claude Code로 응답·영어 유출) = L0 붕괴 → 성공 판정 전 폐기(스샷 사고 260712 · is_quota 가드와 동형 계보).
@@ -668,14 +673,14 @@ gen_out() {
       break
     fi
     # effort 플래그 거부 폴백(1회) — sonnet-5 는 호환이 정설이나 CLI/모델 변동 대비(아이데이션①④ 절충)
-    if [ ${#EFF_ARGS[@]} -gt 0 ] && [ "$_eff_dropped" = 0 ] && grep -qi 'effort' /tmp/yeta.err 2>/dev/null; then
+    if [ ${#EFF_ARGS[@]} -gt 0 ] && [ "$_eff_dropped" = 0 ] && grep -qiE 'effort|thinking' /tmp/yeta.err 2>/dev/null; then   # thinking 추가(260719) — kimi 호환 게이트가 effort→thinking 계열 문구로 거부하는 케이스 흡수
       echo "  ⚠️ effort 거부 추정 — effort 빼고 재시도"; EFF_ARGS=(); EFF=""; _eff_dropped=1; continue
     fi
     # system-prompt 플래그 거부 폴백(1회) — 주간 캐시된 구버전 CLI 가 --system-prompt/--append-system-prompt 를 모르면 하드다운 대신 프레임 드롭(가드는 유지 = L0 그물 존치)
     if [ ${#SYS_ARGS[@]} -gt 0 ] && grep -qiE 'unknown option|unrecognized|--(append-)?system-prompt' /tmp/yeta.err 2>/dev/null; then
       echo "  ⚠️ system-prompt 플래그 거부 추정(CLI 버전 드리프트) — 프레임 빼고 재시도"; SYS_ARGS=(); continue
     fi
-    if claude_failover "$OUT$(cat /tmp/yeta.err 2>/dev/null)"; then continue; fi   # 서브 미주입 = 자동 no-op(본업 보호)
+    if [ "$MODEL" != "$KIMI_MODEL" ] && claude_failover "$OUT$(cat /tmp/yeta.err 2>/dev/null)"; then continue; fi   # 서브 미주입 = 자동 no-op(본업 보호) · kimi = 구독 체인 무관(260719)
     if [ "$attempt" -lt "$INLINE_TRIES" ] && is_transient "$OUT$(cat /tmp/yeta.err 2>/dev/null)"; then
       echo "  ⏳ 일시 과부하(${attempt}/${INLINE_TRIES}) — ${inline_delay}s 후 재시도"
       sleep "$inline_delay"; inline_delay=$((inline_delay * 2)); continue
@@ -786,7 +791,7 @@ invite_turn() {   # extract_mat mode=invite — 판정 1회(같은 폴오버 체
   PLACE_NM="$(matv place_nm)"; BARGE_VIA=""   # 초대받은 애의 지금 장소(거절 사유 구체화 · 마주침 260707)
   ME_CALL="$(matv me_call)"; ME_ABOUT="$(matv me_about)"   # 유저 프로필(호칭+소개 · 260708) — 초대 첫마디도 유저 이름 호명 가능
   GAP_H=0; RIV=""; HANDOFF=""
-  case "$RAW_MODEL" in claude-opus-4-8|claude-sonnet-5) MODEL="$RAW_MODEL" ;; *) MODEL="$DEFAULT_MODEL" ;; esac
+  case "$RAW_MODEL" in claude-opus-4-8|claude-sonnet-5) MODEL="$RAW_MODEL" ;; "$KIMI_MODEL") MODEL="$([ -n "${KIMI_API_KEY:-}" ] && echo "$KIMI_MODEL" || echo "$DEFAULT_MODEL")" ;; *) MODEL="$DEFAULT_MODEL" ;; esac   # 초대 판정 = 내부 기계 축 — kimi 키 부재면 조용히 기본 모델 폴백(에러 표면화는 본답장에서만)
   EFF="low"
   POL="$(matv policy)"; POLICY_BLOCK=""   # L1 시즌 수위 = 초대 첫마디에도 적용(보안감사③ — 기존 누락 편입)
   if [ -n "$POL" ] && [ "$POL" != "None" ]; then POLICY_BLOCK="$(python3 - "$POL" "$ROOT/apps/yeta/policy.json" < /dev/null <<'PYP'
@@ -1011,7 +1016,8 @@ ${_afl}위 경로의 사진을 Read 도구로 직접 열어 실제 내용을 확
 "
     fi
   fi
-  case "$RAW_MODEL" in claude-opus-4-8|claude-sonnet-5) MODEL="$RAW_MODEL" ;; *) MODEL="$DEFAULT_MODEL" ;; esac   # 화이트리스트 재강제(방어 심층 · 아이데이션④)
+  case "$RAW_MODEL" in claude-opus-4-8|claude-sonnet-5|"$KIMI_MODEL") MODEL="$RAW_MODEL" ;; *) MODEL="$DEFAULT_MODEL" ;; esac   # 화이트리스트 재강제(방어 심층 · 아이데이션④ · kimi-k3 = 운영자 260719)
+  if [ "$MODEL" = "$KIMI_MODEL" ] && [ -z "${KIMI_API_KEY:-}" ]; then finish error "KIMI 키가 러너에 없어 — 레포 Actions 시크릿 KIMI_CODE_MUTE 확인 후 다시 보내줘"; return 1; fi   # 유저가 명시 선택한 축 = 조용한 폴백 대신 사유 표면화
   case "$RAW_EFF" in low|medium|high|max) EFF="$RAW_EFF" ;; "") EFF="" ;; *) EFF="$DEFAULT_EFF" ;; esac
   [[ "$PERSONA" =~ ^[a-z0-9_-]{1,24}$ ]] || { finish error "페르소나가 비어 있어 — 🎲 다시 뽑아줘"; return 1; }
   CARD="apps/yeta/characters/${PERSONA}.md"
