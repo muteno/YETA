@@ -40,7 +40,7 @@ const MAX_ROOM = 2;                 // 합석 정원(나 제외 캐릭터 수 ·
 const INVITE_TTL = 600000;          // 초대 pending 10분 — 러너 사망 시 스테일 마커가 다음 초대를 영구 차단하지 않게
 const EXPIRE_MS = 86400000;         // 대화 휘발 TTL(운영자 260716 Q.06) — 무음동 6일 = 현실 24h(세계 시계 6배 가속: 실제 4h=하루 → 6일이 현실 하루와 정확히 맞아떨어져 7일[28h] 대신 채택)
 const josa = (s, a, b) => { const c = String(s || '').charCodeAt(String(s || '').length - 1); return c >= 0xAC00 && c <= 0xD7A3 && (c - 0xAC00) % 28 > 0 ? a : b; };   // 받침 → 을/은, 무받침 → 를/는
-const MODELS = new Set(['claude-opus-4-8', 'claude-sonnet-5', 'kimi-k3', 'kimi-k2.5']);   // §기틀 정확 ID — 집합 확장은 운영자 확인(kimi-k3 = 260719 · kimi-k2.5 = 260721 저가축[입력 1/5] 승인 · 둘 다 러너 시크릿 KIMI_CODE_MUTE 경유)
+const MODELS = new Set(['claude-opus-4-8', 'claude-sonnet-5', 'kimi-k3', 'kimi-k2.5']);   // §기틀 정확 ID — 집합 확장은 운영자 확인(kimi-k3 = 260719 · kimi-k2.5 = 260721 승인이나 문샷 /anthropic 게이트 404 실측 = 뷰어 미노출·배선 대기[Q.33] · 둘 다 러너 시크릿 KIMI_CODE_MUTE 경유)
 const EFFORTS = new Set(['', 'low', 'medium', 'high', 'max']);           // '' = --effort 생략(CLI 기본)
 // 클라 텍스트 위장 무력화 SSOT(send/draw/invite/kick/me 공용) — NOTE/MOOD/user_message 파이프 제어토큰 제거.
 // ⚠️ 고정점 루프 = 중첩 마커(예 <<N<<NOTE:a>>OTE:PUB>>) 깊이 무관 붕괴(단일패스는 깊이1만 벗김 = 재조립 생존 · 평의회1 260708). 라벨 [^>]* = 유니코드 안전.

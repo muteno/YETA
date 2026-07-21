@@ -19,7 +19,7 @@ DEFAULT_EFF="low"                 # 30초 컷 — effort 미지정은 CLI 기본
 # KIMI-K3(운영자 260719 종량제) = 문샷 Anthropic 호환 게이트 경유 — 다이얼 kimi-k3 턴만 gen_out이 BASE_URL·키를 서브셸 국소 주입(구독 OAuth·폴오버 체인 무오염).
 #   env: KIMI_API_KEY(= 레포 시크릿 KIMI_CODE_MUTE · yeta-chat.yml) · KIMI_BASE_URL(선택 노브 · 기본 https://api.moonshot.ai/anthropic).
 KIMI_MODEL="kimi-k3"
-KIMI25_MODEL="kimi-k2.5"          # KIMI-2.5(운영자 260721 — 종량제 저가축: 입력 $0.6/출력 $3 = K3의 1/5 · 소넷 미만 품질 = 다이얼 최좌측) — 동일 문샷 게이트·동일 키(KIMI_CODE_MUTE)
+KIMI25_MODEL="kimi-k2.5"          # KIMI-2.5(운영자 260721 저가축 승인 · 입력 $0.6/출력 $3 = K3의 1/5) — ⚠️ 260721 실측: 문샷 /anthropic 게이트 404(미서빙 · 과금 0) → 뷰어 다이얼 미노출·백엔드 배선만 대기(문샷이 게이트에 열면 뷰어 12단만 재개방 = Q.33)
 is_kimi() { case "$1" in "$KIMI_MODEL"|"$KIMI25_MODEL") return 0 ;; esac; return 1; }   # kimi 패밀리 판별 SSOT — 리라우트·폴오버 스킵·키 게이트·책빼기 공용(개방 글롭 금지 = 화이트리스트 정신)
 SAFE=""
 case "${YETA_SAFE:-1}" in 1|true|on) SAFE="--safe-mode" ;; esac   # 기본 ON — 런타임은 CLAUDE.md 미주입(개발 세션 전용 · 턴당 ~37k 토큰 절약 · 운영자 260704 · 회귀=YETA_SAFE=0) · ⚠️ --bare 절대 금지(OAuth 즉사)
