@@ -399,6 +399,13 @@ if kind == "ok":
             _u = S_ROOT.setdefault("usage", {}).setdefault(_gm, {"i": 0, "o": 0, "cr": 0, "n": 0})
             _u["i"] = _u.get("i", 0) + _ti; _u["o"] = _u.get("o", 0) + _to
             _u["cr"] = _u.get("cr", 0) + _tc; _u["n"] = _u.get("n", 0) + 1   # 주의: 성공 답장분만(재시도 폐기·초대 판정 미포함 = 하한 지표 — 정본 회계는 문샷 콘솔)
+            _d = time.strftime("%y%m%d", time.gmtime(time.time() + 9 * 3600))   # KST 일자(§📐 — naive 금지)
+            _ud = S_ROOT.get("usage_day")
+            if not isinstance(_ud, dict) or _ud.get("d") != _d: _ud = {"d": _d, "m": {}}   # 자정(KST) 롤오버 = 다음 답장이 자연 리셋(오늘 버킷 1개만 · 이력 미보관 — Q.38)
+            _um = _ud.setdefault("m", {}).setdefault(_gm, {"i": 0, "o": 0, "cr": 0, "n": 0})
+            _um["i"] = _um.get("i", 0) + _ti; _um["o"] = _um.get("o", 0) + _to
+            _um["cr"] = _um.get("cr", 0) + _tc; _um["n"] = _um.get("n", 0) + 1
+            S_ROOT["usage_day"] = _ud   # 뷰어 설정 '오늘 사용량' 행 소비(운영자 260721 Q.38 "오늘 얼마인지도")
         for ci, ct in enumerate(chunks):
             turn = {"role": "assistant", "text": ct, "ts": now + ci, "persona": turn_persona}
             if ov_mark: turn["ov"] = 1               # 겹침 답장 표식(260717 ⑨⑩) — 뷰어가 mut 톤으로 렌더(사이에 낑긴 말)
