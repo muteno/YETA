@@ -644,11 +644,14 @@ gen_out() {
   local prompt="$1" inline_delay=15 attempt rc=1 _eff_dropped=0
   FRAME_BREAK=0   # 이 생성이 프레임이탈(콘텐츠 거절) 소진으로 실패했는지 — 인캐릭터 이탈 폴백 스위치(260714)
   local _dis="Write,Edit,NotebookEdit,Bash,Task,WebFetch,WebSearch,Read,Glob,Grep" _mt=1
-  local _allow=()
-  if [ "${GEN_ALLOW_READ:-0}" = "1" ]; then   # 첨부 사진 턴(260717 '+') — Read만 개방 + 도구 왕복 여유(사진≤2 + 답) · 그 외 전 경로 = 종전 도구 0
-    _dis="Write,Edit,NotebookEdit,Bash,Task,WebFetch,WebSearch,Glob,Grep"; _mt=4
+  local _allow=() _tools=(--tools "")
+  # 책빼기 본체(운영자 260721 · 평의회A ★1) — --disallowedTools = '권한'층일 뿐 도구 스키마는 요청에 그대로 실림(K3 실측: 한 단어 프롬프트 입력 18,678tok · 대부분 빌트인 스키마).
+  #   --tools "" = 빌트인 스키마 0(가용성층) → 턴당 입력 ~수만→수천 토큰 · 주입발 도구 악용 표면도 원천 소멸 · 캐시 접두 정화. _dis는 이중 방어로 존치(구 CLI --tools 미지원 폴백 시 권한층이 그물).
+  if [ "${GEN_ALLOW_READ:-0}" = "1" ]; then   # 첨부 사진 턴(260717 '+') — Read만 개방 + 도구 왕복 여유(사진≤2 + 답) · 그 외 전 경로 = 도구 0
+    _dis="Write,Edit,NotebookEdit,Bash,Task,WebFetch,WebSearch,Glob,Grep"; _mt=4; _tools=(--tools "Read")
     _allow=(--allowedTools "Read(//tmp/yeta_att_*.jpg)" "Read(/tmp/yeta_att_*.jpg)")   # ⚠️ 경로 샌드박스(평의회 260717 HIGH) — 첨부 파일'만' 허용 · 그 외 Read(세션 파일·/proc/self/environ 등) = 비대화 모드 자동 거부(프롬프트 주입발 시크릿·타 스레드 유출 차단)
   fi
+  local _ftries="$INLINE_TRIES"; is_kimi "$MODEL" && _ftries=2   # kimi 프레임이탈 재생성 캡(평의회A ★4) — 종량제는 폐기분도 전액 재과금: 2회 소진 시 인캐릭터 탈출 폴백으로 조기 전환(전송 재시도는 종전 유지)
   EFF_ARGS=(); [ -n "$EFF" ] && EFF_ARGS=(--effort "$EFF")   # 빈값 = 플래그 생략(gate_judge SSOT 패턴)
   local _sys=("${SYS_ARGS[@]}")
   if is_kimi "$MODEL" && [ "${YETA_SYS:-1}" != "0" ]; then _sys=(--system-prompt "$YSF"); fi   # 책 빼기(260721) — kimi 종량제 턴 한정 시스템 슬롯 교체(상단 SYS_ARGS 주석 참조)
@@ -657,7 +660,7 @@ gen_out() {
     # kimi 턴 = 문샷 Anthropic 호환 게이트 리라우트(운영자 260719) — 파이프 그룹 = 서브셸이라 주입·unset이 이 호출에만 국소(다음 턴 Claude·폴오버 체인 무오염) · AUTH_TOKEN+API_KEY 겸장 = CLI 판독 축 이중 커버
     OUT="$(printf '%s' "$prompt" | { if is_kimi "$MODEL"; then export ANTHROPIC_BASE_URL="${KIMI_BASE_URL:-https://api.moonshot.ai/anthropic}" ANTHROPIC_AUTH_TOKEN="${KIMI_API_KEY:-}" ANTHROPIC_API_KEY="${KIMI_API_KEY:-}"; unset CLAUDE_CODE_OAUTH_TOKEN; fi
           METER_SRC=yeta METER_REF="$PERSONA" METER_MODEL="$MODEL" METER_EFFORT="$EFF" METER_LAST=/tmp/yeta_meter_last.json claude_meter 240 \
-          --model "$MODEL" $SAFE "${_sys[@]}" "${EFF_ARGS[@]}" \
+          --model "$MODEL" $SAFE "${_sys[@]}" "${EFF_ARGS[@]}" "${_tools[@]}" \
           --disallowedTools "$_dis" "${_allow[@]}" \
           --max-turns "$_mt"; } \
           2> /tmp/yeta.err)"
@@ -674,7 +677,7 @@ gen_out() {
       #    시스템 프레임(SYS_ARGS)이 벽이면 is_frame_break 는 그물 — 재생성은 확률적이라 재시도로 거의 복구, 소진 시 실패 처리(유출을 대사로 박제 금지 → finish error 안내).
       if is_frame_break "$OUT"; then
         echo "  ⚠️ 캐릭터 프레임 이탈(메타발화·영어 유출) 감지 — 폐기 후 재시도(L0 기계 백스톱)"
-        if [ "$attempt" -lt "$INLINE_TRIES" ]; then OUT=""; sleep 3; continue; fi
+        if [ "$attempt" -lt "$_ftries" ]; then OUT=""; sleep 3; continue; fi
         rc=1; OUT=""; FRAME_BREAK=1; break   # 재시도 소진 = 실패(유출 텍스트 폐기) · FRAME_BREAK = 콘텐츠 거절 판정(process_turn 인캐릭터 이탈 폴백 · 운영자 260714 "자리를 뜬다")
       fi
       break
@@ -683,9 +686,13 @@ gen_out() {
     if [ ${#EFF_ARGS[@]} -gt 0 ] && [ "$_eff_dropped" = 0 ] && grep -qiE 'effort|thinking' /tmp/yeta.err 2>/dev/null; then   # thinking 추가(260719) — kimi 호환 게이트가 effort→thinking 계열 문구로 거부하는 케이스 흡수
       echo "  ⚠️ effort 거부 추정 — effort 빼고 재시도"; EFF_ARGS=(); EFF=""; _eff_dropped=1; continue
     fi
+    # --tools 플래그 거부 폴백(1회) — 구버전 CLI 드리프트: 스키마 절감만 포기(권한층 _dis 가 그물) · ⚠️ 아래 system-prompt 폴백보다 먼저(둘 다 'unknown option' 매칭 — --tools 문자열로 선별)
+    if [ ${#_tools[@]} -gt 0 ] && grep -qiE 'unknown option|unrecognized' /tmp/yeta.err 2>/dev/null && grep -q -- '--tools' /tmp/yeta.err 2>/dev/null; then
+      echo "  ⚠️ --tools 플래그 거부 추정(CLI 버전 드리프트) — 스키마 절감 빼고 재시도"; _tools=(); continue
+    fi
     # system-prompt 플래그 거부 폴백(1회) — 주간 캐시된 구버전 CLI 가 --system-prompt/--append-system-prompt 를 모르면 하드다운 대신 프레임 드롭(가드는 유지 = L0 그물 존치)
     if [ ${#_sys[@]} -gt 0 ] && grep -qiE 'unknown option|unrecognized|--(append-)?system-prompt' /tmp/yeta.err 2>/dev/null; then
-      echo "  ⚠️ system-prompt 플래그 거부 추정(CLI 버전 드리프트) — 프레임 빼고 재시도"; _sys=(); SYS_ARGS=(); continue
+      echo "  ⚠️ system-prompt 플래그 거부 추정(CLI 버전 드리프트) — 프레임 빼고 재시도"; _sys=(); is_kimi "$MODEL" || SYS_ARGS=(); continue   # ⚠️ kimi 거부(--system-prompt) = 로컬만 드롭 — 전역 SYS_ARGS(--append 축)까지 비우면 웜 후속 Claude 턴 프레임 무음 소실(평의회C 발견1)
     fi
     if ! is_kimi "$MODEL" && claude_failover "$OUT$(cat /tmp/yeta.err 2>/dev/null)"; then continue; fi   # 서브 미주입 = 자동 no-op(본업 보호) · kimi = 구독 체인 무관(260719)
     if [ "$attempt" -lt "$INLINE_TRIES" ] && is_transient "$OUT$(cat /tmp/yeta.err 2>/dev/null)"; then
