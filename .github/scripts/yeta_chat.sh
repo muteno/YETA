@@ -676,7 +676,7 @@ ${line}")"
 
 # ── 생성 공용(본답장 + 초대 판정) — $1=prompt · env MODEL/EFF/SAFE/PERSONA · OUT/GEN_S 설정 · rc 0=성공 ──
 gen_out() {
-  local prompt="$1" inline_delay=15 attempt rc=1 _eff_dropped=0 _fb_n=0
+  local prompt="$1" inline_delay=15 attempt rc=1 _eff_dropped=0 _fb_n=0 _fb_rules=""
   FRAME_BREAK=0   # 이 생성이 프레임이탈(콘텐츠 거절) 소진으로 실패했는지 — 인캐릭터 이탈 폴백 스위치(260714)
   local _dis="Write,Edit,NotebookEdit,Bash,Task,WebFetch,WebSearch,Read,Glob,Grep" _mt=1
   local _allow=() _tools=(--tools "")
@@ -712,12 +712,13 @@ gen_out() {
       #    시스템 프레임(SYS_ARGS)이 벽이면 is_frame_break 는 그물 — 재생성은 확률적이라 재시도로 거의 복구, 소진 시 실패 처리(유출을 대사로 박제 금지 → finish error 안내).
       if is_frame_break "$OUT"; then
         _fb_n=$((_fb_n + 1))
-        echo "  ⚠️ 캐릭터 프레임 이탈(메타발화·영어 유출) 감지 — 폐기 후 재시도(L0 기계 백스톱)"
+        _fb_rules="${_fb_rules:+${_fb_rules} → }${FB_RULE:-?}"   # 회차별 유형 태그 누적(운영자 260721 "걸러지면 어떤 상황인지 알려주면") — 규칙명뿐(대화 내용 0 = D2 안전)
+        echo "  ⚠️ 캐릭터 프레임 이탈 감지[${FB_RULE:-?}] — 폐기 후 재시도(L0 기계 백스톱)"
         if [ "$attempt" -lt "$_ftries" ]; then OUT=""; sleep 3; continue; fi
-        fb_report "재시도 소진(이탈 ${_fb_n}회) → 인캐릭터 탈출 폴백" >/dev/null 2>&1 &   # 관찰 리포트(Q.35) — 백그라운드 = 폴백 지연 0
+        fb_report "재시도 소진(이탈 ${_fb_n}회) → 인캐릭터 탈출 폴백 · 유형: ${_fb_rules}" >/dev/null 2>&1 &   # 관찰 리포트(Q.35) — 유형 = 이슈에서 원인 종류 즉독(대화 내용 0)
         rc=1; OUT=""; FRAME_BREAK=1; break   # 재시도 소진 = 실패(유출 텍스트 폐기) · FRAME_BREAK = 콘텐츠 거절 판정(process_turn 인캐릭터 이탈 폴백 · 운영자 260714 "자리를 뜬다")
       fi
-      if [ "$_fb_n" -gt 0 ]; then fb_report "이탈 ${_fb_n}회 폐기 후 복구" >/dev/null 2>&1 & fi   # 복구돼도 발생 사실은 기록(Q.35 관찰 목적)
+      if [ "$_fb_n" -gt 0 ]; then fb_report "이탈 ${_fb_n}회 폐기 후 복구 · 유형: ${_fb_rules}" >/dev/null 2>&1 & fi   # 복구돼도 발생 사실·유형은 기록(Q.35 관찰 목적)
       break
     fi
     # effort 플래그 거부 폴백(1회) — sonnet-5 는 호환이 정설이나 CLI/모델 변동 대비(아이데이션①④ 절충)
