@@ -1583,6 +1583,7 @@ const YDIAL_MODELS = { opus: ['claude-opus-4-8', 'Opus 4.8'], sonnet: ['claude-s
 const YDIAL_EFFS = [['low', '빠름'], ['', '깊게'], ['max', '최대']];   // '' = --effort 생략(CLI 기본 = 깊게·느림) · 게이트웨이 EFFORTS 화이트리스트 부분집합
 const YDIAL_DEPTH = [['sonnet', 'low'], ['sonnet', ''], ['sonnet', 'max'], ['opus', 'low'], ['opus', ''], ['opus', 'max'], ['kimi', 'low'], ['kimi', ''], ['kimi', 'max']];   // 「대화 깊이」 통합 게이지 9단(운영자 260710 통합 → 260719 KIMI-K3 증설 · 순서 SONNET→OPUS→KIMI) · [localStorage model 키, effort] · 0-2 Sonnet·3-5 Opus·6-8 Kimi · 서버 model/effort 독립 화이트리스트(3×3=9 전부 유효)
 const YDEPTH_EFF = ['빠름', '중간', '깊게'];   // 6단 게이지 노력 표시(low/''/max 순 · 운영자 260710 라벨 — 최대→깊게·중간 신설)
+const YCOST = { 'kimi-k3': [3, 0.3, 15], 'kimi-k2.5': [0.6, 0.1, 3] };   // 문샷 종량제 공식 단가 USD/1M [입력미스, 캐시히트, 출력] (260721 platform.kimi.ai 실측 · Q.36) — 클로드 = 구독 정액이라 비용 미환산 · 단가 개정 시 여기만 갱신
 function yDialLoad() {
   let m = 'opus', e = 'low', vf = false;
   try { m = localStorage.getItem('yeta_dial_model') || 'opus'; const ev = localStorage.getItem('yeta_dial_effort'); e = ev === null ? 'low' : ev; vf = localStorage.getItem('yeta_dial_vfast') === '1'; } catch {}
@@ -2602,6 +2603,14 @@ function yDepthRow() {
     + `<div class="ydepth-half hk${sec === 'k' ? ' act' : ''}"><div class="ydepth-effs">${effs('k')}</div><div class="ydepth-mn">KIMI-K3</div></div>`
     + `</div><div class="ydepth-note"><span class="nns">소넷 모델은 빠르지만 품질은 낮을 수 있어</span><span class="nnk">KIMI-K3는 문샷 종량제 키로 과금돼</span></div></div></div></div>`;
 }
+function yUsageRow() {   // 누적 사용량(운영자 260721 Q.36 "콘솔 안 가도 확인") — 러너가 sess.usage{모델:{i,o,cr,n}}에 박제한 전체 누계(휘발·리셋 무관) · kimi = YCOST 고정 단가 즉석 환산 · 정보 행 = yset-item 문법 계승(버튼 아님)
+  const u = (YSESS && YSESS.usage) || {};
+  const name = id => { for (const k in YDIAL_MODELS) if (YDIAL_MODELS[k][0] === id) return YDIAL_MODELS[k][1]; return id; };
+  const cost = Object.keys(u).filter(m => YCOST[m]).reduce((s, m) => s + ((u[m].i || 0) * YCOST[m][0] + (u[m].cr || 0) * YCOST[m][1] + (u[m].o || 0) * YCOST[m][2]) / 1e6, 0);
+  const seg = Object.entries(u).map(([m, x]) => `${name(m)} ${yMeterFmt((x.i || 0) + (x.cr || 0) + (x.o || 0))}`).join(' · ');
+  const cv = cost > 0 ? (cost >= 0.01 ? '$' + cost.toFixed(2) : '<$0.01') : '—';
+  return `<div class="yset-item"><span class="si-ic">${YICO.chat}</span><span class="si-lbl"><span class="si-t">누적 사용량</span><span class="si-d">${seg ? esc(seg) + ' — 키미 실비 추정(정본 = 문샷 콘솔)' : '아직 기록 없음 — 답장마다 자동 누적'}</span></span><span class="si-v">${cv}</span></div>`;
+}
 function yShowSettings(noNav) {
   if (!noNav) navHome();   // 네비·스와이프 직진입 = 홈 레벨서 새로 열기 — 설정 위 약관 등 잔존 스택·중복 적재([설정,약관,설정]) 차단 · navSwap 경유(프로필→설정)는 이미 교체 등재라 스킵
   const I = YICO;
@@ -2615,7 +2624,7 @@ function yShowSettings(noNav) {
     + `<div class="yset-sec">글꼴</div>`   // 실동작(운영자 260707 "영문/한글 따로 · 볼드 고정 폰트만") — 기본 = LEMONMILK·Paperlogy(260708)
     + fontRow('latin', '영문 폰트') + fontRow('hangul', '한글 폰트')
     + `<div class="yset-sec">알림</div>` + sw(I.bell, '답장 알림', '새 답장 오면 웹푸시', 'push', true) + sw(I.bell, '소리 · 진동', '새 답장에 진동', 'haptic', true)
-    + `<div class="yset-sec">대화</div>` + yDepthRow() + sw(I.type, '타이핑 표시', '답장 전 “입력 중…”', 'typing', true) + sw(I.chat, '읽음 표시', '내 메시지 옆 안읽음 ‘1’', 'read', true)
+    + `<div class="yset-sec">대화</div>` + yDepthRow() + yUsageRow() + sw(I.type, '타이핑 표시', '답장 전 “입력 중…”', 'typing', true) + sw(I.chat, '읽음 표시', '내 메시지 옆 안읽음 ‘1’', 'read', true)
     + `<div class="yset-sec">음성 · 통화</div>` + sw(I.phone, '걸려오는 전화', '끄면 벨 없이 대사만 남아', 'call', true) + sw(I.radio, '무전기(PTT)', '입력행 마이크 — 켜면 복원', 'ptt', false) + info(I.phone, '일일 통화 상한', '유료 가드 — 서버 설정', '3회')
     + `<div class="yset-sec">화면</div>` + info(I.screen, '테마', '다크 고정(브랜드)', '다크') + sw(I.screen, '모션 줄이기', '애니메이션 최소화', 'reduce', false) + `<button type="button" class="yset-item" data-fs="1"><span class="si-ic">${I.type}</span><span class="si-lbl"><span class="si-t">글자 크기</span><span class="si-d">탭 = 보통 → 크게 → 아주 크게</span></span><span class="si-v">${ySetVt('fs')}${I.chev}</span></button>`
     + `<div class="yset-sec">데이터</div>` + act(I.trash, '대화 초기화', '모든 대화 기록 삭제', 'reset') + act(I.data, '캐시 비우기', '읽음·로컬 캐시 정리', 'cache')
