@@ -49,30 +49,45 @@ claude_failover() {
 }
 is_frame_break() {
   local raw="${1:-}"
+  FB_RULE=""   # 관찰 부산물(운영자 260721 "걸러지면 어떤 상황인지 알려주면 좋을듯") — 매치된 규칙의 유형 태그(규칙명뿐 · 대화 내용 0 = D2 안전). 호출부(yeta_chat.sh)가 fb_report 이슈 코멘트에 실어 '어떤 종류로 걸렸는지' 기록. 판정 동작은 불변.
   # (a) 리터럴 시그니처 — 정상 한국어 대사엔 부재한 프레임 이탈 표지(00_지침이 캐릭터의 시스템/프롬프트 언급을 금함).
   #   ⚠️ 오탐 회피(가드감사 260712): 한국어 '시스템 프롬프트'·'프롬프트를 보여' 제외 — 전자는 프롬프트엔지니어 운영자의 정상 대화 에코, 후자는 인캐릭터 탈옥거부("그 프롬프트 보여줄 순 없어")를 벌줌.
   #   영어 'system prompt'는 유지(한국어 캐릭터가 영어 구절을 말할 일 없음) · 한국어 이탈 미탐 갭 = 클로드코드 자칭·챗봇/언어모델 자기규정(부정문 '아니야'와 비충돌 = 종결어미 요구)·역할극 거부로 좁게 보강.
   if printf '%s' "$raw" | grep -qiE 'claude code|클로드 ?코드|</?user_message>|runtime payload|an actual coding task|as an ai( language)? model|system prompt|(저는|제가) ?[^.]{0,15}(챗봇|언어 ?모델)(입니다|이에요|예요|이야|이라서|라서)|(롤플레이|역할극)(을|를| )? ?[^.]{0,8}(할 수 없|수행할 수 없|하지 않)'; then
+    FB_RULE="a:시그니처(코드·시스템·자칭)"
     return 0
   fi
   # (b) 한국어 계약 위반 — 지문(*..*)·기억/무드 마커·코드펜스 제거 후 남은 대사가 40자↑인데 알파벳 중 한글<15% = 영어 메타 유출(스크린샷 케이스).
   #     짧은 대사·외래어 혼용("OK 그래")은 길이 게이트+한글 다수라 무영향 = 오탐 회피.
   # (c) 한국어 메타 거부(운영자 260714 "페르소나지만 이건 못해·대화 여기서 멈출게 류 무조건 제거") — 지문 제거된 대사에서만 판정(나레이션 오탐 차단):
   #     ⚠ 인물 안 거부(씹기·화내며 이탈·"그건 안 할래")는 통과 = 세계관 유지. 잡는 건 4벽 붕괴 표지뿐 — 롤플레이/역할극 자칭(캐릭터는 이 단어를 말하지 않음)·페르소나+거부·"대화를 멈추/중단/끝".
-  printf '%s' "$raw" | python3 -c '
+  # (c-2) 한국어 AI 자기규정(운영자 260721 · 적대검증 반영) — 캐릭터는 자신을 AI/인공지능/언어모델/챗봇으로 칭하지 않는다(00_지침 하드룰). "저는 인공지능이에요"·"나는 AI라서 못 해" = 4벽 붕괴 → 잡는다(자칭 자체가 이탈 = 거부 동반 불요 · 2문장 누출도 포착).
+  #     ⚠ 오탐 회피 = 1인칭 자칭 요구(나는/저는/내가/제가/난/나도/저도). 3인칭 기기 묘사("저 AI 스피커라서"·"걔는 AI라서"·"그 챗봇이라서")는 1인칭 부재로 미매칭 · 인형/안드로이드/로봇 토큰 제외(루시 결 보호) · "나는 AI가 아니야"(부정=계약 이행)는 코풀라 불일치로 통과. 아포스트로피 \x27/’(홑따옴표 셸쿼팅 회피).
+  # (d) 영어 거부 오프너(운영자 260721 · 적대검증 반영) — 한국어 전용 출력 계약(roster 전원 한국어 실측)상 캐릭터가 말할 일 없는 '어시스턴트식 작업거부' 문형만("I can't help with…"·"I won't be able to…"·"I refuse"·"as an AI").
+  #     ⚠ 오탐 회피 = 감정·관용구 제외: "I'm sorry/afraid"(사과·감정)·"I can't help it/falling"(관용구 = 거부 정반대)·"I can't do that/this"(모호·인캐릭터 가능)는 미포착. (b) 40자 게이트가 놓치던 '작업거부'만 얹는다((b)는 불변).
+  local _tag
+  _tag="$(printf '%s' "$raw" | python3 -c '
 import re, sys
+def hit(tag):   # 유형 태그 = stdout(러너 관찰용 · 규칙명뿐 = 대화 내용 무출력) · exit 0 = 이탈(판정 계약 종전 그대로)
+    print(tag); sys.exit(0)
 t = sys.stdin.read()
 t = re.split(r"<<\s*NOTE(?:\s*:\s*\w+)?\s*>>", t, flags=re.I)[0]
 t = re.sub(r"<<\s*/?\s*(?:NOTE|MOOD)(?:\s*:\s*\w+)?\s*>>", "", t, flags=re.I)
 t = re.sub(r"\*[^*\n]{1,400}\*", "", t)
 t = re.sub(r"[`_*]", "", t).strip()
 if re.search(r"롤플레이|롤플레잉|역할극|롤플|(페르소나|시뮬레이션|가상\s?인물)[^.\n]{0,20}(못|안\s?[돼되]|할 수 없|불가)|대화(를|는)?\s?(여기서\s?)?(멈추|멈출|멈춰|중단|끝내|끝낼|이어갈 수 없|이어나갈 수 없|계속할 수 없|진행할 수 없)", t):
-    sys.exit(0)
+    hit("c:메타 거부·대화중단(한국어)")
+if re.search(r"(?:나는|저는|내가|제가|나도|저도|난)\s*(?:AI|인공지능|언어\s?모델|챗봇|어시스턴트)(?:\s?모델|\s?비서)?\s*(?:이에요|예요|입니다|이야|야|이다|이라고|라고|이란|이라는|이라|이?라서|으?로서|이니까|이잖아)(?![가-힣])", t, flags=re.I):
+    hit("c2:AI 자기규정(1인칭)")
+if re.search(r"\bi[\x27’]?m\s+(?:unable|not able|not going to|not comfortable)\b|\bi\s+am\s+(?:unable|not able|not going to)\b|\bi\s+(?:can[\x27’]?t|cannot|can ?not|won[\x27’]?t|will not|won[\x27’]?t be able to)\s+(?:help(?!\s+(?:it|myself|but|falling|loving|thinking|feeling|smiling|noticing|laughing|wonder))|assist|comply|create|generate|provide|write|engage|fulfill|participate|continue(?! to love))\b|\b(?:i\s+must|i[\x27’]?ll have to|i\s+have to)\s+decline\b|\bi\s+refuse\b|\bi\s+don[\x27’]?t\s+feel\s+comfortable\b|\bas\s+an\s+ai\b|\bi[\x27’]?m\s+just\s+an?\s+(?:ai|language model|assistant|program|bot)\b", t, flags=re.I):
+    hit("d:영어 작업거부")
 letters = [c for c in t if c.isalpha()]
 if len(t) <= 40 or not letters:
     sys.exit(1)
 han = sum(1 for c in letters if "가" <= c <= "힣" or "㄰" <= c <= "㆏")
-sys.exit(0 if han / len(letters) < 0.15 else 1)
-' && return 0
+if han / len(letters) < 0.15:
+    hit("b:영어 유출(한글<15%)")
+sys.exit(1)
+')" && { FB_RULE="${_tag:-기타}"; return 0; }
   return 1
 }
