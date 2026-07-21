@@ -18,6 +18,7 @@ concurrency:
 
 permissions:
   contents: read   # 카드·스크립트 읽기만 — 레포 쓰기 없음(세션 = R2)
+  issues: write    # 프레임이탈 관찰 리포트(Q.35) — fb_report가 단일 이슈(yeta-frame-break)에 발생 메타만 기록(대화 내용 0)
 
 jobs:
   chat:
@@ -85,6 +86,8 @@ jobs:
           #   Anthropic 호환 게이트로 국소 리라우트(서브셸 주입 = 구독 OAuth·폴오버 체인 무오염 · 아래 unset ANTHROPIC_* 과 무충돌)
           KIMI_API_KEY: ${{ secrets.KIMI_CODE_MUTE }}
           # YETA_SAFE 기본 ON(스크립트) = 런타임 CLAUDE.md 미주입(개발 세션 전용 · 운영자 260704) · 회귀 = YETA_SAFE: '0'
+          YETA_SYS: '2'   # 운영자 260721 Q.35 승인 — 전 모델 시스템 '교체'(CC 기저 텍스트 미전송 = 구독 쿼터·종량제 공동 절감). 이탈 관찰축 = fb_report(이슈) + 세션훅 자동 부각 · 롤백 = 이 줄 제거(append 복귀)
+          GH_ISSUE_TOKEN: ${{ secrets.GITHUB_TOKEN }}   # 프레임이탈 관찰 리포트 전용(fb_report → 이슈 · Q.35) — 잡 스코프 기본 토큰(issues:write)
         run: |
           [ -n "${CLAUDE_CODE_OAUTH_TOKEN}" ] || { echo "::error::OAuth 토큰 없음"; exit 1; }
           [ -n "${YETA_R2_BUCKET}" ] || { echo "YETA_R2_BUCKET 미설정 — 스캐폴드 no-op(운영자 R2 셋업 대기)"; exit 0; }
