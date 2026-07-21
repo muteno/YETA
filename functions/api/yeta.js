@@ -508,9 +508,9 @@ export async function onRequestPost({ request, env }) {
       if (abort) return json(abort, 409);
       return json({ ok: true, sess });
     }
-    let keepTunes = {}, keepPolicy = {}, keepMe = { call: '', about: '' }, keepUsage = {};
-    if (curO) { try { const prev = migrateV3(JSON.parse(new TextDecoder().decode(await (await env.YETA_R2.get(KEY)).arrayBuffer()))); keepTunes = prev.tunes || {}; keepPolicy = prev.policy || {}; keepMe = prev.me || keepMe; keepUsage = prev.usage || {}; } catch {} }
-    const fresh = EMPTY(); fresh.tunes = keepTunes; fresh.policy = keepPolicy; fresh.me = keepMe; fresh.usage = keepUsage;   // 유저 프로필(호칭·소개)은 전체 초기화에도 승계 = 내 정체성(tunes/policy 결) · usage = 회계 누계(Q.36 — 대화 리셋해도 쓴 토큰이 0이 되진 않음)
+    let keepTunes = {}, keepPolicy = {}, keepMe = { call: '', about: '' }, keepUsage = {}, keepUsageDay = null;
+    if (curO) { try { const prev = migrateV3(JSON.parse(new TextDecoder().decode(await (await env.YETA_R2.get(KEY)).arrayBuffer()))); keepTunes = prev.tunes || {}; keepPolicy = prev.policy || {}; keepMe = prev.me || keepMe; keepUsage = prev.usage || {}; keepUsageDay = prev.usage_day || null; } catch {} }
+    const fresh = EMPTY(); fresh.tunes = keepTunes; fresh.policy = keepPolicy; fresh.me = keepMe; fresh.usage = keepUsage; if (keepUsageDay) fresh.usage_day = keepUsageDay;   // 유저 프로필(호칭·소개)은 전체 초기화에도 승계 = 내 정체성(tunes/policy 결) · usage/usage_day = 회계 누계·오늘 버킷(Q.36/38 — 대화 리셋해도 쓴 토큰이 0이 되진 않음)
     await putSess(fresh);   // 전체 초기화 = 무조건 put(의도된 전량 대체)
     return json({ ok: true, sess: fresh });   // sess 반환 = 뷰어 리로드 없이 빈 목록 즉시 재렌더(threads:{} = redact no-op · 형제 t-reset 경로 대칭)
   }
