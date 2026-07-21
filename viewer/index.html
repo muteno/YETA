@@ -2603,12 +2603,16 @@ function yDepthRow() {
     + `<div class="ydepth-half hk${sec === 'k' ? ' act' : ''}"><div class="ydepth-effs">${effs('k')}</div><div class="ydepth-mn">KIMI-K3</div></div>`
     + `</div><div class="ydepth-note"><span class="nns">소넷 모델은 빠르지만 품질은 낮을 수 있어</span><span class="nnk">KIMI-K3는 문샷 종량제 키로 과금돼</span></div></div></div></div>`;
 }
+function yKimiCost() {   // 키미 계열 누적 실비 USD(Q.37 — 설정 행·좌상단 미터 병기 공용 SSOT) — sess.usage × YCOST(모델별 단가: k3/k2.5 각자 요율 · 캐시 히트 1/10가 분리 계산)
+  const u = (YSESS && YSESS.usage) || {};
+  return Object.keys(u).filter(m => YCOST[m]).reduce((s, m) => s + ((u[m].i || 0) * YCOST[m][0] + (u[m].cr || 0) * YCOST[m][1] + (u[m].o || 0) * YCOST[m][2]) / 1e6, 0);
+}
+const yCostFmt = (c, zero) => c > 0 ? (c >= 0.01 ? '$' + c.toFixed(2) : '<$0.01') : zero;   // 표기 공용(설정 '—' · 미터 '$0.00')
 function yUsageRow() {   // 누적 사용량(운영자 260721 Q.36 "콘솔 안 가도 확인") — 러너가 sess.usage{모델:{i,o,cr,n}}에 박제한 전체 누계(휘발·리셋 무관) · kimi = YCOST 고정 단가 즉석 환산 · 정보 행 = yset-item 문법 계승(버튼 아님)
   const u = (YSESS && YSESS.usage) || {};
   const name = id => { for (const k in YDIAL_MODELS) if (YDIAL_MODELS[k][0] === id) return YDIAL_MODELS[k][1]; return id; };
-  const cost = Object.keys(u).filter(m => YCOST[m]).reduce((s, m) => s + ((u[m].i || 0) * YCOST[m][0] + (u[m].cr || 0) * YCOST[m][1] + (u[m].o || 0) * YCOST[m][2]) / 1e6, 0);
   const seg = Object.entries(u).map(([m, x]) => `${name(m)} ${yMeterFmt((x.i || 0) + (x.cr || 0) + (x.o || 0))}`).join(' · ');
-  const cv = cost > 0 ? (cost >= 0.01 ? '$' + cost.toFixed(2) : '<$0.01') : '—';
+  const cv = yCostFmt(yKimiCost(), '—');
   return `<div class="yset-item"><span class="si-ic">${YICO.chat}</span><span class="si-lbl"><span class="si-t">누적 사용량</span><span class="si-d">${seg ? esc(seg) + ' — 키미 실비 추정(정본 = 문샷 콘솔)' : '아직 기록 없음 — 답장마다 자동 누적'}</span></span><span class="si-v">${cv}</span></div>`;
 }
 function yShowSettings(noNav) {
@@ -3468,6 +3472,7 @@ function yMeter() {   // 좌상단 기록용 미터(운영자 260709 첨부3 →
   const isS = YDIAL.model === 'claude-sonnet-5', isK = YDIAL.model === 'kimi-k3', mName = isS ? 'Sonnet 5' : isK ? 'Kimi K3' : 'Opus 4.8';
   const eLabel = (YDIAL_EFFS.find(x => x[0] === YDIAL.effort) || YDIAL_EFFS[0])[1];   // low=빠름/''=깊게/max=최대
   let stat = `${yMeterFmt(tot)} tok`;   // 뷰0 = 누적 토큰(현행 온존)
+  if (/^kimi-/.test(YDIAL.model)) stat += ` (${yCostFmt(yKimiCost(), '$0.00')})`;   // 키미 선택 시 토큰 옆 실비 병기(운영자 260721 Q.37 "(0.00$) 이런식") — 값 = 설정 '누적 사용량'과 동일 SSOT(키미 계열 전체 누계 · 모델별 각자 단가)
   if (_ymView) {
     const s2 = yStats();
     if (!s2.n) stat = '기록 없음';
