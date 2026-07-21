@@ -1,11 +1,21 @@
 name: yeta-kimi-selftest
 
-# KIMI-K3 연결 자가진단(운영자 260720 "내가 설정만 하면 되게 조치 다해놔") — ① 레포 Actions 시크릿 KIMI_CODE_MUTE 존재
-#   ② 문샷 Anthropic 호환 게이트 실호출 1발(초미니 프롬프트)로 챗 러너(yeta_chat.sh gen_out)와 동일 레시피
-#   (ANTHROPIC_BASE_URL·키 주입 · 구독 OAuth unset · --model kimi-k3 · 도구 0) 검증 ③ effort(low) 수용 여부 판정.
-# ⚠️ 종량제 실과금(1발 ≈ 수십 토큰) → 수동 dispatch 전용 · 크론 부착 금지(§[8]) · 키 회전/불통 진단 때 재사용.
+# KIMI 연결 자가진단 v2(운영자 260720 신설 → 260721 확장: 모델 선택 + usage 실측) —
+#   ① 레포 Actions 시크릿 KIMI_CODE_MUTE 존재 ② 문샷 Anthropic 호환 게이트 실호출(챗 러너 gen_out 동일 레시피) ③ effort(low) 수용 판정
+#   ④ '책 크기' 실측 = --output-format json usage로 기저 프롬프트 입력 토큰 측정(A: 현행 append 없음 레시피 vs B: --system-prompt 교체 = 책빼기 절감분)
+#   ⑤ 캐시 히트 실측 = B 직후 동일 프롬프트 재발사(C) — cache_read_input_tokens > 0 이면 문샷 자동 캐시가 /anthropic 게이트에서 작동(입력 1/10 과금).
+# ⚠️ 종량제 실과금(3발 · 총 ≈ 기저 프롬프트 3회분 = 수만 토큰 이내) → 수동 dispatch 전용 · 크론 부착 금지(§[8]) · 키 회전/불통/신모델 검증 때 재사용.
 on:
   workflow_dispatch:
+    inputs:
+      model:
+        description: '검증 모델(챗 다이얼과 동일 ID)'
+        required: false
+        default: 'kimi-k3'
+        type: choice
+        options:
+          - kimi-k3
+          - kimi-k2.5
 permissions:
   contents: read
 jobs:
@@ -15,25 +25,42 @@ jobs:
     steps:
       - name: Claude Code CLI
         run: npm install -g @anthropic-ai/claude-code
-      - name: KIMI-K3 실호출(챗 경로 동일 레시피)
+      - name: KIMI 실호출(챗 경로 동일 레시피 + usage 실측)
         env:
           KIMI_API_KEY: ${{ secrets.KIMI_CODE_MUTE }}
           KIMI_BASE_URL: ${{ vars.KIMI_BASE_URL || '' }}
+          MODEL: ${{ inputs.model || 'kimi-k3' }}
         run: |
           [ -n "$KIMI_API_KEY" ] || { echo "::error::FAIL① 레포 Actions 시크릿 KIMI_CODE_MUTE 미등재 — Settings → Secrets and variables → Actions 에 정확히 이 이름으로"; exit 1; }
-          echo "① 시크릿 KIMI_CODE_MUTE OK(존재)"
+          echo "① 시크릿 KIMI_CODE_MUTE OK(존재) · 대상 모델 = $MODEL"
           export ANTHROPIC_BASE_URL="${KIMI_BASE_URL:-https://api.moonshot.ai/anthropic}" ANTHROPIC_AUTH_TOKEN="$KIMI_API_KEY" ANTHROPIC_API_KEY="$KIMI_API_KEY"
           unset CLAUDE_CODE_OAUTH_TOKEN
           NOTOOLS="Write,Edit,NotebookEdit,Bash,Task,WebFetch,WebSearch,Read,Glob,Grep"
-          call() { printf '%s' "인사 한 단어로만 답해" | timeout 150 claude -p --model kimi-k3 "$@" --disallowedTools "$NOTOOLS" --max-turns 1 2>/tmp/err; }
+          call() { printf '%s' "인사 한 단어로만 답해" | timeout 150 claude -p --model "$MODEL" --output-format json "$@" --disallowedTools "$NOTOOLS" --max-turns 1 2>/tmp/err; }
+          usage() { printf '%s' "$1" | jq -r '"입력 \(.usage.input_tokens // 0) tok · 캐시읽기 \(.usage.cache_read_input_tokens // 0) · 캐시쓰기 \(.usage.cache_creation_input_tokens // 0) · 출력 \(.usage.output_tokens // 0)"' 2>/dev/null || echo "usage 파싱 불가"; }
+          body() { printf '%s' "$1" | jq -r '.result // empty' 2>/dev/null | head -c 80; }
           set +e
-          OUT="$(call --effort low)"; rc=$?; EFFN="수용"
-          if { [ $rc -ne 0 ] || [ -z "${OUT// }" ]; } && grep -qiE 'effort|thinking' /tmp/err 2>/dev/null; then
+          # A = 현행 챗 레시피(시스템 교체 없음 = CC 기저 프롬프트 동봉) — '책' 크기 실측
+          RAWA="$(call --effort low)"; rc=$?; EFFN="수용"
+          if { [ $rc -ne 0 ] || ! printf '%s' "$RAWA" | jq -e '.result | type=="string"' >/dev/null 2>&1; } && grep -qiE 'effort|thinking' /tmp/err 2>/dev/null; then
             echo "  ⚠️ effort 거부 감지 — effort 없이 재시도(챗 gen_out 폴백과 동일)"
-            OUT="$(call)"; rc=$?; EFFN="거부(챗은 자동 폴백 = 정상 동작)"
+            RAWA="$(call)"; rc=$?; EFFN="거부(챗은 자동 폴백 = 정상 동작)"
           fi
           echo "── stderr 꼬리(시크릿 = GitHub 자동 마스킹) ──"; tail -5 /tmp/err 2>/dev/null || true
-          if [ $rc -ne 0 ] || [ -z "${OUT// }" ]; then echo "::error::FAIL② kimi-k3 실호출 실패(rc=$rc) — 위 stderr 참조(잔액·키 유효성·게이트 URL 순 의심)"; exit 1; fi
-          echo "② 실호출 OK — 응답: $(printf '%s' "$OUT" | head -c 80)"
+          if [ $rc -ne 0 ] || ! printf '%s' "$RAWA" | jq -e '.result | type=="string"' >/dev/null 2>&1; then echo "::error::FAIL② $MODEL 실호출 실패(rc=$rc) — 위 stderr 참조(모델 ID·잔액·키 유효성·게이트 URL 순 의심)"; exit 1; fi
+          echo "② 실호출 OK — 응답: $(body "$RAWA")"
           echo "③ effort(low) ${EFFN}"
-          echo "PASS — 설정에서 KIMI-K3 고르면 대화 가능(챗 러너 동일 레시피 검증 완료)"
+          echo "④A [책 포함 = 현행 레시피] $(usage "$RAWA")"
+          # B = 책빼기(--system-prompt 교체 · 챗 러너 kimi 턴과 동일 축) — 절감분 실측
+          RAWB="$(call --system-prompt "너는 테스트 봇이다. 한국어 한 단어로만 답한다.")"
+          if printf '%s' "$RAWB" | jq -e '.result | type=="string"' >/dev/null 2>&1; then
+            echo "④B [책 빼기 = 시스템 교체] $(usage "$RAWB")"
+          else echo "  ⚠️ B(시스템 교체) 실패 — CLI --system-prompt 미지원 가능(챗은 unknown-option 폴백 있음)"; fi
+          # C = B 즉시 재발사 — 문샷 자동 캐시 히트 여부(/anthropic 게이트 실증)
+          RAWC="$(call --system-prompt "너는 테스트 봇이다. 한국어 한 단어로만 답한다.")"
+          if printf '%s' "$RAWC" | jq -e '.result | type=="string"' >/dev/null 2>&1; then
+            echo "⑤C [캐시 판정 = B 재발사] $(usage "$RAWC")"
+            CR="$(printf '%s' "$RAWC" | jq -r '.usage.cache_read_input_tokens // 0' 2>/dev/null || echo 0)"
+            if [ "${CR:-0}" -gt 0 ] 2>/dev/null; then echo "⑤ 캐시 = 작동(히트 ${CR} tok — 반복 입력 1/10 과금)"; else echo "⑤ 캐시 = 미히트(이 게이트에선 자동 캐시 미작동 추정 — 반복 입력도 전액 과금)"; fi
+          fi
+          echo "PASS — $MODEL 대화 연결 검증 완료(설정 다이얼에서 선택 가능)"
