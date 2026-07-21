@@ -1,0 +1,47 @@
+name: yeta-aeri-cand
+
+# 신규 캐릭터 '애리쌤' 초상 시안 후보 4장(운영자 260721 "제미나이로 몇 개 뽑아주면 내가 골라줄게").
+# ⚠️ Gemini 유료 = 수동 dispatch 전용(자동 트리거 금지 · 이미지 파이프 공통 규약).
+# 산출 = viewer/assets/yeta_char/cand/aeri_v1..4.png(+webp) 을 **디스패치한 브랜치에** 커밋(운영자 픽 대기 — 픽 후 av 크롭·roster 배선).
+on:
+  workflow_dispatch:
+    inputs:
+      force:
+        description: '1 = 기존 후보도 재생성'
+        required: false
+        default: ''
+
+concurrency:
+  group: yeta-aeri-cand
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  cand:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+
+      - name: 애리 초상 후보 생성
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          FORCE: ${{ inputs.force }}
+        run: python3 .github/scripts/yeta_aeri_cand.py
+
+      - name: 커밋 (신규 있을 때만 · 디스패치 브랜치로)
+        run: |
+          git config user.name "yeta-aeri-cand[bot]"
+          git config user.email "actions@users.noreply.github.com"
+          git add viewer/assets/yeta_char/cand/ 2>/dev/null || true
+          git diff --cached --quiet && { echo "신규 없음 — 커밋 생략"; exit 0; }
+          git commit -m "애리쌤 초상 시안 후보 생성 — yeta-aeri-cand dispatch"
+          for i in 1 2 3 4 5; do
+            git pull --rebase origin "${GITHUB_REF_NAME}" && git push origin "HEAD:${GITHUB_REF_NAME}" && exit 0
+            echo "push 재시도 ${i}/5 …"; sleep $((i*5))
+          done
+          echo "::error::push 5회 실패"; exit 1
