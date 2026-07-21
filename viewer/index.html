@@ -1045,7 +1045,7 @@ body { background:var(--yeta-bg,#121212); color:var(--fg); font-family:var(--app
   .ydepth-effs i.on { color:var(--fg); }
   /* 대화 깊이 안내(운영자 260712 "경고 감 X · 토글 아래 중앙정렬 · 작은 블러 글래스") — Sonnet 구간(data-model=s)일 때만 촤르륵 노출 · 경고 톤(danger) 아님 = 뉴트럴 정보 */
   .ydepth-note { max-height:0; opacity:0; overflow:hidden; margin-top:0; text-align:center; transition:max-height .3s var(--ease), opacity .3s var(--ease), margin .3s var(--ease); }
-  .ydepth-wrap[data-model="s"] .ydepth-note, .ydepth-wrap[data-model="k"] .ydepth-note, .ydepth-wrap[data-model="k2"] .ydepth-note { max-height:44px; opacity:1; margin-top:11px; }
+  .ydepth-wrap[data-model="s"] .ydepth-note, .ydepth-wrap[data-model="k"] .ydepth-note, .ydepth-wrap[data-model="k2"] .ydepth-note { max-height:48px; opacity:1; margin-top:11px; }   /* 44→48(260721 평의회D 발견3 — nnk2 최장 문안 2행 = 44.8px 헤어라인 잘림 방지) */
   .ydepth-note .nns, .ydepth-note .nnk, .ydepth-note .nnk2 { display:none; }   /* 모델별 안내 1장만(s=소넷 품질 · k=K3 과금 · k2=2.5 저가·품질 · 260721) */
   .ydepth-wrap[data-model="s"] .ydepth-note .nns, .ydepth-wrap[data-model="k"] .ydepth-note .nnk, .ydepth-wrap[data-model="k2"] .ydepth-note .nnk2 { display:inline-block; }
   .ydepth-note span { display:inline-block; padding:6px 12px; border-radius:var(--r-pill); background:var(--glass); backdrop-filter:blur(var(--blur-m)); -webkit-backdrop-filter:blur(var(--blur-m)); border:1px solid var(--glass-line); color:var(--fg-2); font-size:var(--fs-xs); font-weight:var(--fw-b); line-height:1.4; }
