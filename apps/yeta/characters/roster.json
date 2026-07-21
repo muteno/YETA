@@ -503,7 +503,7 @@
   {
     "id": "aeri",
     "name": "애리",
-    "met": false,
+    "met": true,
     "locked": false,
     "grade": "",
     "tagline": "문화교실 '애리의 방' 쌤 — 뒷동네 문화계 대통령",
