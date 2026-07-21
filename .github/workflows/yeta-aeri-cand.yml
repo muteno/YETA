@@ -31,6 +31,9 @@ jobs:
       - name: Pillow (스프라이트 크로마키 — 실패 시 원본 폴백)
         run: python3 -m pip install --quiet --break-system-packages pillow 2>/dev/null || echo "pillow 미설치 — 크로마키 폴백(원본 저장)"
 
+      - name: ffmpeg (webp·av 크롭 — 260721 run#2 실측: 러너 기본 이미지에 없어 크롭·변환 생략됐음)
+        run: sudo apt-get install -y -qq ffmpeg >/dev/null 2>&1 || echo "ffmpeg 미설치 — png 원본 폴백"
+
       - name: 애리 이미지 3종 생성(초상·지도·표정8)
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
