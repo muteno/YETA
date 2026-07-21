@@ -639,9 +639,37 @@ PY
 
 # me_block()(유저 프로필 호칭+소개 블록) = shared/inject_character.sh 정본(chat·nudge·call 공용 · 고정점 clean · 260708). env: ME_CALL ME_ABOUT.
 
+# ── 프레임이탈 관찰 리포트(운영자 260721 Q.35 — "우려 내용 발생 시 다음 작업 세션에서 자동 부각") ──
+#   YETA_SYS=2(전 모델 시스템 교체) 관찰축: 이탈 발생 '메타만'(시각·페르소나·모델·회차) 레포 단일 이슈(yeta-frame-break)에 누적 —
+#   대화 내용 0(공개 레포 = D2 준수) · 다음 클로드 코드 세션 시작 훅(.claude/hooks/fb_incidents.py)이 열린 이슈를 자동 부각 · 실패 = 무음(본업 무영향).
+FB_TITLE="프레임이탈 관찰 리포트(YETA_SYS 교체축)"
+fb_report() {   # $1=결과 문구 — 백그라운드 호출 전제(답장 지연 0)
+  [ -n "${GH_ISSUE_TOKEN:-}" ] || return 0
+  local line num payload repo="${GITHUB_REPOSITORY:-muteno/YETA}"
+  line="$(TZ='Asia/Seoul' date '+%y%m%d %H:%M KST') · ${PERSONA:-?} · ${MODEL:-?}${EFF:+ · effort ${EFF}} · $1"
+  num="$(curl -sS -m 6 -H "authorization: Bearer $GH_ISSUE_TOKEN" -H 'accept: application/vnd.github+json' \
+    "https://api.github.com/repos/${repo}/issues?labels=yeta-frame-break&state=open&per_page=1" 2>/dev/null \
+    | python3 -c 'import json,sys
+try: a=json.load(sys.stdin); print(a[0]["number"] if a else "")
+except Exception: print("")' 2>/dev/null)"
+  if [ -n "$num" ]; then
+    payload="$(python3 -c 'import json,sys; print(json.dumps({"body": sys.argv[1]}))' "$line")"
+    curl -sS -m 6 -X POST -H "authorization: Bearer $GH_ISSUE_TOKEN" -H 'accept: application/vnd.github+json' \
+      "https://api.github.com/repos/${repo}/issues/${num}/comments" -d "$payload" >/dev/null 2>&1 || true
+  else
+    payload="$(python3 -c 'import json,sys; print(json.dumps({"title": sys.argv[1], "labels": ["yeta-frame-break"], "body": sys.argv[2]}))' "$FB_TITLE" \
+"YETA_SYS=2(전 모델 시스템 교체) 관찰축 — 캐릭터 프레임 이탈 발생 메타 자동 기록(러너 fb_report · 대화 내용 없음).
+열려 있는 동안 다음 클로드 코드 세션 시작 시 자동 부각된다 — 진단·조치(필요시 yeta-chat.yml YETA_SYS 롤백) 후 이슈를 닫아라.
+
+${line}")"
+    curl -sS -m 6 -X POST -H "authorization: Bearer $GH_ISSUE_TOKEN" -H 'accept: application/vnd.github+json' \
+      "https://api.github.com/repos/${repo}/issues" -d "$payload" >/dev/null 2>&1 || true
+  fi
+}
+
 # ── 생성 공용(본답장 + 초대 판정) — $1=prompt · env MODEL/EFF/SAFE/PERSONA · OUT/GEN_S 설정 · rc 0=성공 ──
 gen_out() {
-  local prompt="$1" inline_delay=15 attempt rc=1 _eff_dropped=0
+  local prompt="$1" inline_delay=15 attempt rc=1 _eff_dropped=0 _fb_n=0
   FRAME_BREAK=0   # 이 생성이 프레임이탈(콘텐츠 거절) 소진으로 실패했는지 — 인캐릭터 이탈 폴백 스위치(260714)
   local _dis="Write,Edit,NotebookEdit,Bash,Task,WebFetch,WebSearch,Read,Glob,Grep" _mt=1
   local _allow=() _tools=(--tools "")
@@ -676,10 +704,13 @@ gen_out() {
       # ⚠️ 캐릭터 프레임 이탈(메타발화·Claude Code로 응답·영어 유출) = L0 붕괴 → 성공 판정 전 폐기(스샷 사고 260712 · is_quota 가드와 동형 계보).
       #    시스템 프레임(SYS_ARGS)이 벽이면 is_frame_break 는 그물 — 재생성은 확률적이라 재시도로 거의 복구, 소진 시 실패 처리(유출을 대사로 박제 금지 → finish error 안내).
       if is_frame_break "$OUT"; then
+        _fb_n=$((_fb_n + 1))
         echo "  ⚠️ 캐릭터 프레임 이탈(메타발화·영어 유출) 감지 — 폐기 후 재시도(L0 기계 백스톱)"
         if [ "$attempt" -lt "$_ftries" ]; then OUT=""; sleep 3; continue; fi
+        fb_report "재시도 소진(이탈 ${_fb_n}회) → 인캐릭터 탈출 폴백" >/dev/null 2>&1 &   # 관찰 리포트(Q.35) — 백그라운드 = 폴백 지연 0
         rc=1; OUT=""; FRAME_BREAK=1; break   # 재시도 소진 = 실패(유출 텍스트 폐기) · FRAME_BREAK = 콘텐츠 거절 판정(process_turn 인캐릭터 이탈 폴백 · 운영자 260714 "자리를 뜬다")
       fi
+      if [ "$_fb_n" -gt 0 ]; then fb_report "이탈 ${_fb_n}회 폐기 후 복구" >/dev/null 2>&1 & fi   # 복구돼도 발생 사실은 기록(Q.35 관찰 목적)
       break
     fi
     # effort 플래그 거부 폴백(1회) — sonnet-5 는 호환이 정설이나 CLI/모델 변동 대비(아이데이션①④ 절충)
