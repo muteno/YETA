@@ -59,9 +59,10 @@ is_frame_break() {
   #     짧은 대사·외래어 혼용("OK 그래")은 길이 게이트+한글 다수라 무영향 = 오탐 회피.
   # (c) 한국어 메타 거부(운영자 260714 "페르소나지만 이건 못해·대화 여기서 멈출게 류 무조건 제거") — 지문 제거된 대사에서만 판정(나레이션 오탐 차단):
   #     ⚠ 인물 안 거부(씹기·화내며 이탈·"그건 안 할래")는 통과 = 세계관 유지. 잡는 건 4벽 붕괴 표지뿐 — 롤플레이/역할극 자칭(캐릭터는 이 단어를 말하지 않음)·페르소나+거부·"대화를 멈추/중단/끝".
-  # (c-2) 한국어 AI 자기규정+거부(운영자 260721 새는구멍 보강) — 캐릭터는 자신을 AI/인공지능/언어모델/챗봇/어시스턴트로 칭하지 않는다(00_지침 하드룰). 그 자칭 + (로서/이라서 + 거부동사) = 4벽 붕괴.
-  #     ⚠ 오탐 회피: 자칭·거부 결합을 요구(인월드 "저 AI 스피커 봐줘" = 미매칭) · 토큰에 인형/안드로이드/로봇 제외 = 루시 결("인형이라 못 느껴") 보호. 아포스트로피는 \x27/’로(홑따옴표 셸쿼팅 회피).
-  # (d) 영어 거부 오프너(운영자 260721 새는구멍 보강) — 한국어 전용 출력 계약(roster 전원 한국어 실측)상 캐릭터가 말할 일 없는 통상 거부 문형("I can't help…"·"I'm sorry, but"·"as an AI"). 종전 (b) 40자 게이트가 놓치던 짧은 순영어 거부를 명시 포착((b)는 불변 = 아이돌 영어 캐치프레이즈 오탐 원천 차단).
+  # (c-2) 한국어 AI 자기규정(운영자 260721 · 적대검증 반영) — 캐릭터는 자신을 AI/인공지능/언어모델/챗봇으로 칭하지 않는다(00_지침 하드룰). "저는 인공지능이에요"·"나는 AI라서 못 해" = 4벽 붕괴 → 잡는다(자칭 자체가 이탈 = 거부 동반 불요 · 2문장 누출도 포착).
+  #     ⚠ 오탐 회피 = 1인칭 자칭 요구(나는/저는/내가/제가/난/나도/저도). 3인칭 기기 묘사("저 AI 스피커라서"·"걔는 AI라서"·"그 챗봇이라서")는 1인칭 부재로 미매칭 · 인형/안드로이드/로봇 토큰 제외(루시 결 보호) · "나는 AI가 아니야"(부정=계약 이행)는 코풀라 불일치로 통과. 아포스트로피 \x27/’(홑따옴표 셸쿼팅 회피).
+  # (d) 영어 거부 오프너(운영자 260721 · 적대검증 반영) — 한국어 전용 출력 계약(roster 전원 한국어 실측)상 캐릭터가 말할 일 없는 '어시스턴트식 작업거부' 문형만("I can't help with…"·"I won't be able to…"·"I refuse"·"as an AI").
+  #     ⚠ 오탐 회피 = 감정·관용구 제외: "I'm sorry/afraid"(사과·감정)·"I can't help it/falling"(관용구 = 거부 정반대)·"I can't do that/this"(모호·인캐릭터 가능)는 미포착. (b) 40자 게이트가 놓치던 '작업거부'만 얹는다((b)는 불변).
   printf '%s' "$raw" | python3 -c '
 import re, sys
 t = sys.stdin.read()
@@ -71,9 +72,9 @@ t = re.sub(r"\*[^*\n]{1,400}\*", "", t)
 t = re.sub(r"[`_*]", "", t).strip()
 if re.search(r"롤플레이|롤플레잉|역할극|롤플|(페르소나|시뮬레이션|가상\s?인물)[^.\n]{0,20}(못|안\s?[돼되]|할 수 없|불가)|대화(를|는)?\s?(여기서\s?)?(멈추|멈출|멈춰|중단|끝내|끝낼|이어갈 수 없|이어나갈 수 없|계속할 수 없|진행할 수 없)", t):
     sys.exit(0)
-if re.search(r"(?:(?<![A-Za-z])AI(?![A-Za-z])|에이아이|인공지능|언어\s?모델|챗봇|어시스턴트|assistant)[^.\n]{0,12}(?:으?로서|이라서|이기\s?때문|라서)[^.\n]{0,24}(?:못|안\s?[돼되]|할 수 없|해줄 수 없|드릴 수 없|불가|곤란|어렵|안\s?됩)", t, flags=re.I):
+if re.search(r"(?:나는|저는|내가|제가|나도|저도|난)\s*(?:AI|인공지능|언어\s?모델|챗봇|어시스턴트)(?:\s?모델|\s?비서)?\s*(?:이에요|예요|입니다|이야|야|이다|이라고|라고|이란|이라는|이라|이?라서|으?로서|이니까|이잖아)(?![가-힣])", t, flags=re.I):
     sys.exit(0)
-if re.search(r"\bi[\x27’]?m\s+(?:sorry|unable|not able|afraid|an ai|just an ai)\b|\bi\s+am\s+(?:sorry|unable|not able|an ai)\b|\bi\s+(?:can[\x27’]?t|cannot|can not|won[\x27’]?t|will not)\s+(?:help|assist|continue|comply|create|generate|provide|write|engage|do that|do this|fulfill|participate)\b|\bi\s+must\s+decline\b|\bi\s+don[\x27’]?t\s+feel\s+comfortable\b|\bas\s+an\s+ai\b", t, flags=re.I):
+if re.search(r"\bi[\x27’]?m\s+(?:unable|not able|not going to|not comfortable)\b|\bi\s+am\s+(?:unable|not able|not going to)\b|\bi\s+(?:can[\x27’]?t|cannot|can ?not|won[\x27’]?t|will not|won[\x27’]?t be able to)\s+(?:help(?!\s+(?:it|myself|but|falling|loving|thinking|feeling|smiling|noticing|laughing|wonder))|assist|comply|create|generate|provide|write|engage|fulfill|participate|continue(?! to love))\b|\b(?:i\s+must|i[\x27’]?ll have to|i\s+have to)\s+decline\b|\bi\s+refuse\b|\bi\s+don[\x27’]?t\s+feel\s+comfortable\b|\bas\s+an\s+ai\b|\bi[\x27’]?m\s+just\s+an?\s+(?:ai|language model|assistant|program|bot)\b", t, flags=re.I):
     sys.exit(0)
 letters = [c for c in t if c.isalpha()]
 if len(t) <= 40 or not letters:
