@@ -31,7 +31,7 @@ _meter_record() {
   local raw="$1" rc="$2" shard ts
   # METER_LAST(옵트인) — 호출부 지정 파일에 이 호출의 usage 요약({in,out})을 덮어씀(yeta 답장 턴 tok 박제 = 뷰어 누적 미터 · 260709). 실패 = 무해(|| true).
   if [ -n "${METER_LAST:-}" ]; then
-    printf '%s' "$raw" | jq -c '{in:((.usage.input_tokens // .usage.inputTokens) // 0), out:((.usage.output_tokens // .usage.outputTokens) // 0)}' > "$METER_LAST" 2>/dev/null || true
+    printf '%s' "$raw" | jq -c '{in:((.usage.input_tokens // .usage.inputTokens) // 0), out:((.usage.output_tokens // .usage.outputTokens) // 0), cr:(.usage.cache_read_input_tokens // 0)}' > "$METER_LAST" 2>/dev/null || true   # cr = 캐시 히트 토큰(260721 Q.36 — kimi 실비 환산: 히트는 1/10가라 분리 필요)
   fi
   shard="$(_meter_shard)"
   mkdir -p metrics/usage 2>/dev/null || return 0
