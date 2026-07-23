@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>예타 대화 3대 부작용 원인 진단 — 무응답 · 하염없는 지연 · 토큰 폭증 (2026-07-24)</title>
+<link rel="stylesheet" href="../tokens.css">
+<style>
+/* 색 = viewer/index.html :root 실측 계승(구조토큰은 tokens.css 링크) — 보고 전용 캔버스(Q.25 종합보고 골격 100% 계승) */
+:root { --bg:#161716; --fg:#FFFFFF; --fg-2:#E7ECE7; --mut:#8B8F8A; --accent:#CFFF40; --accent-rgb:207,255,64;
+  --think:#3EE6C9; --think-rgb:62,230,201; --danger:#FF5A5A; --danger-rgb:255,90,90; --cobalt:#3E7BFA; --season:#8E2DBF; --glass-line:rgba(255,255,255,.08); }
+* { box-sizing:border-box; }
+html,body { margin:0; background:var(--bg); color:var(--fg); font:var(--fs-body, 15px)/1.6 system-ui,'Pretendard',sans-serif; }
+.wrap { max-width:1080px; margin:0 auto; padding:16px 14px 60px; }
+h1 { font-size:var(--fs-h2, 19px); margin:6px 0 2px; }
+h1 small { color:var(--mut); font-weight:normal; font-size:var(--fs-sm, 12.5px); display:block; margin-top:4px; }
+h2 { font-size:var(--fs-h3, 17px); margin:34px 0 10px; padding-top:18px; border-top:1px solid var(--glass-line); }
+h2 .no { color:var(--accent); font-variant-numeric:tabular-nums; margin-right:6px; }
+h2 .st { float:right; font-size:var(--fs-xs, 11px); padding:3px 10px; border-radius:var(--r-pill, 999px); font-weight:normal; }
+.st.done { color:var(--accent); background:rgba(var(--accent-rgb),.14); border:1px solid rgba(var(--accent-rgb),.35); }
+.st.ans { color:var(--think); background:rgba(var(--think-rgb),.12); border:1px solid rgba(var(--think-rgb),.35); }
+.st.warn { color:var(--danger); background:rgba(var(--danger-rgb),.12); border:1px solid rgba(var(--danger-rgb),.35); }
+.card { border:1px solid var(--glass-line); border-radius:var(--r-l, 16px); padding:12px 14px; background:rgba(255,255,255,.03); margin:10px 0; }
+.lead { font-size:var(--fs-body,15px); color:var(--fg-2); margin:6px 0; }
+.lead b { color:var(--accent); }
+table { width:100%; border-collapse:collapse; font-size:var(--fs-sm, 12.5px); margin:8px 0; }
+th, td { text-align:left; padding:7px 9px; border-bottom:1px solid var(--glass-line); vertical-align:top; }
+th { color:var(--mut); font-weight:600; white-space:nowrap; font-size:var(--fs-xs, 11px); }
+td b { color:var(--accent); font-weight:600; }
+td .warn { color:var(--danger); }
+td .ok { color:var(--accent); }
+.map { display:flex; flex-wrap:wrap; gap:6px; align-items:center; font-size:var(--fs-sm, 12.5px); margin:8px 0; }
+.map span { padding:5px 11px; border-radius:var(--r-pill, 999px); border:1px solid var(--glass-line); background:rgba(255,255,255,.05); white-space:nowrap; }
+.map i { color:var(--mut); font-style:normal; }
+.map .hot { border-color:rgba(var(--danger-rgb),.45); background:rgba(var(--danger-rgb),.12); color:var(--fg); }
+code, .k { font-family:ui-monospace,monospace; font-size:.92em; color:var(--think); background:rgba(var(--think-rgb),.08); padding:1px 5px; border-radius:6px; }
+a { color:var(--accent); text-decoration:none; word-break:break-all; }
+a:hover { text-decoration:underline; }
+.mut { color:var(--mut); }
+.toc { display:flex; flex-wrap:wrap; gap:6px; margin:12px 0 4px; }
+.toc a { font-size:var(--fs-xs, 11px); padding:4px 10px; border-radius:var(--r-pill, 999px); border:1px solid var(--glass-line); background:rgba(255,255,255,.04); color:var(--fg-2); }
+.kid { border:1px solid rgba(var(--think-rgb),.3); background:rgba(var(--think-rgb),.06); border-radius:var(--r-m,12px); padding:10px 14px; margin:10px 0; }
+.kid li { margin:8px 0; }
+@media (max-width:640px){ .tblx { overflow-x:auto; } table { min-width:600px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>예타 대화 3대 부작용 — 원인 진단<small>2026-07-24 07:32 KST · 대상 = ① 대답을 안 함(무응답) · ② 하염없이 기다림(지연) · ③ 토큰 폭증 · 실측 근거 = <code>functions/api/yeta.js</code> · <code>.github/scripts/yeta_chat.sh</code> · <code>.github/workflows/yeta-chat.yml</code> · <code>docs/요구사항_큐.md</code> Q.32~Q.41</small></h1>
+
+<div class="kid">
+<b>초등학생용 3줄 요약</b>
+<ul>
+<li>① 예타 답장은 "메시지 보냄 → 깃허브 로봇이 깨어남 → 답 써서 저장 → 화면이 가져옴"인데, 이 사슬 중 로봇이 <b>깨다 죽으면</b> 화면은 <b>10분을 기다린 뒤에야</b> "실패"를 알아. 그동안은 조용해.</li>
+<li>② 로봇이 <b>매번 새로 깨는 데</b> 시간이 걸려(줄 서기 + 준비운동). 답장하고 5분 안에 또 말 걸면 빠르지만, 그 뒤엔 처음부터라 느려.</li>
+<li>③ 매 턴마다 <b>두꺼운 설명서(캐릭터 카드+세계관+규칙 ≈ 12,000~15,000단어어치)</b>를 통째로 다시 보내는데, "저장(캐시)"이 5분이면 사라져서 대부분 <b>제값 주고 다시 사</b>. 그래서 키미(돈 내는 모델)는 비용이 확 뛰어.</li>
+</ul>
+</div>
+
+<div class="toc">
+<a href="#s1">① 무응답</a><a href="#s2">② 지연</a><a href="#s3">③ 토큰 폭증</a><a href="#link">④ 셋의 연결고리</a><a href="#done">⑤ 이미 된 조치(Q.40·41)</a><a href="#left">⑥ 남은 레버(제안)</a><a href="#sum">종합표</a>
+</div>
+
+<h2 id="s1"><span class="no">①</span> 대답을 안 함 — 무응답 <span class="st ans">원인 진단</span></h2>
+<p class="lead">답장 사슬 = <b>send(유저 턴 저장·러너 깨움) → 깃허브 액션 러너가 답장 1턴 생성 → R2 세션에 반영 → 뷰어 폴이 픽업</b>. 이 사슬 어디가 끊겨도 화면엔 아무 말도 안 뜬다.</p>
+<div class="map"><span>send = awaiting 표시 + dispatch</span><i>→</i><span>러너 생성</span><i>→</i><span class="hot">여기서 끊기면</span><i>→</i><span>10분 뒤에야 error</span><i>→</i><span>그동안 무응답</span></div>
+<div class="card tblx"><table>
+<tr><th>원인</th><th>실측 근거</th><th>왜 "무응답"으로 보이나</th></tr>
+<tr><td><b>㉮ 러너가 뜨다 죽음(중간 사망)</b> — 주범</td><td><code>functions/api/yeta.js:208·217</code> — 폴이 <code>awaiting_since</code> 기준 <b>10분</b> 초과라야 <code>state=error</code>로 뒤집음. 러너 사망 원인 = 계정 쿼터·잡 타임아웃·인프라.</td><td>send는 상태를 <code>awaiting</code>로 두고 러너를 깨우기만 함. 러너가 생성 도중 죽으면 세션은 <code>awaiting</code> 그대로 → 화면은 <b>10분간</b> "생각 중" 상태로 멈춰 있다가 그제서야 "응답이 오지 않았어" 표시.</td></tr>
+<tr><td><b>㉯ 프레임 이탈 소진 → 인물이 "달아남" + 60분 두절</b></td><td><code>yeta_chat.sh:723·1299·1302</code> — 답장이 Claude Code 정체성/영어 메타발화로 새면(<code>is_frame_break</code>) 그 답을 버리고 재생성(kimi 2회 · 그 외 최대 4회). 소진 = 인캐릭터 탈출 폴백 + <code>flee_block</code>(기본 60분).</td><td>모델이 캐릭터를 못 지키고 "이건 코딩 작업처럼 보인다" 식으로 새는 답을 <b>대사로 박제하지 않으려고</b> 통째 폐기. 다 소진되면 인물이 "뿌리치고 달아난다" 한 줄 남기고 <b>1시간 연락 두절</b> = 사실상 무응답.</td></tr>
+<tr><td><b>㉰ 쿼터 소진(전 계정)</b></td><td><code>yeta_chat.sh:716·1295</code> + Q.40 ④ — 4계정 폴오버 체인이 다 막히면 <code>finish error "사용량 한도야"</code>. 실측: 260723 15:44 kimi 턴이 문샷 한도로 실패 → 15:59 소넷 전환으로 성공.</td><td>구독 4계정(본업 뉴스와 공유) + 키미 잔액이 다 바닥나면 답장 자체를 못 만듦.</td></tr>
+<tr><td><b>㉱ 직렬화 대기</b></td><td><code>yeta-chat.yml:15~17</code> — <code>concurrency: yeta-chat-&lt;char&gt;</code> · <code>cancel-in-progress:false</code>. 같은 캐릭터 = 동시 1런.</td><td>앞 런이 웜 대기·멈춤으로 최대 60분(잡 timeout) 물고 있으면, 새 메시지 런이 그 뒤에 <b>줄 서서</b> 시작을 못 함.</td></tr>
+<tr><td>㉲ 키미 일 상한(신규 · Q.40)</td><td><code>functions/api/yeta.js:55~62</code> — 하루 $2 초과 시 <code>429</code> 안내.</td><td>완전 무응답은 아니고 "일 상한 도달, 소넷·오퍼스로 돌리면 이어감" 안내가 뜸(과금 보호).</td></tr>
+</table></div>
+
+<h2 id="s2"><span class="no">②</span> 하염없이 기다림 — 지연 <span class="st ans">원인 진단</span></h2>
+<p class="lead">답장이 <b>느린 게 아니라, 답장할 로봇을 매번 새로 깨우는 데</b> 시간이 든다. 답장 직후 5분은 로봇이 살아 대기(웜)해서 ~1초로 빠르지만, 그 창이 닫히면 다시 콜드 스타트.</p>
+<div class="map"><span>새 메시지</span><i>→</i><span>웜 러너 살아있음 = ~1초</span><i>·</i><span class="hot">웜 없음 = 콜드</span><i>→</i><span>깃허브 큐 대기 + 체크아웃 + Node + CLI 캐시(미스 15~40s) + 생성</span></div>
+<div class="card tblx"><table>
+<tr><th>원인</th><th>실측 근거</th><th>지연 규모</th></tr>
+<tr><td><b>㉮ 콜드 스타트</b> — 주범</td><td><code>yeta_chat.sh:30</code> <code>WARM_WAIT=300</code>(답장 뒤 5분 대기) · <code>yeta-chat.yml:28~57</code> 체크아웃+Node+CLI 캐시.</td><td>웜 러너가 있으면 후속 ~1초. 5분 지나 러너가 나가면 다음 메시지는 <b>콜드</b> = 러너 큐 + 체크아웃 + Node 설치 + CLI 캐시 복원(<b>미스 시 15~40초</b>) + 생성 = 수십 초.</td></tr>
+<tr><td>㉯ 깃허브 dispatch 픽업 지연</td><td><code>functions/api/yeta.js:808~819</code> <code>workflow_dispatch</code>.</td><td>워크플로가 러너에 실제로 잡히기까지의 자체 지연(초~분). <span class="mut">인프라 축 — 우리 통제 밖.</span></td></tr>
+<tr><td>㉰ 재시도 지수 백오프</td><td><code>yeta_chat.sh:747~749</code> — 일시 과부하 시 <code>15s→30s→60s</code>.</td><td>API가 붐비면 한 턴이 백오프만 <b>최대 100초+</b> 쌓임(INLINE_TRIES=4).</td></tr>
+<tr><td>㉱ effort·모델 무게</td><td><code>yeta_chat.sh:700·770</code> — 기본 <code>effort=low</code>(30초 목표).</td><td>오퍼스·높은 effort로 돌리면 생성 자체가 길어짐.</td></tr>
+<tr><td>㉲ 직렬화 대기(①㉱와 동일 축)</td><td><code>yeta-chat.yml:15~17</code>.</td><td>앞 런이 물고 있으면 그 뒤에 줄 섬.</td></tr>
+<tr><td>㉳ 10분 awaiting 창 자체</td><td><code>functions/api/yeta.js:208</code>.</td><td>최악의 "기다림" = 죽은 러너가 error로 뒤집히기까지 <b>10분</b>(그 뒤 자동 재시도).</td></tr>
+</table></div>
+
+<h2 id="s3"><span class="no">③</span> 토큰 폭증 <span class="st warn">원인 확정(Q.40 실측)</span></h2>
+<p class="lead">매 턴마다 <b>고정 몸통</b>(공통지침 ~17KB + 세계관 ~8KB + 캐릭터 카드 7~10KB + 출력규칙 ~2.3KB ≈ <b>12,000~15,000 토큰</b>)을 통째로 다시 보낸다. 이걸 "캐시 접두"로 설계했지만 <b>캐시 수명이 실제 메시지 간격보다 짧아</b> 대부분 제값에 재과금.</p>
+<div class="map"><span>고정 몸통 12~15k tok</span><i>+</i><span>히스토리 12턴</span><i>+</i><span>기억 블록</span><i>→</i><span>매 턴 통째 전송</span><i>→</i><span class="hot">캐시 만료(≈5분) → 정가 재과금</span></div>
+<div class="card tblx"><table>
+<tr><th>원인</th><th>실측 근거</th><th>비용 영향</th></tr>
+<tr><td><b>㉮ 캐시 미스 재과금</b> — 핵심 뿌리</td><td>Q.40 ②③ 실측 — kimi-k3 26턴 입력 <b>396,518</b> / 캐시히트 64,000 = <b>히트율 16%</b>(당일 0%). 캐시 수명(문샷/Anthropic ≈5분) &lt; 실제 메시지 간격.</td><td>고정 몸통이 <b>매 턴 정가($3/M)로 재과금</b> → 턴당 ~15.2k tok · <b>≈ $0.05(약 70원)/턴</b>. Q.33의 "-98.9%"는 <b>연속 재발사(캐시 적중)</b> 조건이라 실사용 리듬에선 미재현.</td></tr>
+<tr><td>㉯ 내장 도구 스키마(과거 주범 · 챗은 조치됨)</td><td>Q.33 실측 — <code>claude -p</code>가 한 단어 입력에도 도구 스키마 <b>18,678 tok</b>. <code>yeta_chat.sh:692~694</code> <code>--tools ""</code> → <b>213 tok</b>.</td><td>챗 본선은 -98.9% 해소. <span class="mut">넛지·전화 러너는 누락됐다가 Q.41에서 동일 조치.</span></td></tr>
+<tr><td>㉰ 재시도 재과금</td><td><code>yeta_chat.sh:704·723~729</code> — <code>INLINE_TRIES=4</code> + 프레임이탈 재생성. 버린 생성도 (키미는) 전액 과금.</td><td>프레임이탈 캡 kimi <b>4→2</b>로 완화(Q.33). 폐기분은 usage 미기록(하한)이나 실과금.</td></tr>
+<tr><td>㉱ 12턴 히스토리 + 기억·상태 블록</td><td><code>yeta_chat.sh:28</code> <code>RECENT_TURNS=12</code> + NOTE_PUB/NOTE_ME + 상태 블록.</td><td>고정 몸통 위에 가변부가 매 턴 추가.</td></tr>
+<tr><td>㉲ kimi-k3 = 소넷5 티어 단가</td><td>Q.32 실측 — 입력 <b>$3/M</b>(옛 K2 $0.6의 <b>5배</b>).</td><td>"싼 모델" 전제가 구세대 정보. 실돈 나가는 유일 축.</td></tr>
+<tr><td>㉳ 클로드 턴 = 돈 0이나 쿼터 소모</td><td>Q.41 — 구독 정액이라 $0이지만 <b>주간 쿼터</b>를 태움(본업 뉴스와 4계정 공유 · 현재 체인 3번째까지 밀림).</td><td>돈은 안 나가도 쿼터 소진 → 폴오버 → 전 계정 소진 → <b>①㉰ 무응답으로 연결</b>.</td></tr>
+</table></div>
+
+<h2 id="link"><span class="no">④</span> 셋은 하나의 뿌리에서 갈라진다 <span class="st ans">연결고리</span></h2>
+<div class="card">
+<p class="lead">세 증상은 따로가 아니라 <b>같은 뿌리</b>에서 갈라진 가지다:</p>
+<div class="map"><span class="hot">매 턴 고정 몸통 통짜 재전송(캐시 미스)</span><i>→</i><span>토큰↑ = ③</span><i>+</i><span>생성 느림 = ②</span><i>+</i><span>쿼터 빨리 소진</span><i>→</i><span>폴오버</span><i>→</i><span class="hot">전 계정 소진 = 무응답 ①</span></div>
+<p class="mut" style="margin-top:10px">여기에 <b>콜드 러너(매번 새로 깨움)</b>와 <b>같은 캐릭터 직렬화</b>가 겹치면 = 지연(②)과 무응답(①)이 동시 증폭. 즉 "매 턴 통짜 재전송 + 콜드 부팅 + 줄 서기" 세 구조가 세 증상의 공통 원천이다.</p>
+</div>
+
+<h2 id="done"><span class="no">⑤</span> 이미 된 조치 — Q.40 · Q.41 <span class="st done">적용·머지됨</span></h2>
+<p class="lead">운영자가 이미 이 문제군을 추적해 상당 부분을 실측·조치했다(정본 = <code>docs/요구사항_큐.md</code>). 아래는 <b>지금 라이브에 적용된</b> 조치:</p>
+<div class="card tblx"><table>
+<tr><th>조치</th><th>효과</th><th>출처</th></tr>
+<tr><td><code>--tools ""</code>(내장 스키마 0)</td><td>턴당 입력 오버헤드 18,678 → 213 tok(-98.9%)</td><td>Q.33 · <code>yeta_chat.sh:692</code></td></tr>
+<tr><td><code>YETA_SYS=2</code>(CC 기저 시스템 교체)</td><td>Claude Code 기저 텍스트 미전송 = 쿼터·종량제 공동 절감 + 영어 메타발화 뿌리 제거</td><td>Q.35 · <code>yeta-chat.yml:89</code></td></tr>
+<tr><td>출력계약 정적 몸통 <b>캐시 접두로 이관</b></td><td>매 턴 정가 재과금 꼬리 → 캐시 접두로 이동</td><td>Q.34 · <code>yeta_chat.sh:1242</code></td></tr>
+<tr><td>프레임이탈 재생성 캡 kimi 4→2</td><td>종량제 폐기분 재과금 완화</td><td>Q.33 · <code>yeta_chat.sh:699</code></td></tr>
+<tr><td><b>키미 일 실비 방파제</b>($2/일 기본)</td><td>send·attach·retry 3경로 일 상한 = 폭증 하드 상한</td><td>Q.40 · <code>functions/api/yeta.js:55</code></td></tr>
+<tr><td>넛지·전화 러너 <code>--tools ""</code> + autoupdater·텔레메트리 off</td><td>잔당 자동로드 3종 제거("오래 걸린다" 축)</td><td>Q.41 · <code>yeta-nudge.sh</code>·<code>yeta-call.sh</code></td></tr>
+<tr><td>클로드 캐시적재(cw) 계측</td><td>미터 <code>i=2</code> 착시 해소 = 클로드 턴 실부피 가시화</td><td>Q.41 · <code>shared/claude_meter.sh</code></td></tr>
+</table>
+<p class="mut">→ 즉 <b>토큰 폭증의 상한(키미 $2/일)과 오버헤드(-98.9%)는 이미 막혀 있다.</b> 다만 캐시 미스 재과금(③㉮)의 <b>뿌리</b>는 캐시 수명이라는 외부 제약이라, 방파제로 <b>상한</b>을 두었을 뿐 <b>단가 자체</b>는 남아 있음.</p>
+</div>
+
+<h2 id="left"><span class="no">⑥</span> 남은 레버 — 제안(미실행 · 운영자 판단) <span class="st ans">제안</span></h2>
+<div class="card tblx"><table>
+<tr><th>증상</th><th>레버(제안)</th><th>트레이드오프</th></tr>
+<tr><td>① 무응답</td><td><b>awaiting→error 판정 10분 → 3~4분 단축</b> = 죽은 러너를 더 빨리 감지해 자동 재시도 조기 발사</td><td>게이트웨이 상수(<code>600000</code>) 1곳 · <span class="warn">웹앱 코드 = 평의회 대상([9])</span> · 정상 생성이 4분 넘는 긴 답과 충돌 없게 마진 확인</td></tr>
+<tr><td>② 지연</td><td><b>WARM_WAIT 5분 → 연장</b> = 콜드 스타트 빈도↓</td><td>러너 가동시간·쿼터 소모↑ 트레이드오프(현 55분 세션 예산 안에서)</td></tr>
+<tr><td>③ 토큰</td><td><b>고정 몸통 경량화</b>(00지침 17KB·세계관 8KB 다이어트) = 캐시 미스 시 매 턴 비용의 근본 축소 · <b>NOTE 델타 발행</b>(기억 전체 재전송 → 변경분만)</td><td><span class="warn">품질 리스크(캐릭터 충실도)</span> = Q.33 탐색B에서 보류된 레버 · 평의회 검증 권장</td></tr>
+<tr><td>③ 토큰</td><td><b>확장 캐시(장수명 TTL) 실효성 확인</b> — <code>claude -p</code> CLI가 cache_control TTL을 노출하는지 · 문샷 게이트가 1h 캐시를 지원하는지 실측</td><td>CLI 미지원이면 불가 · 지원 시 캐시 미스(③㉮) 직격</td></tr>
+</table>
+<p class="mut">이 레버들은 <b>제안일 뿐 미실행</b> — 웹앱 대화 파이프라인 변경은 CLAUDE.md [9] 평의회 대상이라, 운영자 승인 후 착수가 원칙(임의 진행 금지 · [E4]).</p>
+</div>
+
+<h2 id="sum"><span class="no">§</span> 종합 — 증상 → 근본원인 → 현 상태 총괄표</h2>
+<div class="card tblx"><table>
+<tr><th>증상</th><th>주범(근본원인)</th><th>보조원인</th><th>이미 된 조치</th><th>남은 레버</th></tr>
+<tr><td class="warn">① 무응답</td><td>러너 중간 사망 → 10분 awaiting 창</td><td>프레임이탈 60분 두절 · 쿼터 소진 · 직렬화</td><td>키미 $2 방파제 · 프레임이탈 캡 2</td><td>10분→3~4분 단축(평의회)</td></tr>
+<tr><td class="warn">② 지연</td><td>콜드 스타트(매번 러너 재부팅)</td><td>dispatch 픽업 · 지수 백오프 · 직렬화</td><td>웜 5분 · CLI 주간 캐시 · autoupdater off</td><td>WARM_WAIT 연장</td></tr>
+<tr><td class="warn">③ 토큰</td><td>캐시 미스로 고정 몸통 매 턴 재과금(히트율 16%)</td><td>재시도 재과금 · kimi $3/M 티어 · 12턴 히스토리</td><td>--tools "" -98.9% · 접두 이관 · $2 방파제</td><td>몸통 경량화 · NOTE 델타 · 장수명 캐시</td></tr>
+</table>
+<p class="mut">진단 방법 = 코드 실측(게이트웨이·러너·워크플로 정독) + <code>docs/요구사항_큐.md</code> Q.32~Q.41 실측 대조 · 코드 무변경(진단 리포트). 정본 회계 = 문샷 콘솔(러너 shard 미커밋).</p></div>
+
+</div>
+</body>
+</html>
