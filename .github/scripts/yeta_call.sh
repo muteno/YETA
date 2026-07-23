@@ -19,6 +19,7 @@ case "${YETA_CALL_EFF:-low}" in low|medium|high|max) EFF="${YETA_CALL_EFF:-low}"
 SAFE=""
 case "${YETA_SAFE:-1}" in 1|true|on) SAFE="--safe-mode" ;; esac   # 기본 ON — 런타임은 CLAUDE.md 미주입(개발 세션 전용 · 턴당 ~37k 토큰 절약 · 운영자 260704) · ⚠️ --bare 는 여전히 절대 금지(OAuth 즉사)
 export CLAUDE_BARE=0              # 방어 명시(yeta_chat.sh 평의회① 동형)
+export DISABLE_AUTOUPDATER=1 CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1   # 자동 로드 컷(운영자 260723 — CLI 자동업데이트·텔레메트리 OFF · yeta_chat 동형)
 RECENT_TURNS="${YETA_RECENT_TURNS:-8}"
 INLINE_TRIES=4   # 4계정 폴오버 체인 깊이(서브3 MUTENONA까지 실호출) + 일시 과부하 흡수 — 4계정 확장 3→4
 ROSTER="apps/yeta/characters/roster.json"
@@ -26,6 +27,8 @@ ROSTER="apps/yeta/characters/roster.json"
 source "$ROOT/shared/claude_transient.sh"   # is_transient/is_quota/claude_failover SSOT
 source "$ROOT/shared/claude_meter.sh"
 source "$ROOT/shared/inject_character.sh"
+YSF="$(yeta_sys_frame)"; SYS_ARGS=()   # 캐릭터 프레임 시스템 슬롯(yeta_chat 동형 계승 · 260723) — CC 기저 텍스트 미전송(쿼터 절감) · 노브 = YETA_SYS(yml)
+case "${YETA_SYS:-1}" in 2|replace) SYS_ARGS=(--system-prompt "$YSF") ;; 0|off|false) SYS_ARGS=() ;; *) SYS_ARGS=(--append-system-prompt "$YSF") ;; esac
 
 : "${R2_ACCOUNT_ID:?R2_ACCOUNT_ID 필요}"; : "${YETA_R2_BUCKET:?YETA_R2_BUCKET 필요}"
 export AWS_ACCESS_KEY_ID="${R2_ACCESS_KEY_ID:?}" AWS_SECRET_ACCESS_KEY="${R2_SECRET_ACCESS_KEY:?}" AWS_DEFAULT_REGION=auto
@@ -116,10 +119,10 @@ ${HIST:-"(없음)"}
   T0=$SECONDS; inline_delay=15; rc=1; out=""; _eff_dropped=0
   for attempt in $(seq 1 "$INLINE_TRIES"); do
     out="$(printf '%s' "$prompt" | METER_SRC=yeta-call METER_REF="$PERSONA" METER_MODEL="$MODEL" METER_EFFORT="$EFF" claude_meter 240 \
-          --model "$MODEL" $SAFE "${EFF_ARGS[@]}" \
+          --model "$MODEL" $SAFE "${SYS_ARGS[@]}" "${EFF_ARGS[@]}" --tools "" \
           --disallowedTools "Write,Edit,NotebookEdit,Bash,Task,WebFetch,WebSearch,Read,Glob,Grep" \
           --max-turns 1 \
-          2> /tmp/yeta_call.err)"
+          2> /tmp/yeta_call.err)"   # --tools "" = 빌트인 스키마 0(책빼기 · yeta_chat gen_out 동형 260723 — 종전엔 통화 첫마디마다 스키마 ~18k tok 자동 탑재)
     rc=$?
     if [ $rc -eq 0 ] && [ -n "${out// }" ]; then
       if is_quota "$out"; then   # 쿼터 문구 rc=0 유출 가드(yeta_chat gen_out 동형 · 운영자 260709) — 전환 후 재시도·소진 = 실패

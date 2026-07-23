@@ -73,6 +73,7 @@ jobs:
           CLAUDE_CODE_OAUTH_TOKEN_ALT2: ${{ (vars.ACTIVE_ACCOUNT || 'MUTENO') == 'MUTENO' && secrets.CLAUDE_CODE_OAUTH_TOKEN_EMS1130G || secrets.CLAUDE_CODE_OAUTH_TOKEN_MUTENO }}
           CLAUDE_CODE_OAUTH_TOKEN_ALT3: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN_MUTENONA }}   # 서브3 폴오버(체인 실꼬리 = 항상 MUTENONA · 앞 3계정 소진 후)
           ACTIVE_ACCOUNT: ${{ vars.ACTIVE_ACCOUNT || 'MUTENO' }}
+          YETA_SYS: '2'   # 운영자 260723 — 시스템 슬롯 교체(CC 기저 텍스트 미전송 = 쿼터 절감 · yeta-chat.yml Q.35 동형 · 롤백 = 이 줄 제거[append 복귀])
           # 세션·음성 = R2 비공개 버킷(YETA_R2_BUCKET — 공개 R2_BUCKET 과 별도)
           R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
