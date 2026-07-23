@@ -29,10 +29,10 @@
 //   auth  {pin}                    : PIN 로그인 — admin = env YETA_PIN_ADMIN(레포 무노출) / guest = apps/yeta/users.json 해시(깃 SSOT)
 //   reset {}                       : 세션 초기화(페르소나도 비움 → 재뽑기 · tunes/policy/me 승계)
 // 저장 = R2 비공개 버킷 바인딩 env.YETA_R2 (⚠️ 대화는 public 레포 커밋 절대 금지 — 계획안 D2).
-// 게이트: 무인증 공개(originOk=CSRF만 · Access 미부착) · 채팅 상한 없음(운영자 260706 폐지 — quota 카운터는 관측용, 소비처 없음·후속 users.cap 연동 후보) · 유료 축(ring/phone)만 일 상한.
+// 게이트: 무인증 공개(originOk=CSRF만 · Access 미부착) · 채팅 상한 없음(운영자 260706 폐지 — quota 카운터는 관측용, 소비처 없음·후속 users.cap 연동 후보) · 유료 축(ring/phone + 키미 다이얼 = 문샷 종량제 실비)만 일 상한(키미 = Q.39 260723).
 // env: GH_TOKEN(Actions write) · YETA_R2(R2 바인딩) · YETA_PIN_ADMIN(슈퍼관리자 PIN — 설정 SET 강제) · YETA_CALL_MAX_PER_DAY(선택·기본 3 — 유료 TTS 가드)
 //      AI(선택 · Workers AI 바인딩 = op stt) · VAPI_API_KEY+VAPI_PHONE_ID+YETA_PHONE_TO(선택 3종 = op phone · 번호는 시크릿 — 코드 박제 금지)
-//      YETA_PHONE_MAX_PER_DAY(선택·기본 2 — 실전화 분당 과금 가드).
+//      YETA_PHONE_MAX_PER_DAY(선택·기본 2 — 실전화 분당 과금 가드) · YETA_KIMI_MAX_USD_PER_DAY(선택·기본 2 — 키미 종량제 일일 실비 방파제 USD · 0=무제한 · Q.39).
 const REPO = 'muteno/yeta';
 const ID_RE = /^[a-z0-9_-]{1,24}$/;
 const KEY = 'sessions/main.json';
@@ -42,6 +42,24 @@ const EXPIRE_MS = 86400000;         // 대화 휘발 TTL(운영자 260716 Q.06) 
 const josa = (s, a, b) => { const c = String(s || '').charCodeAt(String(s || '').length - 1); return c >= 0xAC00 && c <= 0xD7A3 && (c - 0xAC00) % 28 > 0 ? a : b; };   // 받침 → 을/은, 무받침 → 를/는
 const MODELS = new Set(['claude-opus-4-8', 'claude-sonnet-5', 'kimi-k3', 'kimi-k2.5']);   // §기틀 정확 ID — 집합 확장은 운영자 확인(kimi-k3 = 260719 · kimi-k2.5 = 260721 승인이나 문샷 /anthropic 게이트 404 실측 = 뷰어 미노출·배선 대기[Q.33] · 둘 다 러너 시크릿 KIMI_CODE_MUTE 경유)
 const EFFORTS = new Set(['', 'low', 'medium', 'high', 'max']);           // '' = --effort 생략(CLI 기본)
+// ── 키미(문샷 종량제 = 유일 실과금 다이얼) 일일 실비 방파제(운영자 260723 Q.39 "대화비용 급증 원인해결") — 유료 축 = 일 상한 규범(ring/phone/meface 동형)의 채팅 편입 ──
+//   근거 실측(260723): 문샷 자동 캐시가 실사용 메시지 간격에선 미적중(누적 26턴 i=396,518/cr=64,000 = 히트율 16% · 당일 cr=0) → 고정 몸통 ~15k tok이 매턴 정가($3/M) 재과금 ≈ $0.05/턴.
+//   단가 = 뷰어 YCOST 거울(viewer/index.html — 개정 시 양쪽 동조) · 집계 = sess.usage_day(러너 finish가 성공 답장분만 누계 = 하한 지표 → 상한은 방파제, 정본 회계 = 문샷 콘솔) ·
+//   클로드(구독 정액) 무영향 · usage 미기록 세션(레거시·계측 실패) = 0 취급 통과(fail-open — 가드는 방파제지 회계가 아님).
+const KIMI_COST = { 'kimi-k3': [3, 0.3, 15], 'kimi-k2.5': [0.6, 0.1, 3] };   // USD/1M [입력미스, 캐시히트, 출력]
+const kimiSpentUsd = (sess) => {   // 오늘(KST) 키미 계열 실비 — usage_day 버킷(뷰어 yKimiCostOf 동형 계산)
+  const ud = (sess || {}).usage_day;
+  if (!ud || ud.d !== new Date(Date.now() + 9 * 3600e3).toISOString().slice(2, 10).replace(/-/g, '')) return 0;   // 날짜 불일치 = 지난 버킷 = 오늘 0
+  return Object.entries(KIMI_COST).reduce((s, [m, r]) => { const v = (ud.m || {})[m]; return v ? s + ((v.i || 0) * r[0] + (v.cr || 0) * r[1] + (v.o || 0) * r[2]) / 1e6 : s; }, 0);
+};
+const kimiGate = (env, sess) => {   // 초과 = 안내 객체(호출부 429) / 미달 = null — send·attach·retry 3경로 공용
+  const c0 = parseFloat(env.YETA_KIMI_MAX_USD_PER_DAY ?? '2');
+  const cap = Number.isFinite(c0) ? c0 : 2;   // 빈값·오타 = 보수 기본 2(ring 동형) · 0 = 명시적 무제한
+  if (!(cap > 0)) return null;
+  const spent = kimiSpentUsd(sess);
+  if (spent < cap) return null;
+  return { error: `오늘 키미 대화비 $${spent.toFixed(2)} — 일 상한($${cap}) 도달(과금 보호). 다이얼을 소넷·오퍼스로 돌리면 바로 이어갈 수 있어(상한 변경 = Pages env YETA_KIMI_MAX_USD_PER_DAY · 0=무제한)` };
+};
 // 클라 텍스트 위장 무력화 SSOT(send/draw/invite/kick/me 공용) — NOTE/MOOD/user_message 파이프 제어토큰 제거.
 // ⚠️ 고정점 루프 = 중첩 마커(예 <<N<<NOTE:a>>OTE:PUB>>) 깊이 무관 붕괴(단일패스는 깊이1만 벗김 = 재조립 생존 · 평의회1 260708). 라벨 [^>]* = 유니코드 안전.
 // ⚠️ 선캡 8192 = 고정점 루프가 무한장 입력에 O(n²)로 도는 DoS 차단(무인증 게이트웨이 · 평의회1 재검증). send 의미캡 4000의 2배라 정상 입력 무손실 · 각 호출처 최종 캡(24/300/4000)은 뒤에서 적용.
@@ -665,9 +683,14 @@ export async function onRequestPost({ request, env }) {
 
   if (op === 'retry') {   // 자동 재시도(구 원탭 · 뷰어 260714 무배너 자동화) — 실패(state=error) 스레드의 pending 유저 턴 재발사(새 턴 추가 X)
     if (!env.GH_TOKEN) return json({ error: '서버 미설정 — GH_TOKEN 필요' }, 500);
-    const t = String(body.t || (await readSess()).cur || '');
+    const preR = await readSess();
+    const t = String(body.t || preR.cur || '');
     if (!ID_RE.test(t)) return json({ error: '잘못된 스레드 id' }, 400);
     const rn = Math.max(1, Math.min(9, Math.round(+body.n) || 1));   // 회차(사다리 260714) — 러너가 3회차부터 뉘앙스 전환 블록 주입 · 미동봉(구 캐시 뷰어) = 1(그대로 재발사) · 정수 강제 = 주입 차단
+    {   // 키미 일일 실비 방파제(Q.39) — 재시도도 pending 턴에 박제된 키미 다이얼로 실과금되는 경로(상한 우회 차단) · 클로드 턴 재시도 무영향 · 스레드 판독 실패 = 통과(fail-open · 아래 casPut이 실존 재검증)
+      const th = TH(preR, t), tn = (th && th.turns) || [], la = tn.map(x => x.role).lastIndexOf('assistant');
+      if (tn.slice(la + 1).some(x => x && x.role === 'user' && KIMI_COST[x.model])) { const kb = kimiGate(env, preR); if (kb) return json(kb, 429); }
+    }
     const { abort } = await casPut(s => {
       const th = TH(s, t); if (!th) return { abort: { error: '없는 대화방이야' } };
       if (DEAD_ON(s, t)) return { abort: { error: '지금은 연락이 닿지 않아' } };   // 사망 방 = 재발사 금지(260714)
@@ -714,6 +737,7 @@ export async function onRequestPost({ request, env }) {
     if (!ID_RE.test(at)) return json({ error: '먼저 대화방을 열어줘' }, 409);
     if (!TH(preS, at)) return json({ error: '없는 대화방이야 — 캐릭터 탭에서 열어줘' }, 409);   // ⚠️ R2 put '이전' 방 실존 선검증(평의회 260717 HIGH — 가짜 방 id 반복 = 상한 우회 무한 고아 객체 적재 DoS 차단 · 최종 판정은 아래 casPut이 재확인)
     if (DEAD_ON(preS, at)) return json({ error: '…지금은 연락이 닿지 않아. 하루쯤 뒤에 다시 걸어봐' }, 409);
+    if (KIMI_COST[amodel]) { const kb = kimiGate(env, preS); if (kb) return json(kb, 429); }   // 키미 일일 실비 방파제(Q.39) — 첨부 상한 소비·R2 저장 전 차단(비전 턴 = 이미지 토큰까지 실과금 축)
     await env.YETA_R2.put(aqkey, JSON.stringify({ n: aused + 1 }), { httpMetadata: { contentType: 'application/json' } });   // 상한 = 시도 즉시 소비(pinset 결 — put까지 간 시도는 실패해도 카운트 = 저장 축 남용 하드캡)
     const akey = `att/${at}/${Date.now().toString(36)}.jpg`;
     await env.YETA_R2.put(akey, bin.buffer, { httpMetadata: { contentType: 'image/jpeg' } });   // 이미지 저장 → 턴 적재(러너가 턴을 집는 순간 실물 보장 · CAS abort 시 고아 객체 = 상한 안에서 유계)
@@ -753,7 +777,9 @@ export async function onRequestPost({ request, env }) {
   const qo = await env.YETA_R2.get(qkey);
   if (qo) { try { used = (await qo.json()).n || 0; } catch { used = 0; } }
 
-  const t = String(body.t || (await readSess()).cur || '');   // 대상 스레드(v3) — 미지정 = 현재 방
+  const preS2 = await readSess();
+  if (KIMI_COST[model]) { const kb = kimiGate(env, preS2); if (kb) return json(kb, 429); }   // 키미 일일 실비 방파제(Q.39) — 턴 append 전 차단 = 헛dispatch 0 · 다이얼 전환 시 즉시 재개
+  const t = String(body.t || preS2.cur || '');   // 대상 스레드(v3) — 미지정 = 현재 방
   if (!ID_RE.test(t)) return json({ error: '페르소나가 없어 — 🎲 먼저 뽑아줘' }, 409);
   const { abort } = await casPut(s => {
     const th = TH(s, t); if (!th) return { abort: { error: '없는 대화방이야 — 캐릭터 탭에서 열어줘' } };
