@@ -27,7 +27,7 @@ export CLAUDE_BARE=0              # 방어 명시 — 공유 기본값이 미래
 export DISABLE_AUTOUPDATER=1 CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1   # 자동 로드 컷(운영자 260723 "자동 로드되는 것들 다 제외") — CLI 자동업데이트 확인·텔레메트리 등 비필수 트래픽 OFF(런당 지연·잡음 제거 · 생성 무영향 · 미지원 CLI = 무해 no-op)
 RECENT_TURNS="${YETA_RECENT_TURNS:-12}"   # 8→12(평의회 260714 호환 MED) — 버블 분할(평균 1.4버블/답장)로 턴 단위 창이 실질 축소되던 대화기억 회귀 보정
 INLINE_TRIES=4   # 4계정 폴오버 체인 깊이(서브3 MUTENONA까지 실호출) + 일시 과부하 흡수 — 4계정 확장 3→4(챗 안정성: 앞 3계정 쿼터 시 MUTENONA 실도달)
-WARM_WAIT="${YETA_WARM_WAIT:-300}"       # 웜 유휴 유예(s) — 무메시지면 조용히 종료
+WARM_WAIT="${YETA_WARM_WAIT:-600}"       # 웜 유휴 유예(s · 260724 5→10분) — 무메시지면 조용히 종료. 대화 간격 대부분을 덮어 후속 턴을 웜(생성시간만=1분 안)으로 · 공개 레포=Actions 무료지만 '상시 서버'화 남용 회피로 25분 대신 10분(근본 절감은 몸통 다이어트)
 WARM_POLL="${YETA_WARM_POLL:-2}"   # 웜 픽업 지연 평균 2.5s→1s(대화 속도 260713) — R2 GET 300s/2s=150회/창 = Class B 무료 티어에 무시량
 SESSION_MAX="${YETA_SESSION_MAX:-3300}"  # 55분(잡 timeout 60분보다 낮게 = mid-turn 킬 차단 · 아이데이션③)
 PER_TURN_BUDGET="${YETA_TURN_BUDGET:-300}"   # 새 턴 시작 전 필요한 잔여 예산(claude 240 + finish 여유 · env = 테스트 노브)

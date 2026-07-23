@@ -3045,10 +3045,10 @@ $('#yetaList').addEventListener('click', e => {
   if (e.target.closest('.yl-dice')) { const pool = YCHARS.filter(x => !yLockLabel(x) && !yUnmet(x) && !yDead(x)); if (pool.length) yEnterChat(pool[Math.floor(Math.random() * pool.length)]); return; }   // 랜덤 = 잠금·미대면·사망 제외(운영자 260708·260709·260714 — 🎲는 만난 사람 안에서만·우연 해금 우회 차단)
   const row = e.target.closest('.ypick-row'); if (row) yEnterChat(yPersona(row.dataset.id));
 });
-function yWarm() {   // 4.5분 디바운스 — 웜 런이 살아있을 확률 높으면 안 쏨(러너분 낭비 억제)
+function yWarm() {   // 9분 디바운스(260724 4.5→9분) — WARM_WAIT 10분에 정렬: 웜 런이 살아있는 동안은 재프리웜 안 쏨(중복 dispatch·상시 서버화 억제) · 10분 지나 러너 사망 즈음 = 다시 발동해 다음 진입 콜드 방지
   try {
     const last = +localStorage.getItem('nomute_yeta_warm') || 0;
-    if (Date.now() - last < 270000) return;
+    if (Date.now() - last < 540000) return;
     localStorage.setItem('nomute_yeta_warm', String(Date.now()));
     yApi('warm').catch(() => null);
   } catch {}
