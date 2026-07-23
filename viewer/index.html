@@ -2606,7 +2606,7 @@ function yDepthRow() {
 const yKimiCostOf = u => Object.keys(u || {}).filter(m => YCOST[m]).reduce((s, m) => s + ((u[m].i || 0) * YCOST[m][0] + (u[m].cr || 0) * YCOST[m][1] + (u[m].o || 0) * YCOST[m][2]) / 1e6, 0);   // 키미 계열 실비 USD(Q.37/38 공용 계산기) — 모델별 각자 요율 · 캐시 히트 1/10가 분리
 function yKimiCost() { return yKimiCostOf((YSESS && YSESS.usage) || {}); }   // 전체 누계판(좌상단 미터 병기)
 const yCostFmt = (c, zero) => c > 0 ? (c >= 0.01 ? '$' + c.toFixed(2) : '<$0.01') : zero;   // 표기 공용(설정 '—' · 미터 '$0.00')
-const yUsageSeg = u => { const name = id => { for (const k in YDIAL_MODELS) if (YDIAL_MODELS[k][0] === id) return YDIAL_MODELS[k][1]; return id; }; return Object.entries(u || {}).map(([m, x]) => `${name(m)} ${yMeterFmt((x.i || 0) + (x.cr || 0) + (x.o || 0))}`).join(' · '); };   // 모델 일괄 토큰 문자열(클로드 포함 — 가격은 키미만)
+const yUsageSeg = u => { const name = id => { for (const k in YDIAL_MODELS) if (YDIAL_MODELS[k][0] === id) return YDIAL_MODELS[k][1]; return id; }; return Object.entries(u || {}).map(([m, x]) => `${name(m)} ${yMeterFmt((x.i || 0) + (x.cr || 0) + (x.cw || 0) + (x.o || 0))}`).join(' · '); };   // 모델 일괄 토큰 문자열(클로드 포함 — 가격은 키미만) · cw = 캐시 적재 포함(260723 — 클로드 턴 i=2 착시 해소 · 실부피 표시)
 const yUsageItem = (t, u, empty) => `<div class="yset-item"><span class="si-ic">${YICO.chat}</span><span class="si-lbl"><span class="si-t">${t}</span><span class="si-d">${yUsageSeg(u) ? esc(yUsageSeg(u)) + ' — 키미만 실비 추정(클로드 = 구독·가격 없음)' : empty}</span></span><span class="si-v">${yCostFmt(yKimiCostOf(u), '—')}</span></div>`;   // 정보 행 공용(yset-item 문법 계승 · 버튼 아님)
 function yUsageRow() {   // 누적 사용량(Q.36) — sess.usage 전체 누계(휘발·리셋 무관)
   return yUsageItem('누적 사용량', (YSESS && YSESS.usage) || {}, '아직 기록 없음 — 답장마다 자동 누적');

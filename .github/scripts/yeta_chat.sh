@@ -24,6 +24,7 @@ is_kimi() { case "$1" in "$KIMI_MODEL"|"$KIMI25_MODEL") return 0 ;; esac; return
 SAFE=""
 case "${YETA_SAFE:-1}" in 1|true|on) SAFE="--safe-mode" ;; esac   # 기본 ON — 런타임은 CLAUDE.md 미주입(개발 세션 전용 · 턴당 ~37k 토큰 절약 · 운영자 260704 · 회귀=YETA_SAFE=0) · ⚠️ --bare 절대 금지(OAuth 즉사)
 export CLAUDE_BARE=0              # 방어 명시 — 공유 기본값이 미래에 ON 회귀해도 챗은 불가(평의회①)
+export DISABLE_AUTOUPDATER=1 CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1   # 자동 로드 컷(운영자 260723 "자동 로드되는 것들 다 제외") — CLI 자동업데이트 확인·텔레메트리 등 비필수 트래픽 OFF(런당 지연·잡음 제거 · 생성 무영향 · 미지원 CLI = 무해 no-op)
 RECENT_TURNS="${YETA_RECENT_TURNS:-12}"   # 8→12(평의회 260714 호환 MED) — 버블 분할(평균 1.4버블/답장)로 턴 단위 창이 실질 축소되던 대화기억 회귀 보정
 INLINE_TRIES=4   # 4계정 폴오버 체인 깊이(서브3 MUTENONA까지 실호출) + 일시 과부하 흡수 — 4계정 확장 3→4(챗 안정성: 앞 3계정 쿼터 시 MUTENONA 실도달)
 WARM_WAIT="${YETA_WARM_WAIT:-300}"       # 웜 유휴 유예(s) — 무메시지면 조용히 종료
@@ -280,7 +281,7 @@ finish() {  # $1=ok|error · $2=텍스트 — env: INS·ANCHOR_TS·PERSONA·MODE
   for _i in 1 2 3; do if r2get; then _g=1; break; fi; [ "$_i" -lt 3 ] && sleep 2; done
   if [ "$_g" = 0 ]; then echo "::error::finish r2get 실패 — 반영 포기(답장 폐기·유저 데이터 보호)"; _did_reply=0; return 1; fi
   REPLY_TEXT="$2" PERSONA="${PERSONA:-}" MODEL="${MODEL:-}" EFF="${EFF:-}" GEN_S="${GEN_S:-0}" ANCHOR_TS="${ANCHOR_TS:-}" OPEN="${OPEN:-}" OPENING_TS="${OPENING_TS:-}" \
-    CO_ID="${CO_ID:-}" CO_NAME="${CO_NAME:-}" THREAD="${THREAD:-}" TOK_I="${TOK_I:-0}" TOK_O="${TOK_O:-0}" TOK_CR="${TOK_CR:-0}" CNAME="${CNAME:-}" GEN_T0MS="${GEN_T0MS:-}" GEN_ENDMS="${GEN_ENDMS:-}" OV_SKIP="${OV_SKIP:-}" \
+    CO_ID="${CO_ID:-}" CO_NAME="${CO_NAME:-}" THREAD="${THREAD:-}" TOK_I="${TOK_I:-0}" TOK_O="${TOK_O:-0}" TOK_CR="${TOK_CR:-0}" TOK_CW="${TOK_CW:-0}" CNAME="${CNAME:-}" GEN_T0MS="${GEN_T0MS:-}" GEN_ENDMS="${GEN_ENDMS:-}" OV_SKIP="${OV_SKIP:-}" \
     python3 - "$SESS" "$1" "${INS:-0}" "${CVER:-}" <<'PY'
 import json, os, re, sys, time
 sys.path.insert(0, ".github/scripts")
@@ -394,17 +395,19 @@ if kind == "ok":
             _ti = _to = 0
         try: _tc = int(os.environ.get("TOK_CR", "0") or 0)
         except ValueError: _tc = 0
+        try: _tcw = int(os.environ.get("TOK_CW", "0") or 0)   # 캐시 적재(260723) — 클로드 턴 실부피(구독 쿼터 소모 근사 · i=2 착시 해소)
+        except ValueError: _tcw = 0
         _gm = os.environ.get("MODEL", "") or ""
-        if _gm and (_ti or _to or _tc):   # 누적 사용량(운영자 260721 Q.36 "콘솔 안 가도 관리자가 확인") — 모델별 전체 누계 top-level(스레드 휘발·리셋과 무관 축 · 뷰어 설정 '누적 사용량' 행이 소비 · kimi = 고정 단가 즉석 환산)
+        if _gm and (_ti or _to or _tc or _tcw):   # 누적 사용량(운영자 260721 Q.36 "콘솔 안 가도 관리자가 확인") — 모델별 전체 누계 top-level(스레드 휘발·리셋과 무관 축 · 뷰어 설정 '누적 사용량' 행이 소비 · kimi = 고정 단가 즉석 환산)
             _u = S_ROOT.setdefault("usage", {}).setdefault(_gm, {"i": 0, "o": 0, "cr": 0, "n": 0})
             _u["i"] = _u.get("i", 0) + _ti; _u["o"] = _u.get("o", 0) + _to
-            _u["cr"] = _u.get("cr", 0) + _tc; _u["n"] = _u.get("n", 0) + 1   # 주의: 성공 답장분만(재시도 폐기·초대 판정 미포함 = 하한 지표 — 정본 회계는 문샷 콘솔)
+            _u["cr"] = _u.get("cr", 0) + _tc; _u["cw"] = _u.get("cw", 0) + _tcw; _u["n"] = _u.get("n", 0) + 1   # 주의: 성공 답장분만(재시도 폐기·초대 판정 미포함 = 하한 지표 — 정본 회계는 문샷 콘솔) · cw = 레거시 dict에도 get 폴백으로 안전 합산
             _d = time.strftime("%y%m%d", time.gmtime(time.time() + 9 * 3600))   # KST 일자(§📐 — naive 금지)
             _ud = S_ROOT.get("usage_day")
             if not isinstance(_ud, dict) or _ud.get("d") != _d: _ud = {"d": _d, "m": {}}   # 자정(KST) 롤오버 = 다음 답장이 자연 리셋(오늘 버킷 1개만 · 이력 미보관 — Q.38)
             _um = _ud.setdefault("m", {}).setdefault(_gm, {"i": 0, "o": 0, "cr": 0, "n": 0})
             _um["i"] = _um.get("i", 0) + _ti; _um["o"] = _um.get("o", 0) + _to
-            _um["cr"] = _um.get("cr", 0) + _tc; _um["n"] = _um.get("n", 0) + 1
+            _um["cr"] = _um.get("cr", 0) + _tc; _um["cw"] = _um.get("cw", 0) + _tcw; _um["n"] = _um.get("n", 0) + 1
             S_ROOT["usage_day"] = _ud   # 뷰어 설정 '오늘 사용량' 행 소비(운영자 260721 Q.38 "오늘 얼마인지도")
         for ci, ct in enumerate(chunks):
             turn = {"role": "assistant", "text": ct, "ts": now + ci, "persona": turn_persona}
@@ -697,7 +700,7 @@ gen_out() {
   EFF_ARGS=(); [ -n "$EFF" ] && EFF_ARGS=(--effort "$EFF")   # 빈값 = 플래그 생략(gate_judge SSOT 패턴)
   local _sys=("${SYS_ARGS[@]}")
   if is_kimi "$MODEL" && [ "${YETA_SYS:-1}" != "0" ]; then _sys=(--system-prompt "$YSF"); fi   # 책 빼기(260721) — kimi 종량제 턴 한정 시스템 슬롯 교체(상단 SYS_ARGS 주석 참조)
-  T0=$SECONDS; GEN_T0MS="$(date +%s%3N)"; OUT=""; TOK_I=0; TOK_O=0; TOK_CR=0; rm -f /tmp/yeta_meter_last.json   # 이 생성의 실측 토큰(METER_LAST) — finish가 답장 턴 tok으로 박제(뷰어 좌상단 미터 · 운영자 260709) · GEN_T0MS = 계기판 lat(픽업 w·첫문장 f) 기준점(260714)
+  T0=$SECONDS; GEN_T0MS="$(date +%s%3N)"; OUT=""; TOK_I=0; TOK_O=0; TOK_CR=0; TOK_CW=0; rm -f /tmp/yeta_meter_last.json   # 이 생성의 실측 토큰(METER_LAST) — finish가 답장 턴 tok으로 박제(뷰어 좌상단 미터 · 운영자 260709) · GEN_T0MS = 계기판 lat(픽업 w·첫문장 f) 기준점(260714)
   for attempt in $(seq 1 "$INLINE_TRIES"); do
     # kimi 턴 = 문샷 Anthropic 호환 게이트 리라우트(운영자 260719) — 파이프 그룹 = 서브셸이라 주입·unset이 이 호출에만 국소(다음 턴 Claude·폴오버 체인 무오염) · AUTH_TOKEN+API_KEY 겸장 = CLI 판독 축 이중 커버
     OUT="$(printf '%s' "$prompt" | { if is_kimi "$MODEL"; then export ANTHROPIC_BASE_URL="${KIMI_BASE_URL:-https://api.moonshot.ai/anthropic}" ANTHROPIC_AUTH_TOKEN="${KIMI_API_KEY:-}" ANTHROPIC_API_KEY="${KIMI_API_KEY:-}"; unset CLAUDE_CODE_OAUTH_TOKEN; fi
@@ -752,6 +755,7 @@ gen_out() {
     TOK_I="$(jq -r '.in // 0' /tmp/yeta_meter_last.json 2>/dev/null || echo 0)"
     TOK_O="$(jq -r '.out // 0' /tmp/yeta_meter_last.json 2>/dev/null || echo 0)"
     TOK_CR="$(jq -r '.cr // 0' /tmp/yeta_meter_last.json 2>/dev/null || echo 0)"   # 캐시 히트(Q.36 누적 사용량 — kimi 실비 환산 분리축)
+    TOK_CW="$(jq -r '.cw // 0' /tmp/yeta_meter_last.json 2>/dev/null || echo 0)"   # 캐시 적재(260723 — 클로드 턴 실부피 가시화: i=2 착시 해소 · 구독 쿼터 소모 근사)
   fi
   [ $rc -eq 0 ] && [ -n "${OUT// }" ] && return 0
   return 1

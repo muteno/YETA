@@ -6,9 +6,12 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"; cd "$ROOT"
 
 SAFE=""; case "${YETA_SAFE:-1}" in 1|true|on) SAFE="--safe-mode" ;; esac   # ⚠️ --bare 절대 금지(OAuth 즉사)
+export CLAUDE_BARE=0 DISABLE_AUTOUPDATER=1 CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1   # 방어 명시(yeta_chat 동형) + 자동 로드 컷(운영자 260723 — CLI 자동업데이트·텔레메트리 OFF)
 source shared/claude_transient.sh
 source shared/claude_meter.sh
 source shared/inject_character.sh
+YSF="$(yeta_sys_frame)"; SYS_ARGS=()   # 캐릭터 프레임 시스템 슬롯(yeta_chat 동형 계승 · 260723) — CC 기저 텍스트 미전송(구독 쿼터 절감) + 메타발화 이탈 뿌리 제거 · 노브 = YETA_SYS(yml)
+case "${YETA_SYS:-1}" in 2|replace) SYS_ARGS=(--system-prompt "$YSF") ;; 0|off|false) SYS_ARGS=() ;; *) SYS_ARGS=(--append-system-prompt "$YSF") ;; esac
 
 : "${R2_ACCOUNT_ID:?R2_ACCOUNT_ID 필요}"; : "${YETA_R2_BUCKET:?YETA_R2_BUCKET 필요}"
 export AWS_ACCESS_KEY_ID="${R2_ACCESS_KEY_ID:?}" AWS_SECRET_ACCESS_KEY="${R2_SECRET_ACCESS_KEY:?}" AWS_DEFAULT_REGION=auto
@@ -87,9 +90,9 @@ echo "yeta-nudge: ${PERSONA} · ${HOURS}h 읽씹 · 오늘 ${COUNT}회째"
 rc=1; out=""
 for attempt in 1 2; do
   out="$(printf '%s' "$prompt" | METER_SRC=yeta-nudge METER_REF="$PERSONA" claude_meter 180 \
-        --model "${NUDGE_MODEL:-claude-sonnet-5}" $SAFE --effort low \
+        --model "${NUDGE_MODEL:-claude-sonnet-5}" $SAFE "${SYS_ARGS[@]}" --effort low --tools "" \
         --disallowedTools "Write,Edit,NotebookEdit,Bash,Task,WebFetch,WebSearch,Read,Glob,Grep" \
-        --max-turns 1 2> /tmp/yeta_nudge.err)" && rc=0 || rc=$?
+        --max-turns 1 2> /tmp/yeta_nudge.err)" && rc=0 || rc=$?   # --tools "" = 빌트인 스키마 0(책빼기 · yeta_chat gen_out 동형 260723 — 종전엔 넛지마다 스키마 ~18k tok 자동 탑재) · 거부 시 rc≠0 → 빈 대사 생략 = 비치명(다음 주기 재판정)
   { [ $rc -eq 0 ] && [ -n "${out// }" ]; } && break
   if claude_failover "$out$(cat /tmp/yeta_nudge.err 2>/dev/null)"; then continue; fi
   is_transient "$out$(cat /tmp/yeta_nudge.err 2>/dev/null)" && { sleep 20; continue; }
